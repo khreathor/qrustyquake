@@ -420,7 +420,7 @@ void    VID_Init (unsigned char *palette)
         Sys_Error("VID: Couldn't set video mode: %s\n", SDL_GetError());
     VID_CalcScreenDimensions();
 
-    sprintf(caption, "SDL2WinQuake - Version %4.2f", VERSION);
+    sprintf(caption, "QrustyQuake - Version %4.2f", VERSION);
     SDL_SetWindowTitle(window, (const char*)&caption);
     SDLWindowFlags = SDL_GetWindowFlags(window);
     
