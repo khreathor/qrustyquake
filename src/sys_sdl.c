@@ -2,7 +2,7 @@
 
 #include <SDL2/SDL.h>
 
-#ifndef _WIN32
+#ifndef __WIN32__
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/ipc.h>
@@ -12,8 +12,7 @@
 #include <sys/mman.h>
 #else
 #include <windows.h>
-#include <direct.h>
-#include <time.h>
+#include <string.h>
 #endif
 
 #include <signal.h>
@@ -251,7 +250,7 @@ int	Sys_FileTime (char *path)
 void Sys_mkdir (char *path)
 {
 #ifdef __WIN32__
-    _mkdir (path);
+    //FIXME _mkdir (path);
 #else
     mkdir (path, 0777);
 #endif
@@ -349,6 +348,52 @@ void floating_point_exception_handler(int whatever)
 void moncontrol(int x)
 {
 }
+
+#ifdef __WIN32__
+// Function to parse lpCmdLine into argc and argv
+void CommandLineToArgv(const char* lpCmdLine, int* argc, char*** argv)
+{
+    *argc = 0;
+
+    char* cmdLine = strdup(lpCmdLine);
+
+    char* token = strtok(cmdLine, " ");
+    while (token) {
+        (*argc)++;
+        token = strtok(NULL, " ");
+    }
+
+    *argv = (char**)malloc((*argc + 1) * sizeof(char*));
+
+    strcpy(cmdLine, lpCmdLine);
+    token = strtok(cmdLine, " ");
+    for (int i = 0; i < *argc; i++) {
+        (*argv)[i] = strdup(token);
+        token = strtok(NULL, " ");
+    }
+    (*argv)[*argc] = NULL;
+
+    free(cmdLine);
+}
+
+int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+{
+    int argc;
+    char** argv;
+
+    CommandLineToArgv(lpCmdLine, &argc, &argv);
+
+    int retCode = main(argc, argv);
+
+    for (int i = 0; i < argc; i++) {
+        free(argv[i]);
+    }
+    free(argv);
+
+    return retCode;
+}
+
+#endif
 
 int main (int c, char **v)
 {

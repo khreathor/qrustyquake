@@ -23,18 +23,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "quakedef.h"
 
 #include <sys/types.h>
-#ifndef _WIN32
+//#ifndef __WIN32__
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <sys/param.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#endif
+//#endif
 
-#ifdef _WIN32
-#define MAXHOSTNAMELEN 1000
-#include <winsock.h>
+#ifdef __WIN32__
+//#define MAXHOSTNAMELEN 1000
+//#include <winsock.h>
 #endif
 
 #include <errno.h>
@@ -69,6 +69,9 @@ static unsigned long myAddr;
 
 int UDP_Init (void)
 {
+#ifdef __WIN32__
+	return -1;
+#endif
 	struct hostent *local;
 	char	buff[MAXHOSTNAMELEN];
 	struct qsockaddr addr;
