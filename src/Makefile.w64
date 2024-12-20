@@ -1,0 +1,36 @@
+CFLAGS = --static -c -D_USE_WINSOCK2 -lws2_32 -m64 -Wall -Wno-trigraphs -D_FILE_OFFSET_BITS=64
+LDFLAGS = -lm -m64 -mwindows -static-libgcc -lws2_32
+TARGET = qrustyquake
+SRCS = $(wildcard *.c)
+OBJS = $(SRCS:.c=.o)
+
+BUILD_TYPE ?= release
+
+DEBUG_FLAGS = -g -O0
+RELEASE_FLAGS = -O3
+
+SDL_CFLAGS = -I../win/SDL2/include -D_REENTRANT
+SDL_LIBS   = -L../win/SDL2/lib -lSDL2
+
+ifeq ($(BUILD_TYPE), debug)
+	CFLAGS += $(DEBUG_FLAGS)
+else
+	CFLAGS += $(RELEASE_FLAGS)
+endif
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CC) $(OBJS) $(LDFLAGS) $(SDL_LIBS) -o $(TARGET)
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(SDL_CFLAGS) $< -o $@
+
+debug:
+	$(MAKE) BUILD_TYPE=debug
+
+release:
+	$(MAKE) BUILD_TYPE=release
+
+clean:
+	rm -f $(OBJS) $(TARGET)
