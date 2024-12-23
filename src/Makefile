@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -c
+CFLAGS = -c -Wall
 LDFLAGS = -lm -lSDL2
 TARGET = qrustyquake
 SRCS = $(wildcard *.c)
