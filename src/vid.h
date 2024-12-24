@@ -22,9 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define VID_CBITS	6
 #define VID_GRADES	(1 << VID_CBITS)
 
-extern SDL_Window *window; // global for checking windowed state in options
-extern Uint32 SDLWindowFlags;
-
 // a pixel can be one, two, or four bytes
 typedef byte pixel_t;
 

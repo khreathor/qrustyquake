@@ -19,7 +19,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // quakedef.h -- primary header for client
 
-//#define	GLTEST			// experimental stuff
+// CyanBun96: imagine if we could keep all the includes in one place instead
+// of all over the .c and .h files that's be cool right
 
 #define	QUAKE_GAME			// as opposed to utilities
 
@@ -31,18 +32,38 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	LINUX_VERSION		1.30
 #define	X11_VERSION			1.10
 
-//define	PARANOID			// speed sapping error checking
+//define	PARANOID	// speed sapping error checking
 
 #define	GAMENAME	"id1"
 
+#include <SDL2/SDL.h>
+
+#ifdef __WIN32__
+#include <windows.h>
+#else
+#include <unistd.h>
+#include <sys/time.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
+#include <sys/mman.h>
+#endif
+
+#include <signal.h>
+#include <stdlib.h>
+#include <limits.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <stdarg.h>
+#include <string.h>
+#include <ctype.h>
+#include <errno.h>
 #include <math.h>
 #include <string.h>
-#include <stdarg.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <stdint.h>
 #include <setjmp.h>
-#include <SDL2/SDL.h>
 
 #if id386
 #define UNALIGNED_OK	1	// set to 0 if unaligned accesses are not supported
@@ -252,7 +273,8 @@ typedef struct
 //=============================================================================
 
 
-
+extern SDL_Window *window; // global for checking windowed state in options
+extern Uint32 SDLWindowFlags;
 extern qboolean noclip_anglehack;
 
 

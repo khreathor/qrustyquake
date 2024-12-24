@@ -1,29 +1,3 @@
-#include <SDL2/SDL.h>
-
-#ifdef __WIN32__
-#include <windows.h>
-#include <string.h>
-#else
-#include <unistd.h>
-#include <sys/time.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-#include <sys/mman.h>
-#endif
-
-#include <signal.h>
-#include <stdlib.h>
-#include <limits.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include <errno.h>
-
 #include "quakedef.h"
 
 qboolean isDedicated;
