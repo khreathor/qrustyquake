@@ -523,27 +523,6 @@ qboolean Host_FilterTime (float time)
 
 
 /*
-===================
-Host_GetConsoleCommands
-
-Add them exactly as if they had been typed at the console
-===================
-*/
-void Host_GetConsoleCommands (void)
-{
-	char	*cmd;
-
-	while (1)
-	{
-		cmd = Sys_ConsoleInput ();
-		if (!cmd)
-			break;
-		Cbuf_AddText (cmd);
-	}
-}
-
-
-/*
 ==================
 Host_ServerFrame
 
@@ -667,9 +646,6 @@ void _Host_Frame (float time)
 // server operations
 //
 //-------------------
-
-// check for commands typed to the host
-	Host_GetConsoleCommands ();
 	
 	if (sv.active)
 		Host_ServerFrame ();
