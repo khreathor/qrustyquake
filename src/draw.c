@@ -1245,6 +1245,6 @@ Call after completing any disc IO
 void Draw_EndDisc (void)
 {
 
-	D_EndDirectRect (vid.width - 24, 0, 24, 24);
+	//D_EndDirectRect (vid.width - 24, 0, 24, 24);
 }
 

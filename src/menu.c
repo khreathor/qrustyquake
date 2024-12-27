@@ -29,7 +29,8 @@ extern cvar_t sensitivityyscale;
 extern int uiscale;
 extern unsigned char vid_curpal[256*3];
 int drawmousemenu = 0;
-extern int VID_SetVidMode (int modenum, int customw, int customh, int customwinmode, unsigned char *palette);
+extern void VID_SetMode (int modenum, int customw, int customh,
+		int customwinmode, unsigned char *palette);
 
 extern void (*vid_menudrawfn)(void);
 extern void (*vid_menukeyfn)(int key);
@@ -1663,7 +1664,7 @@ void M_New_Key (int k)
                  && Q_atoi(customheightstr) >= 200
                  && Q_atoi(customwidthstr) <= MAXWIDTH
                  && Q_atoi(customheightstr) <= MAXHEIGHT)
-            VID_SetVidMode(0, Q_atoi(customwidthstr), Q_atoi(customheightstr), newwinmode, vid_curpal);
+            VID_SetMode(0, Q_atoi(customwidthstr), Q_atoi(customheightstr), newwinmode, vid_curpal);
         break;
 
 	case K_BACKSPACE:
