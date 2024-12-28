@@ -28,8 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <fcntl.h>
 #include "quakedef.h"
 
-extern int uiscale;
-
 int 		con_linewidth;
 
 float		con_cursorspeed = 4;

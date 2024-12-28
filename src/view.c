@@ -31,8 +31,6 @@ when crossing a water boudnary.
 
 */
 
-extern int uiscale;
-
 cvar_t		lcd_x = {"lcd_x","0"};
 cvar_t		lcd_yaw = {"lcd_yaw","0"};
 

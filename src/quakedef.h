@@ -19,8 +19,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // quakedef.h -- primary header for client
 
+#ifndef __QUAKEDEF__
+#define __QUAKEDEF__
 // CyanBun96: imagine if we could keep all the includes in one place instead
-// of all over the .c and .h files that's be cool right
+// of all over the .c and .h files that'd be cool right
 
 #define	QUAKE_GAME		// as opposed to utilities
 
@@ -248,6 +250,7 @@ typedef struct {
 #include "menu.h"
 #include "crc.h"
 #include "cdaudio.h"
+#include "vid.h"
 
 //=============================================================================
 
@@ -317,3 +320,4 @@ extern cvar_t chase_active;
 void Chase_Init(void);
 void Chase_Reset(void);
 void Chase_Update(void);
+#endif

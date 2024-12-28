@@ -21,19 +21,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "r_shared.h"
 #include <SDL2/SDL.h>
 
-extern cvar_t _windowed_mouse;
-extern cvar_t scr_uiscale;
-extern cvar_t scr_stretchpixels;
-extern cvar_t newoptions;
-extern cvar_t sensitivityyscale;
-extern int uiscale;
-extern unsigned char vid_curpal[256*3];
-int drawmousemenu = 0;
-extern void VID_SetMode (int modenum, int customw, int customh,
-		int customwinmode, unsigned char *palette);
 
-extern void (*vid_menudrawfn)(void);
-extern void (*vid_menukeyfn)(int key);
+int drawmousemenu = 0;
 
 enum {m_none, m_main, m_singleplayer, m_load, m_save, m_multiplayer, m_setup, m_net, m_options, m_video, m_keys, m_new, m_help, m_quit, m_serialconfig, m_modemconfig, m_lanconfig, m_gameoptions, m_search, m_slist} m_state;
 
@@ -1708,13 +1697,138 @@ void M_Menu_Video_f (void)
 
 void M_Video_Draw (void)
 {
-	(*vid_menudrawfn) ();
+	// CyanBun96: This whole menu isn't about real resolutions anyway since
+	// all of them get scaled to the window size in the end, so these modes
+	// here are just some nice-looking classics from the original
+	// taken from WINQUAKE.EXE ran through wine
+	char *ptr;
+	char temp[64];
+	qpic_t *p = Draw_CachePic("gfx/vidmodes.lmp");
+	int column, row;
+	M_DrawPic((320 - p->width) / 2, 4, p);
+	for (int i = 0; i < NUM_OLDMODES; ++i) 
+		sprintf(modelist[i], "%dx%d", oldmodes[i*2], oldmodes[i*2+1]);
+	M_Print(13 * 8, 36, "Windowed Modes");
+	column = 16;
+	row = 36 + 2 * 8;
+	for (int i = 0; i < 3; i++) {
+		if (i == vid_modenum)
+			M_PrintWhite(column, row, modelist[i]);
+		else
+			M_Print(column, row, modelist[i]);
+		column += 13 * 8;
+	}
+	M_Print(12 * 8, 36 + 4 * 8, "Fullscreen Modes");
+	column = 16;
+	row = 36 + 6 * 8;
+	for (int i = 3; i < NUM_OLDMODES; i++) {
+		if (i == vid_modenum)
+			M_PrintWhite(column, row, modelist[i]);
+		else
+			M_Print(column, row, modelist[i]);
+		column += 13 * 8;
+		if (((i - 3) % VID_ROW_SIZE) == (VID_ROW_SIZE - 1)) {
+			column = 16;
+			row += 8;
+		}
+	}
+	// line cursor
+	if (vid_testingmode) {
+		sprintf(temp, "TESTING %s", modelist[vid_line]);
+		M_Print(13 * 8, 36 + MODE_AREA_HEIGHT * 8 + 8 * 4, temp);
+		M_Print(9 * 8, 36 + MODE_AREA_HEIGHT * 8 + 8 * 6,
+			"Please wait 5 seconds...");
+	} else {
+		M_Print(9 * 8, 36 + MODE_AREA_HEIGHT * 8 + 8,
+			"Press Enter to set mode");
+		M_Print(6 * 8, 36 + MODE_AREA_HEIGHT * 8 + 8 * 3,
+			"T to test mode for 5 seconds");
+		ptr = VID_GetModeDescription(vid_modenum);
+		if (vid_modenum >= 0 && vid_modenum < NUM_OLDMODES) {
+			sprintf(temp, "D to set default: %s", ptr);
+			M_Print(2 * 8, 36 + MODE_AREA_HEIGHT * 8 + 8 * 5, temp);
+		}
+		ptr = VID_GetModeDescription((int)_vid_default_mode_win.value);
+		if (ptr) {
+			sprintf(temp, "Current default: %s", ptr);
+			M_Print(3 * 8, 36 + MODE_AREA_HEIGHT * 8 + 8 * 6, temp);
+		}
+		M_Print(15 * 8, 36 + MODE_AREA_HEIGHT * 8 + 8 * 8,
+			"Esc to exit");
+		row = 36 + 2 * 8 + (vid_line / VID_ROW_SIZE) * 8;
+		column = 8 + (vid_line % VID_ROW_SIZE) * 13 * 8;
+		if (vid_line >= 3)
+			row += 3 * 8;
+		M_DrawCharacter(column, row, 12 + ((int)(realtime * 4) & 1));
+	}
 }
 
 
 void M_Video_Key (int key)
 {
-	(*vid_menukeyfn) (key);
+	if (vid_testingmode)
+		return;
+	switch (key) {
+	case K_ESCAPE:
+		S_LocalSound("misc/menu1.wav");
+		M_Menu_Options_f();
+		break;
+	case K_LEFTARROW:
+		S_LocalSound("misc/menu1.wav");
+		vid_line = ((vid_line / VID_ROW_SIZE) * VID_ROW_SIZE) +
+			((vid_line + 2) % VID_ROW_SIZE);
+		if (vid_line >= NUM_OLDMODES)
+			vid_line = NUM_OLDMODES - 1;
+		break;
+	case K_RIGHTARROW:
+		S_LocalSound("misc/menu1.wav");
+		vid_line = ((vid_line / VID_ROW_SIZE) * VID_ROW_SIZE) +
+			((vid_line + 4) % VID_ROW_SIZE);
+		if (vid_line >= NUM_OLDMODES)
+			vid_line = (vid_line / VID_ROW_SIZE) * VID_ROW_SIZE;
+		break;
+	case K_UPARROW:
+		S_LocalSound("misc/menu1.wav");
+		vid_line -= VID_ROW_SIZE;
+		if (vid_line < 0) {
+			vid_line += ((NUM_OLDMODES + (VID_ROW_SIZE - 1)) /
+				     VID_ROW_SIZE) * VID_ROW_SIZE;
+			while (vid_line >= NUM_OLDMODES)
+				vid_line -= VID_ROW_SIZE;
+		}
+		break;
+	case K_DOWNARROW:
+		S_LocalSound("misc/menu1.wav");
+		vid_line += VID_ROW_SIZE;
+		if (vid_line >= NUM_OLDMODES) {
+			vid_line -= ((NUM_OLDMODES + (VID_ROW_SIZE - 1)) /
+				VID_ROW_SIZE) * VID_ROW_SIZE;
+			while (vid_line < 0)
+				vid_line += VID_ROW_SIZE;
+		}
+		break;
+	case K_ENTER:
+		S_LocalSound("misc/menu1.wav");
+		VID_SetMode(vid_line, 0, 0, 0, vid_curpal);
+		break;
+	case 'T':
+	case 't':
+		S_LocalSound("misc/menu1.wav");
+		vid_realmode = vid_modenum;
+		vid_testingmode = 1;
+		vid_testendtime = realtime + 5.0;
+		VID_SetMode(vid_line, 0, 0, 0, vid_curpal);
+		printf("VID_LINE: %d\n", vid_line);
+		break;
+	case 'D':
+	case 'd':
+		S_LocalSound("misc/menu1.wav");
+		if (vid_modenum >= 0 && vid_modenum < NUM_OLDMODES)
+			Cvar_SetValue("_vid_default_mode_win", vid_modenum);
+		break;
+	default:
+		break;
+	}
 }
 
 //=============================================================================

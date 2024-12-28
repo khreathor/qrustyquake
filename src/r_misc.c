@@ -41,25 +41,6 @@ void R_CheckVariables (void)
 
 
 /*
-============
-Show
-
-Debugging use
-============
-*/
-void Show (void)
-{
-	vrect_t	vr;
-
-	vr.x = vr.y = 0;
-	vr.width = vid.width;
-	vr.height = vid.height;
-	vr.pnext = NULL;
-	VID_Update (&vr);
-}
-
-
-/*
 ====================
 R_TimeRefresh_f
 
@@ -71,7 +52,6 @@ void R_TimeRefresh_f (void)
 	int			i;
 	float		start, stop, time;
 	int			startangle;
-	vrect_t		vr;
 
 	startangle = r_refdef.viewangles[1];
 	
@@ -79,15 +59,8 @@ void R_TimeRefresh_f (void)
 	for (i=0 ; i<128 ; i++)
 	{
 		r_refdef.viewangles[1] = i/128.0*360.0;
-
 		R_RenderView ();
-
-		vr.x = r_refdef.vrect.x;
-		vr.y = r_refdef.vrect.y;
-		vr.width = r_refdef.vrect.width;
-		vr.height = r_refdef.vrect.height;
-		vr.pnext = NULL;
-		VID_Update (&vr);
+		VID_Update ();
 	}
 	stop = Sys_FloatTime ();
 	time = stop-start;

@@ -22,7 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "quakedef.h"
 #include "r_local.h"
 
-extern int uiscale;
 // only the refresh window will be updated unless these variables are flagged 
 int			scr_copytop;
 int			scr_copyeverything;
@@ -938,41 +937,7 @@ void SCR_UpdateScreen (void)
 	}
 
 	V_UpdatePalette ();
-
-//
-// update one of three areas
-//
-
-	if (scr_copyeverything)
-	{
-		vrect.x = 0;
-		vrect.y = 0;
-		vrect.width = vid.width;
-		vrect.height = vid.height;
-		vrect.pnext = 0;
-	
-		VID_Update (&vrect);
-	}
-	else if (scr_copytop)
-	{
-		vrect.x = 0;
-		vrect.y = 0;
-		vrect.width = vid.width;
-		vrect.height = vid.height - sb_lines;
-		vrect.pnext = 0;
-	
-		VID_Update (&vrect);
-	}	
-	else
-	{
-		vrect.x = scr_vrect.x;
-		vrect.y = scr_vrect.y;
-		vrect.width = scr_vrect.width;
-		vrect.height = scr_vrect.height;
-		vrect.pnext = 0;
-	
-		VID_Update (&vrect);
-	}
+	VID_Update ();
 }
 
 
