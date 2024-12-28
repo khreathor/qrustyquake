@@ -98,10 +98,6 @@ extern unsigned short d_8to16table[256];
 extern unsigned char vid_curpal[256 * 3]; // save for mode changes
 extern qboolean vid_initialized;
 extern qboolean palette_changed;
-extern qboolean mouse_avail;
-extern float mouse_x;
-extern float mouse_y;
-extern int mouse_oldbuttonstate;
 extern viddef_t vid; // global video state
 extern cvar_t _vid_default_mode_win;
 extern cvar_t _windowed_mouse;
@@ -125,6 +121,8 @@ void	VID_Init (unsigned char *palette);
 
 void	VID_Shutdown (void);
 // Called at shutdown
+
+void	VID_CalcScreenDimensions();
 
 void	VID_Update ();
 // flushes the view buffer to the screen
