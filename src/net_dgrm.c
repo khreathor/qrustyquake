@@ -1,7 +1,6 @@
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
-Copyright (C) 2002-2005 John Fitzgibbons and others
-Copyright (C) 2007-2008 Kristian Duske
+Copyright (C) 2010-2014 QuakeSpasm developers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -19,43 +18,16 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// net_dgrm.c
-
-// This is enables a simple IP banning mechanism
-//#define BAN_TEST disabled --kristian
-
-#ifdef BAN_TEST
-#if defined(_WIN32)
-#include <windows.h>
-#elif defined (NeXT)
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#else
-#define AF_INET 		2	/* internet */
-struct in_addr
-{
-	union
-	{
-		struct { unsigned char s_b1,s_b2,s_b3,s_b4; } S_un_b;
-		struct { unsigned short s_w1,s_w2; } S_un_w;
-		unsigned long S_addr;
-	} S_un;
-};
-#define	s_addr	S_un.S_addr	/* can be used for most tcp & ip code */
-struct sockaddr_in
-{
-    short			sin_family;
-    unsigned short	sin_port;
-	struct in_addr	sin_addr;
-    char			sin_zero[8];
-};
-char *inet_ntoa(struct in_addr in);
-unsigned long inet_addr(const char *cp);
-#endif
-#endif	// BAN_TEST
 
 #include "quakedef.h"
+#include "q_stdinc.h"
+#include "arch_def.h"
+#include "net_sys.h"
+#include "net_defs.h"
 #include "net_dgrm.h"
+
+// This is enables a simple IP banning mechanism
+#define BAN_TEST
 
 // these two macros are to make the code more readable
 #define sfunc	net_landrivers[sock->landriver]
@@ -64,29 +36,27 @@ unsigned long inet_addr(const char *cp);
 static int net_landriverlevel;
 
 /* statistic counters */
-int	packetsSent = 0;
-int	packetsReSent = 0;
-int packetsReceived = 0;
-int receivedDuplicateCount = 0;
-int shortPacketCount = 0;
-int droppedDatagrams;
+static int packetsSent = 0;
+static int packetsReSent = 0;
+static int packetsReceived = 0;
+static int receivedDuplicateCount = 0;
+static int shortPacketCount = 0;
+static int droppedDatagrams;
 
-static int myDriverLevel;
-
-struct
+static struct
 {
 	unsigned int	length;
 	unsigned int	sequence;
-	byte			data[MAX_DATAGRAM];
+	byte	data[MAX_DATAGRAM];
 } packetBuffer;
 
-extern int m_return_state;
-extern int m_state;
+static int myDriverLevel;
+
 extern qboolean m_return_onerror;
 extern char m_return_reason[32];
 
 
-char *StrAddr (struct qsockaddr *addr)
+static char *StrAddr (struct qsockaddr *addr)
 {
 	static char buf[34];
 	byte *p = (byte *)addr;
@@ -99,14 +69,15 @@ char *StrAddr (struct qsockaddr *addr)
 
 
 #ifdef BAN_TEST
-unsigned long banAddr = 0x00000000;
-unsigned long banMask = 0xffffffff;
 
-void NET_Ban_f (void)
+static struct in_addr	banAddr;
+static struct in_addr	banMask;
+
+static void NET_Ban_f (void)
 {
 	char	addrStr [32];
 	char	maskStr [32];
-	void	(*print) (char *fmt, ...);
+	void	(*print_fn)(const char *fmt, ...) FUNCP_PRINTF(1,2);
 
 	if (cmd_source == src_command)
 	{
@@ -115,47 +86,47 @@ void NET_Ban_f (void)
 			Cmd_ForwardToServer ();
 			return;
 		}
-		print = Con_Printf;
+		print_fn = Con_Printf;
 	}
 	else
 	{
-		if (pr_global_struct->deathmatch && !host_client->privileged)
+		if (pr_global_struct->deathmatch)
 			return;
-		print = SV_ClientPrintf;
+		print_fn = Con_Printf;//SV_ClientPrintf;
 	}
 
 	switch (Cmd_Argc ())
 	{
-		case 1:
-			if (((struct in_addr *)&banAddr)->s_addr)
-			{
-				Q_strcpy(addrStr, inet_ntoa(*(struct in_addr *)&banAddr));
-				Q_strcpy(maskStr, inet_ntoa(*(struct in_addr *)&banMask));
-				print("Banning %s [%s]\n", addrStr, maskStr);
-			}
-			else
-				print("Banning not active\n");
-			break;
+	case 1:
+		if (banAddr.s_addr != INADDR_ANY)
+		{
+			Q_strcpy(addrStr, inet_ntoa(banAddr));
+			Q_strcpy(maskStr, inet_ntoa(banMask));
+			print_fn("Banning %s [%s]\n", addrStr, maskStr);
+		}
+		else
+			print_fn("Banning not active\n");
+		break;
 
-		case 2:
-			if (Q_strcasecmp(Cmd_Argv(1), "off") == 0)
-				banAddr = 0x00000000;
-			else
-				banAddr = inet_addr(Cmd_Argv(1));
-			banMask = 0xffffffff;
-			break;
+	case 2:
+		if (Q_strcasecmp(Cmd_Argv(1), "off") == 0)
+			banAddr.s_addr = INADDR_ANY;
+		else
+			banAddr.s_addr = inet_addr(Cmd_Argv(1));
+		banMask.s_addr = INADDR_NONE;
+		break;
 
-		case 3:
-			banAddr = inet_addr(Cmd_Argv(1));
-			banMask = inet_addr(Cmd_Argv(2));
-			break;
+	case 3:
+		banAddr.s_addr = inet_addr(Cmd_Argv(1));
+		banMask.s_addr = inet_addr(Cmd_Argv(2));
+		break;
 
-		default:
-			print("BAN ip_address [mask]\n");
-			break;
+	default:
+		print_fn("BAN ip_address [mask]\n");
+		break;
 	}
 }
-#endif
+#endif	// BAN_TEST
 
 
 int Datagram_SendMessage (qsocket_t *sock, sizebuf_t *data)
@@ -166,13 +137,13 @@ int Datagram_SendMessage (qsocket_t *sock, sizebuf_t *data)
 
 #ifdef DEBUG
 	if (data->cursize == 0)
-		Sys_Error("Datagram_SendMessage: zero length message\n");
+		Sys_Error("Datagram_SendMessage: zero length message");
 
 	if (data->cursize > NET_MAXMESSAGE)
-		Sys_Error("Datagram_SendMessage: message too big %u\n", data->cursize);
+		Sys_Error("Datagram_SendMessage: message too big: %u", data->cursize);
 
 	if (sock->canSend == false)
-		Sys_Error("SendMessage: called with canSend == false\n");
+		Sys_Error("SendMessage: called with canSend == false");
 #endif
 
 	Q_memcpy(sock->sendMessage, data->data, data->cursize);
@@ -205,7 +176,7 @@ int Datagram_SendMessage (qsocket_t *sock, sizebuf_t *data)
 }
 
 
-int SendMessageNext (qsocket_t *sock)
+static int SendMessageNext (qsocket_t *sock)
 {
 	unsigned int	packetLen;
 	unsigned int	dataLen;
@@ -238,7 +209,7 @@ int SendMessageNext (qsocket_t *sock)
 }
 
 
-int ReSendMessage (qsocket_t *sock)
+static int ReSendMessage (qsocket_t *sock)
 {
 	unsigned int	packetLen;
 	unsigned int	dataLen;
@@ -288,14 +259,14 @@ qboolean Datagram_CanSendUnreliableMessage (qsocket_t *sock)
 
 int Datagram_SendUnreliableMessage (qsocket_t *sock, sizebuf_t *data)
 {
-	int 	packetLen;
+	int	packetLen;
 
 #ifdef DEBUG
 	if (data->cursize == 0)
-		Sys_Error("Datagram_SendUnreliableMessage: zero length message\n");
+		Sys_Error("Datagram_SendUnreliableMessage: zero length message");
 
 	if (data->cursize > MAX_DATAGRAM)
-		Sys_Error("Datagram_SendUnreliableMessage: message too big %u\n", data->cursize);
+		Sys_Error("Datagram_SendUnreliableMessage: message too big: %u", data->cursize);
 #endif
 
 	packetLen = NET_HEADERSIZE + data->cursize;
@@ -325,17 +296,18 @@ int	Datagram_GetMessage (qsocket_t *sock)
 		if ((net_time - sock->lastSendTime) > 1.0)
 			ReSendMessage (sock);
 
-	while(1)
+	while (1)
 	{
-		length = sfunc.Read (sock->socket, (byte *)&packetBuffer, NET_DATAGRAMSIZE, &readaddr);
+		length = (unsigned int) sfunc.Read(sock->socket, (byte *)&packetBuffer,
+							NET_DATAGRAMSIZE, &readaddr);
 
-//	if ((rand() & 255) > 220)
-//		continue;
+	//	if ((rand() & 255) > 220)
+	//		continue;
 
 		if (length == 0)
 			break;
 
-		if (length == -1)
+		if (length == (unsigned int)-1)
 		{
 			Con_Printf("Read error\n");
 			return -1;
@@ -343,11 +315,9 @@ int	Datagram_GetMessage (qsocket_t *sock)
 
 		if (sfunc.AddrCompare(&readaddr, &sock->addr) != 0)
 		{
-#ifdef DEBUG
-			Con_DPrintf("Forged packet received\n");
-			Con_DPrintf("Expected: %s\n", StrAddr (&sock->addr));
-			Con_DPrintf("Received: %s\n", StrAddr (&readaddr));
-#endif
+			Con_Printf("Forged packet received\n");
+			Con_Printf("Expected: %s\n", StrAddr (&sock->addr));
+			Con_Printf("Received: %s\n", StrAddr (&readaddr));
 			continue;
 		}
 
@@ -413,7 +383,7 @@ int	Datagram_GetMessage (qsocket_t *sock)
 			sock->sendMessageLength -= MAX_DATAGRAM;
 			if (sock->sendMessageLength > 0)
 			{
-				Q_memcpy(sock->sendMessage, sock->sendMessage+MAX_DATAGRAM, sock->sendMessageLength);
+				memmove (sock->sendMessage, sock->sendMessage + MAX_DATAGRAM, sock->sendMessageLength);
 				sock->sendNext = true;
 			}
 			else
@@ -463,7 +433,7 @@ int	Datagram_GetMessage (qsocket_t *sock)
 }
 
 
-void PrintStats(qsocket_t *s)
+static void PrintStats(qsocket_t *s)
 {
 	Con_Printf("canSend = %4u   \n", s->canSend);
 	Con_Printf("sendSeq = %4u   ", s->sendSequence);
@@ -471,7 +441,7 @@ void PrintStats(qsocket_t *s)
 	Con_Printf("\n");
 }
 
-void NET_Stats_f (void)
+static void NET_Stats_f (void)
 {
 	qsocket_t	*s;
 
@@ -498,28 +468,61 @@ void NET_Stats_f (void)
 	else
 	{
 		for (s = net_activeSockets; s; s = s->next)
+		{
 			if (Q_strcasecmp(Cmd_Argv(1), s->address) == 0)
 				break;
+		}
+
 		if (s == NULL)
+		{
 			for (s = net_freeSockets; s; s = s->next)
+			{
 				if (Q_strcasecmp(Cmd_Argv(1), s->address) == 0)
 					break;
+			}
+		}
+
 		if (s == NULL)
 			return;
+
 		PrintStats(s);
 	}
+}
+
+
+// recognize ip:port (based on ProQuake)
+static const char *Strip_Port (const char *host)
+{
+	static char	noport[MAX_QPATH];
+			/* array size as in Host_Connect_f() */
+	char		*p;
+	int		port;
+
+	if (!host || !*host)
+		return host;
+	Q_strncpy (noport, host, sizeof(noport));
+	if ((p = Q_strrchr(noport, ':')) == NULL)
+		return host;
+	*p++ = '\0';
+	port = Q_atoi (p);
+	if (port > 0 && port < 65536 && port != net_hostport)
+	{
+		net_hostport = port;
+		Con_Printf("Port set to %d\n", net_hostport);
+	}
+	return noport;
 }
 
 
 static qboolean testInProgress = false;
 static int		testPollCount;
 static int		testDriver;
-static int		testSocket;
+static sys_socket_t	testSocket;
 
-static void Test_Poll(void);
-PollProcedure	testPollProcedure = {NULL, 0.0, Test_Poll};
+static void Test_Poll (void *);
+static PollProcedure	testPollProcedure = {NULL, 0.0, Test_Poll};
 
-static void Test_Poll(void)
+static void Test_Poll (void *unused)
 {
 	struct qsockaddr clientaddr;
 	int		control;
@@ -529,14 +532,13 @@ static void Test_Poll(void)
 	int		colors;
 	int		frags;
 	int		connectTime;
-	byte	playerNumber;
 
 	net_landriverlevel = testDriver;
 
 	while (1)
 	{
 		len = dfunc.Read (testSocket, net_message.data, net_message.maxsize, &clientaddr);
-		if (len < sizeof(int))
+		if (len < (int) sizeof(int))
 			break;
 
 		net_message.cursize = len;
@@ -546,22 +548,22 @@ static void Test_Poll(void)
 		MSG_ReadLong();
 		if (control == -1)
 			break;
-		if ((control & (~NETFLAG_LENGTH_MASK)) !=  NETFLAG_CTL)
+		if ((control & (~NETFLAG_LENGTH_MASK)) != (int)NETFLAG_CTL)
 			break;
 		if ((control & NETFLAG_LENGTH_MASK) != len)
 			break;
 
 		if (MSG_ReadByte() != CCREP_PLAYER_INFO)
-			Sys_Error("Unexpected repsonse to Player Info request\n");
+			Sys_Error("Unexpected response to Player Info request\n");
 
-		playerNumber = MSG_ReadByte();
+		MSG_ReadByte(); /* playerNumber */
 		Q_strcpy(name, MSG_ReadString());
 		colors = MSG_ReadLong();
 		frags = MSG_ReadLong();
 		connectTime = MSG_ReadLong();
 		Q_strcpy(address, MSG_ReadString());
 
-		Con_Printf("%s\n  frags:%3i  colors:%u %u  time:%u\n  %s\n", name, frags, colors >> 4, colors & 0x0f, connectTime / 60, address);
+		Con_Printf("%s\n  frags:%3i  colors:%d %d  time:%d\n  %s\n", name, frags, colors >> 4, colors & 0x0f, connectTime / 60, address);
 	}
 
 	testPollCount--;
@@ -576,30 +578,33 @@ static void Test_Poll(void)
 	}
 }
 
-static void Net_Test_f (void)
+static void Test_f (void)
 {
-	char	*host;
+	const char	*host;
 	int		n;
-	int		max = MAX_SCOREBOARD;
+	int		maxusers = MAX_SCOREBOARD;
 	struct qsockaddr sendaddr;
 
 	if (testInProgress)
 		return;
 
-	host = Cmd_Argv (1);
+	host = Strip_Port (Cmd_Argv(1));
 
 	if (host && hostCacheCount)
 	{
 		for (n = 0; n < hostCacheCount; n++)
+		{
 			if (Q_strcasecmp (host, hostcache[n].name) == 0)
 			{
 				if (hostcache[n].driver != myDriverLevel)
 					continue;
 				net_landriverlevel = hostcache[n].ldriver;
-				max = hostcache[n].maxusers;
+				maxusers = hostcache[n].maxusers;
 				Q_memcpy(&sendaddr, &hostcache[n].addr, sizeof(struct qsockaddr));
 				break;
 			}
+		}
+
 		if (n < hostCacheCount)
 			goto JustDoIt;
 	}
@@ -613,26 +618,30 @@ static void Net_Test_f (void)
 		if (dfunc.GetAddrFromName(host, &sendaddr) != -1)
 			break;
 	}
+
 	if (net_landriverlevel == net_numlandrivers)
+	{
+		Con_Printf("Could not resolve %s\n", host);
 		return;
+	}
 
 JustDoIt:
 	testSocket = dfunc.OpenSocket(0);
-	if (testSocket == -1)
+	if (testSocket == INVALID_SOCKET)
 		return;
 
 	testInProgress = true;
 	testPollCount = 20;
 	testDriver = net_landriverlevel;
 
-	for (n = 0; n < max; n++)
+	for (n = 0; n < maxusers; n++)
 	{
 		SZ_Clear(&net_message);
 		// save space for the header, filled in later
 		MSG_WriteLong(&net_message, 0);
 		MSG_WriteByte(&net_message, CCREQ_PLAYER_INFO);
 		MSG_WriteByte(&net_message, n);
-		*((int *)net_message.data) = BigLong(NETFLAG_CTL | 	(net_message.cursize & NETFLAG_LENGTH_MASK));
+		*((int *)net_message.data) = BigLong(NETFLAG_CTL | (net_message.cursize & NETFLAG_LENGTH_MASK));
 		dfunc.Write (testSocket, net_message.data, net_message.cursize, &sendaddr);
 	}
 	SZ_Clear(&net_message);
@@ -642,12 +651,12 @@ JustDoIt:
 
 static qboolean test2InProgress = false;
 static int		test2Driver;
-static int		test2Socket;
+static sys_socket_t	test2Socket;
 
-static void Test2_Poll(void);
-PollProcedure	test2PollProcedure = {NULL, 0.0, Test2_Poll};
+static void Test2_Poll (void *);
+static PollProcedure	test2PollProcedure = {NULL, 0.0, Test2_Poll};
 
-static void Test2_Poll(void)
+static void Test2_Poll (void *unused)
 {
 	struct qsockaddr clientaddr;
 	int		control;
@@ -659,7 +668,7 @@ static void Test2_Poll(void)
 	name[0] = 0;
 
 	len = dfunc.Read (test2Socket, net_message.data, net_message.maxsize, &clientaddr);
-	if (len < sizeof(int))
+	if (len < (int) sizeof(int))
 		goto Reschedule;
 
 	net_message.cursize = len;
@@ -669,7 +678,7 @@ static void Test2_Poll(void)
 	MSG_ReadLong();
 	if (control == -1)
 		goto Error;
-	if ((control & (~NETFLAG_LENGTH_MASK)) !=  NETFLAG_CTL)
+	if ((control & (~NETFLAG_LENGTH_MASK)) != (int)NETFLAG_CTL)
 		goto Error;
 	if ((control & NETFLAG_LENGTH_MASK) != len)
 		goto Error;
@@ -698,7 +707,7 @@ Reschedule:
 	return;
 
 Error:
-	Con_Printf("Unexpected repsonse to Rule Info request\n");
+	Con_Printf("Unexpected response to Rule Info request\n");
 Done:
 	dfunc.CloseSocket(test2Socket);
 	test2InProgress = false;
@@ -707,18 +716,19 @@ Done:
 
 static void Test2_f (void)
 {
-	char	*host;
+	const char	*host;
 	int		n;
 	struct qsockaddr sendaddr;
 
 	if (test2InProgress)
 		return;
 
-	host = Cmd_Argv (1);
+	host = Strip_Port (Cmd_Argv(1));
 
 	if (host && hostCacheCount)
 	{
 		for (n = 0; n < hostCacheCount; n++)
+		{
 			if (Q_strcasecmp (host, hostcache[n].name) == 0)
 			{
 				if (hostcache[n].driver != myDriverLevel)
@@ -727,6 +737,8 @@ static void Test2_f (void)
 				Q_memcpy(&sendaddr, &hostcache[n].addr, sizeof(struct qsockaddr));
 				break;
 			}
+		}
+
 		if (n < hostCacheCount)
 			goto JustDoIt;
 	}
@@ -740,12 +752,16 @@ static void Test2_f (void)
 		if (dfunc.GetAddrFromName(host, &sendaddr) != -1)
 			break;
 	}
+
 	if (net_landriverlevel == net_numlandrivers)
+	{
+		Con_Printf("Could not resolve %s\n", host);
 		return;
+	}
 
 JustDoIt:
 	test2Socket = dfunc.OpenSocket(0);
-	if (test2Socket == -1)
+	if (test2Socket == INVALID_SOCKET)
 		return;
 
 	test2InProgress = true;
@@ -765,23 +781,40 @@ JustDoIt:
 
 int Datagram_Init (void)
 {
-	int i;
-	int csock;
+	int	i, num_inited;
+	sys_socket_t	csock;
 
+#ifdef BAN_TEST
+	banAddr.s_addr = INADDR_ANY;
+	banMask.s_addr = INADDR_NONE;
+#endif
 	myDriverLevel = net_driverlevel;
+
 	Cmd_AddCommand ("net_stats", NET_Stats_f);
 
-	if (COM_CheckParm("-nolan"))
+	int safemode = 0;
+	if (safemode || COM_CheckParm("-nolan"))
 		return -1;
 
+	num_inited = 0;
 	for (i = 0; i < net_numlandrivers; i++)
-		{
+	{
 		csock = net_landrivers[i].Init ();
-		if (csock == -1)
+		if (csock == INVALID_SOCKET)
 			continue;
 		net_landrivers[i].initialized = true;
 		net_landrivers[i].controlSock = csock;
-		}
+		num_inited++;
+	}
+
+	if (num_inited == 0)
+		return -1;
+
+#ifdef BAN_TEST
+	Cmd_AddCommand ("ban", NET_Ban_f);
+#endif
+	Cmd_AddCommand ("test", Test_f);
+	Cmd_AddCommand ("test2", Test2_f);
 
 	return 0;
 }
@@ -816,8 +849,10 @@ void Datagram_Listen (qboolean state)
 	int i;
 
 	for (i = 0; i < net_numlandrivers; i++)
+	{
 		if (net_landrivers[i].initialized)
 			net_landrivers[i].Listen (state);
+	}
 }
 
 
@@ -825,8 +860,8 @@ static qsocket_t *_Datagram_CheckNewConnections (void)
 {
 	struct qsockaddr clientaddr;
 	struct qsockaddr newaddr;
-	int			newsock;
-	int			acceptsock;
+	sys_socket_t		newsock;
+	sys_socket_t		acceptsock;
 	qsocket_t	*sock;
 	qsocket_t	*s;
 	int			len;
@@ -835,13 +870,13 @@ static qsocket_t *_Datagram_CheckNewConnections (void)
 	int			ret;
 
 	acceptsock = dfunc.CheckNewConnections();
-	if (acceptsock == -1)
+	if (acceptsock == INVALID_SOCKET)
 		return NULL;
 
 	SZ_Clear(&net_message);
 
 	len = dfunc.Read (acceptsock, net_message.data, net_message.maxsize, &clientaddr);
-	if (len < sizeof(int))
+	if (len < (int) sizeof(int))
 		return NULL;
 	net_message.cursize = len;
 
@@ -850,7 +885,7 @@ static qsocket_t *_Datagram_CheckNewConnections (void)
 	MSG_ReadLong();
 	if (control == -1)
 		return NULL;
-	if ((control & (~NETFLAG_LENGTH_MASK)) !=  NETFLAG_CTL)
+	if ((control & (~NETFLAG_LENGTH_MASK)) != (int)NETFLAG_CTL)
 		return NULL;
 	if ((control & NETFLAG_LENGTH_MASK) != len)
 		return NULL;
@@ -887,6 +922,7 @@ static qsocket_t *_Datagram_CheckNewConnections (void)
 
 		playerNumber = MSG_ReadByte();
 		activeNumber = -1;
+
 		for (clientNumber = 0, client = svs.clients; clientNumber < svs.maxclients; clientNumber++, client++)
 		{
 			if (client->active)
@@ -896,6 +932,7 @@ static qsocket_t *_Datagram_CheckNewConnections (void)
 					break;
 			}
 		}
+
 		if (clientNumber == svs.maxclients)
 			return NULL;
 
@@ -918,31 +955,14 @@ static qsocket_t *_Datagram_CheckNewConnections (void)
 
 	if (command == CCREQ_RULE_INFO)
 	{
-		char	*prevCvarName;
-		cvar_t	*var;
+		const char	*prevCvarName;
+		cvar_t			*var;
 
 		// find the search start location
 		prevCvarName = MSG_ReadString();
-		if (*prevCvarName)
-		{
-			var = Cvar_FindVar (prevCvarName);
-			if (!var)
-				return NULL;
-			var = var->next;
-		}
-		else
-			var = cvar_vars;
-
-		// search for the next server cvar
-		while (var)
-		{
-			if (var->server)
-				break;
-			var = var->next;
-		}
+		var = Cvar_FindVar(prevCvarName);
 
 		// send the response
-
 		SZ_Clear(&net_message);
 		// save space for the header, filled in later
 		MSG_WriteLong(&net_message, 0);
@@ -980,11 +1000,11 @@ static qsocket_t *_Datagram_CheckNewConnections (void)
 
 #ifdef BAN_TEST
 	// check for a ban
-	if (clientaddr.sa_family == AF_INET)
+	if (clientaddr.qsa_family == AF_INET)
 	{
-		unsigned long testAddr;
+		in_addr_t	testAddr;
 		testAddr = ((struct sockaddr_in *)&clientaddr)->sin_addr.s_addr;
-		if ((testAddr & banMask) == banAddr)
+		if ((testAddr & banMask.s_addr) == banAddr.s_addr)
 		{
 			SZ_Clear(&net_message);
 			// save space for the header, filled in later
@@ -1031,9 +1051,8 @@ static qsocket_t *_Datagram_CheckNewConnections (void)
 
 	// allocate a QSocket
 	sock = NET_NewQSocket ();
-	if (sock == NULL)
+	if (sock == NULL)	// no room; try to let him know
 	{
-		// no room; try to let him know
 		SZ_Clear(&net_message);
 		// save space for the header, filled in later
 		MSG_WriteLong(&net_message, 0);
@@ -1047,7 +1066,7 @@ static qsocket_t *_Datagram_CheckNewConnections (void)
 
 	// allocate a network socket
 	newsock = dfunc.OpenSocket(0);
-	if (newsock == -1)
+	if (newsock == INVALID_SOCKET)
 	{
 		NET_FreeQSocket(sock);
 		return NULL;
@@ -1087,9 +1106,13 @@ qsocket_t *Datagram_CheckNewConnections (void)
 	qsocket_t *ret = NULL;
 
 	for (net_landriverlevel = 0; net_landriverlevel < net_numlandrivers; net_landriverlevel++)
+	{
 		if (net_landrivers[net_landriverlevel].initialized)
+		{
 			if ((ret = _Datagram_CheckNewConnections ()) != NULL)
 				break;
+		}
+	}
 	return ret;
 }
 
@@ -1119,7 +1142,7 @@ static void _Datagram_SearchForHosts (qboolean xmit)
 
 	while ((ret = dfunc.Read (dfunc.controlSock, net_message.data, net_message.maxsize, &readaddr)) > 0)
 	{
-		if (ret < sizeof(int))
+		if (ret < (int) sizeof(int))
 			continue;
 		net_message.cursize = ret;
 
@@ -1136,7 +1159,7 @@ static void _Datagram_SearchForHosts (qboolean xmit)
 		MSG_ReadLong();
 		if (control == -1)
 			continue;
-		if ((control & (~NETFLAG_LENGTH_MASK)) !=  NETFLAG_CTL)
+		if ((control & (~NETFLAG_LENGTH_MASK)) != (int)NETFLAG_CTL)
 			continue;
 		if ((control & NETFLAG_LENGTH_MASK) != ret)
 			continue;
@@ -1147,8 +1170,10 @@ static void _Datagram_SearchForHosts (qboolean xmit)
 		dfunc.GetAddrFromName(MSG_ReadString(), &readaddr);
 		// search the cache for this server
 		for (n = 0; n < hostCacheCount; n++)
+		{
 			if (dfunc.AddrCompare(&readaddr, &hostcache[n].addr) == 0)
 				break;
+		}
 
 		// is it already there?
 		if (n < hostCacheCount)
@@ -1187,6 +1212,7 @@ static void _Datagram_SearchForHosts (qboolean xmit)
 				}
 				else
 					hostcache[n].name[i-1]++;
+
 				i = -1;
 			}
 		}
@@ -1205,24 +1231,27 @@ void Datagram_SearchForHosts (qboolean xmit)
 }
 
 
-static qsocket_t *_Datagram_Connect (char *host)
+static qsocket_t *_Datagram_Connect (const char *host)
 {
 	struct qsockaddr sendaddr;
 	struct qsockaddr readaddr;
 	qsocket_t	*sock;
-	int			newsock;
+	sys_socket_t		newsock;
 	int			ret;
 	int			reps;
 	double		start_time;
 	int			control;
-	char		*reason;
+	const char		*reason;
 
 	// see if we can resolve the host name
 	if (dfunc.GetAddrFromName(host, &sendaddr) == -1)
+	{
+		Con_Printf("Could not resolve %s\n", host);
 		return NULL;
+	}
 
 	newsock = dfunc.OpenSocket (0);
-	if (newsock == -1)
+	if (newsock == INVALID_SOCKET)
 		return NULL;
 
 	sock = NET_NewQSocket ();
@@ -1236,7 +1265,8 @@ static qsocket_t *_Datagram_Connect (char *host)
 		goto ErrorReturn;
 
 	// send the connection request
-	Con_Printf("trying...\n"); SCR_UpdateScreen ();
+	Con_Printf("trying...\n");
+	SCR_UpdateScreen ();
 	start_time = net_time;
 
 	for (reps = 0; reps < 3; reps++)
@@ -1259,17 +1289,15 @@ static qsocket_t *_Datagram_Connect (char *host)
 				// is it from the right place?
 				if (sfunc.AddrCompare(&readaddr, &sendaddr) != 0)
 				{
-//#ifdef DEBUG
 					Con_Printf("wrong reply address\n");
 					Con_Printf("Expected: %s | %s\n", dfunc.AddrToString (&sendaddr), StrAddr(&sendaddr));
 					Con_Printf("Received: %s | %s\n", dfunc.AddrToString (&readaddr), StrAddr(&readaddr));
 					SCR_UpdateScreen ();
-//#endif
 					ret = 0;
 					continue;
 				}
 
-				if (ret < sizeof(int))
+				if (ret < (int) sizeof(int))
 				{
 					ret = 0;
 					continue;
@@ -1285,7 +1313,7 @@ static qsocket_t *_Datagram_Connect (char *host)
 					ret = 0;
 					continue;
 				}
-				if ((control & (~NETFLAG_LENGTH_MASK)) !=  NETFLAG_CTL)
+				if ((control & (~NETFLAG_LENGTH_MASK)) != (int)NETFLAG_CTL)
 				{
 					ret = 0;
 					continue;
@@ -1298,9 +1326,12 @@ static qsocket_t *_Datagram_Connect (char *host)
 			}
 		}
 		while (ret == 0 && (SetNetTime() - start_time) < 2.5);
+
 		if (ret)
 			break;
-		Con_Printf("still trying...\n"); SCR_UpdateScreen ();
+
+		Con_Printf("still trying...\n");
+		SCR_UpdateScreen ();
 		start_time = SetNetTime();
 	}
 
@@ -1324,8 +1355,8 @@ static qsocket_t *_Datagram_Connect (char *host)
 	if (ret == CCREP_REJECT)
 	{
 		reason = MSG_ReadString();
-		Con_Printf(reason);
-		Q_strncpy(m_return_reason, reason, 31);
+		Con_Printf("%s\n", reason);
+		Q_strncpy(m_return_reason, reason, sizeof(m_return_reason));
 		goto ErrorReturn;
 	}
 
@@ -1365,20 +1396,27 @@ ErrorReturn2:
 	dfunc.CloseSocket(newsock);
 	if (m_return_onerror)
 	{
+		//IN_DeactivateForMenu();
 		key_dest = key_menu;
-		m_state = m_return_state;
+		//m_state = m_return_state;
 		m_return_onerror = false;
 	}
 	return NULL;
 }
 
-qsocket_t *Datagram_Connect (char *host)
+qsocket_t *Datagram_Connect (const char *host)
 {
 	qsocket_t *ret = NULL;
 
+	host = Strip_Port (host);
 	for (net_landriverlevel = 0; net_landriverlevel < net_numlandrivers; net_landriverlevel++)
+	{
 		if (net_landrivers[net_landriverlevel].initialized)
+		{
 			if ((ret = _Datagram_Connect (host)) != NULL)
 				break;
+		}
+	}
 	return ret;
 }
+

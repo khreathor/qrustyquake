@@ -19,6 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "quakedef.h"
+#include "net_defs.h"
 
 extern cvar_t	pausable;
 
@@ -60,9 +61,9 @@ void Host_Status_f (void)
 	int			minutes;
 	int			hours = 0;
 	int			j;
-	void		(*print) (char *fmt, ...);
+	void		(*print) (const char *fmt, ...);
 	
-	if (cmd_source == src_command)
+	if (1 || cmd_source == src_command)
 	{
 		if (!sv.active)
 		{
@@ -71,8 +72,8 @@ void Host_Status_f (void)
 		}
 		print = Con_Printf;
 	}
-	else
-		print = SV_ClientPrintf;
+	//else
+	//	print = SV_ClientPrintf;
 
 	print ("host:    %s\n", Cvar_VariableString ("hostname"));
 	print ("version: %4.2f\n", VERSION);

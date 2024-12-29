@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2010-2014 QuakeSpasm developers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,23 +18,28 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// net_udp.h
 
-int  UDP_Init (void);
+#ifndef __net_udp_h
+#define __net_udp_h
+
+sys_socket_t  UDP_Init (void);
 void UDP_Shutdown (void);
 void UDP_Listen (qboolean state);
-int  UDP_OpenSocket (int port);
-int  UDP_CloseSocket (int socket);
-int  UDP_Connect (int socket, struct qsockaddr *addr);
-int  UDP_CheckNewConnections (void);
-int  UDP_Read (int socket, byte *buf, int len, struct qsockaddr *addr);
-int  UDP_Write (int socket, byte *buf, int len, struct qsockaddr *addr);
-int  UDP_Broadcast (int socket, byte *buf, int len);
-char *UDP_AddrToString (struct qsockaddr *addr);
-int  UDP_StringToAddr (char *string, struct qsockaddr *addr);
-int  UDP_GetSocketAddr (int socket, struct qsockaddr *addr);
+sys_socket_t  UDP_OpenSocket (int port);
+int  UDP_CloseSocket (sys_socket_t socketid);
+int  UDP_Connect (sys_socket_t socketid, struct qsockaddr *addr);
+sys_socket_t  UDP_CheckNewConnections (void);
+int  UDP_Read (sys_socket_t socketid, byte *buf, int len, struct qsockaddr *addr);
+int  UDP_Write (sys_socket_t socketid, byte *buf, int len, struct qsockaddr *addr);
+int  UDP_Broadcast (sys_socket_t socketid, byte *buf, int len);
+const char *UDP_AddrToString (struct qsockaddr *addr);
+int  UDP_StringToAddr (const char *string, struct qsockaddr *addr);
+int  UDP_GetSocketAddr (sys_socket_t socketid, struct qsockaddr *addr);
 int  UDP_GetNameFromAddr (struct qsockaddr *addr, char *name);
-int  UDP_GetAddrFromName (char *name, struct qsockaddr *addr);
+int  UDP_GetAddrFromName (const char *name, struct qsockaddr *addr);
 int  UDP_AddrCompare (struct qsockaddr *addr1, struct qsockaddr *addr2);
 int  UDP_GetSocketPort (struct qsockaddr *addr);
 int  UDP_SetSocketPort (struct qsockaddr *addr, int port);
+
+#endif	/* __net_udp_h */
+

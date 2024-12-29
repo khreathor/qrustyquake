@@ -27,6 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	ZONEID	0x1d4a11
 #define MINFRAGMENT	64
 
+extern inline int min(int x, int y);
+
 typedef struct memblock_s
 {
 	int		size;           // including the header and possibly tiny fragments

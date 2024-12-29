@@ -1,7 +1,6 @@
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
-Copyright (C) 2002-2005 John Fitzgibbons and others
-Copyright (C) 2007-2008 Kristian Duske
+Copyright (C) 2010-2014 QuakeSpasm developers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -19,14 +18,17 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// net_loop.c
 
 #include "quakedef.h"
+#include "q_stdinc.h"
+#include "arch_def.h"
+#include "net_sys.h"
+#include "net_defs.h"
 #include "net_loop.h"
 
-qboolean	localconnectpending = false;
-qsocket_t	*loop_client = NULL;
-qsocket_t	*loop_server = NULL;
+static qboolean	localconnectpending = false;
+static qsocket_t	*loop_client = NULL;
+static qsocket_t	*loop_server = NULL;
 
 int Loop_Init (void)
 {
@@ -64,7 +66,7 @@ void Loop_SearchForHosts (qboolean xmit)
 }
 
 
-qsocket_t *Loop_Connect (char *host)
+qsocket_t *Loop_Connect (const char *host)
 {
 	if (Q_strcmp(host,"local") != 0)
 		return NULL;
@@ -144,7 +146,7 @@ int Loop_GetMessage (qsocket_t *sock)
 	sock->receiveMessageLength -= length;
 
 	if (sock->receiveMessageLength)
-		Q_memcpy(sock->receiveMessage, &sock->receiveMessage[length], sock->receiveMessageLength);
+		memmove (sock->receiveMessage, &sock->receiveMessage[length], sock->receiveMessageLength);
 
 	if (sock->driverdata && ret == 1)
 		((qsocket_t *)sock->driverdata)->canSend = true;
@@ -164,7 +166,7 @@ int Loop_SendMessage (qsocket_t *sock, sizebuf_t *data)
 	bufferLength = &((qsocket_t *)sock->driverdata)->receiveMessageLength;
 
 	if ((*bufferLength + data->cursize + 4) > NET_MAXMESSAGE)
-		Sys_Error("Loop_SendMessage: overflow\n");
+		Sys_Error("Loop_SendMessage: overflow");
 
 	buffer = ((qsocket_t *)sock->driverdata)->receiveMessage + *bufferLength;
 
@@ -245,3 +247,4 @@ void Loop_Close (qsocket_t *sock)
 	else
 		loop_server = NULL;
 }
+

@@ -20,9 +20,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "quakedef.h"
 #include "r_shared.h"
 #include <SDL2/SDL.h>
+#include "net_defs.h"
 
 
 int drawmousemenu = 0;
+
+int serialAvailable = 0;
+int ipxAvailable = 0;
 
 enum {m_none, m_main, m_singleplayer, m_load, m_save, m_multiplayer, m_setup, m_net, m_options, m_video, m_keys, m_new, m_help, m_quit, m_serialconfig, m_modemconfig, m_lanconfig, m_gameoptions, m_search, m_slist} m_state;
 
@@ -2038,6 +2042,7 @@ char	serialConfig_phone[16];
 
 void M_Menu_SerialConfig_f (void)
 {
+	/*
 	int		n;
 	int		port;
 	int		baudrate;
@@ -2074,11 +2079,13 @@ void M_Menu_SerialConfig_f (void)
 
 	m_return_onerror = false;
 	m_return_reason[0] = 0;
+	*/
 }
 
 
 void M_SerialConfig_Draw (void)
 {
+	/*
 	qpic_t	*p;
 	int		basex;
 	char	*startJoin;
@@ -2141,11 +2148,13 @@ void M_SerialConfig_Draw (void)
 
 	if (*m_return_reason)
 		M_PrintWhite (basex, 148, m_return_reason);
+		*/
 }
 
 
 void M_SerialConfig_Key (int key)
 {
+	/*
 	int		l;
 
 	switch (key)
@@ -2314,6 +2323,7 @@ forward:
 			serialConfig_cursor = 5;
 		}
 	  }
+	*/
 }
 
 //=============================================================================
@@ -2330,15 +2340,18 @@ char	modemConfig_hangup [16];
 
 void M_Menu_ModemConfig_f (void)
 {
+	/*
 	key_dest = key_menu;
 	m_state = m_modemconfig;
 	m_entersound = true;
 	(*GetModemConfig) (0, &modemConfig_dialing, modemConfig_clear, modemConfig_init, modemConfig_hangup);
+	*/
 }
 
 
 void M_ModemConfig_Draw (void)
 {
+	/*
 	qpic_t	*p;
 	int		basex;
 
@@ -2375,11 +2388,13 @@ void M_ModemConfig_Draw (void)
 	M_Print (basex+8, modemConfig_cursor_table[4], "OK");
 
 	M_DrawCharacter (basex-8, modemConfig_cursor_table [modemConfig_cursor], 12+((int)(realtime*4)&1));
+	*/
 }
 
 
 void M_ModemConfig_Key (int key)
 {
+	/*
 	int		l;
 
 	switch (key)
@@ -2486,6 +2501,7 @@ void M_ModemConfig_Key (int key)
 			}
 		}
 	}
+*/
 }
 
 //=============================================================================

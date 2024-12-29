@@ -21,8 +21,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 #include "net_vcr.h"
+#include "net_defs.h"
 
-extern int vcrFile;
+int vcrFile;
+int recording;
 
 // This is the playback portion of the VCR.  It reads the file produced
 // by the recorder and plays it back to the host.  The recording contains
@@ -38,6 +40,7 @@ static struct
 
 int VCR_Init (void)
 {
+	/*
 	net_drivers[0].Init = VCR_Init;
 
 	net_drivers[0].SearchForHosts = VCR_SearchForHosts;
@@ -50,6 +53,7 @@ int VCR_Init (void)
 	net_drivers[0].Shutdown = VCR_Shutdown;
 
 	Sys_FileRead(vcrFile, &next, sizeof(next));
+	*/
 	return 0;
 }
 
