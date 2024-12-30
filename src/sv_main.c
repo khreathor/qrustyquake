@@ -20,7 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // sv_main.c -- server main program
 
 #include "quakedef.h"
-#include "net_defs.h"
 
 server_t		sv;
 server_static_t	svs;
@@ -250,7 +249,7 @@ void SV_ConnectClient (int clientnum)
 
 	client = svs.clients + clientnum;
 
-	Con_DPrintf ("Client %s connected\n", client->netconnection->address);
+	//Con_DPrintf ("Client %s connected\n", client->netconnection->address);
 
 	edictnum = clientnum+1;
 

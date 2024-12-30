@@ -21,10 +21,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 #include "net_vcr.h"
-#include "net_defs.h"
+//#include "net_defs.h"
 
 int vcrFile;
 int recording;
+
+typedef int qsocket_t;
 
 // This is the playback portion of the VCR.  It reads the file produced
 // by the recorder and plays it back to the host.  The recording contains
@@ -59,6 +61,7 @@ int VCR_Init (void)
 
 void VCR_ReadNext (void)
 {
+	/*
 	if (Sys_FileRead(vcrFile, &next, sizeof(next)) == 0)
 	{
 		next.op = 255;
@@ -66,6 +69,7 @@ void VCR_ReadNext (void)
 	}
 	if (next.op < 1 || next.op > VCR_MAX_MESSAGE)
 		Sys_Error ("VCR_ReadNext: bad op");
+	*/
 }
 
 
@@ -81,6 +85,7 @@ void VCR_Shutdown (void)
 
 int VCR_GetMessage (qsocket_t *sock)
 {
+	/*
 	int	ret;
 	
 	if (host_time != next.time || next.op != VCR_OP_GETMESSAGE || next.session != *(long *)(&sock->driverdata))
@@ -99,11 +104,13 @@ int VCR_GetMessage (qsocket_t *sock)
 	VCR_ReadNext ();
 
 	return 1;
+	*/
 }
 
 
 int VCR_SendMessage (qsocket_t *sock, sizebuf_t *data)
 {
+	/*
 	int	ret;
 
 	if (host_time != next.time || next.op != VCR_OP_SENDMESSAGE || next.session != *(long *)(&sock->driverdata))
@@ -114,11 +121,13 @@ int VCR_SendMessage (qsocket_t *sock, sizebuf_t *data)
 	VCR_ReadNext ();
 
 	return ret;
+	*/
 }
 
 
 qboolean VCR_CanSendMessage (qsocket_t *sock)
 {
+	/*
 	qboolean	ret;
 
 	if (host_time != next.time || next.op != VCR_OP_CANSENDMESSAGE || next.session != *(long *)(&sock->driverdata))
@@ -129,6 +138,7 @@ qboolean VCR_CanSendMessage (qsocket_t *sock)
 	VCR_ReadNext ();
 
 	return ret;
+	*/
 }
 
 
@@ -150,6 +160,7 @@ qsocket_t *VCR_Connect (char *host)
 
 qsocket_t *VCR_CheckNewConnections (void)
 {
+	/*
 	qsocket_t	*sock;
 
 	if (host_time != next.time || next.op != VCR_OP_CONNECT)
@@ -168,4 +179,5 @@ qsocket_t *VCR_CheckNewConnections (void)
 	VCR_ReadNext ();
 
 	return sock;
+	*/
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 1996-2001 Id Software, Inc.
 Copyright (C) 2010-2014 QuakeSpasm developers
 
 This program is free software; you can redistribute it and/or
@@ -19,10 +19,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
+#include "quakedef.h"
 #include "q_stdinc.h"
 #include "arch_def.h"
 #include "net_sys.h"
-#include "quakedef.h"
 #include "net_defs.h"
 
 #include "net_dgrm.h"
@@ -65,31 +65,56 @@ net_driver_t net_drivers[] =
 
 const int net_numdrivers = Q_COUNTOF(net_drivers);
 
-#include "net_udp.h"
+
+#include "net_wins.h"
+#include "net_wipx.h"
 
 net_landriver_t	net_landrivers[] =
 {
-	{	"UDP",
+	{	"Winsock TCPIP",
 		false,
 		0,
-		UDP_Init,
-		UDP_Shutdown,
-		UDP_Listen,
-		UDP_OpenSocket,
-		UDP_CloseSocket,
-		UDP_Connect,
-		UDP_CheckNewConnections,
-		UDP_Read,
-		UDP_Write,
-		UDP_Broadcast,
-		UDP_AddrToString,
-		UDP_StringToAddr,
-		UDP_GetSocketAddr,
-		UDP_GetNameFromAddr,
-		UDP_GetAddrFromName,
-		UDP_AddrCompare,
-		UDP_GetSocketPort,
-		UDP_SetSocketPort
+		WINS_Init,
+		WINS_Shutdown,
+		WINS_Listen,
+		WINS_OpenSocket,
+		WINS_CloseSocket,
+		WINS_Connect,
+		WINS_CheckNewConnections,
+		WINS_Read,
+		WINS_Write,
+		WINS_Broadcast,
+		WINS_AddrToString,
+		WINS_StringToAddr,
+		WINS_GetSocketAddr,
+		WINS_GetNameFromAddr,
+		WINS_GetAddrFromName,
+		WINS_AddrCompare,
+		WINS_GetSocketPort,
+		WINS_SetSocketPort
+	},
+
+	{	"Winsock IPX",
+		false,
+		0,
+		WIPX_Init,
+		WIPX_Shutdown,
+		WIPX_Listen,
+		WIPX_OpenSocket,
+		WIPX_CloseSocket,
+		WIPX_Connect,
+		WIPX_CheckNewConnections,
+		WIPX_Read,
+		WIPX_Write,
+		WIPX_Broadcast,
+		WIPX_AddrToString,
+		WIPX_StringToAddr,
+		WIPX_GetSocketAddr,
+		WIPX_GetNameFromAddr,
+		WIPX_GetAddrFromName,
+		WIPX_AddrCompare,
+		WIPX_GetSocketPort,
+		WIPX_SetSocketPort
 	}
 };
 

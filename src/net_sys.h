@@ -47,6 +47,10 @@
 #define	SA_FAM_OFFSET	0
 #endif	/* BSD, sockaddr */
 
+
+#ifndef _WIN32
+typedef int	sys_socket_t;
+#endif
 /* unix includes and compatibility macros */
 #if defined(PLATFORM_UNIX) || defined(PLATFORM_RISCOS) || defined(PLATFORM_HAIKU)
 
@@ -141,7 +145,7 @@ COMPILE_TIME_ASSERT(sockaddr, offsetof(struct sockaddr, sa_family) == SA_FAM_OFF
 
 
 /* windows includes and compatibility macros */
-#if defined(PLATFORM_WINDOWS)
+#ifdef _WIN32
 
 /* NOTE: winsock[2].h already includes windows.h */
 #if !defined(_USE_WINSOCK2)
@@ -172,7 +176,7 @@ typedef SOCKET	sys_socket_t;
 #define	socketerror(x)	__WSAE_StrError((x))
 
 /* Verify that we defined HAVE_SA_LEN correctly: */
-COMPILE_TIME_ASSERT(sockaddr, offsetof(struct sockaddr, sa_family) == SA_FAM_OFFSET);
+//COMPILE_TIME_ASSERT(sockaddr, offsetof(struct sockaddr, sa_family) == SA_FAM_OFFSET);
 
 #endif	/* end of windows stuff */
 

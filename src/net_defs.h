@@ -127,7 +127,6 @@ CCREP_RULE_INFO
 #define CCREP_PLAYER_INFO	0x84
 #define CCREP_RULE_INFO		0x85
 
-typedef int sys_socket_t;
 typedef struct qsocket_s
 {
 	struct qsocket_s	*next;
@@ -172,8 +171,8 @@ typedef struct
 	sys_socket_t	(*Init) (void);
 	void		(*Shutdown) (void);
 	void		(*Listen) (qboolean state);
-	sys_socket_t	(*OpenSocket) (int port);
-	int		(*CloseSocket) (sys_socket_t socketid);
+	sys_socket_t	(*Open_Socket) (int port);
+	int		(*Close_Socket) (sys_socket_t socketid);
 	int		(*Connect) (sys_socket_t socketid, struct qsockaddr *addr);
 	sys_socket_t	(*CheckNewConnections) (void);
 	int		(*Read) (sys_socket_t socketid, byte *buf, int len, struct qsockaddr *addr);
@@ -197,7 +196,6 @@ typedef struct
 {
 	const char	*name;
 	qboolean	initialized;
-	sys_socket_t	controlSock;
 	int		(*Init) (void);
 	void		(*Listen) (qboolean state);
 	void		(*SearchForHosts) (qboolean xmit);
