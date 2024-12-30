@@ -448,10 +448,11 @@ void VID_SetMode(int modenum, int customw, int customh, int customwinmode,
 	vid.recalc_refdef = 1;
 	VID_CalcScreenDimensions();
 	VID_SetPalette(palette);
+	int realwidth = vid.width - (vid.width - vid.width / 1.2) * stretchpixels;
 	if (!customw || !customh) {
 		if (modenum <= 2) {
 			SDL_SetWindowFullscreen(window, 0);
-			SDL_SetWindowSize(window, vid.width, vid.height);
+			SDL_SetWindowSize(window, realwidth, vid.height);
 			SDL_SetWindowPosition(window,
 					      SDL_WINDOWPOS_CENTERED,
 					      SDL_WINDOWPOS_CENTERED);
@@ -462,7 +463,7 @@ void VID_SetMode(int modenum, int customw, int customh, int customwinmode,
 	} else {
 		if (customwinmode == 0) {
 			SDL_SetWindowFullscreen(window, 0);
-			SDL_SetWindowSize(window, vid.width, vid.height);
+			SDL_SetWindowSize(window, realwidth, vid.height);
 			SDL_SetWindowPosition(window,
 					      SDL_WINDOWPOS_CENTERED,
 					      SDL_WINDOWPOS_CENTERED);
