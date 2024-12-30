@@ -660,16 +660,19 @@ Each surface has a linked list of its visible spans
 */
 void R_ScanEdges (void)
 {
-	long	iv, bottom;
-	byte	basespans[MAXSPANS*sizeof(espan_t)+CACHE_SIZE];
-	espan_t	*basespan_p;
-	surf_t	*s;
+	long    iv, bottom;
+        surf_t  *s;
 
-	basespan_p = (espan_t *)
-			((long)(basespans + CACHE_SIZE - 1) & ~(CACHE_SIZE - 1));
+	// Align the array itself to the cache size
+	byte basespans[MAXSPANS * sizeof(espan_t) + CACHE_SIZE] __attribute__((aligned(CACHE_SIZE)));
+
+	// Pointer to the aligned base of the spans
+	espan_t *basespan_p = (espan_t *)basespans;
+
+	// No more pointer adjustment needed because the array is aligned
 	max_span_p = &basespan_p[MAXSPANS - r_refdef.vrect.width];
 
-	span_p = basespan_p;
+        span_p = basespan_p;
 
 // clear active edges to just the background edges around the whole screen
 // FIXME: most of this only needs to be set up once

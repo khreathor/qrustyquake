@@ -875,30 +875,32 @@ R_EdgeDrawing
 */
 void R_EdgeDrawing (void)
 {
-	edge_t	ledges[NUMSTACKEDGES +
-				((CACHE_SIZE - 1) / sizeof(edge_t)) + 1];
-	surf_t	lsurfs[NUMSTACKSURFACES +
-				((CACHE_SIZE - 1) / sizeof(surf_t)) + 1];
+	// CyanBun96: windows would crash all over the place with the original
+	// alignment code, this might be compiler-dependent but it works
 
+	// Align the arrays themselves
+	edge_t ledges[NUMSTACKEDGES + ((CACHE_SIZE - 1) / sizeof(edge_t)) + 1] __attribute__((aligned(CACHE_SIZE)));
+	surf_t lsurfs[NUMSTACKSURFACES + ((CACHE_SIZE - 1) / sizeof(surf_t)) + 1] __attribute__((aligned(CACHE_SIZE)));
+
+	// Accessing them directly without pointer adjustment
 	if (auxedges)
 	{
 		r_edges = auxedges;
 	}
 	else
 	{
-		r_edges =  (edge_t *)
-				(((long)&ledges[0] + CACHE_SIZE - 1) & ~(CACHE_SIZE - 1));
+		r_edges = &ledges[0]; // No need to adjust, already aligned
 	}
 
 	if (r_surfsonstack)
 	{
-		surfaces =  (surf_t *)
-				(((long)&lsurfs[0] + CACHE_SIZE - 1) & ~(CACHE_SIZE - 1));
+		surfaces = &lsurfs[0]; // No need to adjust, already aligned
 		surf_max = &surfaces[r_cnumsurfs];
-	// surface 0 doesn't really exist; it's just a dummy because index 0
-	// is used to indicate no edge attached to surface
+
+		// surface 0 doesn't really exist; it's just a dummy because index 0
+		// is used to indicate no edge attached to surface
 		surfaces--;
-		R_SurfacePatch ();
+		R_SurfacePatch();
 	}
 
 	// TODO
