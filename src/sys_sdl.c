@@ -1,7 +1,5 @@
 #include "quakedef.h"
 
-#include <time.h>
-
 qboolean isDedicated;
 
 char *basedir = ".";

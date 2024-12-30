@@ -56,9 +56,11 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
 - Overhaul, modernization and trimming of the source code - removal of dead platforms and platform-specific code in favor of portable, properly formatted and readable code.
 
-- (maybe) Modern mod support
+   - The current codebase is an absolute mess cobbled together from the original release, previous SDL forks and Ironwail's netcode. Heavy work-in-progress.
 
-- (probably not) Windows network fix
+   - The long-term goal for this port keeping it as well-maintained as a 1996 game can be.
+
+- (maybe) Modern mod support
 
 - (definitely not) CD Audio
 
@@ -66,13 +68,11 @@ Contributions of any kind are very welcome. If someone implements CD audio or so
 
 # Building
 
-Linux: cd src && make
+Linux and the likes: cd src && make
 
-Windows: don't.
+Windows: cd src && make -f Makefile.w64
 
-The current windows binary was built with msys2 and is kinda cursed. The network doesn't work at all, for example.
-
-make -f Makefile.w64 if you love pain i guess.
+The windows makefile is for cross-compilation from under Linux, I have no plans of making it buildable under windows.
 
 # Credits
 
