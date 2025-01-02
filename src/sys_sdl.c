@@ -77,10 +77,8 @@ int Sys_FileOpenRead(char *path, int *hndl)
 
 int Sys_FileOpenWrite(char *path)
 {
-#ifndef _WIN32
-	int fd = openat(AT_FDCWD, path, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	int fd = OPENAT(AT_FDCWD, path, O_WRONLY | O_CREAT | O_TRUNC, 0666);
 	return fd;
-#endif
 }
 
 void Sys_FileClose(int handle)
@@ -131,9 +129,7 @@ int Sys_FileTime(char *path)
 
 void Sys_mkdir(char *path)
 {
-#ifndef _WIN32
-	mkdir(path, 0777);
-#endif
+	MKDIR(path);
 }
 
 void Sys_DebugLog(char *file, char *fmt, ...)
@@ -226,6 +222,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine,
 
 int main(int c, char **v)
 {
+	Sys_FileOpenWrite("testfile");
 	double time, oldtime, newtime;
 	quakeparms_t parms;
 	extern int vcrFile;

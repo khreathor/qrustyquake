@@ -67,3 +67,15 @@ void Sys_LowFPPrecision (void);
 void Sys_HighFPPrecision (void);
 void Sys_SetFPCW (void);
 
+#if defined(_WIN32) || defined(_WIN64)
+#define OPENAT(dirfd, path, flags, mode) _open(path, flags, mode)
+#define AT_FDCWD 0 // Not needed on Windows but defined for compatibility
+#else
+#define OPENAT(dirfd, path, flags, mode) openat(dirfd, path, flags, mode)
+#endif
+
+#ifdef _WIN32
+#define MKDIR(path) _mkdir(path)
+#else
+#define MKDIR(path) mkdir(path, 0777)
+#endif
