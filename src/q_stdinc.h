@@ -32,15 +32,6 @@
 #define MICROSOFT_WINDOWS_WINBASE_H_DEFINE_INTERLOCKED_CPLUSPLUS_OVERLOADS 0
 #endif
 
-#include <sys/types.h>
-#include <stddef.h>
-#include <limits.h>
-#ifndef _WIN32 /* others we support without sys/param.h? */
-#include <sys/param.h>
-#endif
-
-#include <stdio.h>
-
 /* NOTES on TYPE SIZES:
    Quake/Hexen II engine relied on 32 bit int type size
    with ILP32 (not LP32) model in mind.  We now support
@@ -56,20 +47,6 @@
    FIXME: Properly replace certain short and int usage
 	  with int16_t and int32_t.
  */
-#if defined(_MSC_VER) && (_MSC_VER < 1600)
-/* MS Visual Studio provides stdint.h only starting with
- * version 2010.  Even in VS2010, there is no inttypes.h.. */
-#include "msinttypes/stdint.h"
-#else
-#include <stdint.h>
-#endif
-
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <float.h>
-#include <SDL2/SDL_endian.h>
-
 
 /*==========================================================================*/
 
@@ -140,20 +117,6 @@ typedef unsigned char		byte;
 /* some structures have qboolean members and the x86 asm code expect
  * those members to be 4 bytes long.  i.e.: qboolean must be 32 bits.  */
 typedef int	qboolean;
-//#undef true
-//#undef false
-#if !defined(__cplusplus)
-#if defined __STDC_VERSION__ && (__STDC_VERSION__ >= 199901L)
-#include <stdbool.h>
-#else
-enum {
-	false = 0,
-	true  = 1
-};
-#endif
-#endif /* */
-COMPILE_TIME_ASSERT(falsehood, ((1 != 1) == false));
-COMPILE_TIME_ASSERT(truth, ((1 == 1) == true));
 COMPILE_TIME_ASSERT(qboolean, sizeof(qboolean) == 4);
 
 /*==========================================================================*/
