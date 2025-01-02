@@ -222,7 +222,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine,
 
 int main(int c, char **v)
 {
-	Sys_FileOpenWrite("testfile");
 	double time, oldtime, newtime;
 	quakeparms_t parms;
 	extern int vcrFile;
