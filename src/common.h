@@ -86,6 +86,21 @@ void InsertLinkAfter (link_t *l, link_t *after);
 
 //============================================================================
 
+#if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+#define host_bigendian 1
+#else
+#define host_bigendian 0
+#endif
+
+#define BigShort(s)    ((short)SDL_SwapBE16((s)))
+#define LittleShort(s) ((short)SDL_SwapLE16((s)))
+#define BigLong(l)     ((int)SDL_SwapBE32((l)))
+#define LittleLong(l)  ((int)SDL_SwapLE32((l)))
+#define BigFloat(f)    SDL_SwapFloatBE((f))
+#define LittleFloat(f) SDL_SwapFloatLE((f))
+
+//============================================================================
+
 extern	qboolean		bigendien;
 
 extern	short	(*BigShort) (short l);
