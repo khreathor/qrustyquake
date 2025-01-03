@@ -114,7 +114,6 @@ override an explicit setting on the original command line.
 
 //============================================================================
 
-
 // ClearLink is used for new headnodes
 void ClearLink (link_t *l)
 {
@@ -134,6 +133,7 @@ void InsertLinkBefore (link_t *l, link_t *before)
 	l->prev->next = l;
 	l->next->prev = l;
 }
+
 void InsertLinkAfter (link_t *l, link_t *after)
 {
 	l->next = after->next;
@@ -239,64 +239,49 @@ float Q_atof(const char *str)
     return (float)(sign * strtod(str, NULL)); // Assume decimal
 }
 
-/*
-==============================================================================
+// =============================================================================
+// Message IO Functions
+// =============================================================================
 
-			MESSAGE IO FUNCTIONS
+// Handles byte ordering and avoids alignment errors
+// CyanBun96: TODO replace with something more modern and less fiddly?
 
-Handles byte ordering and avoids alignment errors
-==============================================================================
-*/
-
-//
 // writing functions
-//
 
 void MSG_WriteChar (sizebuf_t *sb, int c)
 {
-	byte    *buf;
-
 #ifdef PARANOID
 	if (c < -128 || c > 127)
 		Sys_Error ("MSG_WriteChar: range error");
 #endif
-
-	buf = SZ_GetSpace (sb, 1);
+	char *buf = SZ_GetSpace (sb, 1);
 	buf[0] = c;
 }
 
 void MSG_WriteByte (sizebuf_t *sb, int c)
 {
-	byte    *buf;
-
 #ifdef PARANOID
 	if (c < 0 || c > 255)
 		Sys_Error ("MSG_WriteByte: range error");
 #endif
-
-	buf = SZ_GetSpace (sb, 1);
+	unsigned char *buf = SZ_GetSpace (sb, 1);
 	buf[0] = c;
 }
 
 void MSG_WriteShort (sizebuf_t *sb, int c)
 {
-	byte    *buf;
-
 #ifdef PARANOID
 	if (c < ((short)0x8000) || c > (short)0x7fff)
 		Sys_Error ("MSG_WriteShort: range error");
 #endif
-
-	buf = SZ_GetSpace (sb, 2);
+	unsigned char *buf = SZ_GetSpace (sb, 2);
 	buf[0] = c&0xff;
 	buf[1] = c>>8;
 }
 
 void MSG_WriteLong (sizebuf_t *sb, int c)
 {
-	byte    *buf;
-
-	buf = SZ_GetSpace (sb, 4);
+	unsigned char *buf = SZ_GetSpace (sb, 4);
 	buf[0] = c&0xff;
 	buf[1] = (c>>8)&0xff;
 	buf[2] = (c>>16)&0xff;
@@ -310,11 +295,8 @@ void MSG_WriteFloat (sizebuf_t *sb, float f)
 		float   f;
 		int     l;
 	} dat;
-
-
 	dat.f = f;
 	dat.l = LittleLong (dat.l);
-
 	SZ_Write (sb, &dat.l, 4);
 }
 
@@ -352,7 +334,8 @@ void MSG_WriteCoord (sizebuf_t *sb, float f)
 
 void MSG_WriteAngle (sizebuf_t *sb, float f)
 {
-	MSG_WriteByte (sb, Q_rint(f * 256.0 / 360.0) & 255); //johnfitz -- use Q_rint instead of (int)
+	//johnfitz -- use Q_rint instead of (int)
+	MSG_WriteByte (sb, Q_rint(f * 256.0 / 360.0) & 255);
 }
 
 //johnfitz -- for PROTOCOL_FITZQUAKE
@@ -362,11 +345,9 @@ void MSG_WriteAngle16 (sizebuf_t *sb, float f)
 }
 //johnfitz
 
-//
 // reading functions
-//
-int                     msg_readcount;
-qboolean        msg_badread;
+int msg_readcount;
+qboolean msg_badread;
 
 void MSG_BeginReading (void)
 {
@@ -375,73 +356,51 @@ void MSG_BeginReading (void)
 }
 
 // returns -1 and sets msg_badread if no more characters are available
-int MSG_ReadChar (void)
+int MSG_ReadChar ()
 {
-	int     c;
-
 	if (msg_readcount+1 > net_message.cursize)
 	{
 		msg_badread = true;
 		return -1;
 	}
-
-	c = (signed char)net_message.data[msg_readcount];
-	msg_readcount++;
-
-	return c;
+	return (char)net_message.data[msg_readcount++];
 }
 
-int MSG_ReadByte (void)
+int MSG_ReadByte ()
 {
-	int     c;
-
 	if (msg_readcount+1 > net_message.cursize)
 	{
 		msg_badread = true;
 		return -1;
 	}
-
-	c = (unsigned char)net_message.data[msg_readcount];
-	msg_readcount++;
-
-	return c;
+	return (unsigned char)net_message.data[msg_readcount++];
 }
 
 int MSG_ReadShort (void)
 {
-	int     c;
-
 	if (msg_readcount+2 > net_message.cursize)
 	{
 		msg_badread = true;
 		return -1;
 	}
-
-	c = (short)(net_message.data[msg_readcount]
-	+ (net_message.data[msg_readcount+1]<<8));
-
+	int c = (short)(net_message.data[msg_readcount]
+		+ (net_message.data[msg_readcount+1]<<8));
 	msg_readcount += 2;
-
 	return c;
 }
 
 int MSG_ReadLong (void)
 {
-	int     c;
-
 	if (msg_readcount+4 > net_message.cursize)
 	{
 		msg_badread = true;
 		return -1;
 	}
-
-	c = net_message.data[msg_readcount]
-	+ (net_message.data[msg_readcount+1]<<8)
-	+ (net_message.data[msg_readcount+2]<<16)
-	+ (net_message.data[msg_readcount+3]<<24);
-
+	int c = net_message.data[msg_readcount]
+		+ (net_message.data[msg_readcount+1]<<8)
+		+ (net_message.data[msg_readcount+2]<<16)
+		+ (net_message.data[msg_readcount+3]<<24);
 	msg_readcount += 4;
-
 	return c;
 }
 
@@ -453,35 +412,28 @@ float MSG_ReadFloat (void)
 		float   f;
 		int     l;
 	} dat;
-
-	dat.b[0] =      net_message.data[msg_readcount];
-	dat.b[1] =      net_message.data[msg_readcount+1];
-	dat.b[2] =      net_message.data[msg_readcount+2];
-	dat.b[3] =      net_message.data[msg_readcount+3];
+	dat.b[0] = net_message.data[msg_readcount];
+	dat.b[1] = net_message.data[msg_readcount+1];
+	dat.b[2] = net_message.data[msg_readcount+2];
+	dat.b[3] = net_message.data[msg_readcount+3];
 	msg_readcount += 4;
-
 	dat.l = LittleLong (dat.l);
-
 	return dat.f;
 }
 
 char *MSG_ReadString (void)
 {
 	static char     string[2048];
-	int             l,c;
-
-	l = 0;
+	int l = 0;
 	do
 	{
-		c = MSG_ReadChar ();
+		int c = MSG_ReadChar ();
 		if (c == -1 || c == 0)
 			break;
 		string[l] = c;
 		l++;
 	} while (l < sizeof(string)-1);
-
 	string[l] = 0;
-
 	return string;
 }
 
@@ -536,9 +488,6 @@ void SZ_Alloc (sizebuf_t *buf, int startsize)
 
 void SZ_Free (sizebuf_t *buf)
 {
-//      Z_Free (buf->data);
-//      buf->data = NULL;
-//      buf->maxsize = 0;
 	buf->cursize = 0;
 }
 
@@ -549,8 +498,6 @@ void SZ_Clear (sizebuf_t *buf)
 
 void *SZ_GetSpace (sizebuf_t *buf, int length)
 {
-	void    *data;
-
 	if (buf->cursize + length > buf->maxsize)
 	{
 		if (!buf->allowoverflow)
@@ -563,31 +510,24 @@ void *SZ_GetSpace (sizebuf_t *buf, int length)
 		Con_Printf ("SZ_GetSpace: overflow");
 		SZ_Clear (buf);
 	}
-
-	data = buf->data + buf->cursize;
+	void *data = buf->data + buf->cursize;
 	buf->cursize += length;
-
 	return data;
 }
 
 void SZ_Write (sizebuf_t *buf, void *data, int length)
 {
-	Q_memcpy (SZ_GetSpace(buf,length),data,length);
+	Q_memcpy (SZ_GetSpace(buf, length), data, length);
 }
 
 void SZ_Print (sizebuf_t *buf, char *data)
 {
-	int             len;
-
-	len = Q_strlen(data)+1;
-
-// byte * cast to keep VC++ happy
-	if (buf->data[buf->cursize-1])
-		Q_memcpy ((byte *)SZ_GetSpace(buf, len),data,len); // no trailing 0
-	else
-		Q_memcpy ((byte *)SZ_GetSpace(buf, len-1)-1,data,len); // write over trailing 0
+	int len = Q_strlen(data)+1;
+	if (buf->data[buf->cursize-1]) // no trailing 0
+		Q_memcpy (SZ_GetSpace(buf, len), data, len);
+	else // write over trailing 0
+		Q_memcpy (SZ_GetSpace(buf, len-1) - 1, data, len);
 }
-
 
 //============================================================================
 
