@@ -52,6 +52,8 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
 - Mouse sensitivity Y-axis scaling with sensitivityyscale cvar
 
+- FPS counter, scr_showfps 1
+
 # Planned
 
 - Overhaul, modernization and trimming of the source code - removal of dead platforms and platform-specific code in favor of portable, properly formatted and readable code.
@@ -68,11 +70,47 @@ Contributions of any kind are very welcome. If someone implements CD audio or so
 
 # Building
 
-Linux and the likes: cd src && make
+Linux: cd src && make
+
+Other -nixes: cd src && make -f Makefile.freebsd/openbsd/...
 
 Windows: cd src && make -f Makefile.w64
 
 The windows makefile is for cross-compilation from under Linux, I have no plans of making it buildable under windows.
+
+# Successful builds
+
+x86_64 unless specified otherwise.
+
+VM is VirtualBox unless specified otherwise.
+
+- Arch Linux [HW]
+
+   - The main platform that this port is developed on. The most likely one to work
+
+   - Other Linuxes not tested yet, but should be the same with the gcc/make toolchain
+
+   - TODO other compilers, Alpine
+
+- FreeBSD [VM]
+
+   - Seemingly perfect, though the audio sample rate sounds too high
+
+- OpenBSD [VM, HW]
+
+   - The sound is crackly both on VM and HW for some reason
+
+- Ubuntu [HW, MangoPi MQ Pro, RISC-V]
+
+   - Works just fine at a playable framerate (20-30~ FPS)
+
+- Android [HW, Termux, AARCH64]
+
+   - Ran through X11 with touch controls. *unpleasant*
+
+- Windows [VM, HW]
+
+   - Tested with w10 on hardware and w11 on a VM
 
 # Credits
 
@@ -81,5 +119,7 @@ This port started out as a fork of https://github.com/atsb/sdlwinquake
 Which was a fork of another fork. It's forks all the way down...
 
 Features some fixes from Quakespasm and other ports. I wasn't the one to implement them, but will try and give credit as I peruse the source further.
+
+A lot of code is adapted from Ironwail. Most of the netcode is a direct copy, other chunks are adapted with minor changes.
 
 --CyanBun96 <3
