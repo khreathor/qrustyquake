@@ -5,7 +5,7 @@ float mouse_x;
 float mouse_y;
 int mouse_oldbuttonstate;
 
-void Sys_SendKeyEvents(void)
+void Sys_SendKeyEvents()
 {
 	SDL_Event event;
 	int sym, state;
@@ -237,7 +237,7 @@ void Sys_SendKeyEvents(void)
 	}
 }
 
-void IN_Init(void)
+void IN_Init()
 {
 	if (COM_CheckParm("-nomouse"))
 		return;
@@ -245,12 +245,12 @@ void IN_Init(void)
 	mouse_avail = 1;
 }
 
-void IN_Shutdown(void)
+void IN_Shutdown()
 {
 	mouse_avail = 0;
 }
 
-void IN_Commands(void)
+void IN_Commands()
 {
 	int i;
 	int mouse_buttonstate;

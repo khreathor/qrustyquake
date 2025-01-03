@@ -1,12 +1,11 @@
 #include "quakedef.h"
 
-qboolean isDedicated;
-
 char *basedir = ".";
+FILE *sys_handles[MAX_HANDLES];
 
-// =======================================================================
+// =============================================================================
 // General routines
-// =======================================================================
+// =============================================================================
 
 void Sys_Printf(char *fmt, ...)
 {
@@ -18,7 +17,7 @@ void Sys_Printf(char *fmt, ...)
 	fprintf(stderr, "%s", text);
 }
 
-void Sys_Quit(void)
+void Sys_Quit()
 {
 	Host_Shutdown();
 	exit(0);
@@ -36,15 +35,23 @@ void Sys_Error(char *error, ...)
 	exit(1);
 }
 
-/*
-===============================================================================
-FILE IO
-===============================================================================
-*/
-#define	MAX_HANDLES 10
-FILE *sys_handles[MAX_HANDLES];
+void Sys_DebugLog(char *file, char *fmt, ...)
+{
+	va_list argptr;
+	static char data[1024];
+	va_start(argptr, fmt);
+	vsprintf(data, fmt, argptr);
+	va_end(argptr);
+	FILE *fp = fopen(file, "a");
+	fwrite(data, strlen(data), 1, fp);
+	fclose(fp);
+}
 
-int findhandle(void)
+// =============================================================================
+// File IO
+// =============================================================================
+
+int findhandle()
 {
 	for (int i = 1; i < MAX_HANDLES; i++)
 		if (!sys_handles[i])
@@ -77,44 +84,33 @@ int Sys_FileOpenRead(char *path, int *hndl)
 
 int Sys_FileOpenWrite(char *path)
 {
-	int fd = OPENAT(AT_FDCWD, path, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-	return fd;
+	int i = findhandle();
+	FILE *f = fopen(path, "wb");
+	if (!f)
+		Sys_Error("Error opening %s: %s", path, strerror(errno));
+	sys_handles[i] = f;
+	return i;
 }
 
 void Sys_FileClose(int handle)
 {
-	if (handle >= 0) {
-		close((long)sys_handles[handle]);
-		sys_handles[handle] = NULL;
-	}
+	fclose(sys_handles[handle]);
+	sys_handles[handle] = NULL;
 }
 
 void Sys_FileSeek(int handle, int position)
 {
-	if (handle >= 0)
-		fseek(sys_handles[handle], position, SEEK_SET);
+	fseek(sys_handles[handle], position, SEEK_SET);
 }
 
 int Sys_FileRead(int handle, void *dst, int count)
 {
-	int size = 0;
-	if (handle >= 0) {
-		char *data = dst;
-		while (count > 0) {
-			int done = fread(data, 1, count, sys_handles[handle]);
-			if (done == 0)
-				break;
-			data += done;
-			count -= done;
-			size += done;
-		}
-	}
-	return size;
+	return fread(dst, 1, count, sys_handles[handle]);
 }
 
 int Sys_FileWrite(int handle, void *src, int count)
 {
-	return write(handle, src, count);
+	return fwrite(src, 1, count, sys_handles[handle]);
 }
 
 int Sys_FileTime(char *path)
@@ -129,22 +125,14 @@ int Sys_FileTime(char *path)
 
 void Sys_mkdir(char *path)
 {
-	MKDIR(path);
+#ifdef _WIN32
+	_mkdir(path);
+#else
+	mkdir(path, 0777);
+#endif
 }
 
-void Sys_DebugLog(char *file, char *fmt, ...)
-{
-	va_list argptr;
-	static char data[1024];
-	va_start(argptr, fmt);
-	vsprintf(data, fmt, argptr);
-	va_end(argptr);
-	FILE *fp = fopen(file, "a");
-	fwrite(data, strlen(data), 1, fp);
-	fclose(fp);
-}
-
-double Sys_FloatTime(void)
+double Sys_FloatTime()
 {
 #ifdef _WIN32
 	static int starttime = 0;
@@ -176,11 +164,6 @@ byte *Sys_ZoneBase(int *size)
 			}
 	}
 	return malloc(*size);
-}
-
-void Sys_Sleep(void)
-{
-	SDL_Delay(1);
 }
 
 #ifdef _WIN32
@@ -227,8 +210,16 @@ int main(int c, char **v)
 	extern int vcrFile;
 	extern int recording;
 
+	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
+		Sys_Error("SDL_Init failed: %s", SDL_GetError());
+
 	signal(SIGFPE, SIG_IGN);
-	parms.memsize = 1024 * 1024 * 256;
+	parms.memsize = DEFAULT_MEMORY;
+	if (COM_CheckParm("-heapsize"))	{
+		int t = COM_CheckParm("-heapsize") + 1;
+		if (t < c)
+			parms.memsize = Q_atoi(v[t]) * 1024;
+	}
 	parms.membase = malloc(parms.memsize);
 	parms.basedir = basedir;
 	// Disable cache, else it looks in the cache for config.cfg.

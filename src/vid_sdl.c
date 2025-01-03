@@ -139,8 +139,6 @@ void VID_Init(unsigned char *palette)
 	Cvar_RegisterVariable(&scr_stretchpixels);
 	Cvar_RegisterVariable(&newoptions);
 
-	if (SDL_Init(SDL_INIT_VIDEO) < 0)
-		Sys_Error("VID: Couldn't load SDL: %s", SDL_GetError());
 	// Set up display mode (width and height)
 	vid.maxwarpwidth = WARP_WIDTH;
 	vid.maxwarpheight = WARP_HEIGHT;

@@ -77,6 +77,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define UNALIGNED_OK	0
 #endif
 
+#define DEFAULT_MEMORY (128 * 1024 * 1024)
 // !!! if this is changed, it must be changed in d_ifacea.h too !!!
 #define CACHE_SIZE	32	// used to align key data structures
 
@@ -276,6 +277,7 @@ typedef struct {
 extern SDL_Window *window;	// global for checking windowed state in options
 extern Uint32 SDLWindowFlags;
 extern qboolean noclip_anglehack;
+
 
 //
 // host
