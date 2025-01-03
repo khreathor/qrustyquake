@@ -206,9 +206,9 @@ void Sys_SendKeyEvents()
 				sym = 0;
 			Key_Event(sym, state);
 			break;
-		// WinQuake behavior: Use Mouse OFF disables mouse input entirely
-		// ON grabs the mouse, kinda like SetRelativeMouseMode(SDL_TRUE)
-		// Fullscreen grabs the mouse unconditionally
+			// WinQuake behavior: Use Mouse OFF disables mouse input entirely
+			// ON grabs the mouse, kinda like SetRelativeMouseMode(SDL_TRUE)
+			// Fullscreen grabs the mouse unconditionally
 		case SDL_MOUSEMOTION:
 			if ((event.motion.x != ((int)vid.width / 2)) ||
 			    (event.motion.y != ((int)vid.height / 2))) {
@@ -309,4 +309,3 @@ void IN_Move(usercmd_t *cmd)
 	}
 	mouse_x = mouse_y = 0.0;
 }
-

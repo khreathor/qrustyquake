@@ -9,12 +9,13 @@
 #define MAX_MODEDESCS (MAX_COLUMN_SIZE * 3)
 #define NO_MODE -1
 
-unsigned int oldmodes[NUM_OLDMODES*2] = {
-	320, 240,	640, 480,	800, 600,
-	320, 200,	320, 240,	640, 350,
-	640, 400,	640, 480,	800, 600
+unsigned int oldmodes[NUM_OLDMODES * 2] = {
+	320, 240, 640, 480, 800, 600,
+	320, 200, 320, 240, 640, 350,
+	640, 400, 640, 480, 800, 600
 };
-char modelist[NUM_OLDMODES][8]; // "320x240" etc. for menus
+
+char modelist[NUM_OLDMODES][8];	// "320x240" etc. for menus
 SDL_Window *window;
 SDL_Surface *windowSurface;
 SDL_Renderer *renderer;
@@ -42,10 +43,10 @@ int vid_realmode;
 int vid_default;
 double vid_testendtime;
 unsigned short d_8to16table[256];
-unsigned char vid_curpal[256 * 3]; // save for mode changes
+unsigned char vid_curpal[256 * 3];	// save for mode changes
 qboolean vid_initialized;
 qboolean palette_changed;
-viddef_t vid; // global video state
+viddef_t vid;			// global video state
 
 cvar_t vid_mode = { "vid_mode", "0", 0, 0, 0, 0 };
 cvar_t _vid_default_mode_win = { "_vid_default_mode_win", "3", 1, 0, 0, 0 };
@@ -100,9 +101,8 @@ int VID_DetermineMode()
 	int win = !(SDLWindowFlags & (SDL_WINDOW_FULLSCREEN
 				      | SDL_WINDOW_FULLSCREEN_DESKTOP));
 	for (int i = 0; i < NUM_OLDMODES; ++i) {
-		if (i > 2 ? !win : win
-			&& vid.width == oldmodes[i*2]
-			&& vid.height == oldmodes[i*2+1])
+		if (i > 2 ? !win : win && vid.width == oldmodes[i * 2]
+		    && vid.height == oldmodes[i * 2 + 1])
 			return i;
 	}
 	return -1;
@@ -147,8 +147,8 @@ void VID_Init(unsigned char *palette)
 	winmode = 0;
 	defmode = VID_GetDefaultMode();
 	if (defmode >= 0 && defmode < NUM_OLDMODES) {
-		vid.width = oldmodes[defmode*2];
-		vid.height = oldmodes[defmode*2+1];
+		vid.width = oldmodes[defmode * 2];
+		vid.height = oldmodes[defmode * 2 + 1];
 		winmode = defmode < 3;
 	}
 	if ((pnum = COM_CheckParm("-winsize"))) {
@@ -199,7 +199,7 @@ void VID_Init(unsigned char *palette)
 		force_old_render = 0;
 	if (COM_CheckParm("-vimmode"))
 		vimmode = 1;
-	if (vid.width > 1280 || vid.height > 1024) 
+	if (vid.width > 1280 || vid.height > 1024)
 		Sys_Printf("vanilla maximum resolution is 1280x1024\n");
 	if (COM_CheckParm("-stretchpixels")
 	    || vid.height == 200 || vid.height == 400)
@@ -209,8 +209,8 @@ void VID_Init(unsigned char *palette)
 	Cvar_SetValue("scr_stretchpixels", stretchpixels);
 	realwidth = vid.width - (vid.width - vid.width / 1.2) * stretchpixels;
 	window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED,
-						SDL_WINDOWPOS_CENTERED,
-						realwidth, vid.height, flags);
+				  SDL_WINDOWPOS_CENTERED,
+				  realwidth, vid.height, flags);
 	screen = SDL_CreateRGBSurfaceWithFormat(0,
 						vid.width,
 						vid.height,
@@ -219,22 +219,22 @@ void VID_Init(unsigned char *palette)
 	renderer = SDL_CreateRenderer(window, -1, 0);
 	if (!force_old_render) {
 		argbbuffer = SDL_CreateRGBSurfaceWithFormatFrom(NULL,
-						vid.width,
-						vid.height,
-						0,
-						0,
-						SDL_PIXELFORMAT_ARGB8888);
+								vid.width,
+								vid.height,
+								0,
+								0,
+								SDL_PIXELFORMAT_ARGB8888);
 		texture = SDL_CreateTexture(renderer,
-						SDL_PIXELFORMAT_ARGB8888,
-						SDL_TEXTUREACCESS_STREAMING,
-						vid.width, vid.height);
+					    SDL_PIXELFORMAT_ARGB8888,
+					    SDL_TEXTUREACCESS_STREAMING,
+					    vid.width, vid.height);
 	} else {
 		scaleBuffer = SDL_CreateRGBSurfaceWithFormat(0,
-						vid.width,
-						vid.height,
-						8,
-						SDL_GetWindowPixelFormat
-						(window));
+							     vid.width,
+							     vid.height,
+							     8,
+							     SDL_GetWindowPixelFormat
+							     (window));
 	}
 	windowSurface = SDL_GetWindowSurface(window);
 	VID_CalcScreenDimensions();
@@ -376,7 +376,7 @@ char *VID_GetModeDescription(int mode)
 	static char pinfo[40];
 	if ((mode < 0) || (mode >= NUM_OLDMODES))
 		sprintf(pinfo, "Custom fullscreen");
-	else if (mode >= 3) 
+	else if (mode >= 3)
 		sprintf(pinfo, "%s fullscreen", modelist[mode]);
 	else
 		sprintf(pinfo, "%s windowed", modelist[mode]);
@@ -398,7 +398,7 @@ void VID_AllocBuffers()
 }
 
 void VID_SetMode(int modenum, int customw, int customh, int customwinmode,
-		   unsigned char *palette)
+		 unsigned char *palette)
 {
 	if (modenum == vid_modenum)
 		return;
@@ -407,8 +407,8 @@ void VID_SetMode(int modenum, int customw, int customh, int customwinmode,
 		vid.height = customh;
 		vid_modenum = -1;
 	} else {
-		vid.width = oldmodes[modenum*2];
-		vid.height = oldmodes[modenum*2+1];
+		vid.width = oldmodes[modenum * 2];
+		vid.height = oldmodes[modenum * 2 + 1];
 		stretchpixels = modenum == 3 || modenum == 6;
 		Cvar_SetValue("scr_stretchpixels", stretchpixels);
 		vid_modenum = modenum;
@@ -420,19 +420,22 @@ void VID_SetMode(int modenum, int customw, int customh, int customwinmode,
 	if (!force_old_render) {
 		SDL_FreeSurface(argbbuffer);
 		argbbuffer = SDL_CreateRGBSurfaceWithFormatFrom(NULL,
-						vid.width, vid.height, 0, 0,
-						SDL_PIXELFORMAT_ARGB8888);
+								vid.width,
+								vid.height, 0,
+								0,
+								SDL_PIXELFORMAT_ARGB8888);
 		SDL_DestroyTexture(texture);
 		texture = SDL_CreateTexture(renderer,
-						SDL_PIXELFORMAT_ARGB8888,
-						SDL_TEXTUREACCESS_STREAMING,
-						vid.width, vid.height);
+					    SDL_PIXELFORMAT_ARGB8888,
+					    SDL_TEXTUREACCESS_STREAMING,
+					    vid.width, vid.height);
 	} else {
 		SDL_FreeSurface(scaleBuffer);
 		scaleBuffer = SDL_CreateRGBSurfaceWithFormat(0,
-						vid.width, vid.height, 8,
-						SDL_GetWindowPixelFormat
-						(window));
+							     vid.width,
+							     vid.height, 8,
+							     SDL_GetWindowPixelFormat
+							     (window));
 	}
 	VGA_width = vid.conwidth = vid.width;
 	VGA_height = vid.conheight = vid.height;
@@ -446,7 +449,8 @@ void VID_SetMode(int modenum, int customw, int customh, int customwinmode,
 	vid.recalc_refdef = 1;
 	VID_CalcScreenDimensions();
 	VID_SetPalette(palette);
-	int realwidth = vid.width - (vid.width - vid.width / 1.2) * stretchpixels;
+	int realwidth =
+	    vid.width - (vid.width - vid.width / 1.2) * stretchpixels;
 	if (!customw || !customh) {
 		if (modenum <= 2) {
 			SDL_SetWindowFullscreen(window, 0);

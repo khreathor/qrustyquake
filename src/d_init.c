@@ -24,35 +24,34 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define NUM_MIPS	4
 
-cvar_t	d_subdiv16 = {"d_subdiv16", "1"};
-cvar_t	d_mipcap = {"d_mipcap", "0"};
-cvar_t	d_mipscale = {"d_mipscale", "1"};
+cvar_t d_subdiv16 = { "d_subdiv16", "1" };
+cvar_t d_mipcap = { "d_mipcap", "0" };
+cvar_t d_mipscale = { "d_mipscale", "1" };
 
-surfcache_t		*d_initial_rover;
-qboolean		d_roverwrapped;
-int				d_minmip;
-float			d_scalemip[NUM_MIPS-1];
+surfcache_t *d_initial_rover;
+qboolean d_roverwrapped;
+int d_minmip;
+float d_scalemip[NUM_MIPS - 1];
 
-static float	basemip[NUM_MIPS-1] = {1.0, 0.5*0.8, 0.25*0.8};
+static float basemip[NUM_MIPS - 1] = { 1.0, 0.5 * 0.8, 0.25 * 0.8 };
 
-extern int			d_aflatcolor;
+extern int d_aflatcolor;
 
-void (*d_drawspans) (espan_t *pspan);
-
+void (*d_drawspans)(espan_t * pspan);
 
 /*
 ===============
 D_Init
 ===============
 */
-void D_Init (void)
+void D_Init(void)
 {
 
 	r_skydirect = 1;
 
-	Cvar_RegisterVariable (&d_subdiv16);
-	Cvar_RegisterVariable (&d_mipcap);
-	Cvar_RegisterVariable (&d_mipscale);
+	Cvar_RegisterVariable(&d_subdiv16);
+	Cvar_RegisterVariable(&d_mipcap);
+	Cvar_RegisterVariable(&d_mipscale);
 
 	r_drawpolys = false;
 	r_worldpolysbacktofront = false;
@@ -61,13 +60,12 @@ void D_Init (void)
 	r_aliasuvscale = 1.0;
 }
 
-
 /*
 ===============
 D_CopyRects
 ===============
 */
-void D_CopyRects (vrect_t *prects, int transparent)
+void D_CopyRects(vrect_t *prects, int transparent)
 {
 
 // this function is only required if the CPU doesn't have direct access to the
@@ -80,51 +78,47 @@ void D_CopyRects (vrect_t *prects, int transparent)
 	UNUSED(transparent);
 }
 
-
 /*
 ===============
 D_EnableBackBufferAccess
 ===============
 */
-void D_EnableBackBufferAccess (void)
+void D_EnableBackBufferAccess(void)
 {
 }
-
 
 /*
 ===============
 D_TurnZOn
 ===============
 */
-void D_TurnZOn (void)
+void D_TurnZOn(void)
 {
 // not needed for software version
 }
-
 
 /*
 ===============
 D_DisableBackBufferAccess
 ===============
 */
-void D_DisableBackBufferAccess (void)
+void D_DisableBackBufferAccess(void)
 {
 }
-
 
 /*
 ===============
 D_SetupFrame
 ===============
 */
-void D_SetupFrame (void)
+void D_SetupFrame(void)
 {
-	int		i;
+	int i;
 
 	if (r_dowarp)
 		d_viewbuffer = r_warpbuffer;
 	else
-		d_viewbuffer = (void *)(byte *)vid.buffer;
+		d_viewbuffer = (void *)(byte *) vid.buffer;
 
 	if (r_dowarp)
 		screenwidth = WARP_WIDTH;
@@ -140,25 +134,23 @@ void D_SetupFrame (void)
 	else if (d_minmip < 0)
 		d_minmip = 0;
 
-	for (i=0 ; i<(NUM_MIPS-1) ; i++)
+	for (i = 0; i < (NUM_MIPS - 1); i++)
 		d_scalemip[i] = basemip[i] * d_mipscale.value;
 
-				d_drawspans = D_DrawSpans8;
+	d_drawspans = D_DrawSpans8;
 
 	d_aflatcolor = 0;
 }
-
 
 /*
 ===============
 D_UpdateRects
 ===============
 */
-void D_UpdateRects (vrect_t *prect)
+void D_UpdateRects(vrect_t *prect)
 {
 
 // the software driver draws these directly to the vid buffer
 
 	UNUSED(prect);
 }
-

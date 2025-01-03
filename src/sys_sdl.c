@@ -215,7 +215,7 @@ int main(int c, char **v)
 
 	signal(SIGFPE, SIG_IGN);
 	parms.memsize = DEFAULT_MEMORY;
-	if (COM_CheckParm("-heapsize"))	{
+	if (COM_CheckParm("-heapsize")) {
 		int t = COM_CheckParm("-heapsize") + 1;
 		if (t < c)
 			parms.memsize = Q_atoi(v[t]) * 1024;

@@ -22,29 +22,28 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "quakedef.h"
 #include "d_local.h"
 
-int	d_vrectx, d_vrecty, d_vrectright_particle, d_vrectbottom_particle;
+int d_vrectx, d_vrecty, d_vrectright_particle, d_vrectbottom_particle;
 
-int	d_y_aspect_shift, d_pix_min, d_pix_max, d_pix_shift;
+int d_y_aspect_shift, d_pix_min, d_pix_max, d_pix_shift;
 
-int		d_scantable[MAXHEIGHT];
-short	*zspantable[MAXHEIGHT]; 
+int d_scantable[MAXHEIGHT];
+short *zspantable[MAXHEIGHT];
 
 /*
 ================
 D_Patch
 ================
 */
-void D_Patch (void)
+void D_Patch(void)
 {
 }
-
 
 /*
 ================
 D_ViewChanged
 ================
 */
-void D_ViewChanged (void)
+void D_ViewChanged(void)
 {
 	int rowbytes;
 
@@ -78,18 +77,16 @@ void D_ViewChanged (void)
 	d_vrecty = r_refdef.vrect.y;
 	d_vrectright_particle = r_refdef.vrectright - d_pix_max;
 	d_vrectbottom_particle =
-			r_refdef.vrectbottom - (d_pix_max << d_y_aspect_shift);
+	    r_refdef.vrectbottom - (d_pix_max << d_y_aspect_shift);
 
 	{
-		int		i;
+		int i;
 
-		for (i=0 ; i<vid.height; i++)
-		{
-			d_scantable[i] = i*rowbytes;
-			zspantable[i] = d_pzbuffer + i*d_zwidth;
+		for (i = 0; i < vid.height; i++) {
+			d_scantable[i] = i * rowbytes;
+			zspantable[i] = d_pzbuffer + i * d_zwidth;
 		}
 	}
 
-	D_Patch ();
+	D_Patch();
 }
-
