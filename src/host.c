@@ -657,14 +657,6 @@ void Host_Frame(float time)
 
 //============================================================================
 
-extern int vcrFile;
-#define	VCR_SIGNATURE	0x56435231
-
-void Host_InitVCR(quakeparms_t *parms)
-{
-	//TODO REMOVE ME
-}
-
 void Host_Init(quakeparms_t *parms)
 {
 	minimum_memory = standard_quake?MINIMUM_MEMORY:MINIMUM_MEMORY_LEVELPAK;
