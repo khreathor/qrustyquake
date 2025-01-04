@@ -55,34 +55,23 @@ jmp_buf host_abortserver;
 byte *host_basepal;
 byte *host_colormap;
 
-cvar_t host_framerate = { "host_framerate", "0" };	// set for slow motion
-cvar_t host_speeds = { "host_speeds", "0" };	// set for running times
+cvar_t host_framerate = { "host_framerate", "0", false, false, 0, NULL };
+cvar_t host_speeds = { "host_speeds", "0", false, false, 0, NULL };
+cvar_t sys_ticrate = { "sys_ticrate", "0.05", false, false, 0, NULL };
+cvar_t serverprofile = { "serverprofile", "0", false, false, 0, NULL };
+cvar_t fraglimit = { "fraglimit", "0", false, true, 0, NULL };
+cvar_t timelimit = { "timelimit", "0", false, true, 0, NULL };
+cvar_t teamplay = { "teamplay", "0", false, true, 0, NULL };
+cvar_t samelevel = { "samelevel", "0", false, false, 0, NULL };
+cvar_t noexit = { "noexit", "0", false, true, 0, NULL };
+cvar_t developer = { "developer", "0", false, false, 0, NULL };
+cvar_t skill = { "skill", "1", false, false, 0, NULL };
+cvar_t deathmatch = { "deathmatch", "0", false, false, 0, NULL };
+cvar_t coop = { "coop", "0", false, false, 0, NULL };
+cvar_t pausable = { "pausable", "1", false, false, 0, NULL };
+cvar_t temp1 = { "temp1", "0", false, false, 0, NULL };
 
-cvar_t sys_ticrate = { "sys_ticrate", "0.05" };
-cvar_t serverprofile = { "serverprofile", "0" };
-
-cvar_t fraglimit = { "fraglimit", "0", false, true };
-cvar_t timelimit = { "timelimit", "0", false, true };
-cvar_t teamplay = { "teamplay", "0", false, true };
-
-cvar_t samelevel = { "samelevel", "0" };
-cvar_t noexit = { "noexit", "0", false, true };
-
-#ifdef QUAKE2
-cvar_t developer = { "developer", "1" };	// should be 0 for release!
-#else
-cvar_t developer = { "developer", "0" };
-#endif
-
-cvar_t skill = { "skill", "1" };	// 0 - 3
-cvar_t deathmatch = { "deathmatch", "0" };	// 0, 1, or 2
-cvar_t coop = { "coop", "0" };	// 0 or 1
-
-cvar_t pausable = { "pausable", "1" };
-
-cvar_t temp1 = { "temp1", "0" };
-
-extern void IN_MLookDown(void);
+extern void IN_MLookDown();
 /*
 ================
 Host_EndGame
@@ -155,7 +144,7 @@ void Host_Error(char *error, ...)
 Host_FindMaxClients
 ================
 */
-void Host_FindMaxClients(void)
+void Host_FindMaxClients()
 {
 	int i;
 
@@ -203,7 +192,7 @@ void Host_FindMaxClients(void)
 Host_InitLocal
 ======================
 */
-void Host_InitLocal(void)
+void Host_InitLocal()
 {
 	Host_InitCommands();
 
@@ -239,7 +228,7 @@ Host_WriteConfiguration
 Writes key bindings and archived cvars to config.cfg
 ===============
 */
-void Host_WriteConfiguration(void)
+void Host_WriteConfiguration()
 {
 	FILE *f;
 
@@ -396,7 +385,7 @@ void Host_ShutdownServer(qboolean crash)
 	int i;
 	int count;
 	sizebuf_t buf;
-	char message[4];
+	unsigned char message[4];
 	double start;
 
 	if (!sv.active)
@@ -464,7 +453,7 @@ This clears all the memory used by both the client and server, but does
 not reinitialize anything.
 ================
 */
-void Host_ClearMemory(void)
+void Host_ClearMemory()
 {
 	Con_DPrintf("Clearing memory\n");
 	D_FlushCaches();
@@ -514,54 +503,7 @@ Host_ServerFrame
 
 ==================
 */
-#ifdef FPS_20
-
-void _Host_ServerFrame(void)
-{
-// run the world state  
-	pr_global_struct->frametime = host_frametime;
-
-// read client messages
-	SV_RunClients();
-
-// move things around and think
-// always pause in single player if in console or menus
-	if (!sv.paused && (svs.maxclients > 1 || key_dest == key_game))
-		SV_Physics();
-}
-
-void Host_ServerFrame(void)
-{
-	float save_host_frametime;
-	float temp_host_frametime;
-
-// run the world state  
-	pr_global_struct->frametime = host_frametime;
-
-// set the time and clear the general datagram
-	SV_ClearDatagram();
-
-// check for new clients
-	SV_CheckForNewClients();
-
-	temp_host_frametime = save_host_frametime = host_frametime;
-	while (temp_host_frametime > (1.0 / 72.0)) {
-		if (temp_host_frametime > 0.05)
-			host_frametime = 0.05;
-		else
-			host_frametime = temp_host_frametime;
-		temp_host_frametime -= host_frametime;
-		_Host_ServerFrame();
-	}
-	host_frametime = save_host_frametime;
-
-// send all messages to the clients
-	SV_SendClientMessages();
-}
-
-#else
-
-void Host_ServerFrame(void)
+void Host_ServerFrame()
 {
 // run the world state  
 	pr_global_struct->frametime = host_frametime;
@@ -583,8 +525,6 @@ void Host_ServerFrame(void)
 // send all messages to the clients
 	SV_SendClientMessages();
 }
-
-#endif
 
 /*
 ==================
@@ -719,94 +659,29 @@ void Host_Frame(float time)
 
 extern int vcrFile;
 #define	VCR_SIGNATURE	0x56435231
-// "VCR1"
 
 void Host_InitVCR(quakeparms_t *parms)
 {
-	int i, len, n;
-	char *p;
-
-	if (COM_CheckParm("-playback")) {
-		if (com_argc != 2)
-			Sys_Error
-			    ("No other parameters allowed with -playback\n");
-
-		Sys_FileOpenRead("quake.vcr", &vcrFile);
-		if (vcrFile == -1)
-			Sys_Error("playback file not found\n");
-
-		Sys_FileRead(vcrFile, &i, sizeof(int));
-		if (i != VCR_SIGNATURE)
-			Sys_Error("Invalid signature in vcr file\n");
-
-		Sys_FileRead(vcrFile, &com_argc, sizeof(int));
-		com_argv = malloc(com_argc * sizeof(char *));
-		com_argv[0] = parms->argv[0];
-		for (i = 0; i < com_argc; i++) {
-			Sys_FileRead(vcrFile, &len, sizeof(int));
-			p = malloc(len);
-			Sys_FileRead(vcrFile, p, len);
-			com_argv[i + 1] = p;
-		}
-		com_argc++;	/* add one for arg[0] */
-		parms->argc = com_argc;
-		parms->argv = com_argv;
-	}
-
-	if ((n = COM_CheckParm("-record")) != 0) {
-		vcrFile = Sys_FileOpenWrite("quake.vcr");
-
-		i = VCR_SIGNATURE;
-		Sys_FileWrite(vcrFile, &i, sizeof(int));
-		i = com_argc - 1;
-		Sys_FileWrite(vcrFile, &i, sizeof(int));
-		for (i = 1; i < com_argc; i++) {
-			if (i == n) {
-				len = 10;
-				Sys_FileWrite(vcrFile, &len, sizeof(int));
-				Sys_FileWrite(vcrFile, "-playback", len);
-				continue;
-			}
-			len = Q_strlen(com_argv[i]) + 1;
-			Sys_FileWrite(vcrFile, &len, sizeof(int));
-			Sys_FileWrite(vcrFile, com_argv[i], len);
-		}
-	}
-
+	//TODO REMOVE ME
 }
 
-/*
-====================
-Host_Init
-====================
-*/
 void Host_Init(quakeparms_t *parms)
 {
-
-	if (standard_quake)
-		minimum_memory = MINIMUM_MEMORY;
-	else
-		minimum_memory = MINIMUM_MEMORY_LEVELPAK;
-
+	minimum_memory = standard_quake?MINIMUM_MEMORY:MINIMUM_MEMORY_LEVELPAK;
 	if (COM_CheckParm("-minmemory"))
 		parms->memsize = minimum_memory;
-
 	host_parms = *parms;
-
 	if (parms->memsize < minimum_memory)
 		Sys_Error
 		    ("Only %4.1f megs of memory available, can't execute game",
 		     parms->memsize / (float)0x100000);
-
 	com_argc = parms->argc;
 	com_argv = parms->argv;
-
 	Memory_Init(parms->membase, parms->memsize);
 	Cbuf_Init();
 	Cmd_Init();
 	V_Init();
 	Chase_Init();
-	Host_InitVCR(parms);
 	COM_Init(parms->basedir);
 	Host_InitLocal();
 	W_LoadWadFile("gfx.wad");
@@ -817,12 +692,9 @@ void Host_Init(quakeparms_t *parms)
 	Mod_Init();
 	NET_Init();
 	SV_Init();
-
 	Con_Printf("Exe: " __TIME__ " " __DATE__ "\n");
 	Con_Printf("%4.1f megabyte heap\n", parms->memsize / (1024 * 1024.0));
-
 	R_InitTextures();	// needed even for dedicated servers
-
 	if (cls.state != ca_dedicated) {
 		host_basepal = (byte *) COM_LoadHunkFile("gfx/palette.lmp");
 		if (!host_basepal)
@@ -830,73 +702,38 @@ void Host_Init(quakeparms_t *parms)
 		host_colormap = (byte *) COM_LoadHunkFile("gfx/colormap.lmp");
 		if (!host_colormap)
 			Sys_Error("Couldn't load gfx/colormap.lmp");
-
-#ifndef _WIN32			// on non win32, mouse comes before video for security reasons
 		IN_Init();
-#endif
 		VID_Init(host_basepal);
-
 		Draw_Init();
 		SCR_Init();
 		R_Init();
-#ifndef	_WIN32
-		// on Win32, sound initialization has to come before video initialization, so we
-		// can put up a popup if the sound hardware is in use
 		S_Init();
-#else
-
-#ifdef	GLQUAKE
-		// FIXME: doesn't use the new one-window approach yet
-		S_Init();
-#endif
-
-#endif // _WIN32
-		//CDAudio_Init ();
 		Sbar_Init();
 		CL_Init();
-#ifdef _WIN32			// on non win32, mouse comes before video for security reasons
-		IN_Init();
-#endif
 	}
-
 	Cbuf_InsertText("exec quake.rc\n");
 	IN_MLookDown();
-
 	Hunk_AllocName(0, "-HOST_HUNKLEVEL-");
 	host_hunklevel = Hunk_LowMark();
-
 	host_initialized = true;
-
 	Sys_Printf("========Quake Initialized=========\n");
 }
 
-/*
-===============
-Host_Shutdown
-
-FIXME: this is a callback from Sys_Quit and Sys_Error.  It would be better
-to run quit through here before the final handoff to the sys code.
-===============
-*/
-void Host_Shutdown(void)
+// FIXME: this is a callback from Sys_Quit and Sys_Error. It would be better
+// to run quit through here before the final handoff to the sys code.
+void Host_Shutdown()
 {
 	static qboolean isdown = false;
-
 	if (isdown) {
 		printf("recursive shutdown\n");
 		return;
 	}
 	isdown = true;
-
-// keep Con_Printf from trying to update the screen
+	// keep Con_Printf from trying to update the screen
 	scr_disabled_for_loading = true;
-
 	Host_WriteConfiguration();
-
-	//CDAudio_Shutdown ();
 	NET_Shutdown();
 	S_Shutdown();
-
 	if (cls.state != ca_dedicated) {
 		IN_Shutdown();	// input is only initialized in Host_Init if we're not dedicated -- kristian
 		VID_Shutdown();

@@ -205,15 +205,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine,
 
 int main(int c, char **v)
 {
-	double time, oldtime, newtime;
-	quakeparms_t parms;
-	extern int vcrFile;
-	extern int recording;
-
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
 		Sys_Error("SDL_Init failed: %s", SDL_GetError());
-
-	signal(SIGFPE, SIG_IGN);
+	quakeparms_t parms;
 	parms.memsize = DEFAULT_MEMORY;
 	if (COM_CheckParm("-heapsize")) {
 		int t = COM_CheckParm("-heapsize") + 1;
@@ -224,35 +218,20 @@ int main(int c, char **v)
 	parms.basedir = basedir;
 	// Disable cache, else it looks in the cache for config.cfg.
 	parms.cachedir = NULL;
-
 	COM_InitArgv(c, v);
 	parms.argc = com_argc;
 	parms.argv = com_argv;
-
 	Host_Init(&parms);
-
-	oldtime = Sys_FloatTime() - 0.1;
+	double oldtime = Sys_FloatTime() - 0.1;
 	while (1) {
-		newtime = Sys_FloatTime();
-		// find time spent rendering last frame
-		time = newtime - oldtime;
-
-		if (cls.state == ca_dedicated) {
-			// play vcrfiles at max speed
-			if (time < sys_ticrate.value
-			    && (vcrFile == -1 || recording)) {
-				SDL_Delay(1);
-				// not time to run a server only tic yet
-				continue;
-			}
-			time = sys_ticrate.value;
-		}
-
-		if (time > sys_ticrate.value * 2)
+		double newtime = Sys_FloatTime();
+		double deltatime = newtime - oldtime;
+		if (cls.state == ca_dedicated)
+			deltatime = sys_ticrate.value;
+		if (deltatime > sys_ticrate.value * 2)
 			oldtime = newtime;
 		else
-			oldtime += time;
-
-		Host_Frame(time);
+			oldtime += deltatime;
+		Host_Frame(deltatime);
 	}
 }
