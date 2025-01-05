@@ -433,14 +433,7 @@ void Host_Frame(float time)
 
 void Host_Init(quakeparms_t *parms)
 {
-	minimum_memory = standard_quake?MINIMUM_MEMORY:MINIMUM_MEMORY_LEVELPAK;
-	if (COM_CheckParm("-minmemory"))
-		parms->memsize = minimum_memory;
 	host_parms = *parms;
-	if (parms->memsize < minimum_memory)
-		Sys_Error
-		    ("Only %4.1f megs of memory available, can't execute game",
-		     parms->memsize / (float)0x100000);
 	com_argc = parms->argc;
 	com_argv = parms->argv;
 	Memory_Init(parms->membase, parms->memsize);
@@ -450,7 +443,7 @@ void Host_Init(quakeparms_t *parms)
 	Chase_Init();
 	COM_Init(parms->basedir);
 	Host_InitLocal();
-	W_LoadWadFile("gfx.wad");
+	W_LoadWadFile();
 	Key_Init();
 	Con_Init();
 	M_Init();
@@ -460,7 +453,7 @@ void Host_Init(quakeparms_t *parms)
 	SV_Init();
 	Con_Printf("Exe: " __TIME__ " " __DATE__ "\n");
 	Con_Printf("%4.1f megabyte heap\n", parms->memsize / (1024 * 1024.0));
-	R_InitTextures();	// needed even for dedicated servers
+	R_InitTextures(); // needed even for dedicated servers
 	if (cls.state != ca_dedicated) {
 		host_basepal = (byte *) COM_LoadHunkFile("gfx/palette.lmp");
 		if (!host_basepal)

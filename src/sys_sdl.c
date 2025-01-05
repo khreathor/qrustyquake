@@ -1,6 +1,5 @@
 #include "quakedef.h"
 
-char *basedir = ".";
 FILE *sys_handles[MAX_HANDLES];
 
 // =============================================================================
@@ -215,9 +214,7 @@ int main(int c, char **v)
 			parms.memsize = Q_atoi(v[t]) * 1024;
 	}
 	parms.membase = malloc(parms.memsize);
-	parms.basedir = basedir;
-	// Disable cache, else it looks in the cache for config.cfg.
-	parms.cachedir = NULL;
+	parms.basedir = ".";
 	COM_InitArgv(c, v);
 	parms.argc = com_argc;
 	parms.argv = com_argv;
