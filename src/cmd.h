@@ -4,22 +4,17 @@
 
 // cmd.h -- Command buffer and command execution
 
-#define MAX_ALIAS_NAME  32
-#define CMDLINE_LENGTH 256      //johnfitz -- mirrored in common.c
+#define MAX_ALIAS_NAME 32
+#define CMDLINE_LENGTH 256 //johnfitz -- mirrored in common.c
+#define MAX_ARGS 80
 
-//===========================================================================
+// =============================================================================
 
-/*
-
-Any number of commands can be added in a frame, from several different sources.
-Most commands come from either keybindings or console line input, but remote
-servers can also send across commands and entire text files can be execed.
-
-The + command line options are also added to the command buffer.
-
-The game starts with a Cbuf_AddText ("exec quake.rc\n"); Cbuf_Execute ();
-
-*/
+// Any number of commands can be added in a frame, from several different sources.
+// Most commands come from either keybindings or console line input, but remote
+// servers can also send across commands and entire text files can be execed.
+// The + command line options are also added to the command buffer.
+// The game starts with a Cbuf_AddText ("exec quake.rc\n"); Cbuf_Execute ();
 
 void Cbuf_Init ();
 // allocates an initial text buffer that will grow as needed
@@ -39,18 +34,13 @@ void Cbuf_Execute ();
 // Normally called once per frame, but may be explicitly invoked.
 // Do not call inside a command function!
 
-//===========================================================================
+// =============================================================================
 
-/*
-
-Command execution takes a null terminated string, breaks it into tokens,
-then searches for a command or variable that matches the first token.
-
-Commands can come from three sources, but the handler functions may choose
-to dissallow the action or forward it to a remote server if the source is
-not apropriate.
-
-*/
+// Command execution takes a null terminated string, breaks it into tokens,
+// then searches for a command or variable that matches the first token.
+// Commands can come from three sources, but the handler functions may choose
+// to dissallow the action or forward it to a remote server if the source is
+// not apropriate.
 
 typedef void (*xcommand_t) ();
 
@@ -60,6 +50,12 @@ typedef struct cmdalias_s {
         char *value;
 } cmdalias_t;
 
+typedef struct cmd_function_s {
+        struct cmd_function_s *next;
+        char *name;
+        xcommand_t function;
+} cmd_function_t;
+
 typedef enum
 {
 	src_client, // came in over a net connection as a clc_stringcmd
@@ -67,11 +63,11 @@ typedef enum
 	src_command // from the command buffer
 } cmd_source_t;
 
-extern	cmd_source_t	cmd_source;
+extern cmd_source_t cmd_source;
 
-void	Cmd_Init ();
+void Cmd_Init ();
 
-void	Cmd_AddCommand (char *cmd_name, xcommand_t function);
+void Cmd_AddCommand (char *cmd_name, xcommand_t function);
 // called by the init functions of other parts of the program to
 // register commands and functions to call for them.
 // The cmd_name is referenced later, so it should not be in temp memory
@@ -79,13 +75,13 @@ void	Cmd_AddCommand (char *cmd_name, xcommand_t function);
 qboolean Cmd_Exists (char *cmd_name);
 // used by the cvar code to check for cvar / command name overlap
 
-char 	*Cmd_CompleteCommand (char *partial);
+char *Cmd_CompleteCommand (char *partial);
 // attempts to match a partial command for automatic command line completion
 // returns NULL if nothing fits
 
-int		Cmd_Argc ();
-char	*Cmd_Argv (int arg);
-char	*Cmd_Args ();
+int Cmd_Argc ();
+char *Cmd_Argv (int arg);
+char *Cmd_Args ();
 // The functions that execute commands get their parameters with these
 // functions. Cmd_Argv () will return an empty string, not a NULL
 // if arg > argc, so string operations are allways safe.
@@ -110,4 +106,3 @@ void	Cmd_ForwardToServer ();
 void	Cmd_Print (char *text);
 // used by command functions to send output to either the graphics console or
 // passed as a print message to the client
-
