@@ -67,6 +67,7 @@ lumpinfo_t *W_GetLumpinfo(char *name)
 		if (!strcmp(clean, lump_p->name))
 			return lump_p;
 	Sys_Error("W_GetLumpinfo: %s not found", name);
+	return NULL;
 }
 
 void *W_GetLumpName(char *name)

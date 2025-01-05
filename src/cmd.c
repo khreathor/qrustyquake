@@ -1,154 +1,78 @@
-/*
-Copyright (C) 1996-2001 Id Software, Inc.
-Copyright (C) 2002-2009 John Fitzgibbons and others
-Copyright (C) 2007-2008 Kristian Duske
+// Copyright (C) 1996-2001 Id Software, Inc.
+// Copyright (C) 2002-2009 John Fitzgibbons and others
+// Copyright (C) 2007-2008 Kristian Duske
+// GPLv3 See LICENSE for details.
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
 // cmd.c -- Quake script command processing module
 
 #include "quakedef.h"
 
-void Cmd_ForwardToServer(void);
-
-#define	MAX_ALIAS_NAME	32
-
-#define CMDLINE_LENGTH 256	//johnfitz -- mirrored in common.c
-
-typedef struct cmdalias_s {
-	struct cmdalias_s *next;
-	char name[MAX_ALIAS_NAME];
-	char *value;
-} cmdalias_t;
-
 cmdalias_t *cmd_alias;
-
 int trashtest;
 int *trashspot;
-
 qboolean cmd_wait;
 
-//=============================================================================
+void Cmd_ForwardToServer();
 
-/*
-============
-Cmd_Wait_f
-
-Causes execution of the remainder of the command buffer to be delayed until
-next frame.  This allows commands like:
-bind g "impulse 5 ; +attack ; wait ; -attack ; impulse 2"
-============
-*/
-void Cmd_Wait_f(void)
+// Causes execution of the remainder of the command buffer to be delayed until
+// next frame.  This allows commands like:
+// bind g "impulse 5 ; +attack ; wait ; -attack ; impulse 2"
+void Cmd_Wait_f()
 {
 	cmd_wait = true;
 }
 
-/*
-=============================================================================
-
-						COMMAND BUFFER
-
-=============================================================================
-*/
+// =============================================================================
+// Command Buffer
+// =============================================================================
 
 sizebuf_t cmd_text;
 
-/*
-============
-Cbuf_Init
-============
-*/
-void Cbuf_Init(void)
+void Cbuf_Init()
 {
-	SZ_Alloc(&cmd_text, 8192);	// space for commands and script files
+	SZ_Alloc(&cmd_text, 8192); // space for commands and script files
 }
 
-/*
-============
-Cbuf_AddText
-
-Adds command text at the end of the buffer
-============
-*/
 void Cbuf_AddText(char *text)
-{
-	int l;
-
-	l = Q_strlen(text);
-
+{ // Adds command text at the end of the buffer
+	int l = Q_strlen(text);
 	if (cmd_text.cursize + l >= cmd_text.maxsize) {
 		Con_Printf("Cbuf_AddText: overflow\n");
 		return;
 	}
-
 	SZ_Write(&cmd_text, text, Q_strlen(text));
 }
 
-/*
-============
-Cbuf_InsertText
-
-Adds command text immediately after the current command
-Adds a \n to the text
-FIXME: actually change the command buffer to do less copying
-============
-*/
+// Adds command text immediately after the current command
+// Adds a \n to the text
+// FIXME: actually change the command buffer to do less copying
 void Cbuf_InsertText(char *text)
 {
-	char *temp;
-	int templen;
-
-// copy off any commands still remaining in the exec buffer
-	templen = cmd_text.cursize;
+	// copy off any commands still remaining in the exec buffer
+	char *temp = NULL;
+	int templen = cmd_text.cursize;
 	if (templen) {
 		temp = Z_Malloc(templen);
 		Q_memcpy(temp, cmd_text.data, templen);
 		SZ_Clear(&cmd_text);
-	} else
-		temp = NULL;	// shut up compiler
-
-// add the entire text of the file
+	} 
+	// add the entire text of the file
 	Cbuf_AddText(text);
-
-// add the copied off data
+	// add the copied off data
 	if (templen) {
 		SZ_Write(&cmd_text, temp, templen);
 		Z_Free(temp);
 	}
 }
 
-/*
-============
-Cbuf_Execute
-============
-*/
-void Cbuf_Execute(void)
+void Cbuf_Execute()
 {
-	int i;
-	char *text;
 	char line[1024];
-	int quotes;
-
 	while (cmd_text.cursize) {
-// find a \n or ; line break
-		text = (char *)cmd_text.data;
-
-		quotes = 0;
+		// find a \n or ; line break
+		char *text = (char *)cmd_text.data;
+		int quotes = 0;
+		int i;
 		for (i = 0; i < cmd_text.cursize; i++) {
 			if (text[i] == '"')
 				quotes++;
@@ -157,14 +81,11 @@ void Cbuf_Execute(void)
 			if (text[i] == '\n')
 				break;
 		}
-
 		memcpy(line, text, i);
 		line[i] = 0;
-
 // delete the text from the command buffer and move remaining commands down
 // this is necessary because commands (exec, alias) can insert data at the
 // beginning of the text buffer
-
 		if (i == cmd_text.cursize)
 			cmd_text.cursize = 0;
 		else {
@@ -172,13 +93,10 @@ void Cbuf_Execute(void)
 			cmd_text.cursize -= i;
 			Q_memcpy(text, text + i, cmd_text.cursize);
 		}
-
-// execute the command line
+		// execute the command line
 		Cmd_ExecuteString(line, src_command);
-
-		if (cmd_wait) {	// skip out while text still remains in buffer, leaving it
-			// for next frame
-			cmd_wait = false;
+		if (cmd_wait) {	// skip out while text still remains in buffer
+			cmd_wait = false; // leaving it for next frame
 			break;
 		}
 	}
@@ -202,7 +120,7 @@ quake +prog jctest.qp +cmd amlev1
 quake -nosound +cmd amlev1
 ===============
 */
-void Cmd_StuffCmds_f(void)
+void Cmd_StuffCmds_f()
 {
 	extern cvar_t cmdline;
 	char cmds[CMDLINE_LENGTH];
@@ -232,7 +150,7 @@ void Cmd_StuffCmds_f(void)
 Cmd_Exec_f
 ===============
 */
-void Cmd_Exec_f(void)
+void Cmd_Exec_f()
 {
 	char *f;
 	int mark;
@@ -261,7 +179,7 @@ Cmd_Echo_f
 Just prints the rest of the line to the console
 ===============
 */
-void Cmd_Echo_f(void)
+void Cmd_Echo_f()
 {
 	int i;
 
@@ -286,7 +204,7 @@ Cmd_Alias_f -- johnfitz -- rewritten
 Creates a new command that executes a command string (possibly ; seperated)
 ===============
 */
-void Cmd_Alias_f(void)
+void Cmd_Alias_f()
 {
 	cmdalias_t *a;
 	char cmd[1024];
@@ -349,7 +267,7 @@ void Cmd_Alias_f(void)
 Cmd_Unalias_f -- johnfitz
 ===============
 */
-void Cmd_Unalias_f(void)
+void Cmd_Unalias_f()
 {
 	cmdalias_t *a, *prev;
 
@@ -378,7 +296,7 @@ void Cmd_Unalias_f(void)
 Cmd_Unaliasall_f -- johnfitz
 ===============
 */
-void Cmd_Unaliasall_f(void)
+void Cmd_Unaliasall_f()
 {
 	cmdalias_t *blah;
 
@@ -423,7 +341,7 @@ cmd_function_t *cmd_functions;	// possible commands to execute
 Cmd_List_f -- johnfitz
 ============
 */
-void Cmd_List_f(void)
+void Cmd_List_f()
 {
 	cmd_function_t *cmd;
 	char *partial;
@@ -458,7 +376,7 @@ void Cmd_List_f(void)
 Cmd_Init
 ============
 */
-void Cmd_Init(void)
+void Cmd_Init()
 {
 	Cmd_AddCommand("cmdlist", Cmd_List_f);	//johnfitz
 	Cmd_AddCommand("unalias", Cmd_Unalias_f);	//johnfitz
@@ -477,7 +395,7 @@ void Cmd_Init(void)
 Cmd_Argc
 ============
 */
-int Cmd_Argc(void)
+int Cmd_Argc()
 {
 	return cmd_argc;
 }
@@ -489,7 +407,7 @@ Cmd_Argv
 */
 char *Cmd_Argv(int arg)
 {
-	if ((unsigned)arg >= cmd_argc)
+	if (arg >= cmd_argc)
 		return cmd_null_string;
 	return cmd_argv[arg];
 }
@@ -499,7 +417,7 @@ char *Cmd_Argv(int arg)
 Cmd_Args
 ============
 */
-char *Cmd_Args(void)
+char *Cmd_Args()
 {
 	return cmd_args;
 }
@@ -694,7 +612,7 @@ Cmd_ForwardToServer
 Sends the entire command line over to the server
 ===================
 */
-void Cmd_ForwardToServer(void)
+void Cmd_ForwardToServer()
 {
 	if (cls.state != ca_connected) {
 		Con_Printf("Can't \"%s\", not connected\n", Cmd_Argv(0));

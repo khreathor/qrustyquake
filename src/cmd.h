@@ -1,25 +1,11 @@
-/*
-Copyright (C) 1996-2001 Id Software, Inc.
-Copyright (C) 2002-2009 John Fitzgibbons and others
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
+// Copyright (C) 1996-2001 Id Software, Inc.
+// Copyright (C) 2002-2009 John Fitzgibbons and others
+// GPLv3 See LICENSE for details.
 
 // cmd.h -- Command buffer and command execution
+
+#define MAX_ALIAS_NAME  32
+#define CMDLINE_LENGTH 256      //johnfitz -- mirrored in common.c
 
 //===========================================================================
 
@@ -35,7 +21,7 @@ The game starts with a Cbuf_AddText ("exec quake.rc\n"); Cbuf_Execute ();
 
 */
 
-void Cbuf_Init (void);
+void Cbuf_Init ();
 // allocates an initial text buffer that will grow as needed
 
 void Cbuf_AddText (char *text);
@@ -47,7 +33,7 @@ void Cbuf_InsertText (char *text);
 // inserted at the beginning of the buffer, before any remaining unexecuted
 // commands.
 
-void Cbuf_Execute (void);
+void Cbuf_Execute ();
 // Pulls off \n terminated lines of text from the command buffer and sends
 // them through Cmd_ExecuteString.  Stops when the buffer is empty.
 // Normally called once per frame, but may be explicitly invoked.
@@ -66,18 +52,24 @@ not apropriate.
 
 */
 
-typedef void (*xcommand_t) (void);
+typedef void (*xcommand_t) ();
+
+typedef struct cmdalias_s {
+        struct cmdalias_s *next;
+        char name[MAX_ALIAS_NAME];
+        char *value;
+} cmdalias_t;
 
 typedef enum
 {
-	src_client,		// came in over a net connection as a clc_stringcmd
-					// host_client will be valid during this state.
-	src_command		// from the command buffer
+	src_client, // came in over a net connection as a clc_stringcmd
+		// host_client will be valid during this state.
+	src_command // from the command buffer
 } cmd_source_t;
 
 extern	cmd_source_t	cmd_source;
 
-void	Cmd_Init (void);
+void	Cmd_Init ();
 
 void	Cmd_AddCommand (char *cmd_name, xcommand_t function);
 // called by the init functions of other parts of the program to
@@ -91,9 +83,9 @@ char 	*Cmd_CompleteCommand (char *partial);
 // attempts to match a partial command for automatic command line completion
 // returns NULL if nothing fits
 
-int		Cmd_Argc (void);
+int		Cmd_Argc ();
 char	*Cmd_Argv (int arg);
-char	*Cmd_Args (void);
+char	*Cmd_Args ();
 // The functions that execute commands get their parameters with these
 // functions. Cmd_Argv () will return an empty string, not a NULL
 // if arg > argc, so string operations are allways safe.
@@ -110,7 +102,7 @@ void	Cmd_ExecuteString (char *text, cmd_source_t src);
 // Parses a single line of text into arguments and tries to execute it.
 // The text can come from the command buffer, a remote client, or stdin.
 
-void	Cmd_ForwardToServer (void);
+void	Cmd_ForwardToServer ();
 // adds the current command line as a clc_stringcmd to the client message.
 // things like godmode, noclip, etc, are commands directed to the server,
 // so when they are typed in at the console, they will need to be forwarded.

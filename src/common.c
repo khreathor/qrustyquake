@@ -658,6 +658,7 @@ void COM_CheckRegistered()
 
 void COM_InitArgv(int argc, char **argv)
 { // reconstitute the command line for the cmdline externally visible cvar
+  // FIXME This leaks environment vars to stdout, ./quake -1 -2 -3 to reproduce
 	int n = 0;
 	for (int j = 0, i = 0; (j < MAX_NUM_ARGVS) && (j < argc); j++) {
 		while ((n < (CMDLINE_LENGTH - 1)) && argv[j][i])
