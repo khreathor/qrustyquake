@@ -14,7 +14,6 @@ int Sys_FileTime (char *path);
 void Sys_mkdir (char *path);
 
 // System IO
-void Sys_DebugLog(char *file, char *fmt, ...);
 void Sys_Error (char *error, ...);
 void Sys_Printf (char *fmt, ...);
 void Sys_Quit ();

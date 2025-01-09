@@ -356,21 +356,6 @@ void VID_Update()
 	}
 }
 
-void D_BeginDirectRect(int x, int y, byte *pbitmap, int width, int height)
-{
-	Uint8 *offset;
-	if (!screen)
-		return;
-	if (x < 0)
-		x = screen->w + x - 1;
-	offset = (Uint8 *) screen->pixels + y * screen->pitch + x;
-	while (height--) {
-		memcpy(offset, pbitmap, width);
-		offset += screen->pitch;
-		pbitmap += width;
-	}
-}
-
 char *VID_GetModeDescription(int mode)
 {
 	static char pinfo[40];

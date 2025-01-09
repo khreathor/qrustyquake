@@ -148,7 +148,7 @@ void InsertLinkAfter(link_t *l, link_t *after)
 // CyanBun96: the standard functions should be faster and more reliable, and
 // the benefits of replacing them are not there three decades later.
 // The prototypes are kept the same for compatibility, some non-standard
-// behavior is preserved (like the return values of memcmp and strcmp)
+// behavior is preserved (like the return value of strcmp)
 
 void Q_memset(void *dest, int fill, size_t count)
 {
@@ -158,11 +158,6 @@ void Q_memset(void *dest, int fill, size_t count)
 void Q_memcpy(void *dest, const void *src, size_t count)
 {
 	memcpy(dest, src, count);
-}
-
-int Q_memcmp(const void *m1, const void *m2, size_t count)
-{
-	return memcmp(m1, m2, count) == 0 ? 0 : -1;
 }
 
 void Q_strcpy(char *dest, const char *src)
@@ -311,17 +306,6 @@ void MSG_WriteCoord16(sizebuf_t *sb, float f)
 	MSG_WriteShort(sb, Q_rint(f * 8));
 }
 
-void MSG_WriteCoord24(sizebuf_t *sb, float f)
-{ //johnfitz -- 16.8 fixed point coords, max range +-32768
-	MSG_WriteShort(sb, f);
-	MSG_WriteByte(sb, (int)(f * 255) % 255);
-}
-
-void MSG_WriteCoord32f(sizebuf_t *sb, float f)
-{ //johnfitz -- 32-bit float coords
-	MSG_WriteFloat(sb, f);
-}
-
 void MSG_WriteCoord(sizebuf_t *sb, float f)
 {
 	MSG_WriteCoord16(sb, f);
@@ -330,11 +314,6 @@ void MSG_WriteCoord(sizebuf_t *sb, float f)
 void MSG_WriteAngle(sizebuf_t *sb, float f)
 { //johnfitz -- use Q_rint instead of (int)
 	MSG_WriteByte(sb, Q_rint(f * 256.0 / 360.0) & 255);
-}
-
-void MSG_WriteAngle16(sizebuf_t *sb, float f)
-{ //johnfitz -- for PROTOCOL_FITZQUAKE
-	MSG_WriteShort(sb, Q_rint(f * 65536.0 / 360.0) & 65535);
 }
 
 // Reading Functions ------------------
@@ -428,16 +407,6 @@ float MSG_ReadCoord16()
 	return MSG_ReadShort() * (1.0 / 8);
 }
 
-float MSG_ReadCoord24()
-{ //johnfitz -- 16.8 fixed point coords, max range +-32768
-	return MSG_ReadShort() + MSG_ReadByte() * (1.0 / 255);
-}
-
-float MSG_ReadCoord32f()
-{ //johnfitz -- 32-bit float coords
-	return MSG_ReadFloat();
-}
-
 float MSG_ReadCoord()
 {
 	return MSG_ReadCoord16();
@@ -448,11 +417,6 @@ float MSG_ReadAngle()
 	return MSG_ReadChar() * (360.0 / 256);
 }
 
-float MSG_ReadAngle16()
-{ //johnfitz -- for PROTOCOL_FITZQUAKE
-	return MSG_ReadShort() * (360.0 / 65536);
-}
-
 // =============================================================================
 
 void SZ_Alloc(sizebuf_t *buf, int startsize)
@@ -461,11 +425,6 @@ void SZ_Alloc(sizebuf_t *buf, int startsize)
 		startsize = 256;
 	buf->data = Hunk_AllocName(startsize, "sizebuf");
 	buf->maxsize = startsize;
-	buf->cursize = 0;
-}
-
-void SZ_Free(sizebuf_t *buf)
-{
 	buf->cursize = 0;
 }
 
@@ -509,24 +468,6 @@ void SZ_Print(sizebuf_t *buf, char *data)
 }
 
 //============================================================================
-
-char *COM_SkipPath(char *pathname)
-{
-	char *last = pathname;
-	while (*pathname) {
-		if (*pathname == '/')
-			last = pathname + 1;
-		pathname++;
-	}
-	return last;
-}
-
-void COM_StripExtension(char *in, char *out)
-{
-	while (*in && *in != '.')
-		*out++ = *in++;
-	*out = 0;
-}
 
 char *COM_FileExtension(char *in)
 {
@@ -951,11 +892,6 @@ unsigned char *COM_LoadFile(char *path, int usehunk)
 unsigned char *COM_LoadHunkFile(char *path)
 {
 	return COM_LoadFile(path, 1);
-}
-
-unsigned char *COM_LoadTempFile(char *path)
-{
-	return COM_LoadFile(path, 2);
 }
 
 void COM_LoadCacheFile(char *path, struct cache_user_s *cu)

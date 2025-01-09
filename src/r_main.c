@@ -873,10 +873,6 @@ void R_EdgeDrawing(void)
 	if (r_drawculledpolys)
 		R_ScanEdges();
 
-// only the world can be drawn back to front with no z reads or compares, just
-// z writes, so have the driver turn z compares on now
-	D_TurnZOn();
-
 	if (r_dspeeds.value) {
 		rw_time2 = Sys_FloatTime();
 		db_time1 = rw_time2;
@@ -887,10 +883,6 @@ void R_EdgeDrawing(void)
 	if (r_dspeeds.value) {
 		db_time2 = Sys_FloatTime();
 		se_time1 = db_time2;
-	}
-
-	if (!r_dspeeds.value) {
-		S_ExtraUpdate();	// don't let sound get messed up if going slow
 	}
 
 	if (!(r_drawpolys | r_drawculledpolys))
@@ -924,15 +916,7 @@ void R_RenderView_(void)
 	if (!cl_entities[0].model || !cl.worldmodel)
 		Sys_Error("R_RenderView: NULL worldmodel");
 
-	if (!r_dspeeds.value) {
-		S_ExtraUpdate();	// don't let sound get messed up if going slow
-	}
-
 	R_EdgeDrawing();
-
-	if (!r_dspeeds.value) {
-		S_ExtraUpdate();	// don't let sound get messed up if going slow
-	}
 
 	if (r_dspeeds.value) {
 		se_time2 = Sys_FloatTime();

@@ -4,9 +4,9 @@ LDFLAGS = -lm -lSDL2
 TARGET = qrustyquake
 SRCS = chase.c cl_demo.c cl_input.c cl_main.c cl_parse.c \
 	cl_tent.c cmd.c common.c console.c crc.c \
-	cvar.c d_edge.c d_fill.c d_init.c d_modech.c \
+	cvar.c d_edge.c d_init.c d_modech.c \
 	d_part.c d_polyse.c d_scan.c d_sky.c d_sprite.c \
-	d_surf.c d_vars.c d_zpoint.c draw.c host.c \
+	d_surf.c d_vars.c draw.c host.c \
 	host_cmd.c in_sdl.c keys.c mathlib.c menu.c \
 	model.c net_bsd.c net_dgrm.c net_loop.c net_main.c \
 	net_udp.c nonintel.c pr_cmds.c pr_edict.c \

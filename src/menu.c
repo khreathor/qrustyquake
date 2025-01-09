@@ -2291,7 +2291,6 @@ void M_Draw()
 		scr_copyeverything = 1;
 		if (scr_con_current) {
 			Draw_ConsoleBackground(vid.height);
-			S_ExtraUpdate();
 		} else
 			Draw_FadeScreen();
 		scr_fullupdate = 0;
@@ -2322,7 +2321,6 @@ void M_Draw()
 		S_LocalSound("misc/menu2.wav");
 		m_entersound = false;
 	}
-	S_ExtraUpdate();
 }
 
 void M_Keydown(int key)

@@ -75,11 +75,3 @@ void *W_GetLumpName(char *name)
 	lumpinfo_t *lump = W_GetLumpinfo(name);
 	return (void *)(wad_base + lump->filepos);
 }
-
-void *W_GetLumpNum(int num)
-{
-	if (num < 0 || num > wad_numlumps)
-		Sys_Error("W_GetLumpNum: bad number: %i", num);
-	lumpinfo_t *lump = wad_lumps + num;
-	return (void *)(wad_base + lump->filepos);
-}

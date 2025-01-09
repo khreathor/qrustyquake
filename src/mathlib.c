@@ -31,7 +31,6 @@ int nanmask = 255 << 23;
 
 /*-----------------------------------------------------------------*/
 
-//#define DEG2RAD( a ) ( a * M_PI ) / 180.0F
 #define DEG2RAD( a ) ( (a) * M_PI_DIV_180 )	//johnfitz
 
 void ProjectPointOnPlane(vec3_t dst, const vec3_t p, const vec3_t normal)
@@ -53,51 +52,10 @@ void ProjectPointOnPlane(vec3_t dst, const vec3_t p, const vec3_t normal)
 	dst[2] = p[2] - d * n[2];
 }
 
-/*
-** assumes "src" is normalized
-*/
-void PerpendicularVector(vec3_t dst, const vec3_t src)
-{
-	int pos;
-	int i;
-	float minelem = 1.0F;
-	vec3_t tempvec;
-
-	/*
-	 ** find the smallest magnitude axially aligned vector
-	 */
-	for (pos = 0, i = 0; i < 3; i++) {
-		if (fabs(src[i]) < minelem) {
-			pos = i;
-			minelem = fabs(src[i]);
-		}
-	}
-	tempvec[0] = tempvec[1] = tempvec[2] = 0.0F;
-	tempvec[pos] = 1.0F;
-
-	/*
-	 ** project the point onto the plane defined by src
-	 */
-	ProjectPointOnPlane(dst, tempvec, src);
-
-	/*
-	 ** normalize the result
-	 */
-	VectorNormalize(dst);
-}
-
-//johnfitz -- removed RotatePointAroundVector() becuase it's no longer used and my compiler fucked it up anyway
-
 /*-----------------------------------------------------------------*/
 
 float anglemod(float a)
 {
-#if 0
-	if (a >= 0)
-		a -= 360 * (int)(a / 360);
-	else
-		a += 360 * (1 + (int)(-a / 360));
-#endif
 	a = (360.0 / 65536) * ((int)(a * (65536 / 360.0)) & 65535);
 	return a;
 }
@@ -247,20 +205,6 @@ int BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, mplane_t *p)
 	return sides;
 }
 
-//johnfitz -- the opposite of AngleVectors.  this takes forward and generates pitch yaw roll
-//TODO: take right and up vectors to properly set yaw and roll
-void VectorAngles(const vec3_t forward, vec3_t angles)
-{
-	vec3_t temp;
-
-	temp[0] = forward[0];
-	temp[1] = forward[1];
-	temp[2] = 0;
-	angles[PITCH] = -atan2(forward[2], Length(temp)) / M_PI_DIV_180;
-	angles[YAW] = atan2(forward[1], forward[0]) / M_PI_DIV_180;
-	angles[ROLL] = 0;
-}
-
 void AngleVectors(vec3_t angles, vec3_t forward, vec3_t right, vec3_t up)
 {
 	float angle;
@@ -287,48 +231,11 @@ void AngleVectors(vec3_t angles, vec3_t forward, vec3_t right, vec3_t up)
 	up[2] = cr * cp;
 }
 
-int VectorCompare(vec3_t v1, vec3_t v2)
-{
-	int i;
-
-	for (i = 0; i < 3; i++)
-		if (v1[i] != v2[i])
-			return 0;
-
-	return 1;
-}
-
 void VectorMA(vec3_t veca, float scale, vec3_t vecb, vec3_t vecc)
 {
 	vecc[0] = veca[0] + scale * vecb[0];
 	vecc[1] = veca[1] + scale * vecb[1];
 	vecc[2] = veca[2] + scale * vecb[2];
-}
-
-vec_t _DotProduct(vec3_t v1, vec3_t v2)
-{
-	return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
-}
-
-void _VectorSubtract(vec3_t veca, vec3_t vecb, vec3_t out)
-{
-	out[0] = veca[0] - vecb[0];
-	out[1] = veca[1] - vecb[1];
-	out[2] = veca[2] - vecb[2];
-}
-
-void _VectorAdd(vec3_t veca, vec3_t vecb, vec3_t out)
-{
-	out[0] = veca[0] + vecb[0];
-	out[1] = veca[1] + vecb[1];
-	out[2] = veca[2] + vecb[2];
-}
-
-void _VectorCopy(vec3_t in, vec3_t out)
-{
-	out[0] = in[0];
-	out[1] = in[1];
-	out[2] = in[2];
 }
 
 void CrossProduct(vec3_t v1, vec3_t v2, vec3_t cross)
@@ -383,14 +290,6 @@ void VectorScale(vec3_t in, vec_t scale, vec3_t out)
 	out[0] = in[0] * scale;
 	out[1] = in[1] * scale;
 	out[2] = in[2] * scale;
-}
-
-int Q_log2(int val)
-{
-	int answer = 0;
-	while (val >>= 1)
-		answer++;
-	return answer;
 }
 
 /*
@@ -516,26 +415,3 @@ int GreatestCommonDivisor(int i1, int i2)
 		return GreatestCommonDivisor(i1, i2 % i1);
 	}
 }
-
-#if	!id386
-
-// TODO: move to nonintel.c
-
-/*
-===================
-Invert24To16
-
-Inverts an 8.24 value to a 16.16 value
-====================
-*/
-
-fixed16_t Invert24To16(fixed16_t val)
-{
-	if (val < 256)
-		return (0xFFFFFFFF);
-
-	return (fixed16_t)
-	    (((double)0x10000 * (double)0x1000000 / (double)val) + 0.5);
-}
-
-#endif

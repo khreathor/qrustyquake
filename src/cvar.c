@@ -28,15 +28,16 @@ cvar_t *Cvar_FindVar(char *var_name)
 Cvar_VariableValue
 ============
 */
-float Cvar_VariableValue(char *var_name)
+float   Cvar_VariableValue (char *var_name)
 {
-	cvar_t *var;
+        cvar_t  *var;
 
-	var = Cvar_FindVar(var_name);
-	if (!var)
-		return 0;
-	return Q_atof(var->string);
+        var = Cvar_FindVar (var_name);
+        if (!var)
+                return 0;
+        return Q_atof (var->string);
 }
+
 
 /*
 ============

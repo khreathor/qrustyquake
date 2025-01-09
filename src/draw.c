@@ -105,11 +105,6 @@ void Draw_CharacterScaled(int x, int y, int num, int scale)
 	}
 }
 
-void Draw_Character(int x, int y, int num)
-{
-	Draw_CharacterScaled(x, y, num, 1);
-}
-
 void Draw_StringScaled(int x, int y, char *str, int scale)
 {
 	while (*str) {
@@ -117,11 +112,6 @@ void Draw_StringScaled(int x, int y, char *str, int scale)
 		str++;
 		x += 8 * scale;
 	}
-}
-
-void Draw_String(int x, int y, char *str)
-{
-	Draw_StringScaled(x, y, str, 1);
 }
 
 void Draw_PicScaled(int x, int y, qpic_t *pic, int scale)
@@ -141,11 +131,6 @@ void Draw_PicScaled(int x, int y, qpic_t *pic, int scale)
 		}
 		source += pic->width;
 	}
-}
-
-void Draw_Pic(int x, int y, qpic_t *pic)
-{
-	Draw_PicScaled(x, y, pic, 1);
 }
 
 void Draw_TransPicScaled(int x, int y, qpic_t *pic, int scale)
@@ -169,11 +154,6 @@ void Draw_TransPicScaled(int x, int y, qpic_t *pic, int scale)
 	}
 }
 
-void Draw_TransPic(int x, int y, qpic_t *pic)
-{
-	Draw_TransPicScaled(x, y, pic, 1);
-}
-
 void Draw_TransPicTranslateScaled(int x, int y, qpic_t *pic, byte *translation,
 				  int scale)
 {
@@ -194,11 +174,6 @@ void Draw_TransPicTranslateScaled(int x, int y, qpic_t *pic, byte *translation,
 		}
 		source += pic->width;
 	}
-}
-
-void Draw_TransPicTranslate(int x, int y, qpic_t *pic, byte *translation)
-{
-	Draw_TransPicTranslateScaled(x, y, pic, translation, 1);
 }
 
 void Draw_CharToConback(int num, byte *dest)
@@ -318,7 +293,6 @@ void Draw_Fill(int x, int y, int w, int h, int c)
 
 void Draw_FadeScreen()
 {
-	S_ExtraUpdate();
 	for (unsigned int y = 0; y < vid.height / uiscale; y++)
 		for (unsigned int i = 0; i < uiscale; i++) {
 			byte *pbuf = (byte *) (vid.buffer + vid.rowbytes * y
@@ -329,5 +303,4 @@ void Draw_FadeScreen()
 					for (unsigned int j = 0; j<uiscale; j++)
 						pbuf[x * uiscale + j] = 0;
 		}
-	S_ExtraUpdate();
 }

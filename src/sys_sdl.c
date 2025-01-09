@@ -34,18 +34,6 @@ void Sys_Error(char *error, ...)
 	exit(1);
 }
 
-void Sys_DebugLog(char *file, char *fmt, ...)
-{
-	va_list argptr;
-	static char data[1024];
-	va_start(argptr, fmt);
-	vsprintf(data, fmt, argptr);
-	va_end(argptr);
-	FILE *fp = fopen(file, "a");
-	fwrite(data, strlen(data), 1, fp);
-	fclose(fp);
-}
-
 // =============================================================================
 // File IO
 // =============================================================================
@@ -149,20 +137,6 @@ double Sys_FloatTime()
 	}
 	return (tp.tv_sec - secbase) + tp.tv_usec / 1000000.0;
 #endif
-}
-
-byte *Sys_ZoneBase(int *size)
-{
-	char *QUAKEOPT = getenv("QUAKEOPT");
-	*size = 0xc00000;
-	if (QUAKEOPT) {
-		while (*QUAKEOPT)
-			if (tolower(*QUAKEOPT++) == 'm') {
-				*size = atof(QUAKEOPT) * 1024 * 1024;
-				break;
-			}
-	}
-	return malloc(*size);
 }
 
 #ifdef _WIN32

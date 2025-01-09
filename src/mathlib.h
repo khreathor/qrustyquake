@@ -64,13 +64,8 @@ extern	int nanmask;
 	}\
 }
 
-// kristian - missing math functions
-// CyanBun96: defined them here to avoid compiler warnings
-#if !defined(max)
-inline int max(int x, int y) {
-    return (x > y) ? x : y;
-}
-#endif
+// kristian - missing math function
+// CyanBun96: defined it here to avoid compiler warnings
 #if !defined(min)
 inline int min(int x, int y) {
     return (x < y) ? x : y;
@@ -78,30 +73,18 @@ inline int min(int x, int y) {
 #endif
 // kristian
 
-void TurnVector (vec3_t out, const vec3_t forward, const vec3_t side, float angle); //johnfitz
-void VectorAngles (const vec3_t forward, vec3_t angles); //johnfitz
-
 void VectorMA (vec3_t veca, float scale, vec3_t vecb, vec3_t vecc);
-
-vec_t _DotProduct (vec3_t v1, vec3_t v2);
-void _VectorSubtract (vec3_t veca, vec3_t vecb, vec3_t out);
-void _VectorAdd (vec3_t veca, vec3_t vecb, vec3_t out);
-void _VectorCopy (vec3_t in, vec3_t out);
-
-int VectorCompare (vec3_t v1, vec3_t v2);
 vec_t Length (vec3_t v);
+
 void CrossProduct (vec3_t v1, vec3_t v2, vec3_t cross);
 float VectorNormalize (vec3_t v);		// returns vector length
 void VectorInverse (vec3_t v);
 void VectorScale (vec3_t in, vec_t scale, vec3_t out);
-int Q_log2(int val);
 
 void R_ConcatRotations (float in1[3][3], float in2[3][3], float out[3][3]);
 void R_ConcatTransforms (float in1[3][4], float in2[3][4], float out[3][4]);
 
-void FloorDivMod (double numer, double denom, int *quotient,
-		int *rem);
-fixed16_t Invert24To16(fixed16_t val);
+void FloorDivMod (double numer, double denom, int *quotient, int *rem);
 int GreatestCommonDivisor (int i1, int i2);
 
 void AngleVectors (vec3_t angles, vec3_t forward, vec3_t right, vec3_t up);

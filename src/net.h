@@ -55,9 +55,6 @@ struct qsocket_s	*NET_CheckNewConnections (void);
 struct qsocket_s	*NET_Connect (const char *host);
 // called by client to connect to a host.  Returns -1 if not able to
 
-double NET_QSocketGetTime (const struct qsocket_s *sock);
-const char *NET_QSocketGetAddressString (const struct qsocket_s *sock);
-
 qboolean NET_CanSendMessage (struct qsocket_s *sock);
 // Returns true or false if the given qsocket can currently accept a
 // message to be transmitted.
@@ -99,9 +96,6 @@ extern	qboolean	slistLocal;
 extern	int		hostCacheCount;
 
 void	NET_Slist_f (void);
-void	NET_SlistSort (void);
-const char *NET_SlistPrintServer (int n);
-const char *NET_SlistPrintServerName (int n);
 
 
 /* FIXME: driver related, but public:

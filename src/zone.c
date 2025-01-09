@@ -215,34 +215,6 @@ void *Z_TagMalloc(int size, int tag)
 
 /*
 ========================
-Z_Print
-========================
-*/
-void Z_Print(memzone_t *zone)
-{
-	memblock_t *block;
-
-	Con_Printf("zone size: %i  location: %p\n", mainzone->size, mainzone);
-
-	for (block = zone->blocklist.next;; block = block->next) {
-		Con_Printf("block:%p    size:%7i    tag:%3i\n",
-			   block, block->size, block->tag);
-
-		if (block->next == &zone->blocklist)
-			break;	// all blocks have been hit
-		if ((byte *) block + block->size != (byte *) block->next)
-			Con_Printf
-			    ("ERROR: block size does not touch the next block\n");
-		if (block->next->prev != block)
-			Con_Printf
-			    ("ERROR: next block doesn't have proper back link\n");
-		if (!block->tag && !block->next->tag)
-			Con_Printf("ERROR: two consecutive free blocks\n");
-	}
-}
-
-/*
-========================
 Z_CheckHeap
 ========================
 */
@@ -761,21 +733,6 @@ void Cache_Flush(void)
 
 /*
 ============
-Cache_Print
-
-============
-*/
-void Cache_Print(void)
-{
-	cache_system_t *cd;
-
-	for (cd = cache_head.next; cd != &cache_head; cd = cd->next) {
-		Con_Printf("%8i : %s\n", cd->size, cd->name);
-	}
-}
-
-/*
-============
 Cache_Report
 
 ============
@@ -785,16 +742,6 @@ void Cache_Report(void)
 	Con_DPrintf("%4.1f megabyte data cache\n",
 		    (hunk_size - hunk_high_used -
 		     hunk_low_used) / (float)(1024 * 1024));
-}
-
-/*
-============
-Cache_Compact
-
-============
-*/
-void Cache_Compact(void)
-{
 }
 
 /*

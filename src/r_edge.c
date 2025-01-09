@@ -655,8 +655,6 @@ void R_ScanEdges(void)
 		// flush the span list if we can't be sure we have enough spans left for
 		// the next scan
 		if (span_p >= max_span_p) {
-			S_ExtraUpdate();	// don't let sound get messed up if going slow
-
 			if (r_drawculledpolys) {
 				R_DrawCulledPolys();
 			} else {

@@ -438,14 +438,3 @@ void Cmd_ForwardToServer()
 	else
 		SZ_Print(&cls.message, "\n");
 }
-
-int Cmd_CheckParm(char *parm)
-{ // Returns the position (1 to argc-1) in the command's argument list
-  // where the given parameter apears, or 0 if not present
-	if (!parm)
-		Sys_Error("Cmd_CheckParm: NULL");
-	for (int i = 1; i < Cmd_Argc(); i++)
-		if (!Q_strcasecmp(parm, Cmd_Argv(i)))
-			return i;
-	return 0;
-}

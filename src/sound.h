@@ -85,9 +85,6 @@ void S_ExtraUpdate (void);
 
 sfx_t *S_PrecacheSound (char *sample);
 void S_TouchSound (char *sample);
-void S_ClearPrecache (void);
-void S_BeginPrecaching (void);
-void S_EndPrecaching (void);
 void S_PaintChannels(int endtime);
 void S_InitPaintChannels (void);
 
@@ -153,8 +150,4 @@ wavinfo_t GetWavinfo (char *name, byte *wav, int wavlength);
 
 void SND_InitScaletable (void);
 void SNDDMA_Submit(void);
-
-void S_AmbientOff (void);
-void S_AmbientOn (void);
-
 #endif

@@ -1,23 +1,7 @@
-/*
-Copyright (C) 1996-2001 Id Software, Inc.
-Copyright (C) 2002-2009 John Fitzgibbons and others
+// Copyright (C) 1996-2001 Id Software, Inc.
+// Copyright (C) 2002-2009 John Fitzgibbons and others
+// GPLv3 See LICENSE for details.
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
 #if !defined BYTE_DEFINED
 typedef unsigned char 		byte;
 #define BYTE_DEFINED 1
@@ -37,7 +21,6 @@ typedef struct sizebuf_s
 } sizebuf_t;
 
 void SZ_Alloc (sizebuf_t *buf, int startsize);
-void SZ_Free (sizebuf_t *buf);
 void SZ_Clear (sizebuf_t *buf);
 void *SZ_GetSpace (sizebuf_t *buf, int length);
 void SZ_Write (sizebuf_t *buf, void *data, int length);
@@ -91,7 +74,6 @@ typedef struct link_s
 void ClearLink (link_t *l);
 void RemoveLink (link_t *l);
 void InsertLinkBefore (link_t *l, link_t *before);
-void InsertLinkAfter (link_t *l, link_t *after);
 
 // (type *)STRUCT_FROM_LINK(link_t *link, type, member)
 // ent = STRUCT_FROM_LINK(link,entity_t,order)
@@ -152,7 +134,6 @@ void MSG_WriteFloat (sizebuf_t *sb, float f);
 void MSG_WriteString (sizebuf_t *sb, char *s);
 void MSG_WriteCoord (sizebuf_t *sb, float f);
 void MSG_WriteAngle (sizebuf_t *sb, float f);
-void MSG_WriteAngle16 (sizebuf_t *sb, float f); //johnfitz
 
 extern int msg_readcount;
 extern qboolean	msg_badread; // set if a read goes beyond end of message
@@ -167,13 +148,11 @@ char *MSG_ReadString ();
 
 float MSG_ReadCoord ();
 float MSG_ReadAngle ();
-float MSG_ReadAngle16 (); //johnfitz
 
 // =============================================================================
 
 void Q_memset (void *dest, int fill, size_t count);
 void Q_memcpy (void *dest, const void *src, size_t count);
-int Q_memcmp (const void *m1, const void *m2, size_t count);
 void Q_strcpy (char *dest, const char *src);
 void Q_strncpy (char *dest, const char *src, int count);
 int Q_strlen (const char *str);
@@ -200,8 +179,6 @@ int COM_CheckParm (char *parm);
 void COM_Init ();
 void COM_InitArgv (int argc, char **argv);
 
-char *COM_SkipPath (char *pathname);
-void COM_StripExtension (char *in, char *out);
 void COM_FileBase (char *in, char *out);
 void COM_DefaultExtension (char *path, char *extension);
 void COM_CreatePath (char *path);
@@ -221,7 +198,6 @@ int COM_FOpenFile (char *filename, FILE **file);
 void COM_CloseFile (int h);
 
 unsigned char *COM_LoadStackFile (char *path, void *buffer, int bufsize);
-unsigned char *COM_LoadTempFile (char *path);
 unsigned char *COM_LoadHunkFile (char *path);
 void COM_LoadCacheFile (char *path, struct cache_user_s *cu);
 

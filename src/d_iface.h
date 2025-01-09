@@ -127,15 +127,12 @@ extern vec3_t	r_pright, r_pup, r_ppn;
 
 void D_Aff8Patch (void *pcolormap);
 void D_BeginDirectRect (int x, int y, byte *pbitmap, int width, int height);
-void D_DisableBackBufferAccess (void);
 void D_PolysetDraw (void);
 void D_PolysetDrawFinalVerts (finalvert_t *fv, int numverts);
 void D_DrawParticle (particle_t *pparticle);
 void D_DrawPoly (void);
 void D_DrawSprite (void);
 void D_DrawSurfaces (void);
-void D_DrawZPoint (void);
-void D_EnableBackBufferAccess (void);
 void D_EndParticles (void);
 void D_Init (void);
 void D_ViewChanged (void);
@@ -186,8 +183,6 @@ typedef struct
 extern drawsurf_t	r_drawsurf;
 
 void R_DrawSurface (void);
-void R_GenTile (msurface_t *psurf, void *pdest);
-
 
 // !!! if this is changed, it must be changed in d_ifacea.h too !!!
 #define TURB_TEX_SIZE	64		// base turbulent texture size

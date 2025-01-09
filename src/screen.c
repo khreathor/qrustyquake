@@ -462,15 +462,6 @@ int SCR_ModalMessage(char *text) // Displays a text string in the center
 	return key_lastpress == 'y';
 }
 
-void SCR_BringDownConsole() // and fade the palettes back to normal
-{
-	scr_centertime_off = 0;
-	for (int i = 0; i < 20 && scr_conlines != scr_con_current; i++)
-		SCR_UpdateScreen();
-	cl.cshifts[0].percent = 0; // no area contents palette on next frame
-	VID_SetPalette(host_basepal);
-}
-
 void SCR_UpdateScreen() // This is called every frame,
 { // and can also be called explicitly to flush text to the screen.
 	static float oldscr_viewsize;
@@ -547,10 +538,4 @@ void SCR_UpdateScreen() // This is called every frame,
 		D_UpdateRects(pconupdate);
 	V_UpdatePalette();
 	VID_Update();
-}
-
-void SCR_UpdateWholeScreen()
-{
-	scr_fullupdate = 0;
-	SCR_UpdateScreen();
 }

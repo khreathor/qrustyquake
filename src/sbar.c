@@ -430,34 +430,6 @@ int Sbar_ColorForMap(int m)
 
 /*
 ===============
-Sbar_UpdateScoreboard
-===============
-*/
-void Sbar_UpdateScoreboard(void)
-{
-	int i, k;
-	int top, bottom;
-	scoreboard_t *s;
-
-	Sbar_SortFrags();
-
-// draw the text
-	memset(scoreboardtext, 0, sizeof(scoreboardtext));
-
-	for (i = 0; i < scoreboardlines; i++) {
-		k = fragsort[i];
-		s = &cl.scores[k];
-		sprintf(&scoreboardtext[i][1], "%3i %s", s->frags, s->name);
-
-		top = s->colors & 0xf0;
-		bottom = (s->colors & 15) << 4;
-		scoreboardtop[i] = Sbar_ColorForMap(top);
-		scoreboardbottom[i] = Sbar_ColorForMap(bottom);
-	}
-}
-
-/*
-===============
 Sbar_SoloScoreboard
 ===============
 */
@@ -498,50 +470,6 @@ void Sbar_DrawScoreboard(void)
 	Sbar_SoloScoreboard();
 	if (cl.gametype == GAME_DEATHMATCH)
 		Sbar_DeathmatchOverlay();
-#if 0
-	int i, j, c;
-	int x, y;
-	int l;
-	int top, bottom;
-	scoreboard_t *s;
-
-	if (cl.gametype != GAME_DEATHMATCH) {
-		Sbar_SoloScoreboard();
-		return;
-	}
-
-	Sbar_UpdateScoreboard();
-
-	l = scoreboardlines <= 6 ? scoreboardlines : 6;
-
-	for (i = 0; i < l; i++) {
-		x = 20 * (i & 1);
-		y = i / 2 * 8;
-
-		s = &cl.scores[fragsort[i]];
-		if (!s->name[0])
-			continue;
-
-		// draw background
-		top = s->colors & 0xf0;
-		bottom = (s->colors & 15) << 4;
-		top = Sbar_ColorForMap(top);
-		bottom = Sbar_ColorForMap(bottom);
-
-		Draw_Fill(x * 8 + 10 + ((vid.width - 320) >> 1),
-			  y + vid.height - SBAR_HEIGHT, 28, 4, top);
-		Draw_Fill(x * 8 + 10 + ((vid.width - 320) >> 1),
-			  y + 4 + vid.height - SBAR_HEIGHT, 28, 4, bottom);
-
-		// draw text
-		for (j = 0; j < 20; j++) {
-			c = scoreboardtext[i][j];
-			if (c == 0 || c == ' ')
-				continue;
-			Sbar_DrawCharacter((x + j) * 8, y, c);
-		}
-	}
-#endif
 }
 
 //=============================================================================
