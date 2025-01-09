@@ -507,7 +507,7 @@ Host_Loadgame_f
 */
 void Host_Loadgame_f(void)
 {
-	char name[MAX_OSPATH];
+	char name[MAX_OSPATH+2];
 	FILE *f;
 	char mapname[MAX_QPATH];
 	float time, tfloat;
@@ -591,7 +591,7 @@ void Host_Loadgame_f(void)
 // load the edicts out of the savegame file
 	entnum = -1;		// -1 is the globals
 	while (!feof(f)) {
-		for (i = 0; i < sizeof(str) - 1; i++) {
+		for (i = 0; i < (int)sizeof(str) - 1; i++) {
 			r = fgetc(f);
 			if (r == EOF || !r)
 				break;
@@ -927,7 +927,7 @@ void Host_Say(qboolean teamonly)
 	client_t *save;
 	int j;
 	char *p;
-	unsigned char text[64];
+	char text[64];
 	qboolean fromServer = false;
 
 	if (cmd_source == src_command) {
@@ -1389,7 +1389,7 @@ Host_Give_f
 void Host_Give_f(void)
 {
 	char *t;
-	int v, w;
+	int v;
 	eval_t *val;
 
 	if (cmd_source == src_command) {

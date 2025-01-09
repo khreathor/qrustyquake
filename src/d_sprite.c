@@ -9,6 +9,7 @@
 static int sprite_height;
 static int minindex, maxindex;
 static sspan_t *sprite_spans;
+sspan_t spans[MAXHEIGHT + 1];
 
 #if	!id386
 
@@ -360,7 +361,6 @@ void D_DrawSprite(void)
 	int i, nump;
 	float ymin, ymax;
 	emitpoint_t *pverts;
-	sspan_t spans[MAXHEIGHT + 1];
 
 	sprite_spans = spans;
 

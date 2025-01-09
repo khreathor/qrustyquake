@@ -64,7 +64,7 @@ void *Mod_Extradata(model_t *mod)
 Mod_PointInLeaf
 ===============
 */
-mleaf_t *Mod_PointInLeaf(vec3_t p, model_t *model)
+mleaf_t *Mod_PointInLeaf(float *p, model_t *model)
 {
 	mnode_t *node;
 	float d;
@@ -594,7 +594,6 @@ void Mod_LoadTexinfo(lump_t *l)
 {
 	texinfo_t *in;
 	mtexinfo_t *out;
-	int i, j, count;
 	int miptex;
 	float len1, len2;
 
@@ -602,15 +601,16 @@ void Mod_LoadTexinfo(lump_t *l)
 	if (l->filelen % sizeof(*in))
 		Sys_Error("MOD_LoadBmodel: funny lump size in %s",
 			  loadmodel->name);
-	count = l->filelen / sizeof(*in);
+	int count = l->filelen / sizeof(*in);
 	out = Hunk_AllocName(count * sizeof(*out), loadname);
 
 	loadmodel->texinfo = out;
 	loadmodel->numtexinfo = count;
 
-	for (i = 0; i < count; i++, in++, out++) {
-		for (j = 0; j < 8; j++)
-			out->vecs[0][j] = LittleFloat(in->vecs[0][j]);
+	for (int i = 0; i < count; i++, in++, out++) {
+		for (int k = 0; k < 2; k++)
+			for (int j = 0; j < 4; j++)
+				out->vecs[k][j] = LittleFloat(in->vecs[k][j]);
 		len1 = Length(out->vecs[0]);
 		len2 = Length(out->vecs[1]);
 		len1 = (len1 + len2) / 2;
@@ -622,13 +622,6 @@ void Mod_LoadTexinfo(lump_t *l)
 			out->mipadjust = 2;
 		else
 			out->mipadjust = 1;
-#if 0
-		if (len1 + len2 < 0.001)
-			out->mipadjust = 1;	// don't crash
-		else
-			out->mipadjust = 1 / floor((len1 + len2) / 2 + 0.1);
-#endif
-
 		miptex = LittleLong(in->miptex);
 		out->flags = LittleLong(in->flags);
 
@@ -1092,7 +1085,7 @@ void Mod_LoadBrushModel(model_t *mod, void *buffer)
 // swap all the lumps
 	mod_base = (byte *) header;
 
-	for (i = 0; i < sizeof(dheader_t) / 4; i++)
+	for (i = 0; i < (int)sizeof(dheader_t) / 4; i++)
 		((int *)header)[i] = LittleLong(((int *)header)[i]);
 
 // load into heap
@@ -1140,8 +1133,7 @@ void Mod_LoadBrushModel(model_t *mod, void *buffer)
 		mod->numleafs = bm->visleafs;
 
 		if (i < mod->numsubmodels - 1) {	// duplicate the basic information
-			char name[10];
-
+			char name[12];
 			sprintf(name, "*%i", i + 1);
 			loadmodel = Mod_FindName(name);
 			*loadmodel = *mod;

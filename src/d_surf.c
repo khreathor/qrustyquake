@@ -9,7 +9,7 @@
 float surfscale;
 qboolean r_cache_thrash;	// set if surface cache is thrashing
 
-int sc_size;
+unsigned long sc_size;
 surfcache_t *sc_rover, *sc_base;
 
 #define GUARDSIZE       4
@@ -125,7 +125,8 @@ surfcache_t *D_SCAlloc(int width, uintptr_t size)
 // if there is not size bytes after the rover, reset to the start
 	wrapped_this_time = false;
 
-	if (!sc_rover || (byte *) sc_rover - (byte *) sc_base > sc_size - size) {
+	if (!sc_rover || (unsigned long)((byte *) sc_rover - (byte *) sc_base)
+			> sc_size - size) {
 		if (sc_rover) {
 			wrapped_this_time = true;
 		}
@@ -136,7 +137,7 @@ surfcache_t *D_SCAlloc(int width, uintptr_t size)
 	if (sc_rover->owner)
 		*sc_rover->owner = NULL;
 
-	while (new->size < size) {
+	while (new->size < (int)size) {
 		// free another
 		sc_rover = sc_rover->next;
 		if (!sc_rover)

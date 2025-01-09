@@ -628,7 +628,7 @@ static sys_socket_t test2Socket;
 static void Test2_Poll(void *);
 static PollProcedure test2PollProcedure = { NULL, 0.0, Test2_Poll };
 
-static void Test2_Poll(void *unused)
+static void Test2_Poll(void *)
 {
 	struct qsockaddr clientaddr;
 	int control;
