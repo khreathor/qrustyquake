@@ -8,20 +8,18 @@
 // references them even when on a unix system.
 
 // these two are not intended to be set directly
-cvar_t cl_name = { "_cl_name", "player", true };
-cvar_t cl_color = { "_cl_color", "0", true };
+cvar_t cl_name = { "_cl_name", "player", true, false, 0, NULL };
+cvar_t cl_color = { "_cl_color", "0", true, false, 0, NULL };
 
-cvar_t cl_shownet = { "cl_shownet", "0" };	// can be 0, 1, or 2
-cvar_t cl_nolerp = { "cl_nolerp", "0" };
-
-cvar_t lookspring = { "lookspring", "0", true };
-cvar_t lookstrafe = { "lookstrafe", "0", true };
-cvar_t sensitivity = { "sensitivity", "3", true };
-
-cvar_t m_pitch = { "m_pitch", "0.022", true };
-cvar_t m_yaw = { "m_yaw", "0.022", true };
-cvar_t m_forward = { "m_forward", "1", true };
-cvar_t m_side = { "m_side", "0.8", true };
+cvar_t cl_shownet = { "cl_shownet", "0", false, false, 0, NULL };
+cvar_t cl_nolerp = { "cl_nolerp", "0", false, false, 0, NULL };
+cvar_t lookspring = { "lookspring", "0", true, false, 0, NULL };
+cvar_t lookstrafe = { "lookstrafe", "0", true, false, 0, NULL };
+cvar_t sensitivity = { "sensitivity", "3", true, false, 0, NULL };
+cvar_t m_pitch = { "m_pitch", "0.022", true, false, 0, NULL };
+cvar_t m_yaw = { "m_yaw", "0.022", true, false, 0, NULL };
+cvar_t m_forward = { "m_forward", "1", true, false, 0, NULL };
+cvar_t m_side = { "m_side", "0.8", true, false, 0, NULL };
 
 client_static_t cls;
 client_state_t cl;

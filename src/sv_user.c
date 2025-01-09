@@ -7,7 +7,7 @@
 edict_t *sv_player;
 
 extern cvar_t sv_friction;
-cvar_t sv_edgefriction = { "edgefriction", "2" };
+cvar_t sv_edgefriction = { "edgefriction", "2", false, false, 0, NULL };
 
 extern cvar_t sv_stopspeed;
 
@@ -25,7 +25,7 @@ qboolean onground;
 
 usercmd_t cmd;
 
-cvar_t sv_idealpitchscale = { "sv_idealpitchscale", "0.8" };
+cvar_t sv_idealpitchscale = { "sv_idealpitchscale", "0.8", false, false,0,NULL};
 
 /*
 ===============
@@ -140,35 +140,9 @@ void SV_UserFriction(void)
 	vel[2] = vel[2] * newspeed;
 }
 
-/*
-==============
-SV_Accelerate
-==============
-*/
-cvar_t sv_maxspeed = { "sv_maxspeed", "320", false, true };
-cvar_t sv_accelerate = { "sv_accelerate", "10" };
+cvar_t sv_maxspeed = { "sv_maxspeed", "320", false, true, 0, NULL };
+cvar_t sv_accelerate = { "sv_accelerate", "10", false, false, 0, NULL };
 
-#if 0
-void SV_Accelerate(vec3_t wishvel)
-{
-	int i;
-	float addspeed, accelspeed;
-	vec3_t pushvec;
-
-	if (wishspeed == 0)
-		return;
-
-	VectorSubtract(wishvel, velocity, pushvec);
-	addspeed = VectorNormalize(pushvec);
-
-	accelspeed = sv_accelerate.value * host_frametime * addspeed;
-	if (accelspeed > addspeed)
-		accelspeed = addspeed;
-
-	for (i = 0; i < 3; i++)
-		velocity[i] += accelspeed * pushvec[i];
-}
-#endif
 void SV_Accelerate(void)
 {
 	int i;

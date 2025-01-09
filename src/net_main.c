@@ -63,8 +63,8 @@ int messagesReceived = 0;
 int unreliableMessagesSent = 0;
 int unreliableMessagesReceived = 0;
 
-static cvar_t net_messagetimeout = { "net_messagetimeout", "300", 0 };
-cvar_t hostname = { "hostname", "UNNAMED", 0 };
+static cvar_t net_messagetimeout = { "net_messagetimeout", "300", 0, 0, 0, 0 };
+cvar_t hostname = { "hostname", "UNNAMED", 0, 0, 0, 0 };
 
 // these two macros are to make the code more readable
 #define sfunc	net_drivers[sock->driver]
