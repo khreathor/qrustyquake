@@ -40,7 +40,11 @@ struct mplane_s;
 extern vec3_t vec3_origin;
 extern	int nanmask;
 
-#define	IS_NAN(x) (((*(int *)&x)&nanmask)==nanmask)
+#define IS_NAN(x) ({                     \
+    int temp;                            \
+    memcpy(&temp, &x, sizeof(int));      \
+    ((temp & nanmask) == nanmask);       \
+})
 
 #define CLAMP(min, x, max) ((x) < (min) ? (min) : (x) > (max) ? (max) : (x)) //johnfitz
 
