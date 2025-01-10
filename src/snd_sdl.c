@@ -8,6 +8,7 @@ extern int desired_bits;
 
 static void paint_audio(void *unused, Uint8 *stream, int len)
 {
+	(void)unused; // shhh compiler its ok
 	if (shm) {
 		shm->buffer = stream;
 		shm->samplepos += len / (shm->samplebits / 8) / 2;
@@ -78,7 +79,8 @@ qboolean SNDDMA_Init(void)
 			/* Supported */
 			break;
 		}
-		/* Unsupported, fall through */ ;
+		/* Unsupported */ ;
+		/* fallthrough */
 	default:
 		/* Not supported -- force SDL to do our bidding */
 		SDL_CloseAudio();

@@ -852,17 +852,14 @@ void R_EdgeDrawing(void)
 	}
 
 	if (r_surfsonstack) {
-		surfaces = &lsurfs[0];	// No need to adjust, already aligned
+		// surface 0 doesn't really exist; it's just a dummy because
+		// index 0 is used to indicate no edge attached to surface
+		surfaces = &lsurfs[1]; // Point to the first "real" surface
 		surf_max = &surfaces[r_cnumsurfs];
-
-		// surface 0 doesn't really exist; it's just a dummy because index 0
-		// is used to indicate no edge attached to surface
-		surfaces--;
 		R_SurfacePatch();
 	}
 
-	// TODO
-	R_BeginEdgeFrame();	// Windows crashes here for some reason...
+	R_BeginEdgeFrame();
 
 	if (r_dspeeds.value) {
 		rw_time1 = Sys_FloatTime();

@@ -907,8 +907,7 @@ void SV_CreateBaseline(void)
 		} else {
 			svent->baseline.colormap = 0;
 			svent->baseline.modelindex =
-			    svent->baseline.modelindex =
-			    SV_ModelIndex(PR_GetString(svent->v.model));
+				SV_ModelIndex(PR_GetString(svent->v.model));
 		}
 
 		//
