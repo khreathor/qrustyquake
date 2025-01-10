@@ -1,25 +1,6 @@
-/*
- * net_defs.h -- functions and data private to the network layer
- * net_sys.h and its dependencies must be included before net_defs.h.
- *
- * Copyright (C) 1996-1997  Id Software, Inc.
- * Copyright (C) 2005-2012  O.Sezer <sezero@users.sourceforge.net>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or (at
- * your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *
- * See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- */
+// Copyright (C) 1996-1997  Id Software, Inc.
+// Copyright (C) 2005-2012  O.Sezer <sezero@users.sourceforge.net>
+// GPLv3 See LICENSE for details.
 
 #ifndef __NET_DEFS_H
 #define __NET_DEFS_H
@@ -256,5 +237,4 @@ typedef struct _PollProcedure
 
 void SchedulePollProcedure(PollProcedure *pp, double timeOffset);
 
-#endif	/* __NET_DEFS_H */
-
+#endif
