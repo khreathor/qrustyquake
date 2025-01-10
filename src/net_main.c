@@ -1,23 +1,6 @@
-/*
-Copyright (C) 1996-2001 Id Software, Inc.
-Copyright (C) 2010-2014 QuakeSpasm developers
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
+// Copyright (C) 1996-2001 Id Software, Inc.
+// Copyright (C) 2010-2014 QuakeSpasm developers
+// GPLv3 See LICENSE for details.
 
 #include "quakedef.h"
 #include "q_stdinc.h"
@@ -52,8 +35,8 @@ static int slistLastShown;
 
 static void Slist_Send(void *);
 static void Slist_Poll(void *);
-static PollProcedure slistSendProcedure = { NULL, 0.0, Slist_Send };
-static PollProcedure slistPollProcedure = { NULL, 0.0, Slist_Poll };
+static PollProcedure slistSendProcedure = { NULL, 0.0, Slist_Send, NULL };
+static PollProcedure slistPollProcedure = { NULL, 0.0, Slist_Poll, NULL };
 
 sizebuf_t net_message;
 int net_activeconnections = 0;
@@ -281,6 +264,7 @@ void NET_Slist_f(void)
 
 static void Slist_Send(void *unused)
 {
+	(void)unused;
 	for (net_driverlevel = 0; net_driverlevel < net_numdrivers;
 	     net_driverlevel++) {
 		if (!slistLocal && IS_LOOP_DRIVER(net_driverlevel))
@@ -296,6 +280,7 @@ static void Slist_Send(void *unused)
 
 static void Slist_Poll(void *unused)
 {
+	(void)unused;
 	for (net_driverlevel = 0; net_driverlevel < net_numdrivers;
 	     net_driverlevel++) {
 		if (!slistLocal && IS_LOOP_DRIVER(net_driverlevel))

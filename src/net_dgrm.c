@@ -1,23 +1,6 @@
-/*
-Copyright (C) 1996-2001 Id Software, Inc.
-Copyright (C) 2010-2014 QuakeSpasm developers
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
+// Copyright (C) 1996-2001 Id Software, Inc.
+// Copyright (C) 2010-2014 QuakeSpasm developers
+// GPLv3 See LICENSE for details.
 
 #include "quakedef.h"
 #include "q_stdinc.h"
@@ -236,6 +219,7 @@ qboolean Datagram_CanSendMessage(qsocket_t *sock)
 
 qboolean Datagram_CanSendUnreliableMessage(qsocket_t *sock)
 {
+	(void)sock; // the other sock, i found it.
 	return true;
 }
 
@@ -493,10 +477,11 @@ static int testDriver;
 static sys_socket_t testSocket;
 
 static void Test_Poll(void *);
-static PollProcedure testPollProcedure = { NULL, 0.0, Test_Poll };
+static PollProcedure testPollProcedure = { NULL, 0.0, Test_Poll, NULL };
 
 static void Test_Poll(void *unused)
 {
+	(void)unused; // using the unused for compiler because it asked nicely
 	struct qsockaddr clientaddr;
 	int control;
 	int len;
@@ -626,7 +611,7 @@ static int test2Driver;
 static sys_socket_t test2Socket;
 
 static void Test2_Poll(void *);
-static PollProcedure test2PollProcedure = { NULL, 0.0, Test2_Poll };
+static PollProcedure test2PollProcedure = { NULL, 0.0, Test2_Poll, NULL };
 
 static void Test2_Poll(void *)
 {
@@ -868,7 +853,7 @@ static qsocket_t *_Datagram_CheckNewConnections(void)
 		MSG_WriteLong(&net_message, 0);
 		MSG_WriteByte(&net_message, CCREP_SERVER_INFO);
 		dfunc.GetSocketAddr(acceptsock, &newaddr);
-		MSG_WriteString(&net_message, dfunc.AddrToString(&newaddr));
+		MSG_WriteString(&net_message, (char*)dfunc.AddrToString(&newaddr));
 		MSG_WriteString(&net_message, hostname.string);
 		MSG_WriteString(&net_message, sv.name);
 		MSG_WriteByte(&net_message, net_activeconnections);

@@ -30,23 +30,25 @@ static qboolean localconnectpending = false;
 static qsocket_t *loop_client = NULL;
 static qsocket_t *loop_server = NULL;
 
-int Loop_Init(void)
+int Loop_Init()
 {
 	if (cls.state == ca_dedicated)
 		return -1;
 	return 0;
 }
 
-void Loop_Shutdown(void)
+void Loop_Shutdown()
 {
 }
 
 void Loop_Listen(qboolean state)
 {
-}
+	(void)state; // removing the argument would break things, probably
+} // mentioning it here with void just to quiet the compiler
 
 void Loop_SearchForHosts(qboolean xmit)
 {
+	(void)xmit; // same as above
 	if (!sv.active)
 		return;
 
@@ -97,7 +99,7 @@ qsocket_t *Loop_Connect(const char *host)
 	return loop_client;
 }
 
-qsocket_t *Loop_CheckNewConnections(void)
+qsocket_t *Loop_CheckNewConnections()
 {
 	if (!localconnectpending)
 		return NULL;
@@ -220,6 +222,7 @@ qboolean Loop_CanSendMessage(qsocket_t *sock)
 
 qboolean Loop_CanSendUnreliableMessage(qsocket_t *sock)
 {
+	(void)sock;
 	return true;
 }
 
