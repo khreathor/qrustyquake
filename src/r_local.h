@@ -95,7 +95,7 @@ extern	float	screenAspect;
 extern	float	verticalFieldOfView;
 extern	float	xOrigin, yOrigin;
 
-extern	int		r_visframecount;
+extern	unsigned int	r_visframecount;
 
 //=============================================================================
 
@@ -277,7 +277,7 @@ extern mleaf_t	*r_viewleaf, *r_oldviewleaf;
 extern vec3_t	r_emins, r_emaxs;
 extern mnode_t	*r_pefragtopnode;
 extern int		r_clipflags;
-extern int		r_dlightframecount;
+extern unsigned int	r_dlightframecount;
 extern qboolean	r_fov_greater_than_90;
 
 void R_StoreEfrags (efrag_t **ppefrag);

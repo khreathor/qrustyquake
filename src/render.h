@@ -39,7 +39,7 @@ typedef struct entity_s
 	byte					*colormap;
 	int						effects;		// light, particals, etc
 	int						skinnum;		// for Alias models
-	int						visframe;		// last frame this entity was
+	unsigned int						visframe;		// last frame this entity was
 											//  found in an active leaf
 											
 	int						dlightframe;	// dynamic lighting

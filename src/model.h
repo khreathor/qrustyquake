@@ -84,9 +84,9 @@ typedef struct
 
 typedef struct msurface_s
 {
-	int			visframe;		// should be drawn when node is crossed
+	unsigned int		visframe;		// should be drawn when node is crossed
 
-	int			dlightframe;
+	unsigned int		dlightframe;
 	int			dlightbits;
 
 	mplane_t	*plane;
@@ -112,7 +112,7 @@ typedef struct mnode_s
 {
 // common with leaf
 	int			contents;		// 0, to differentiate from leafs
-	int			visframe;		// node needs to be traversed if current
+	unsigned int		visframe;		// node needs to be traversed if current
 	
 	short		minmaxs[6];		// for bounding box culling
 
@@ -132,7 +132,7 @@ typedef struct mleaf_s
 {
 // common with node
 	int			contents;		// wil be a negative contents number
-	int			visframe;		// node needs to be traversed if current
+	unsigned int		visframe;		// node needs to be traversed if current
 
 	short		minmaxs[6];		// for bounding box culling
 

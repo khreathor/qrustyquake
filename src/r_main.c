@@ -69,8 +69,8 @@ mplane_t screenedge[4];
 //
 // refresh flags
 //
-int r_framecount = 1;		// so frame counts initialized to 0 don't match
-int r_visframecount;
+unsigned int r_framecount = 1; // so frame counts initialized to 0 don't match
+unsigned int r_visframecount;
 int d_spanpixcount;
 int r_polycount;
 int r_drawnpolycount;

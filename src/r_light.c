@@ -5,7 +5,7 @@
 #include "quakedef.h"
 #include "r_local.h"
 
-int r_dlightframecount;
+unsigned int r_dlightframecount;
 
 /*
 ==================

@@ -271,7 +271,7 @@ void Hunk_Check(void)
 	for (h = (hunk_t *) hunk_base; (byte *) h != hunk_base + hunk_low_used;) {
 		if (h->sentinal != HUNK_SENTINAL)
 			Sys_Error("Hunk_Check: trahsed sentinal");
-		if (h->size < sizeof(hunk_t)
+		if (h->size < (int)sizeof(hunk_t)
 		    || h->size + (byte *) h - hunk_base > hunk_size)
 			Sys_Error("Hunk_Check: bad size");
 		h = (hunk_t *) ((byte *) h + h->size);
@@ -329,7 +329,7 @@ void Hunk_Print(qboolean all)
 		//
 		if (h->sentinal != HUNK_SENTINAL)
 			Sys_Error("Hunk_Check: trahsed sentinal");
-		if (h->size < sizeof(hunk_t)
+		if (h->size < (int)sizeof(hunk_t)
 		    || h->size + (byte *) h - hunk_base > hunk_size)
 			Sys_Error("Hunk_Check: bad size");
 

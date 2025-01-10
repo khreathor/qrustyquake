@@ -91,7 +91,7 @@ typedef struct
 
 extern cvar_t	r_drawflat;
 extern int		d_spanpixcount;
-extern int		r_framecount;		// sequence # of current frame since Quake
+extern unsigned int r_framecount; // sequence # of current frame since Quake
 									//  started
 extern qboolean	r_drawpolys;		// 1 if driver wants clipped polygons
 									//  rather than a span list

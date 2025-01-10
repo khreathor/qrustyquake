@@ -4,7 +4,7 @@
 
 #include "quakedef.h"
 
-int sb_updates;			// if >= vid.numpages, no update needed
+unsigned int sb_updates; // if >= vid.numpages, no update needed
 
 #define STAT_MINUS		10	// num frame for '-' stats digit
 qpic_t *sb_nums[2][11];
@@ -1051,7 +1051,8 @@ void Sbar_MiniDeathmatchOverlay(void)
 {
 	int i, k;
 	int top, bottom;
-	int x, y, f;
+	int x, f;
+	unsigned int y;
 	char num[12];
 	scoreboard_t *s;
 	int numlines;
