@@ -28,6 +28,7 @@ edge_t *removeedges[MAXHEIGHT];
 espan_t *span_p, *max_span_p;
 
 int r_currentkey;
+int r_bmodelactive;
 
 int current_iv;
 

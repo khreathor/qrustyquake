@@ -7,13 +7,12 @@
 #include "arch_def.h"
 #include "net_sys.h"
 #include "net_defs.h"
-
 #include "net_dgrm.h"
 #include "net_loop.h"
 
 net_driver_t net_drivers[] = {
 	{ "Loopback",
-	 false,
+	 0,
 	 Loop_Init,
 	 Loop_Listen,
 	 Loop_SearchForHosts,
@@ -28,7 +27,7 @@ net_driver_t net_drivers[] = {
 	 Loop_Shutdown },
 
 	{ "Datagram",
-	 false,
+	 0,
 	 Datagram_Init,
 	 Datagram_Listen,
 	 Datagram_SearchForHosts,
@@ -50,7 +49,7 @@ const int net_numdrivers = Q_COUNTOF(net_drivers);
 
 net_landriver_t net_landrivers[] = {
 	{ "Winsock TCPIP",
-	 false,
+	 0,
 	 0,
 	 WINS_Init,
 	 WINS_Shutdown,
@@ -72,7 +71,7 @@ net_landriver_t net_landrivers[] = {
 	 WINS_SetSocketPort },
 
 	{ "Winsock IPX",
-	 false,
+	 0,
 	 0,
 	 WIPX_Init,
 	 WIPX_Shutdown,

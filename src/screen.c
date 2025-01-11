@@ -12,7 +12,6 @@ qpic_t *scr_turtle;
 unsigned int scr_fullupdate;
 unsigned int clearconsole;
 unsigned int clearnotify;
-vrect_t *pconupdate;
 vrect_t scr_vrect;
 qboolean scr_disabled_for_loading;
 qboolean scr_drawloading;
@@ -504,7 +503,6 @@ void SCR_UpdateScreen() // This is called every frame,
 		Draw_TileClear(0, 0, vid.width, vid.height);
 		Sbar_Changed();
 	}
-	pconupdate = NULL;
 	SCR_SetUpToDrawConsole();
 	SCR_EraseCenterString();
 	V_RenderView(); // stay mapped in for linear writes all the time
@@ -534,8 +532,6 @@ void SCR_UpdateScreen() // This is called every frame,
 		M_Draw();
 		SCR_DrawFPS();
 	}
-	if (pconupdate)
-		D_UpdateRects(pconupdate);
 	V_UpdatePalette();
 	VID_Update();
 }

@@ -1,7 +1,5 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
 
-// wad.c
-
 #include "quakedef.h"
 
 int wad_numlumps;

@@ -1,12 +1,10 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
 
-/* crc.c */
-
 #include "quakedef.h"
 #include "crc.h"
 
 // this is a 16 bit, non-reflected CRC using the polynomial 0x1021
-// and the initial and final xor values shown below...  in other words, the
+// and the initial and final xor values shown below... in other words, the
 // CCITT standard CRC used by XMODEM
 
 #define CRC_INIT_VALUE	0xffff

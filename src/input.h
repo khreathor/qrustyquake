@@ -1,6 +1,5 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
 
-
 void IN_Init ();
 void IN_Shutdown ();
 void IN_Commands ();

@@ -1,10 +1,8 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
 
-// cvar.h
-
 /*
-
-cvar_t variables are used to hold scalar or string variables that can be changed or displayed at the console or prog code as well as accessed directly
+cvar_t variables are used to hold scalar or string variables that can be changed
+or displayed at the console or prog code as well as accessed directly
 in C code.
 
 it is sufficient to initialize a cvar_t with just the first two fields, or
@@ -14,9 +12,11 @@ file when the game is quit:
 cvar_t	r_draworder = {"r_draworder","1"};
 cvar_t	scr_screensize = {"screensize","1",true};
 
-Cvars must be registered before use, or they will have a 0 value instead of the float interpretation of the string.  Generally, all cvar_t declarations should be registered in the apropriate init function before any console commands are executed:
+Cvars must be registered before use, or they will have a 0 value instead of the
+float interpretation of the string.  Generally, all cvar_t declarations should
+be registered in the apropriate init function before any console commands are
+executed:
 Cvar_RegisterVariable (&host_framerate);
-
 
 C code usually just references a cvar in place:
 if ( r_draworder.value )
@@ -40,44 +40,32 @@ interface from being ambiguous.
 #define __CVAR__
 typedef struct cvar_s
 {
-	char	*name;
-	char	*string;
-	qboolean archive;		// set to true to cause it to be saved to vars.rc
-	qboolean server;		// notifies players when changed
-	float	value;
+	char *name;
+	char *string;
+	qboolean archive; // set to true to cause it to be saved to vars.rc
+	qboolean server; // notifies players when changed
+	float value;
 	struct cvar_s *next;
 } cvar_t;
 
-void 	Cvar_RegisterVariable (cvar_t *variable);
-// registers a cvar that allready has the name, string, and optionally the
-// archive elements set.
+extern cvar_t *cvar_vars;
 
-void 	Cvar_Set (char *var_name, const char *value);
-// equivelant to "<name> <variable>" typed at the console
-
-void	Cvar_SetValue (char *var_name, const float value);
-// expands value to a string and calls Cvar_Set
-
-float	Cvar_VariableValue (char *var_name);
-// returns 0 if not defined or non numeric
-
-char	*Cvar_VariableString (char *var_name);
-// returns an empty string if not defined
-
-char 	*Cvar_CompleteVariable (char *partial);
-// attempts to match a partial variable name for command line completion
-// returns NULL if nothing fits
-
-qboolean Cvar_Command (void);
-// called by Cmd_ExecuteString when Cmd_Argv(0) doesn't match a known
-// command.  Returns true if the command was a variable reference that
-// was handled. (print or change)
-
-void 	Cvar_WriteVariables (FILE *f);
-// Writes lines containing "set variable value" for all variables
-// with the archive flag set to true.
-
-cvar_t *Cvar_FindVar (const char *var_name);
-
-extern cvar_t	*cvar_vars;
+void Cvar_RegisterVariable(cvar_t *variable); // registers a cvar that already
+	// has the name, string, and optionally the archive elements set.
+void Cvar_Set(char *var_name, const char *value); // equivelant to
+	// "<name> <variable>" typed at the console
+void Cvar_SetValue(char *var_name, const float value); // expands value to a
+	// string and calls Cvar_Set
+float Cvar_VariableValue(char *var_name); // returns 0 if not defined
+	// or non numeric
+char *Cvar_VariableString(char *var_name); // returns an empty string if
+	// not defined
+char *Cvar_CompleteVariable(char *partial); // attempts to match a partial
+	// variable name for command completion returns NULL if nothing fits
+qboolean Cvar_Command(); // called by Cmd_ExecuteString when Cmd_Argv(0)
+	// doesn't match a known command. Returns true if the command was a
+	// variable reference that was handled. (print or change)
+void Cvar_WriteVariables(FILE *f); // Writes lines containing "set variable
+	// value" for all variables with the archive flag set to true.
+cvar_t *Cvar_FindVar(const char *var_name);
 #endif

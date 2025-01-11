@@ -1,18 +1,16 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
 
-
 #include "q_stdinc.h"
 #include "arch_def.h"
 #include "net_sys.h"
 #include "quakedef.h"
 #include "net_defs.h"
-
 #include "net_dgrm.h"
 #include "net_loop.h"
 
 net_driver_t net_drivers[] = {
 	{ "Loopback",
-	 false,
+	 0,
 	 Loop_Init,
 	 Loop_Listen,
 	 Loop_SearchForHosts,
@@ -27,7 +25,7 @@ net_driver_t net_drivers[] = {
 	 Loop_Shutdown },
 
 	{ "Datagram",
-	 false,
+	 0,
 	 Datagram_Init,
 	 Datagram_Listen,
 	 Datagram_SearchForHosts,
@@ -41,14 +39,11 @@ net_driver_t net_drivers[] = {
 	 Datagram_Close,
 	 Datagram_Shutdown }
 };
-
 const int net_numdrivers = Q_COUNTOF(net_drivers);
-
 #include "net_udp.h"
-
 net_landriver_t net_landrivers[] = {
 	{ "UDP",
-	 false,
+	 0,
 	 0,
 	 UDP_Init,
 	 UDP_Shutdown,
@@ -69,5 +64,4 @@ net_landriver_t net_landrivers[] = {
 	 UDP_GetSocketPort,
 	 UDP_SetSocketPort }
 };
-
 const int net_numlandrivers = Q_COUNTOF(net_landrivers);

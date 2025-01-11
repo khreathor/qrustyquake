@@ -70,7 +70,7 @@ int Sys_FileOpenRead(char *path, int *hndl)
 }
 
 int Sys_FileOpenWrite(char *path)
-{
+{ // FIXME fopen and fclose and fread and such all work great everywhere except fuCKING WINDOWS WHERE THEY JUST FUCKING CRASH WHY THE FUCK MICROSOFT
 	int i = findhandle();
 	FILE *f = fopen(path, "wb");
 	if (!f)

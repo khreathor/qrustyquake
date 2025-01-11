@@ -6,7 +6,6 @@
 extern qpic_t *draw_disc; // also used on sbar
 
 void Draw_Init ();
-void Draw_Character (int x, int y, int num);
 void Draw_CharacterScaled (int x, int y, int num, int scale);
 void Draw_PicScaled (int x, int y, qpic_t *pic, int scale);
 void Draw_TransPicScaled (int x, int y, qpic_t *pic, int scale);
