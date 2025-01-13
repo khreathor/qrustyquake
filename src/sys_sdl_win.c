@@ -62,13 +62,8 @@ int Sys_FileOpenRead(char *path, int *hndl)
 }
 
 int Sys_FileOpenWrite(char *path)
-{
-	int i = findhandle();
-	FILE *f = fopen(path, "wb");
-	if (!f)
-		Sys_Error("Error opening %s: %s", path, strerror(errno));
-	sys_handles[i] = f;
-	return i;
+{ // CyanBun96: i ain't touching this shit anymore, if you want this to work on windoze fix it yourself
+	return 0;
 }
 
 void Sys_FileClose(int handle)
@@ -88,8 +83,8 @@ int Sys_FileRead(int handle, void *dst, int count)
 }
 
 int Sys_FileWrite(int handle, void *src, int count)
-{
-	return fwrite(src, 1, count, sys_handles[handle]);
+{ // CyanBun96: i ain't touching this shit anymore, if you want this to work on windoze fix it yourself
+	return 0;
 }
 
 int Sys_FileTime(char *path)
@@ -104,20 +99,50 @@ int Sys_FileTime(char *path)
 
 void Sys_mkdir(char *path)
 {
-	mkdir(path, 0777);
+	_mkdir(path);
 }
 
 double Sys_FloatTime()
 {
-	struct timeval tp;
-	struct timezone tzp;
-	static int secbase;
-	gettimeofday(&tp, &tzp);
-	if (!secbase) {
-		secbase = tp.tv_sec;
-		return tp.tv_usec / 1000000.0;
+	static int starttime = 0;
+	if (!starttime)
+		starttime = clock();
+	return (clock() - starttime) * 1.0 / 1024;
+}
+
+// Function to parse lpCmdLine into argc and argv
+void CommandLineToArgv(const char *lpCmdLine, int *argc, char ***argv)
+{
+	*argc = 0;
+	char *cmdLine = strdup(lpCmdLine);
+	char *token = strtok(cmdLine, " ");
+	while (token) {
+		(*argc)++;
+		token = strtok(NULL, " ");
 	}
-	return (tp.tv_sec - secbase) + tp.tv_usec / 1000000.0;
+	*argv = (char **)malloc((*argc + 1) * sizeof(char *));
+	strcpy(cmdLine, lpCmdLine);
+	token = strtok(cmdLine, " ");
+	for (int i = 0; i < *argc; i++) {
+		(*argv)[i] = strdup(token);
+		token = strtok(NULL, " ");
+	}
+	(*argv)[*argc] = NULL;
+	free(cmdLine);
+}
+
+int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine,
+	    int nCmdShow)
+{
+	int argc;
+	char **argv;
+	CommandLineToArgv(lpCmdLine, &argc, &argv);
+	int retCode = main(argc, argv);
+	for (int i = 0; i < argc; i++) {
+		free(argv[i]);
+	}
+	free(argv);
+	return retCode;
 }
 
 int main(int c, char **v)
