@@ -61,15 +61,6 @@ int Sys_FileOpenRead(char *path, int *hndl)
 	return Qfilelength(f);
 }
 
-int Sys_FileOpenWrite(char *path)
-{
-	int i = findhandle();
-	FILE *f = fopen(path, "wb");
-	if (!f)
-		Sys_Error("Error opening %s: %s", path, strerror(errno));
-	sys_handles[i] = f;
-	return i;
-}
 
 void Sys_FileClose(int handle)
 {
@@ -87,11 +78,6 @@ int Sys_FileRead(int handle, void *dst, int count)
 	return fread(dst, 1, count, sys_handles[handle]);
 }
 
-int Sys_FileWrite(int handle, void *src, int count)
-{
-	return fwrite(src, 1, count, sys_handles[handle]);
-}
-
 int Sys_FileTime(char *path)
 {
 	FILE *f = fopen(path, "rb");
@@ -102,9 +88,20 @@ int Sys_FileTime(char *path)
 	return -1;
 }
 
-void Sys_mkdir(char *path)
+#ifndef _WIN32
+int Sys_FileOpenWrite(char *path)
 {
-	mkdir(path, 0777);
+	int i = findhandle();
+	FILE *f = fopen(path, "wb");
+	if (!f)
+		Sys_Error("Error opening %s: %s", path, strerror(errno));
+	sys_handles[i] = f;
+	return i;
+}
+
+int Sys_FileWrite(int handle, void *src, int count)
+{
+	return fwrite(src, 1, count, sys_handles[handle]);
 }
 
 double Sys_FloatTime()
@@ -119,6 +116,12 @@ double Sys_FloatTime()
 	}
 	return (tp.tv_sec - secbase) + tp.tv_usec / 1000000.0;
 }
+
+void Sys_mkdir(char *path)
+{
+	mkdir(path, 0777);
+}
+#endif
 
 int main(int c, char **v)
 {

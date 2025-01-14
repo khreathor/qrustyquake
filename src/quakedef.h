@@ -11,11 +11,6 @@
 
 #undef VERSION
 #define	VERSION				1.09
-#define	GLQUAKE_VERSION		1.00
-#define	D3DQUAKE_VERSION	0.01
-#define	WINQUAKE_VERSION	0.996
-#define	LINUX_VERSION		1.30
-#define	X11_VERSION			1.10
 
 //define        PARANOID        // speed sapping error checking
 
@@ -59,6 +54,8 @@
 #else
 #define UNALIGNED_OK	0
 #endif
+
+#define CMDLINE_LENGTH 256
 
 #define DEFAULT_MEMORY (128 * 1024 * 1024)
 // !!! if this is changed, it must be changed in d_ifacea.h too !!!

@@ -4,7 +4,6 @@
 // GPLv3 See LICENSE for details.
 
 #include "q_stdinc.h"
-#include "arch_def.h"
 #include "net_sys.h"
 #include "quakedef.h"
 #include "net_defs.h"
@@ -39,16 +38,6 @@ sys_socket_t UDP_Init()
 			       socketerror(err));
 	} else {
 		buff[MAXHOSTNAMELEN - 1] = 0;
-#ifdef PLATFORM_OSX
-		// ericw -- if our hostname ends in ".local" (a macOS thing),
-		// don't bother calling gethostbyname(), because it blocks for a few seconds
-		// and then fails (on my system anyway.)
-		tst = strstr(buff, ".local");
-		if (tst && tst[6] == '\0') {
-			Con_SafePrintf
-			    ("UDP_Init: skipping gethostbyname for %s\n", buff);
-		} else
-#endif
 		if (!(local = gethostbyname(buff))) {
 			Con_SafePrintf
 			    ("UDP_Init: WARNING: gethostbyname failed (%s)\n",

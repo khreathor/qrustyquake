@@ -4,7 +4,6 @@
 
 #include "quakedef.h"
 #include "q_stdinc.h"
-#include "arch_def.h"
 #include "net_sys.h"
 #include "net_defs.h"
 

@@ -49,12 +49,6 @@ void S_TransferStereo16(int endtime)
 	int lpos;
 	int lpaintedtime;
 	DWORD *pbuf;
-#ifdef _WIN32
-	int reps;
-	DWORD dwSize, dwSize2;
-	DWORD *pbuf2;
-	HRESULT hresult;
-#endif
 
 	snd_vol = volume.value * 256;
 
@@ -93,12 +87,6 @@ void S_TransferPaintBuffer(int endtime)
 	int val;
 	int snd_vol;
 	DWORD *pbuf;
-#ifdef _WIN32
-	int reps;
-	DWORD dwSize, dwSize2;
-	DWORD *pbuf2;
-	HRESULT hresult;
-#endif
 
 	if (shm->samplebits == 16 && shm->channels == 2) {
 		S_TransferStereo16(endtime);

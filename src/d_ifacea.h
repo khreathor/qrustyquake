@@ -7,17 +7,11 @@
 // !!! note that this file must match the corresponding C structures in
 // d_iface.h at all times !!!
 
-// !!! if this is changed, it must be changed in r_shared.h too !!!
-#define ALIAS_ONSEAM 0x0020
-
 // !!! if this is changed, it must be changed in d_iface.h too !!!
 #define TURB_TEX_SIZE 64 // base turbulent texture size
 
 // !!! if this is changed, it must be changed in d_iface.h too !!!
 #define CYCLE 128
-
-// !!! if this is changed, it must be changed in r_shared.h too !!!
-#define MAXHEIGHT 8640
 
 // !!! if this is changed, it must be changed in quakedef.h too !!!
 #define CACHE_SIZE 32 // used to align key data structures
