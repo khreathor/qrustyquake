@@ -3,7 +3,6 @@
 // GPLv3 See LICENSE for details.
 
 #include "quakedef.h"
-#include "q_stdinc.h"
 #include "net_sys.h"
 #include "net_defs.h"
 #include "net_dgrm.h"
@@ -56,18 +55,18 @@ static void NET_Ban_f(void)
 {
 	char addrStr[32];
 	char maskStr[32];
-	void (*print_fn)(const char *fmt, ...)FUNCP_PRINTF(1, 2);
+	//void (*print_fn)(const char *fmt, ...)FUNCP_PRINTF(1, 2);
 
 	if (cmd_source == src_command) {
 		if (!sv.active) {
 			Cmd_ForwardToServer();
 			return;
 		}
-		print_fn = Con_Printf;
+		//print_fn = Con_Printf;
 	} else {
 		if (pr_global_struct->deathmatch)
 			return;
-		print_fn = Con_Printf;	//SV_ClientPrintf;
+		//print_fn = Con_Printf;	//SV_ClientPrintf;
 	}
 
 	switch (Cmd_Argc()) {
@@ -75,9 +74,9 @@ static void NET_Ban_f(void)
 		if (banAddr.s_addr != INADDR_ANY) {
 			Q_strcpy(addrStr, inet_ntoa(banAddr));
 			Q_strcpy(maskStr, inet_ntoa(banMask));
-			print_fn("Banning %s [%s]\n", addrStr, maskStr);
+			//print_fn("Banning %s [%s]\n", addrStr, maskStr);
 		} else
-			print_fn("Banning not active\n");
+			//print_fn("Banning not active\n");
 		break;
 
 	case 2:
@@ -94,7 +93,7 @@ static void NET_Ban_f(void)
 		break;
 
 	default:
-		print_fn("BAN ip_address [mask]\n");
+		//print_fn("BAN ip_address [mask]\n");
 		break;
 	}
 }

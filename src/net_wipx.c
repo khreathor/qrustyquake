@@ -3,7 +3,6 @@
 // GPLv3 See LICENSE for details.
 
 #include "quakedef.h"
-#include "q_stdinc.h"
 #include "net_sys.h"
 #include <wsipx.h>
 #include "net_defs.h"

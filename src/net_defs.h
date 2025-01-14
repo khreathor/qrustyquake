@@ -16,6 +16,7 @@ struct qsockaddr
 	unsigned char qsa_data[14];
 };
 
+#define Q_COUNTOF(x) (sizeof(x) / sizeof((x)[0]))
 #define NET_HEADERSIZE		(2 * sizeof(unsigned int))
 #define NET_DATAGRAMSIZE	(MAX_DATAGRAM + NET_HEADERSIZE)
 

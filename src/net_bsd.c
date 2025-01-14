@@ -1,6 +1,5 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
 
-#include "q_stdinc.h"
 #include "net_sys.h"
 #include "quakedef.h"
 #include "net_defs.h"

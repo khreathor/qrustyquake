@@ -2,7 +2,6 @@
 // GPLv3 See LICENSE for details.
 
 // net_sys.h -- common network system header.
-// - may depend on q_stdinc.h
 
 #include <sys/types.h>
 #include <errno.h>
