@@ -49,16 +49,9 @@
 #include <stdint.h>
 #include <setjmp.h>
 
-#if id386
-#define UNALIGNED_OK	1	// set to 0 if unaligned accesses are not supported
-#else
-#define UNALIGNED_OK	0
-#endif
-
 #define CMDLINE_LENGTH 256
 
 #define DEFAULT_MEMORY (128 * 1024 * 1024)
-// !!! if this is changed, it must be changed in d_ifacea.h too !!!
 #define CACHE_SIZE	32	// used to align key data structures
 
 #define	MINIMUM_MEMORY			0x550000
