@@ -1,18 +1,14 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
 
-// r_edge.c
-
 #include "quakedef.h"
 #include "r_local.h"
 
-#if 0
 // FIXME
-the complex cases add new polys on most lines,
-    so dont optimize for keeping them the same have multiple free span lists to
-    try to get better coherence ? low depth complexity-- 1 to 3 or so this
-    breaks spans at every edge, even hidden ones(bad)
-have a sentinal at both ends ?
-#endif
+// the complex cases add new polys on most lines,
+// so dont optimize for keeping them the same have multiple free span lists to
+// try to get better coherence ? low depth complexity-- 1 to 3 or so this
+// breaks spans at every edge, even hidden ones(bad)
+// have a sentinal at both ends ?
 edge_t *auxedges;
 edge_t *r_edges, *edge_p, *edge_max;
 
@@ -121,8 +117,6 @@ void R_BeginEdgeFrame(void)
 	}
 }
 
-#if	!id386
-
 /*
 ==============
 R_InsertNewEdges
@@ -163,10 +157,6 @@ addedge:
 	} while ((edgestoadd = next_edge) != NULL);
 }
 
-#endif // !id386
-
-#if	!id386
-
 /*
 ==============
 R_RemoveEdges
@@ -180,10 +170,6 @@ void R_RemoveEdges(edge_t *pedge)
 		pedge->prev->next = pedge->next;
 	} while ((pedge = pedge->nextremove) != NULL);
 }
-
-#endif // !id386
-
-#if	!id386
 
 /*
 ==============
@@ -247,8 +233,6 @@ pushback:
 			return;
 	}
 }
-
-#endif // !id386
 
 /*
 ==============
@@ -392,8 +376,6 @@ void R_TrailingEdge(surf_t *surf, edge_t *edge)
 		surf->next->prev = surf->prev;
 	}
 }
-
-#if	!id386
 
 /*
 ==============
@@ -549,8 +531,6 @@ void R_GenerateSpans(void)
 
 	R_CleanupSpan();
 }
-
-#endif // !id386
 
 /*
 ==============

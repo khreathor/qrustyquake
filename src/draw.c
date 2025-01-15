@@ -75,12 +75,6 @@ void Draw_CharacterScaled(int x, int y, int num, int scale)
 		return; // totally off screen
 	if (y >= (signed int)(vid.height - 8 * scale))
 		return; // don't draw past the bottom of the screen
-#ifdef PARANOID
-	if (y > vid.height - 8 || x < 0 || x > vid.width - 8)
-		Sys_Error("Con_DrawCharacter: (%i, %i)", x, y);
-	if (num < 0 || num > 255)
-		Sys_Error("Con_DrawCharacter: char %i", num);
-#endif
 	int row = num >> 4;
 	int col = num & 15;
 	byte *source = draw_chars + (row << 10) + (col << 3);

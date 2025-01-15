@@ -179,7 +179,6 @@ void R_NewMap()
 		// surface 0 doesn't really exist; it's just a dummy because
 		// index 0 is used to indicate no edge attached to surface
 		surfaces--;
-		R_SurfacePatch();
 	} else
 		r_surfsonstack = true;
 	r_maxedgesseen = 0;
@@ -575,7 +574,6 @@ void R_EdgeDrawing()
 		// index 0 is used to indicate no edge attached to surface
 		surfaces = &lsurfs[1]; // Point to the first "real" surface
 		surf_max = &surfaces[r_cnumsurfs];
-		R_SurfacePatch();
 	}
 	R_BeginEdgeFrame();
 	if (r_dspeeds.value)

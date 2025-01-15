@@ -129,7 +129,6 @@ extern byte *r_warpbuffer;
 // this is currently for internal use only, and should not be used by drivers
 extern byte *r_skysource;
 
-void D_Aff8Patch(void *pcolormap);
 void D_BeginDirectRect(int x, int y, byte *pbitmap, int width, int height);
 void D_PolysetDraw();
 void D_PolysetDrawFinalVerts(finalvert_t *fv, int numverts);

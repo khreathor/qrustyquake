@@ -128,11 +128,9 @@ cvar_t v_centerspeed = { "v_centerspeed", "500", false, false, 0, NULL };
 
 void V_StartPitchDrift(void)
 {
-#if 1
 	if (cl.laststop == cl.time) {
 		return;		// something else is keeping it from drifting
 	}
-#endif
 	if (cl.nodrift || !cl.pitchvel) {
 		cl.pitchvel = v_centerspeed.value;
 		cl.nodrift = false;
@@ -225,11 +223,6 @@ cshift_t cshift_lava = { { 255, 80, 0 }, 150 };
 cvar_t v_gamma = { "gamma", "1", true, false, 0, NULL };
 
 byte gammatable[256];		// palette is sent through this
-
-#ifdef	GLQUAKE
-byte ramps[3][256];
-float v_blend[4];		// rgba 0.0 - 1.0
-#endif // GLQUAKE
 
 void BuildGammaTable(float g)
 {
@@ -419,141 +412,6 @@ void V_CalcPowerupCshift(void)
 		cl.cshifts[CSHIFT_POWERUP].percent = 0;
 }
 
-/*
-=============
-V_CalcBlend
-=============
-*/
-#ifdef	GLQUAKE
-void V_CalcBlend(void)
-{
-	float r, g, b, a, a2;
-	int j;
-
-	r = 0;
-	g = 0;
-	b = 0;
-	a = 0;
-
-	for (j = 0; j < NUM_CSHIFTS; j++) {
-		if (!gl_cshiftpercent.value)
-			continue;
-
-		a2 = ((cl.cshifts[j].percent * gl_cshiftpercent.value) /
-		      100.0) / 255.0;
-
-//              a2 = cl.cshifts[j].percent/255.0;
-		if (!a2)
-			continue;
-		a = a + a2 * (1 - a);
-//Con_Printf ("j:%i a:%f\n", j, a);
-		a2 = a2 / a;
-		r = r * (1 - a2) + cl.cshifts[j].destcolor[0] * a2;
-		g = g * (1 - a2) + cl.cshifts[j].destcolor[1] * a2;
-		b = b * (1 - a2) + cl.cshifts[j].destcolor[2] * a2;
-	}
-
-	v_blend[0] = r / 255.0;
-	v_blend[1] = g / 255.0;
-	v_blend[2] = b / 255.0;
-	v_blend[3] = a;
-	if (v_blend[3] > 1)
-		v_blend[3] = 1;
-	if (v_blend[3] < 0)
-		v_blend[3] = 0;
-}
-#endif
-
-/*
-=============
-V_UpdatePalette
-=============
-*/
-#ifdef	GLQUAKE
-void V_UpdatePalette(void)
-{
-	int i, j;
-	qboolean new;
-	byte *basepal, *newpal;
-	byte pal[768];
-	float r, g, b, a;
-	int ir, ig, ib;
-	qboolean force;
-
-	V_CalcPowerupCshift();
-
-	new = false;
-
-	for (i = 0; i < NUM_CSHIFTS; i++) {
-		if (cl.cshifts[i].percent != cl.prev_cshifts[i].percent) {
-			new = true;
-			cl.prev_cshifts[i].percent = cl.cshifts[i].percent;
-		}
-		for (j = 0; j < 3; j++)
-			if (cl.cshifts[i].destcolor[j] !=
-			    cl.prev_cshifts[i].destcolor[j]) {
-				new = true;
-				cl.prev_cshifts[i].destcolor[j] =
-				    cl.cshifts[i].destcolor[j];
-			}
-	}
-
-// drop the damage value
-	cl.cshifts[CSHIFT_DAMAGE].percent -= host_frametime * 150;
-	if (cl.cshifts[CSHIFT_DAMAGE].percent <= 0)
-		cl.cshifts[CSHIFT_DAMAGE].percent = 0;
-
-// drop the bonus value
-	cl.cshifts[CSHIFT_BONUS].percent -= host_frametime * 100;
-	if (cl.cshifts[CSHIFT_BONUS].percent <= 0)
-		cl.cshifts[CSHIFT_BONUS].percent = 0;
-
-	force = V_CheckGamma();
-	if (!new && !force)
-		return;
-
-	V_CalcBlend();
-
-	a = v_blend[3];
-	r = 255 * v_blend[0] * a;
-	g = 255 * v_blend[1] * a;
-	b = 255 * v_blend[2] * a;
-
-	a = 1 - a;
-	for (i = 0; i < 256; i++) {
-		ir = i * a + r;
-		ig = i * a + g;
-		ib = i * a + b;
-		if (ir > 255)
-			ir = 255;
-		if (ig > 255)
-			ig = 255;
-		if (ib > 255)
-			ib = 255;
-
-		ramps[0][i] = gammatable[ir];
-		ramps[1][i] = gammatable[ig];
-		ramps[2][i] = gammatable[ib];
-	}
-
-	basepal = host_basepal;
-	newpal = pal;
-
-	for (i = 0; i < 256; i++) {
-		ir = basepal[0];
-		ig = basepal[1];
-		ib = basepal[2];
-		basepal += 3;
-
-		newpal[0] = ramps[0][ir];
-		newpal[1] = ramps[1][ig];
-		newpal[2] = ramps[2][ib];
-		newpal += 3;
-	}
-
-	VID_SetPalette(pal);
-}
-#else // !GLQUAKE
 void V_UpdatePalette(void)
 {
 	int i, j;
@@ -621,7 +479,6 @@ void V_UpdatePalette(void)
 
 	VID_SetPalette(pal);
 }
-#endif // !GLQUAKE
 
 /* 
 ============================================================================== 
@@ -880,11 +737,6 @@ void V_CalcRefdef(void)
 // fudge position around to keep amount of weapon visible
 // roughly equal with different FOV
 
-#if 0
-	if (cl.model_precache[cl.stats[STAT_WEAPON]]
-	    && strcmp(cl.model_precache[cl.stats[STAT_WEAPON]]->name,
-		      "progs/v_shot2.mdl"))
-#endif
 		if (scr_viewsize.value == 110)
 			view->origin[2] += 1;
 		else if (scr_viewsize.value == 100)
@@ -990,15 +842,11 @@ void V_RenderView(void)
 		R_RenderView();
 	}
 
-#ifndef GLQUAKE
 	if (crosshair.value)
 		Draw_CharacterScaled(scr_vrect.x + scr_vrect.width / 2 -
 				     (uiscale << 2) + cl_crossx.value,
 				     scr_vrect.y + scr_vrect.height / 2 +
 				     cl_crossy.value, '+', uiscale);
-	//Draw_CharacterScaled (scr_vrect.x + scr_vrect.width/2 + cl_crossx.value, 
-	//      scr_vrect.y + scr_vrect.height/2 + cl_crossy.value, '+', uiscale);
-#endif
 
 }
 

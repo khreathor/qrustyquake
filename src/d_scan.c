@@ -69,8 +69,6 @@ void D_WarpScreen(void)
 	}
 }
 
-#if	!id386
-
 /*
 =============
 D_DrawTurbulent8Span
@@ -92,8 +90,6 @@ void D_DrawTurbulent8Span(void)
 		r_turb_t += r_turb_tstep;
 	} while (--r_turb_spancount > 0);
 }
-
-#endif // !id386
 
 short *pz;			// Manoel Kasimier - translucent water
 int izi, izistep;
@@ -236,8 +232,6 @@ void Turbulent8(espan_t *pspan)
 
 	} while ((pspan = pspan->pnext) != NULL);
 }
-
-#if	!id386
 
 /*
 =============
@@ -420,5 +414,3 @@ void D_DrawZSpans(espan_t *pspan)
 
 	} while ((pspan = pspan->pnext) != NULL);
 }
-
-#endif // !id386

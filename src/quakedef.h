@@ -37,7 +37,6 @@
 #include <stdint.h>
 #include <setjmp.h>
 
-#define QUAKE_GAME // as opposed to utilities
 #define VERSION 1.09
 #define GAMENAME "id1"
 #define CMDLINE_LENGTH 256
@@ -133,7 +132,6 @@
 #define MAX_SCOREBOARD 16
 #define MAX_SCOREBOARDNAME 32
 #define SOUND_CHANNELS 8
-// #define PARANOID // speed sapping error checking
 // This makes anyone on id's net privileged
 // Use for multiplayer testing only - VERY dangerous!!!
 // #define IDGODS

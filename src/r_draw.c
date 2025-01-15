@@ -1,15 +1,11 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
 
-
-// r_draw.c
-
 #include "quakedef.h"
 #include "r_local.h"
 #include "d_local.h"		// FIXME: shouldn't need to include this
 
 #define MAXLEFTCLIPEDGES		100
 
-// !!! if these are changed, they must be changed in asm_draw.h too !!!
 #define FULLY_CLIPPED_CACHED	0x80000000
 #define FRAMECOUNT_MASK			0x7FFFFFFF
 
@@ -49,8 +45,6 @@ float r_u1, r_v1, r_lzi1;
 int r_ceilv1;
 
 qboolean r_lastvertvalid;
-
-#if	!id386
 
 /*
 ================
@@ -309,8 +303,6 @@ void R_ClipEdge(mvertex_t *pv0, mvertex_t *pv1, clipplane_t *clip)
 	// add the edge
 	R_EmitEdge(pv0, pv1);
 }
-
-#endif // !id386
 
 /*
 ================

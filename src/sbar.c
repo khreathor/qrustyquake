@@ -1016,24 +1016,6 @@ void Sbar_DeathmatchOverlay(void)
 		if (k == cl.viewentity - 1)
 			Draw_CharacterScaled(x - 8 * uiscale, y, 12, uiscale);
 
-#if 0
-		{
-			int total;
-			int n, minutes, tens, units;
-
-			// draw time
-			total = cl.completed_time - s->entertime;
-			minutes = (int)total / 60;
-			n = total - minutes * 60;
-			tens = n / 10;
-			units = n % 10;
-
-			sprintf(num, "%3i:%i%i", minutes, tens, units);
-
-			Draw_String(x + 48, y, num);
-		}
-#endif
-
 		// draw name
 		Draw_StringScaled(x + 64 * uiscale, y, s->name, uiscale);
 
@@ -1115,24 +1097,6 @@ void Sbar_MiniDeathmatchOverlay(void)
 			Draw_CharacterScaled(x, y, 16, uiscale);
 			Draw_CharacterScaled(x + 32, y, 17, uiscale);
 		}
-
-#if 0
-		{
-			int total;
-			int n, minutes, tens, units;
-
-			// draw time
-			total = cl.completed_time - s->entertime;
-			minutes = (int)total / 60;
-			n = total - minutes * 60;
-			tens = n / 10;
-			units = n % 10;
-
-			sprintf(num, "%3i:%i%i", minutes, tens, units);
-
-			Draw_String(x + 48, y, num);
-		}
-#endif
 
 		// draw name
 		Draw_StringScaled(x + 48 * uiscale, y, s->name, uiscale);
