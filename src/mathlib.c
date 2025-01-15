@@ -7,15 +7,8 @@
 
 #include "quakedef.h"
 
-void Sys_Error(char *error, ...);
-
 vec3_t vec3_origin = { 0, 0, 0 };
-
 int nanmask = 255 << 23;
-
-/*-----------------------------------------------------------------*/
-
-#define DEG2RAD( a ) ( (a) * M_PI_DIV_180 )	//johnfitz
 
 void ProjectPointOnPlane(vec3_t dst, const vec3_t p, const vec3_t normal)
 {
@@ -36,134 +29,72 @@ void ProjectPointOnPlane(vec3_t dst, const vec3_t p, const vec3_t normal)
 	dst[2] = p[2] - d * n[2];
 }
 
-/*-----------------------------------------------------------------*/
-
 float anglemod(float a)
 {
 	a = (360.0 / 65536) * ((int)(a * (65536 / 360.0)) & 65535);
 	return a;
 }
 
-/*
-==================
-BOPS_Error
 
-Split out like this for ASM to call.
-==================
-*/
-void BOPS_Error(void)
-{
-	Sys_Error("BoxOnPlaneSide:  Bad signbits");
-}
-
-/*
-==================
-BoxOnPlaneSide
-
-Returns 1, 2, or 1 + 2
-==================
-*/
 int BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, mplane_t *p)
-{
-	float dist1, dist2;
-	int sides;
-
-// general case
-	switch (p->signbits) {
+{ // Returns 1, 2, or 1 + 2
+	float dist1 = 0, dist2 = 0;
+	switch (p->signbits) { // general case
 	case 0:
-		dist1 =
-		    p->normal[0] * emaxs[0] + p->normal[1] * emaxs[1] +
-		    p->normal[2] * emaxs[2];
-		dist2 =
-		    p->normal[0] * emins[0] + p->normal[1] * emins[1] +
-		    p->normal[2] * emins[2];
-		break;
+	dist1=p->normal[0]*emaxs[0]+p->normal[1]*emaxs[1]+p->normal[2]*emaxs[2];
+	dist2=p->normal[0]*emins[0]+p->normal[1]*emins[1]+p->normal[2]*emins[2];
+	break;
 	case 1:
-		dist1 =
-		    p->normal[0] * emins[0] + p->normal[1] * emaxs[1] +
-		    p->normal[2] * emaxs[2];
-		dist2 =
-		    p->normal[0] * emaxs[0] + p->normal[1] * emins[1] +
-		    p->normal[2] * emins[2];
-		break;
+	dist1=p->normal[0]*emins[0]+p->normal[1]*emaxs[1]+p->normal[2]*emaxs[2];
+	dist2=p->normal[0]*emaxs[0]+p->normal[1]*emins[1]+p->normal[2]*emins[2];
+	break;
 	case 2:
-		dist1 =
-		    p->normal[0] * emaxs[0] + p->normal[1] * emins[1] +
-		    p->normal[2] * emaxs[2];
-		dist2 =
-		    p->normal[0] * emins[0] + p->normal[1] * emaxs[1] +
-		    p->normal[2] * emins[2];
-		break;
+	dist1=p->normal[0]*emaxs[0]+p->normal[1]*emins[1]+p->normal[2]*emaxs[2];
+	dist2=p->normal[0]*emins[0]+p->normal[1]*emaxs[1]+p->normal[2]*emins[2];
+	break;
 	case 3:
-		dist1 =
-		    p->normal[0] * emins[0] + p->normal[1] * emins[1] +
-		    p->normal[2] * emaxs[2];
-		dist2 =
-		    p->normal[0] * emaxs[0] + p->normal[1] * emaxs[1] +
-		    p->normal[2] * emins[2];
-		break;
+	dist1=p->normal[0]*emins[0]+p->normal[1]*emins[1]+p->normal[2]*emaxs[2];
+	dist2=p->normal[0]*emaxs[0]+p->normal[1]*emaxs[1]+p->normal[2]*emins[2];
+	break;
 	case 4:
-		dist1 =
-		    p->normal[0] * emaxs[0] + p->normal[1] * emaxs[1] +
-		    p->normal[2] * emins[2];
-		dist2 =
-		    p->normal[0] * emins[0] + p->normal[1] * emins[1] +
-		    p->normal[2] * emaxs[2];
-		break;
+	dist1=p->normal[0]*emaxs[0]+p->normal[1]*emaxs[1]+p->normal[2]*emins[2];
+	dist2=p->normal[0]*emins[0]+p->normal[1]*emins[1]+p->normal[2]*emaxs[2];
+	break;
 	case 5:
-		dist1 =
-		    p->normal[0] * emins[0] + p->normal[1] * emaxs[1] +
-		    p->normal[2] * emins[2];
-		dist2 =
-		    p->normal[0] * emaxs[0] + p->normal[1] * emins[1] +
-		    p->normal[2] * emaxs[2];
-		break;
+	dist1=p->normal[0]*emins[0]+p->normal[1]*emaxs[1]+p->normal[2]*emins[2];
+	dist2=p->normal[0]*emaxs[0]+p->normal[1]*emins[1]+p->normal[2]*emaxs[2];
+	break;
 	case 6:
-		dist1 =
-		    p->normal[0] * emaxs[0] + p->normal[1] * emins[1] +
-		    p->normal[2] * emins[2];
-		dist2 =
-		    p->normal[0] * emins[0] + p->normal[1] * emaxs[1] +
-		    p->normal[2] * emaxs[2];
-		break;
+	dist1=p->normal[0]*emaxs[0]+p->normal[1]*emins[1]+p->normal[2]*emins[2];
+	dist2=p->normal[0]*emins[0]+p->normal[1]*emaxs[1]+p->normal[2]*emaxs[2];
+	break;
 	case 7:
-		dist1 =
-		    p->normal[0] * emins[0] + p->normal[1] * emins[1] +
-		    p->normal[2] * emins[2];
-		dist2 =
-		    p->normal[0] * emaxs[0] + p->normal[1] * emaxs[1] +
-		    p->normal[2] * emaxs[2];
-		break;
+	dist1=p->normal[0]*emins[0]+p->normal[1]*emins[1]+p->normal[2]*emins[2];
+	dist2=p->normal[0]*emaxs[0]+p->normal[1]*emaxs[1]+p->normal[2]*emaxs[2];
+	break;
 	default:
-		dist1 = dist2 = 0;	// shut up compiler
-		BOPS_Error();
+		Sys_Error("BoxOnPlaneSide:  Bad signbits");
 		break;
 	}
-
-	sides = 0;
+	int sides = 0;
 	if (dist1 >= p->dist)
 		sides = 1;
 	if (dist2 < p->dist)
 		sides |= 2;
-
 	return sides;
 }
 
 void AngleVectors(vec3_t angles, vec3_t forward, vec3_t right, vec3_t up)
 {
-	float angle;
-	float sr, sp, sy, cr, cp, cy;
-
-	angle = angles[YAW] * (M_PI * 2 / 360);
-	sy = sin(angle);
-	cy = cos(angle);
+	float angle = angles[YAW] * (M_PI * 2 / 360);
+	float sy = sin(angle);
+	float cy = cos(angle);
 	angle = angles[PITCH] * (M_PI * 2 / 360);
-	sp = sin(angle);
-	cp = cos(angle);
+	float sp = sin(angle);
+	float cp = cos(angle);
 	angle = angles[ROLL] * (M_PI * 2 / 360);
-	sr = sin(angle);
-	cr = cos(angle);
-
+	float sr = sin(angle);
+	float cr = cos(angle);
 	forward[0] = cp * cy;
 	forward[1] = cp * sy;
 	forward[2] = -sp;
@@ -189,37 +120,26 @@ void CrossProduct(vec3_t v1, vec3_t v2, vec3_t cross)
 	cross[2] = v1[0] * v2[1] - v1[1] * v2[0];
 }
 
-double sqrt(double x);
-
 vec_t Length(vec3_t v)
 {
-	int i;
-	float length;
-
-	length = 0;
-	for (i = 0; i < 3; i++)
+	float length = 0;
+	for (int i = 0; i < 3; i++)
 		length += v[i] * v[i];
-	length = sqrt(length);	// FIXME
-
+	length = sqrt(length); // FIXME
 	return length;
 }
 
 float VectorNormalize(vec3_t v)
 {
-	float length, ilength;
-
-	length = v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
-	length = sqrt(length);	// FIXME
-
+	float length = v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
+	length = sqrt(length); // FIXME
 	if (length) {
-		ilength = 1 / length;
+		float ilength = 1 / length;
 		v[0] *= ilength;
 		v[1] *= ilength;
 		v[2] *= ilength;
 	}
-
 	return length;
-
 }
 
 void VectorInverse(vec3_t v)
@@ -236,91 +156,47 @@ void VectorScale(vec3_t in, vec_t scale, vec3_t out)
 	out[2] = in[2] * scale;
 }
 
-/*
-================
-R_ConcatRotations
-================
-*/
 void R_ConcatRotations(float in1[3][3], float in2[3][3], float out[3][3])
 {
-	out[0][0] = in1[0][0] * in2[0][0] + in1[0][1] * in2[1][0] +
-	    in1[0][2] * in2[2][0];
-	out[0][1] = in1[0][0] * in2[0][1] + in1[0][1] * in2[1][1] +
-	    in1[0][2] * in2[2][1];
-	out[0][2] = in1[0][0] * in2[0][2] + in1[0][1] * in2[1][2] +
-	    in1[0][2] * in2[2][2];
-	out[1][0] = in1[1][0] * in2[0][0] + in1[1][1] * in2[1][0] +
-	    in1[1][2] * in2[2][0];
-	out[1][1] = in1[1][0] * in2[0][1] + in1[1][1] * in2[1][1] +
-	    in1[1][2] * in2[2][1];
-	out[1][2] = in1[1][0] * in2[0][2] + in1[1][1] * in2[1][2] +
-	    in1[1][2] * in2[2][2];
-	out[2][0] = in1[2][0] * in2[0][0] + in1[2][1] * in2[1][0] +
-	    in1[2][2] * in2[2][0];
-	out[2][1] = in1[2][0] * in2[0][1] + in1[2][1] * in2[1][1] +
-	    in1[2][2] * in2[2][1];
-	out[2][2] = in1[2][0] * in2[0][2] + in1[2][1] * in2[1][2] +
-	    in1[2][2] * in2[2][2];
+	out[0][0]=in1[0][0]*in2[0][0]+in1[0][1]*in2[1][0]+in1[0][2]*in2[2][0];
+	out[0][1]=in1[0][0]*in2[0][1]+in1[0][1]*in2[1][1]+in1[0][2]*in2[2][1];
+	out[0][2]=in1[0][0]*in2[0][2]+in1[0][1]*in2[1][2]+in1[0][2]*in2[2][2];
+	out[1][0]=in1[1][0]*in2[0][0]+in1[1][1]*in2[1][0]+in1[1][2]*in2[2][0];
+	out[1][1]=in1[1][0]*in2[0][1]+in1[1][1]*in2[1][1]+in1[1][2]*in2[2][1];
+	out[1][2]=in1[1][0]*in2[0][2]+in1[1][1]*in2[1][2]+in1[1][2]*in2[2][2];
+	out[2][0]=in1[2][0]*in2[0][0]+in1[2][1]*in2[1][0]+in1[2][2]*in2[2][0];
+	out[2][1]=in1[2][0]*in2[0][1]+in1[2][1]*in2[1][1]+in1[2][2]*in2[2][1];
+	out[2][2]=in1[2][0]*in2[0][2]+in1[2][1]*in2[1][2]+in1[2][2]*in2[2][2];
 }
 
-/*
-================
-R_ConcatTransforms
-================
-*/
 void R_ConcatTransforms(float in1[3][4], float in2[3][4], float out[3][4])
 {
-	out[0][0] = in1[0][0] * in2[0][0] + in1[0][1] * in2[1][0] +
-	    in1[0][2] * in2[2][0];
-	out[0][1] = in1[0][0] * in2[0][1] + in1[0][1] * in2[1][1] +
-	    in1[0][2] * in2[2][1];
-	out[0][2] = in1[0][0] * in2[0][2] + in1[0][1] * in2[1][2] +
-	    in1[0][2] * in2[2][2];
-	out[0][3] = in1[0][0] * in2[0][3] + in1[0][1] * in2[1][3] +
-	    in1[0][2] * in2[2][3] + in1[0][3];
-	out[1][0] = in1[1][0] * in2[0][0] + in1[1][1] * in2[1][0] +
-	    in1[1][2] * in2[2][0];
-	out[1][1] = in1[1][0] * in2[0][1] + in1[1][1] * in2[1][1] +
-	    in1[1][2] * in2[2][1];
-	out[1][2] = in1[1][0] * in2[0][2] + in1[1][1] * in2[1][2] +
-	    in1[1][2] * in2[2][2];
-	out[1][3] = in1[1][0] * in2[0][3] + in1[1][1] * in2[1][3] +
-	    in1[1][2] * in2[2][3] + in1[1][3];
-	out[2][0] = in1[2][0] * in2[0][0] + in1[2][1] * in2[1][0] +
-	    in1[2][2] * in2[2][0];
-	out[2][1] = in1[2][0] * in2[0][1] + in1[2][1] * in2[1][1] +
-	    in1[2][2] * in2[2][1];
-	out[2][2] = in1[2][0] * in2[0][2] + in1[2][1] * in2[1][2] +
-	    in1[2][2] * in2[2][2];
-	out[2][3] = in1[2][0] * in2[0][3] + in1[2][1] * in2[1][3] +
-	    in1[2][2] * in2[2][3] + in1[2][3];
+	out[0][0]=in1[0][0]*in2[0][0]+in1[0][1]*in2[1][0]+in1[0][2]*in2[2][0];
+	out[0][1]=in1[0][0]*in2[0][1]+in1[0][1]*in2[1][1]+in1[0][2]*in2[2][1];
+	out[0][2]=in1[0][0]*in2[0][2]+in1[0][1]*in2[1][2]+in1[0][2]*in2[2][2];
+	out[0][3]=in1[0][0]*in2[0][3]+in1[0][1]*in2[1][3]+in1[0][2]*in2[2][3]+in1[0][3];
+	out[1][0]=in1[1][0]*in2[0][0]+in1[1][1]*in2[1][0]+in1[1][2]*in2[2][0];
+	out[1][1]=in1[1][0]*in2[0][1]+in1[1][1]*in2[1][1]+in1[1][2]*in2[2][1];
+	out[1][2]=in1[1][0]*in2[0][2]+in1[1][1]*in2[1][2]+in1[1][2]*in2[2][2];
+	out[1][3]=in1[1][0]*in2[0][3]+in1[1][1]*in2[1][3]+in1[1][2]*in2[2][3]+in1[1][3];
+	out[2][0]=in1[2][0]*in2[0][0]+in1[2][1]*in2[1][0]+in1[2][2]*in2[2][0];
+	out[2][1]=in1[2][0]*in2[0][1]+in1[2][1]*in2[1][1]+in1[2][2]*in2[2][1];
+	out[2][2]=in1[2][0]*in2[0][2]+in1[2][1]*in2[1][2]+in1[2][2]*in2[2][2];
+	out[2][3]=in1[2][0]*in2[0][3]+in1[2][1]*in2[1][3]+in1[2][2]*in2[2][3]+in1[2][3];
 }
 
-/*
-===================
-FloorDivMod
-
-Returns mathematically correct (floor-based) quotient and remainder for
-numer and denom, both of which should contain no fractional part. The
-quotient must fit in 32 bits.
-====================
-*/
-
+// Returns mathematically correct (floor-based) quotient and remainder for
+// numer and denom, both of which should contain no fractional part. The
+// quotient must fit in 32 bits.
 void FloorDivMod(double numer, double denom, int *quotient, int *rem)
 {
 	int q, r;
-	double x;
-
 	if (numer >= 0.0) {
-
-		x = floor(numer / denom);
+		double x = floor(numer / denom);
 		q = (int)x;
 		r = (int)floor(numer - (x * denom));
-	} else {
-		//
-		// perform operations with positive values, and fix mod to make floor-based
-		//
-		x = floor(-numer / denom);
+	} else { // perform operations with positive values, and fix mod
+		double x = floor(-numer / denom); // to make floor-based
 		q = -(int)x;
 		r = (int)floor(-numer - (x * denom));
 		if (r != 0) {
@@ -328,16 +204,10 @@ void FloorDivMod(double numer, double denom, int *quotient, int *rem)
 			r = (int)denom - r;
 		}
 	}
-
 	*quotient = q;
 	*rem = r;
 }
 
-/*
-===================
-GreatestCommonDivisor
-====================
-*/
 int GreatestCommonDivisor(int i1, int i2)
 {
 	if (i1 > i2) {
