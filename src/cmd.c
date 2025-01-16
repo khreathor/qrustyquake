@@ -31,11 +31,7 @@ void Cmd_Wait_f()
 	cmd_wait = true;
 }
 
-// =============================================================================
-// Command Buffer
-// =============================================================================
-
-void Cbuf_Init()
+void Cbuf_Init() // Command Buffer
 {
 	SZ_Alloc(&cmd_text, 8192); // space for commands and script files
 }
@@ -55,9 +51,8 @@ void Cbuf_AddText(char *text)
 // FIXME: actually change the command buffer to do less copying
 void Cbuf_InsertText(char *text)
 {
-	// copy off any commands still remaining in the exec buffer
-	char *temp = NULL;
-	int templen = cmd_text.cursize;
+	char *temp = NULL; // copy off any commands still remaining
+	int templen = cmd_text.cursize; // in the exec buffer
 	if (templen) {
 		temp = Z_Malloc(templen);
 		Q_memcpy(temp, cmd_text.data, templen);
@@ -107,16 +102,14 @@ void Cbuf_Execute()
 	}
 }
 
-// =============================================================================
-// Script Commands
-// =============================================================================
+
 
 // johnfitz -- rewritten to read the "cmdline" cvar, for use with dynamic mod loading
 // Adds command line parameters as script statements
 // Commands lead with a +, and continue until a - or another +
 // quake +prog jctest.qp +cmd amlev1
 // quake -nosound +cmd amlev1
-void Cmd_StuffCmds_f()
+void Cmd_StuffCmds_f() // Script Commands
 {
 	char cmds[CMDLINE_LENGTH];
 	extern cvar_t cmdline;
@@ -254,11 +247,7 @@ void Cmd_Unaliasall_f() // -- johnfitz
 	}
 }
 
-// =============================================================================
-// Command Execution
-// =============================================================================
-
-void Cmd_List_f() // -- johnfitz
+void Cmd_List_f() // Command Execution // -- johnfitz
 {
 	char *partial;
 	int len;
