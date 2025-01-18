@@ -1363,49 +1363,51 @@ void M_New_Draw()
 		M_Print(xoffset + 204, 40, "Square");
 	M_Print(xoffset, 48, "             This Menu");
 	M_DrawCheckbox(xoffset + 204, 48, newoptions.value);
+	M_Print(xoffset, 56, "           FPS Counter");
+	M_DrawCheckbox(xoffset + 204, 56, scr_showfps.value);
 	if (new_cursor == 2) {
 		M_DrawTextBox(52, 134, 30, 2);
 		M_Print(64, 142, "  This menu can be restored");
 		M_Print(64, 150, "with the              command");
 		M_PrintWhite(64, 150, "         newoptions 1");
 	}
-	M_Print(xoffset, 56, "         Y Mouse Speed");
+	M_Print(xoffset, 64, "         Y Mouse Speed");
 	sprintf(temp, "%0.1f\n", sensitivityyscale.value);
-	M_Print(xoffset + 204, 56, temp);
-	M_Print(xoffset, 64, "           Window Mode");
+	M_Print(xoffset + 204, 64, temp);
+	M_Print(xoffset, 72, "           Window Mode");
 	if (newwinmode == 0)
-		M_Print(xoffset + 204, 64, "Windowed");
+		M_Print(xoffset + 204, 72, "Windowed");
 	else if (newwinmode == 1)
-		M_Print(xoffset + 204, 64, "Fullscreen");
+		M_Print(xoffset + 204, 72, "Fullscreen");
 	else
-		M_Print(xoffset + 204, 64, "Desktop");
-	M_Print(xoffset, 76, "          Custom Width");
-	M_DrawTextBox(xoffset + 196, 68, 8, 1);
-	M_Print(xoffset + 204, 76, customwidthstr);
-	if (new_cursor == 5) {
-		M_DrawCursorLine(xoffset+204 + 8 * strlen(customwidthstr), 76);
+		M_Print(xoffset + 204, 72, "Desktop");
+	M_Print(xoffset, 84, "          Custom Width");
+	M_DrawTextBox(xoffset + 196, 76, 8, 1);
+	M_Print(xoffset + 204, 84, customwidthstr);
+	if (new_cursor == 6) {
+		M_DrawCursorLine(xoffset+204 + 8 * strlen(customwidthstr), 84);
 		sprintf(temp, "%d", MAXWIDTH);
 		M_DrawTextBox(xoffset + 68, 134, 16 + strlen(temp), 1);
 		M_Print(xoffset + 80, 142, "320 <= Width <=");
 		M_Print(xoffset + 208, 142, temp);
 	}
-	M_Print(xoffset, 92, "         Custom Height");
-	M_DrawTextBox(xoffset + 196, 84, 8, 1);
-	M_Print(xoffset + 204, 92, customheightstr);
-	if (new_cursor == 6) {
-		M_DrawCursorLine(xoffset+204 + 8 * strlen(customheightstr), 92);
+	M_Print(xoffset, 100, "         Custom Height");
+	M_DrawTextBox(xoffset + 196, 92, 8, 1);
+	M_Print(xoffset + 204, 100, customheightstr);
+	if (new_cursor == 7) {
+		M_DrawCursorLine(xoffset+204+8 * strlen(customheightstr), 100);
 		sprintf(temp, "%d", MAXHEIGHT);
 		M_DrawTextBox(xoffset + 68, 134, 17 + strlen(temp), 1);
 		M_Print(xoffset + 80, 142, "200 <= Height <=");
 		M_Print(xoffset + 216, 142, temp);
 	}
-	M_Print(xoffset + 204, 104, "Set Mode");
-	if (new_cursor == 5)
-		M_DrawCursor(xoffset + 192, 76);
-	else if (new_cursor == 6)
-		M_DrawCursor(xoffset + 192, 92);
+	M_Print(xoffset + 204, 112, "Set Mode");
+	if (new_cursor == 6)
+		M_DrawCursor(xoffset + 192, 84);
 	else if (new_cursor == 7)
-		M_DrawCursor(xoffset + 192, 104);
+		M_DrawCursor(xoffset + 192, 100);
+	else if (new_cursor == 8)
+		M_DrawCursor(xoffset + 192, 112);
 	else
 		M_DrawCursor(xoffset + 192, 32 + new_cursor * 8);
 }
@@ -1427,10 +1429,12 @@ void M_New_Key(int k)
 				      !scr_stretchpixels.value);
 		else if (new_cursor == 2)
 			Cvar_SetValue("newoptions", !newoptions.value);
-		else if (new_cursor == 3 && sensitivityyscale.value >= 0.1)
+		else if (new_cursor == 3)
+			Cvar_SetValue("scr_showfps", !scr_showfps.value);
+		else if (new_cursor == 4 && sensitivityyscale.value >= 0.1)
 			Cvar_SetValue("sensitivityyscale",
 				      sensitivityyscale.value - 0.1);
-		else if (new_cursor == 4) {
+		else if (new_cursor == 5) {
 			if (newwinmode == 0)
 				newwinmode = 2;
 			else
@@ -1440,13 +1444,13 @@ void M_New_Key(int k)
 	case K_UPARROW:
 		S_LocalSound("misc/menu1.wav");
 		if (new_cursor == 0)
-			new_cursor = 7;
+			new_cursor = 8;
 		else
 			new_cursor--;
 		break;
 	case K_DOWNARROW:
 		S_LocalSound("misc/menu1.wav");
-		if (new_cursor == 7)
+		if (new_cursor == 8)
 			new_cursor = 0;
 		else
 			new_cursor++;
@@ -1461,15 +1465,17 @@ void M_New_Key(int k)
 				      !scr_stretchpixels.value);
 		else if (new_cursor == 2)
 			Cvar_SetValue("newoptions", !newoptions.value);
-		else if (new_cursor == 3 && sensitivityyscale.value < 10)
+		else if (new_cursor == 3)
+			Cvar_SetValue("scr_showfps", !scr_showfps.value);
+		else if (new_cursor == 4 && sensitivityyscale.value < 10)
 			Cvar_SetValue("sensitivityyscale",
 				      sensitivityyscale.value + 0.1);
-		else if (new_cursor == 4) {
+		else if (new_cursor == 5) {
 			if (newwinmode == 2)
 				newwinmode = 0;
 			else
 				newwinmode++;
-		} else if (new_cursor == 7
+		} else if (new_cursor == 8
 			   && Q_atoi(customwidthstr) >= 320
 			   && Q_atoi(customheightstr) >= 200
 			   && Q_atoi(customwidthstr) <= MAXWIDTH
@@ -1479,21 +1485,21 @@ void M_New_Key(int k)
 				    vid_curpal);
 		break;
 	case K_BACKSPACE:
-		if (new_cursor == 5 && strlen(customwidthstr))
+		if (new_cursor == 6 && strlen(customwidthstr))
 			customwidthstr[strlen(customwidthstr) - 1] = 0;
-		else if (new_cursor == 6 && strlen(customheightstr))
+		else if (new_cursor == 7 && strlen(customheightstr))
 			customheightstr[strlen(customheightstr) - 1] = 0;
 		break;
 	default:
 		if (k < '0' || k > '9')
 			break;
-		if (new_cursor == 5) {
+		if (new_cursor == 6) {
 			int l = strlen(customwidthstr);
 			if (l < 7) {
 				customwidthstr[l + 1] = 0;
 				customwidthstr[l] = k;
 			}
-		} else if (new_cursor == 6) {
+		} else if (new_cursor == 7) {
 			int l = strlen(customheightstr);
 			if (l < 7) {
 				customheightstr[l + 1] = 0;

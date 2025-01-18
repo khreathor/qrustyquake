@@ -21,3 +21,4 @@ extern cvar_t scr_viewsize;
 extern int scr_copytop;
 extern int scr_copyeverything;
 extern qboolean block_drawing;
+extern cvar_t scr_showfps;
