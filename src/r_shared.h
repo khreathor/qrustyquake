@@ -17,11 +17,11 @@
 #define SIN_BUFFER_SIZE (MAXDIMENSION+CYCLE)
 #define INFINITE_DISTANCE 0x10000 // distance that's always guaranteed to
 	// be farther away than anything in the scene
-#define NUMSTACKEDGES 2400
+#define NUMSTACKEDGES 9600 // CyanBun96: expanding limits
 #define MINEDGES NUMSTACKEDGES
-#define NUMSTACKSURFACES 800
+#define NUMSTACKSURFACES 2400 // CyanBun96: expanding limits
 #define MINSURFACES NUMSTACKSURFACES
-#define MAXSPANS 3000
+#define MAXSPANS 6000 // CyanBun96: expanding limits
 #define ALIAS_LEFT_CLIP 0x0001 // flags in finalvert_t.flags
 #define ALIAS_TOP_CLIP 0x0002
 #define ALIAS_RIGHT_CLIP 0x0004
