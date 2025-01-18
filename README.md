@@ -26,7 +26,7 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
    - Maximum tested is 16K, 2000 times bigger that 320x200
    
-   - Defined by MAXHEIGHT and MAXWIDTH in r_shared.h and d_ifacea.h
+   - Defined by MAXHEIGHT and MAXWIDTH in r_shared.h
    
    - Can probably be set higher for billboard gaming
 
@@ -58,7 +58,11 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
 - Overhaul, modernization and trimming of the source code - removal of dead platforms and platform-specific code in favor of portable, properly formatted and readable code.
 
-   - The current codebase is an absolute mess cobbled together from the original release, previous SDL forks and Ironwail's netcode. Heavy work-in-progress.
+   - The codebase has been reduced by more than 50% compared to original WinQuake release in v0.3
+
+   - The formatting has also been unified, along with tons of other minor readability improvements
+
+   - Most of the changes to the original code (that wasn't deleted) are purely cosmetic so far, deeper refactoring with more meaningful improvements is planned
 
    - The long-term goal for this port keeping it as well-maintained as a 1996 game can be.
 
