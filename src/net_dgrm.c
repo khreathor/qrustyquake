@@ -65,7 +65,7 @@ static void NET_Ban_f()
 			Q_strcpy(addrStr, inet_ntoa(banAddr));
 			Q_strcpy(maskStr, inet_ntoa(banMask));
 			//print_fn("Banning %s [%s]\n", addrStr, maskStr);
-		} else
+		}// else
 			//print_fn("Banning not active\n");
 		break;
 	case 2:

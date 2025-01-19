@@ -577,28 +577,28 @@ void Sbar_Draw()
 				cl.stats[STAT_HEALTH] <= 25);
 		if (rogue) { // ammo icon
 			if (cl.items & RIT_SHELLS)
-				Sbar_DrawPic(224, 0, sb_ammo[0]);
+				Sbar_DrawTransPic(224, 0, sb_ammo[0]);
 			else if (cl.items & RIT_NAILS)
-				Sbar_DrawPic(224, 0, sb_ammo[1]);
+				Sbar_DrawTransPic(224, 0, sb_ammo[1]);
 			else if (cl.items & RIT_ROCKETS)
-				Sbar_DrawPic(224, 0, sb_ammo[2]);
+				Sbar_DrawTransPic(224, 0, sb_ammo[2]);
 			else if (cl.items & RIT_CELLS)
-				Sbar_DrawPic(224, 0, sb_ammo[3]);
+				Sbar_DrawTransPic(224, 0, sb_ammo[3]);
 			else if (cl.items & RIT_LAVA_NAILS)
-				Sbar_DrawPic(224, 0, rsb_ammo[0]);
+				Sbar_DrawTransPic(224, 0, rsb_ammo[0]);
 			else if (cl.items & RIT_PLASMA_AMMO)
-				Sbar_DrawPic(224, 0, rsb_ammo[1]);
+				Sbar_DrawTransPic(224, 0, rsb_ammo[1]);
 			else if (cl.items & RIT_MULTI_ROCKETS)
-				Sbar_DrawPic(224, 0, rsb_ammo[2]);
+				Sbar_DrawTransPic(224, 0, rsb_ammo[2]);
 		} else {
 			if (cl.items & IT_SHELLS)
-				Sbar_DrawPic(224, 0, sb_ammo[0]);
+				Sbar_DrawTransPic(224, 0, sb_ammo[0]);
 			else if (cl.items & IT_NAILS)
-				Sbar_DrawPic(224, 0, sb_ammo[1]);
+				Sbar_DrawTransPic(224, 0, sb_ammo[1]);
 			else if (cl.items & IT_ROCKETS)
-				Sbar_DrawPic(224, 0, sb_ammo[2]);
+				Sbar_DrawTransPic(224, 0, sb_ammo[2]);
 			else if (cl.items & IT_CELLS)
-				Sbar_DrawPic(224, 0, sb_ammo[3]);
+				Sbar_DrawTransPic(224, 0, sb_ammo[3]);
 		}
 		Sbar_DrawNum(248, 0, cl.stats[STAT_AMMO], 3,
 				cl.stats[STAT_AMMO] <= 10);

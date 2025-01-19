@@ -188,7 +188,7 @@ void R_DrawSurfaceBlock8_mip0()
 			int lightstep = lighttemp >> 4;
 			int light = lightright;
 			for (int b = 15; b >= 0; b--) {
-				unsigned char pix = psource[b];
+				unsigned char pix = psource[b]; // TODO transparency
 				prowdest[b] = ((unsigned char *)vid.colormap)
 						[(light & 0xFF00) + pix];
 				light += lightstep;

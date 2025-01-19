@@ -33,12 +33,6 @@
                       : (((p)->dist >= (emaxs)[(p)->type]) ? 2 : 3) \
         ) : BoxOnPlaneSide((emins), (emaxs), (p)))
 
-#if !defined(min) // kristian - missing math function
-inline int min(int x, int y) { // CyanBun96: defined it here to
-    return (x < y) ? x : y; // avoid compiler warnings
-}
-#endif // kristian
-
 typedef float vec_t;
 typedef vec_t vec3_t[3];
 typedef vec_t vec5_t[5];
