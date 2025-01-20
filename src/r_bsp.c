@@ -24,6 +24,7 @@ static bedge_t *pbedges;
 static int numbverts, numbedges;
 static mvertex_t *pfrontenter, *pfrontexit;
 static qboolean makeclippededge;
+extern int r_pass;
 
 void R_EntityRotate(vec3_t vec)
 {
@@ -200,6 +201,8 @@ void R_DrawSolidClippedSubmodelPolygons(model_t *pmodel)
 	mvertex_t bverts[MAX_BMODEL_VERTS];
 	bedge_t bedges[MAX_BMODEL_EDGES], *pbedge;
 	msurface_t *psurf = &pmodel->surfaces[pmodel->firstmodelsurface];
+	if (psurf->flags&SURF_DRAWCUTOUT&&!r_pass)
+		return;
 	int numsurfaces = pmodel->nummodelsurfaces;
 	medge_t *pedges = pmodel->edges;
 	for (int i = 0; i < numsurfaces; i++, psurf++) {
@@ -207,7 +210,7 @@ void R_DrawSolidClippedSubmodelPolygons(model_t *pmodel)
 		vec_t dot = DotProduct(modelorg, pplane->normal) - pplane->dist;
 		// draw the polygon
 		if (!(((psurf->flags&SURF_PLANEBACK)&&(dot<-BACKFACE_EPSILON))|| 
-		      (!(psurf->flags&SURF_PLANEBACK)&&(dot>BACKFACE_EPSILON))))
+		     (!(psurf->flags&SURF_PLANEBACK)&&(dot>BACKFACE_EPSILON))))
 			continue;
 		// FIXME: use bounding-box-based frustum clipping info?
 		// copy the edges to bedges, flipping if necessary so always
@@ -244,6 +247,8 @@ void R_DrawSolidClippedSubmodelPolygons(model_t *pmodel)
 void R_DrawSubmodelPolygons(model_t *pmodel, int clipflags)
 {
 	msurface_t *psurf = &pmodel->surfaces[pmodel->firstmodelsurface];
+	if (psurf->flags&SURF_DRAWCUTOUT&&!r_pass)
+		return;
 	int numsurfaces = pmodel->nummodelsurfaces;
 	for (int i = 0; i < numsurfaces; i++, psurf++) {
 		// find which side of the node we are on
@@ -251,7 +256,7 @@ void R_DrawSubmodelPolygons(model_t *pmodel, int clipflags)
 		vec_t dot = DotProduct(modelorg, pplane->normal) - pplane->dist;
 		// draw the polygon
 		if (!(((psurf->flags&SURF_PLANEBACK)&&(dot<-BACKFACE_EPSILON))||
-		      (!(psurf->flags&SURF_PLANEBACK)&&(dot>BACKFACE_EPSILON))))
+		     (!(psurf->flags&SURF_PLANEBACK)&&(dot>BACKFACE_EPSILON))))
 			continue;
 		r_currentkey = ((mleaf_t *) currententity->topnode)->key;
 		// FIXME: use bounding-box-based frustum clipping info?
@@ -323,14 +328,16 @@ void R_RecursiveWorldNode(mnode_t *node, int clipflags)
 			msurface_t *surf = cl.worldmodel->surfaces + node->firstsurface;
 			if (dot < -BACKFACE_EPSILON) {
 				do {
-					if ((surf->flags & SURF_PLANEBACK) && (surf->visframe == r_framecount)) {
+					if ((surf->flags & SURF_PLANEBACK) && (surf->visframe == r_framecount)
+						&& !(surf->flags&SURF_DRAWCUTOUT && !r_pass)) {
 						R_RenderFace(surf, clipflags);
 					}
 					surf++;
 				} while (--c);
 			} else if (dot > BACKFACE_EPSILON) {
 				do {
-					if (!(surf->flags & SURF_PLANEBACK) && (surf->visframe == r_framecount)) {
+					if (!(surf->flags & SURF_PLANEBACK) && (surf->visframe == r_framecount)
+						&& !(surf->flags&SURF_DRAWCUTOUT && !r_pass)) {
 						R_RenderFace(surf, clipflags);
 					}
 					surf++;
