@@ -3,6 +3,7 @@
 #include "quakedef.h"
 #include "d_local.h"
 
+extern int r_pass;
 extern int screenwidth;
 static int miplevel;
 float scale_for_mip;
@@ -124,7 +125,8 @@ void D_DrawSurfaces()
 				d_zistepu = 0;
 				d_zistepv = 0;
 				d_ziorigin = -0.9;
-				D_DrawSolidSurface(s, (int)r_clearcolor.value & 0xFF);
+				if (!r_pass) D_DrawSolidSurface(s, (int)r_clearcolor.value & 0xFF);
+				else D_DrawSolidSurface(s, 0xFF);
 				D_DrawZSpans(s->spans);
 			} else if (s->flags & SURF_DRAWTURB) {
 				msurface_t *pface = s->data;

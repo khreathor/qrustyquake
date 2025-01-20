@@ -9,6 +9,7 @@ static int sprite_height;
 static int minindex, maxindex;
 static sspan_t *sprite_spans;
 sspan_t spans[MAXHEIGHT + 1];
+extern int r_pass;
 
 void D_SpriteDrawSpans(sspan_t *pspan)
 {

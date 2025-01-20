@@ -324,36 +324,14 @@ void R_RecursiveWorldNode(mnode_t *node, int clipflags)
 			if (dot < -BACKFACE_EPSILON) {
 				do {
 					if ((surf->flags & SURF_PLANEBACK) && (surf->visframe == r_framecount)) {
-						if (r_drawpolys) {
-							if (r_worldpolysbacktofront) {
-								if (numbtofpolys < MAX_BTOFPOLYS)
-								{
-									pbtofpolys [numbtofpolys].clipflags = clipflags;
-									pbtofpolys [numbtofpolys].psurf = surf;
-									numbtofpolys++;
-								}
-							} else
-								R_RenderPoly (surf, clipflags);
-						} else
-							R_RenderFace(surf, clipflags);
+						R_RenderFace(surf, clipflags);
 					}
 					surf++;
 				} while (--c);
 			} else if (dot > BACKFACE_EPSILON) {
 				do {
 					if (!(surf->flags & SURF_PLANEBACK) && (surf->visframe == r_framecount)) {
-						if (r_drawpolys) {
-							if (r_worldpolysbacktofront) {
-								if (numbtofpolys < MAX_BTOFPOLYS)
-								{
-									pbtofpolys [numbtofpolys].clipflags = clipflags;
-									pbtofpolys [numbtofpolys].psurf = surf;
-									numbtofpolys++;
-								}
-							} else
-								R_RenderPoly (surf, clipflags);
-						} else
-							R_RenderFace(surf, clipflags);
+						R_RenderFace(surf, clipflags);
 					}
 					surf++;
 				} while (--c);
@@ -363,7 +341,7 @@ void R_RecursiveWorldNode(mnode_t *node, int clipflags)
 		}
 		// recurse down the back side
 		R_RecursiveWorldNode(node->children[!side], clipflags);
-	} // CyanBun96: nine levels of indentaion. NINE(9). god. FIXME
+	}
 }
 
 void R_RenderWorld()
@@ -375,10 +353,4 @@ void R_RenderWorld()
 	model_t *clmodel = currententity->model;
 	r_pcurrentvertbase = clmodel->vertexes;
 	R_RecursiveWorldNode(clmodel->nodes, 15);
-	// if the driver wants the polygons back to front, play the
-	// visible ones back in that order
-	if (r_worldpolysbacktofront) {
-		for (int i = numbtofpolys - 1; i >= 0; i--) 
-			R_RenderPoly(btofpolys[i].psurf,btofpolys[i].clipflags);
-	}
 }

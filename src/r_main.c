@@ -5,6 +5,7 @@
 
 #define	 VIEWMODNAME_LENGTH 256
 
+int r_pass; // CyanBun96: 1 - cutout textures 0 - everything else
 void *colormap;
 vec3_t viewlightvec;
 alight_t r_viewlighting = { 128, 192, viewlightvec };
@@ -576,18 +577,12 @@ void R_EdgeDrawing()
 		surf_max = &surfaces[r_cnumsurfs];
 	}
 	R_BeginEdgeFrame();
-	if (r_dspeeds.value)
-		rw_time1 = Sys_FloatTime();
+	if (r_dspeeds.value) rw_time1 = Sys_FloatTime();
 	R_RenderWorld();
-	if (r_drawculledpolys)
-		R_ScanEdges();
-	if (r_dspeeds.value)
-		db_time1 = rw_time2 = Sys_FloatTime();
-	R_DrawBEntitiesOnList();
-	if (r_dspeeds.value)
-		se_time2 = db_time2 = Sys_FloatTime();
-	if (!(r_drawpolys | r_drawculledpolys))
-		R_ScanEdges();
+	if (r_dspeeds.value) db_time1 = rw_time2 = Sys_FloatTime();
+	if (r_pass) R_DrawBEntitiesOnList();
+	if (r_dspeeds.value) se_time2 = db_time2 = Sys_FloatTime();
+	R_ScanEdges();
 }
 
 
@@ -601,6 +596,9 @@ void R_RenderView_() // r_refdef must be set before the first call
 	R_MarkLeaves(); // done here so we know if we're in water
 	if (!cl_entities[0].model || !cl.worldmodel)
 		Sys_Error("R_RenderView: NULL worldmodel");
+	r_pass = 0;
+	R_EdgeDrawing();
+	r_pass = 1;
 	R_EdgeDrawing();
 	if (r_dspeeds.value)
 		de_time1 = se_time2 = Sys_FloatTime();

@@ -46,8 +46,7 @@ typedef struct surf_s
 	long last_u; // set during tracing
 	int spanstate; // 0 = not in span
 		       // 1 = in span
-		       // -1 = in inverted span (end before
-		       // start)
+		       // -1 = in inverted span (end before start)
 	int flags; // currentface flags
 	void *data; // associated data like msurface_t
 	entity_t *entity;

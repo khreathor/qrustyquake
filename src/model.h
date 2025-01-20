@@ -12,6 +12,7 @@
 #define SURF_DRAWTURB 0x10
 #define SURF_DRAWTILED 0x20
 #define SURF_DRAWBACKGROUND 0x40
+#define SURF_DRAWCUTOUT 0x80
 #define EF_ROCKET 1 // leave a trail
 #define EF_GRENADE 2 // leave a trail
 #define EF_GIB 4 // leave a trail

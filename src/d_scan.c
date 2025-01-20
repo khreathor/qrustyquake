@@ -233,8 +233,12 @@ void D_DrawSpans8(espan_t *pspan)
 			}
 
 			do {
-				*pdest++ = *(pbase + (s >> 16) +
-				      (t >> 16) * cachewidth);
+
+				unsigned char pix = *(pbase + (s >> 16) +
+					(t >> 16) * cachewidth);
+				if (pix != 0xff)
+					*pdest = pix;
+				pdest++;
 				s += sstep;
 				t += tstep;
 			} while (--spancount > 0);

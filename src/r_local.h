@@ -141,6 +141,7 @@ extern mnode_t *r_pefragtopnode;
 extern int r_clipflags;
 extern unsigned int r_dlightframecount;
 extern qboolean r_fov_greater_than_90;
+extern int r_pass;
 
 void R_ClearPolyList();
 void R_DrawPolyList();

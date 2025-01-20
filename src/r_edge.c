@@ -68,7 +68,6 @@ void R_BeginEdgeFrame()
 	// surface 0 is a dummy
 	surfaces[1].spans = NULL; // no background spans yet
 	surfaces[1].flags = SURF_DRAWBACKGROUND;
-
 	// put the background behind everything in the world
 	if (r_draworder.value) {
 		pdrawfunc = R_GenerateSpansBackward;
