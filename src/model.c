@@ -19,6 +19,7 @@ byte mod_novis[MAX_MAP_LEAFS / 8];
 model_t mod_known[MAX_MOD_KNOWN];
 int mod_numknown;
 byte *mod_base;
+int hascutouts; // CyanBun96: is transparency needed?
 
 void Mod_LoadSpriteModel(model_t * mod, void *buffer);
 void Mod_LoadBrushModel(model_t * mod, void *buffer);
@@ -141,7 +142,6 @@ void Mod_TouchModel(char *name)
 			Cache_Check(&mod->cache);
 }
 
-
 model_t *Mod_LoadModel(model_t *mod, qboolean crash)
 { // Loads a model into the cache
 	byte stackbuf[1024]; // avoid dirtying the cache heap
@@ -177,7 +177,6 @@ model_t *Mod_LoadModel(model_t *mod, qboolean crash)
 	}
 	return mod;
 }
-
 
 model_t *Mod_ForName(char *name, qboolean crash)
 { // Loads in a model for the given name
@@ -471,6 +470,7 @@ void Mod_LoadFaces(lump_t *l)
 	msurface_t *out = Hunk_AllocName(count * sizeof(*out), loadname);
 	loadmodel->surfaces = out;
 	loadmodel->numsurfaces = count;
+	hascutouts = 0;
 	for (int surfnum = 0; surfnum < count; surfnum++, in++, out++) {
 		out->firstedge = LittleLong(in->firstedge);
 		out->numedges = LittleShort(in->numedges);
@@ -506,9 +506,14 @@ void Mod_LoadFaces(lump_t *l)
 		if (!Q_strncmp(out->texinfo->texture->name, "{", 1)) // cutout
 		{
 			out->flags |= (SURF_DRAWCUTOUT);
+			hascutouts = 1;
 			continue;
 		}
 	}
+	if (!hascutouts && (int)r_twopass.value != 3)
+		Cvar_SetValue("r_twopass", 0);
+	else if (hascutouts && (int)r_twopass.value != 2)
+		Cvar_SetValue("r_twopass", 1);
 }
 
 void Mod_SetParent(mnode_t *node, mnode_t *parent)

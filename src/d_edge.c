@@ -120,7 +120,7 @@ void D_DrawSurfaces()
 				d_zistepu = 0;
 				d_zistepv = 0;
 				d_ziorigin = -0.9;
-				if (!r_pass || r_twopass.value)
+				if (!r_pass || (int)r_twopass.value&1)
 					D_DrawSolidSurface(s, (int)r_clearcolor.value & 0xFF);
 				else D_DrawSolidSurface(s, 0xFF);
 				D_DrawZSpans(s->spans);

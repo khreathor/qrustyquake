@@ -235,7 +235,7 @@ void D_DrawSpans8(espan_t *pspan)
 			do {
 				unsigned char pix = *(pbase + (s >> 16) +
 					(t >> 16) * cachewidth);
-				if (pix != 0xff || !r_twopass.value)
+				if (pix != 0xff || !((int)r_twopass.value&1))
 					*pdest = pix;
 				pdest++;
 				s += sstep;

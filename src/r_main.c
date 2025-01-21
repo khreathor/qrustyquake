@@ -87,6 +87,8 @@ cvar_t r_numedges = { "r_numedges", "0", false, false, 0, NULL };
 cvar_t r_aliastransbase = { "r_aliastransbase", "200", false, false, 0, NULL };
 cvar_t r_aliastransadj = { "r_aliastransadj", "100", false, false, 0, NULL };
 cvar_t r_twopass = { "r_twopass", "1", true, false, 0, NULL }; // CyanBun96
+	// 0 - off (smart) 1 - on (smart) 2 - force off 3 - force on
+	// smart gets set on map load if cutouts were found
 extern cvar_t scr_fov;
 
 void CreatePassages();
@@ -218,7 +220,6 @@ void R_SetVrect(vrect_t *pvrectin, vrect_t *pvrect, int lineadj)
 		pvrect->height >>= 1;
 	}
 }
-
 
 void R_ViewChanged(vrect_t *pvrect, int lineadj, float aspect)
 { // Called every time the vid structure or r_refdef changes.
@@ -564,11 +565,10 @@ void R_EdgeDrawing()
 	if (r_dspeeds.value) rw_time1 = Sys_FloatTime();
 	R_RenderWorld();
 	if (r_dspeeds.value) db_time1 = rw_time2 = Sys_FloatTime();
-	if (r_pass || !r_twopass.value) R_DrawBEntitiesOnList();
+	if (r_pass || !((int)r_twopass.value&1)) R_DrawBEntitiesOnList();
 	if (r_dspeeds.value) se_time2 = db_time2 = Sys_FloatTime();
 	R_ScanEdges();
 }
-
 
 void R_RenderView_() // r_refdef must be set before the first call
 {
@@ -582,7 +582,7 @@ void R_RenderView_() // r_refdef must be set before the first call
 		Sys_Error("R_RenderView: NULL worldmodel");
 	r_pass = 0;
 	R_EdgeDrawing();
-	if (r_twopass.value) {
+	if ((int)r_twopass.value&1) {
 		r_pass = 1;
 		R_EdgeDrawing();
 	}
