@@ -105,7 +105,6 @@ typedef struct
 extern cvar_t r_drawflat;
 extern int d_spanpixcount;
 extern unsigned int r_framecount; // sequence # of current frame since Quake started
-extern qboolean r_drawpolys; // 1 if driver wants clipped polygons rather than a span list
 extern qboolean r_drawculledpolys; // 1 if driver wants clipped polygons that have been culled by the edge list
 extern qboolean r_worldpolysbacktofront; // 1 if driver wants polygon delivered back to front rather than front to back
 extern qboolean r_recursiveaffinetriangles; // true if a driver wants to use recursive triangular subdivison and vertex drawing via D_PolysetDrawFinalVerts() past a certain distance(normally only used by the software driver)

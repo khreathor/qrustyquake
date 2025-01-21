@@ -11,7 +11,6 @@ vec3_t viewlightvec;
 alight_t r_viewlighting = { 128, 192, viewlightvec };
 float r_time1;
 int r_numallocatededges;
-qboolean r_drawpolys;
 qboolean r_drawculledpolys;
 qboolean r_worldpolysbacktofront;
 qboolean r_recursiveaffinetriangles = true;
@@ -470,14 +469,13 @@ void R_DrawBEntitiesOnList()
 	VectorCopy(modelorg, oldorigin);
 	insubmodel = true;
 	r_dlightframecount = r_framecount;
-	// FIXME CyanBun96: how many indentation layers is that holy shit
 	for (int i = 0; i < cl_numvisedicts; i++) {
 		currententity = cl_visedicts[i];
 		switch (currententity->model->type) {
 		case mod_brush:
 			model_t *clmodel = currententity->model;
-			// see if the bounding box lets us trivially reject, also sets
-			// trivial accept status
+			// see if the bounding box lets us trivially reject
+			// also sets trivial accept status
 			for (int j = 0; j < 3; j++) {
 				minmaxs[j] = currententity->origin[j] +
 				    clmodel->mins[j];
@@ -507,39 +505,25 @@ void R_DrawBEntitiesOnList()
 							     firstclipnode);
 					}
 				}
-				// if the driver wants polygons, deliver those. Z-buffering is on
-				// at this point, so no clipping to the world tree is needed, just
-				// frustum clipping
-				if (r_drawpolys | r_drawculledpolys) {
-					R_ZDrawSubmodelPolys(clmodel);
-				} else {
-					r_pefragtopnode = NULL;
-					for (int j = 0; j < 3; j++) {
-						r_emins[j] = minmaxs[j];
-						r_emaxs[j] = minmaxs[3 + j];
+				r_pefragtopnode = NULL;
+				for (int j = 0; j < 3; j++) {
+					r_emins[j] = minmaxs[j];
+					r_emaxs[j] = minmaxs[3 + j];
+				}
+				R_SplitEntityOnNode2(cl.worldmodel-> nodes);
+				if (r_pefragtopnode) {
+					currententity->topnode =r_pefragtopnode;
+					if (r_pefragtopnode->contents >= 0) {
+						// not a leaf; has to be clipped to the world BSP
+						r_clipflags = clipflags;
+						R_DrawSolidClippedSubmodelPolygons(clmodel);
+					} else {
+						// falls entirely in one leaf, so we just put all the
+						// edges in the edge list and let 1/z sorting handle
+						// drawing order
+						R_DrawSubmodelPolygons(clmodel, clipflags);
 					}
-					R_SplitEntityOnNode2(cl.worldmodel->
-							     nodes);
-					if (r_pefragtopnode) {
-						currententity->topnode =
-						    r_pefragtopnode;
-
-						if (r_pefragtopnode->contents >=
-						    0) {
-							// not a leaf; has to be clipped to the world BSP
-							r_clipflags = clipflags;
-							R_DrawSolidClippedSubmodelPolygons
-							    (clmodel);
-						} else {
-							// falls entirely in one leaf, so we just put all the
-							// edges in the edge list and let 1/z sorting handle
-							// drawing order
-							R_DrawSubmodelPolygons
-							    (clmodel,
-							     clipflags);
-						}
-						currententity->topnode = NULL;
-					}
+					currententity->topnode = NULL;
 				}
 				// put back world rotation and frustum clipping         
 				// FIXME: R_RotateBmodel should just work off base_vxx

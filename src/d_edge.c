@@ -21,8 +21,6 @@ void D_DrawPoly() // this driver takes spans, not polygons
 
 int D_MipLevelForScale(float scale)
 {
-	if (r_pass)
-		return 0;
 	int lmiplevel;
 	if (scale >= d_scalemip[0])
 		lmiplevel = 0;
@@ -179,7 +177,8 @@ void D_DrawSurfaces()
 					R_RotateBmodel(); // FIXME: don't mess with the frustum, make entity passed in
 				}
 				msurface_t *pface = s->data;
-				miplevel = D_MipLevelForScale(s->nearzi *
+				miplevel = pface->flags & SURF_DRAWCUTOUT ? 0 :
+					D_MipLevelForScale(s->nearzi *
 						scale_for_mip *
 						pface->texinfo->mipadjust);
 				// FIXME: make this passed in to D_CacheSurface
