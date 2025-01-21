@@ -42,6 +42,7 @@ cvar_t deathmatch = { "deathmatch", "0", false, false, 0, NULL };
 cvar_t coop = { "coop", "0", false, false, 0, NULL };
 cvar_t pausable = { "pausable", "1", false, false, 0, NULL };
 cvar_t temp1 = { "temp1", "0", false, false, 0, NULL };
+cvar_t host_maxfps = {"host_maxfps", "72", true, false, 0, NULL}; //johnfitz
 
 extern void IN_MLookDown();
 
@@ -140,6 +141,7 @@ void Host_InitLocal()
 	Cvar_RegisterVariable(&coop);
 	Cvar_RegisterVariable(&pausable);
 	Cvar_RegisterVariable(&temp1);
+	Cvar_RegisterVariable(&host_maxfps); // johnfitz
 	Host_FindMaxClients();
 	host_time = 1.0; // so a think at time 0 won't get called
 }
@@ -313,10 +315,10 @@ void Host_ClearMemory()
 	memset(&cl, 0, sizeof(cl));
 }
 
-qboolean Host_FilterTime(float time) //TODO unlock FPS
+qboolean Host_FilterTime(float time)
 { // Returns false if the time is too short to run a frame
 	realtime += time;
-	if (!cls.timedemo && realtime - oldrealtime < 1.0 / 72.0)
+	if (!cls.timedemo && realtime - oldrealtime < 1.0 / host_maxfps.value)
 		return false;	// framerate is too high
 	host_frametime = realtime - oldrealtime;
 	oldrealtime = realtime;
