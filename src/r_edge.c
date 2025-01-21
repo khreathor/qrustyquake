@@ -36,30 +36,6 @@ void R_LeadingEdge(edge_t *edge);
 void R_LeadingEdgeBackwards(edge_t *edge);
 void R_TrailingEdge(surf_t *surf, edge_t *edge);
 
-void R_DrawCulledPolys()
-{
-	currententity = &cl_entities[0];
-	if (r_worldpolysbacktofront) {
-		for (surf_t *s = surface_p - 1; s > &surfaces[1]; s--) {
-			if (!s->spans)
-				continue;
-			if (!(s->flags & SURF_DRAWBACKGROUND)) {
-				msurface_t *pface = (msurface_t *) s->data;
-				R_RenderPoly(pface, 15);
-			}
-		}
-	} else {
-		for (surf_t *s = &surfaces[1]; s < surface_p; s++) {
-			if (!s->spans)
-				continue;
-			if (!(s->flags & SURF_DRAWBACKGROUND)) {
-				msurface_t *pface = (msurface_t *) s->data;
-				R_RenderPoly(pface, 15);
-			}
-		}
-	}
-}
-
 void R_BeginEdgeFrame()
 {
 	edge_p = r_edges;
@@ -434,10 +410,7 @@ void R_ScanEdges()
 		// flush the span list if we can't be sure we have enough spans
 		// left for the next scan
 		if (span_p >= max_span_p) {
-			if (r_drawculledpolys)
-				R_DrawCulledPolys();
-			else
-				D_DrawSurfaces();
+			D_DrawSurfaces();
 			// clear the surface span pointers
 			for (surf_t *s = &surfaces[1]; s < surface_p; s++)
 				s->spans = NULL;
@@ -456,8 +429,5 @@ void R_ScanEdges()
 	if (newedges[iv])
 		R_InsertNewEdges(newedges[iv], edge_head.next);
 	(*pdrawfunc) ();
-	if (r_drawculledpolys) // draw whatever's left in the span list
-		R_DrawCulledPolys();
-	else
-		D_DrawSurfaces();
+	D_DrawSurfaces(); // draw whatever's left in the span list
 }

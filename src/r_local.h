@@ -143,11 +143,8 @@ extern unsigned int r_dlightframecount;
 extern qboolean r_fov_greater_than_90;
 extern int r_pass;
 
-void R_ClearPolyList();
-void R_DrawPolyList();
 void R_DrawSprite();
 void R_RenderFace(msurface_t *fa, int clipflags);
-void R_RenderPoly(msurface_t *fa, int clipflags);
 void R_RenderBmodelFace(bedge_t *pedges, msurface_t *psurf);
 void R_TransformFrustum();
 void R_SetSkyFrame();
