@@ -21,6 +21,8 @@ void D_DrawPoly() // this driver takes spans, not polygons
 
 int D_MipLevelForScale(float scale)
 {
+	if (r_pass)
+		return 0;
 	int lmiplevel;
 	if (scale >= d_scalemip[0])
 		lmiplevel = 0;

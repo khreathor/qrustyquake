@@ -128,6 +128,9 @@ int main(int c, char **v)
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
 		Sys_Error("SDL_Init failed: %s", SDL_GetError());
 	quakeparms_t parms;
+	parms.argc = c;
+	parms.argv = v;
+	COM_InitArgv(parms.argc, parms.argv);
 	parms.memsize = DEFAULT_MEMORY;
 	if (COM_CheckParm("-heapsize")) {
 		int t = COM_CheckParm("-heapsize") + 1;
@@ -136,9 +139,6 @@ int main(int c, char **v)
 	}
 	parms.membase = malloc(parms.memsize);
 	parms.basedir = ".";
-	COM_InitArgv(c, v);
-	parms.argc = com_argc;
-	parms.argv = com_argv;
 	Host_Init(&parms);
 	double oldtime = Sys_FloatTime() - 0.1;
 	while (1) {
