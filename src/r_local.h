@@ -142,6 +142,7 @@ extern int r_clipflags;
 extern unsigned int r_dlightframecount;
 extern qboolean r_fov_greater_than_90;
 extern int r_pass;
+extern cvar_t r_twopass;
 
 void R_DrawSprite();
 void R_RenderFace(msurface_t *fa, int clipflags);

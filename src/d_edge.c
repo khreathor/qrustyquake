@@ -3,7 +3,6 @@
 #include "quakedef.h"
 #include "d_local.h"
 
-extern int r_pass;
 extern int screenwidth;
 static int miplevel;
 float scale_for_mip;
@@ -14,10 +13,6 @@ vec3_t transformed_modelorg;
 // FIXME: should go away
 extern void R_RotateBmodel();
 extern void R_TransformFrustum();
-
-void D_DrawPoly() // this driver takes spans, not polygons
-{
-}
 
 int D_MipLevelForScale(float scale)
 {
@@ -125,7 +120,8 @@ void D_DrawSurfaces()
 				d_zistepu = 0;
 				d_zistepv = 0;
 				d_ziorigin = -0.9;
-				if (!r_pass) D_DrawSolidSurface(s, (int)r_clearcolor.value & 0xFF);
+				if (!r_pass || r_twopass.value)
+					D_DrawSolidSurface(s, (int)r_clearcolor.value & 0xFF);
 				else D_DrawSolidSurface(s, 0xFF);
 				D_DrawZSpans(s->spans);
 			} else if (s->flags & SURF_DRAWTURB) {

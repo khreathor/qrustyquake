@@ -24,7 +24,6 @@ static bedge_t *pbedges;
 static int numbverts, numbedges;
 static mvertex_t *pfrontenter, *pfrontexit;
 static qboolean makeclippededge;
-extern int r_pass;
 
 void R_EntityRotate(vec3_t vec)
 {
@@ -201,7 +200,7 @@ void R_DrawSolidClippedSubmodelPolygons(model_t *pmodel)
 	mvertex_t bverts[MAX_BMODEL_VERTS];
 	bedge_t bedges[MAX_BMODEL_EDGES], *pbedge;
 	msurface_t *psurf = &pmodel->surfaces[pmodel->firstmodelsurface];
-	if (psurf->flags&SURF_DRAWCUTOUT&&!r_pass)
+	if (psurf->flags&SURF_DRAWCUTOUT&&!r_pass&&r_twopass.value)
 		return;
 	int numsurfaces = pmodel->nummodelsurfaces;
 	medge_t *pedges = pmodel->edges;
@@ -247,7 +246,7 @@ void R_DrawSolidClippedSubmodelPolygons(model_t *pmodel)
 void R_DrawSubmodelPolygons(model_t *pmodel, int clipflags)
 {
 	msurface_t *psurf = &pmodel->surfaces[pmodel->firstmodelsurface];
-	if (psurf->flags&SURF_DRAWCUTOUT&&!r_pass)
+	if (psurf->flags&SURF_DRAWCUTOUT&&!r_pass&&r_twopass.value)
 		return;
 	int numsurfaces = pmodel->nummodelsurfaces;
 	for (int i = 0; i < numsurfaces; i++, psurf++) {
@@ -329,7 +328,7 @@ void R_RecursiveWorldNode(mnode_t *node, int clipflags)
 			if (dot < -BACKFACE_EPSILON) {
 				do {
 					if ((surf->flags & SURF_PLANEBACK) && (surf->visframe == r_framecount)
-						&& !(surf->flags&SURF_DRAWCUTOUT && !r_pass)) {
+						&& !(surf->flags&SURF_DRAWCUTOUT&&!r_pass&&r_twopass.value)) {
 						R_RenderFace(surf, clipflags);
 					}
 					surf++;
@@ -337,7 +336,7 @@ void R_RecursiveWorldNode(mnode_t *node, int clipflags)
 			} else if (dot > BACKFACE_EPSILON) {
 				do {
 					if (!(surf->flags & SURF_PLANEBACK) && (surf->visframe == r_framecount)
-						&& !(surf->flags&SURF_DRAWCUTOUT && !r_pass)) {
+						&& !(surf->flags&SURF_DRAWCUTOUT&&!r_pass&&r_twopass.value)) {
 						R_RenderFace(surf, clipflags);
 					}
 					surf++;

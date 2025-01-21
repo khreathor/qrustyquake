@@ -86,6 +86,7 @@ cvar_t r_maxedges = { "r_maxedges", "0", false, false, 0, NULL };
 cvar_t r_numedges = { "r_numedges", "0", false, false, 0, NULL };
 cvar_t r_aliastransbase = { "r_aliastransbase", "200", false, false, 0, NULL };
 cvar_t r_aliastransadj = { "r_aliastransadj", "100", false, false, 0, NULL };
+cvar_t r_twopass = { "r_twopass", "1", true, false, 0, NULL }; // CyanBun96
 extern cvar_t scr_fov;
 
 void CreatePassages();
@@ -143,6 +144,7 @@ void R_Init()
 	Cvar_RegisterVariable(&r_numedges);
 	Cvar_RegisterVariable(&r_aliastransbase);
 	Cvar_RegisterVariable(&r_aliastransadj);
+	Cvar_RegisterVariable(&r_twopass);
 	Cvar_SetValue("r_maxedges", (float)NUMSTACKEDGES);
 	Cvar_SetValue("r_maxsurfs", (float)NUMSTACKSURFACES);
 	view_clipplanes[0].leftedge = true;
@@ -562,7 +564,7 @@ void R_EdgeDrawing()
 	if (r_dspeeds.value) rw_time1 = Sys_FloatTime();
 	R_RenderWorld();
 	if (r_dspeeds.value) db_time1 = rw_time2 = Sys_FloatTime();
-	if (r_pass) R_DrawBEntitiesOnList();
+	if (r_pass || !r_twopass.value) R_DrawBEntitiesOnList();
 	if (r_dspeeds.value) se_time2 = db_time2 = Sys_FloatTime();
 	R_ScanEdges();
 }
@@ -580,8 +582,10 @@ void R_RenderView_() // r_refdef must be set before the first call
 		Sys_Error("R_RenderView: NULL worldmodel");
 	r_pass = 0;
 	R_EdgeDrawing();
-	r_pass = 1;
-	R_EdgeDrawing();
+	if (r_twopass.value) {
+		r_pass = 1;
+		R_EdgeDrawing();
+	}
 	if (r_dspeeds.value)
 		de_time1 = se_time2 = Sys_FloatTime();
 	R_DrawEntitiesOnList();

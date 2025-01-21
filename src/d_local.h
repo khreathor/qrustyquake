@@ -51,6 +51,8 @@ extern pixel_t *d_viewbuffer;
 extern short *zspantable[MAXHEIGHT];
 extern int d_minmip;
 extern float d_scalemip[3];
+extern int r_pass;
+extern cvar_t r_twopass;
 
 void D_DrawSpans8(espan_t *pspans);
 void D_DrawSpans16(espan_t *pspans);
