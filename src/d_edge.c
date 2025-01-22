@@ -9,6 +9,7 @@ float scale_for_mip;
 int ubasestep, errorterm, erroradjustup, erroradjustdown;
 int vstartscan;
 vec3_t transformed_modelorg;
+float winquake_surface_liquid_alpha;
 
 // FIXME: should go away
 extern void R_RotateBmodel();
@@ -105,6 +106,11 @@ void D_DrawSurfaces()
 		for (surf_t *s = &surfaces[1]; s < surface_p; s++) {
 			if (!s->spans)
 				continue;
+			if ((s->flags & SURF_DRAWLAVA
+				|| s->flags & SURF_DRAWSLIME
+				|| s->flags & SURF_DRAWWATER)
+				&& !r_wateralphapass)
+				continue;
 			r_drawnpolycount++;
 			d_zistepu = s->d_zistepu;
 			d_zistepv = s->d_zistepv;
@@ -146,7 +152,8 @@ void D_DrawSurfaces()
 				}
 				D_CalcGradients(pface);
 				Turbulent8(s->spans);
-				D_DrawZSpans(s->spans);
+				if (!r_wateralphapass) // Manoel Kasimier - translucent water
+					D_DrawZSpans(s->spans);
 				if (s->insubmodel) {
 					// restore the old drawing state
 					// FIXME: we don't want to do this every time!

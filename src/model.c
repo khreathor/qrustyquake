@@ -494,19 +494,26 @@ void Mod_LoadFaces(lump_t *l)
 			out->flags |= (SURF_DRAWSKY | SURF_DRAWTILED);
 			continue;
 		}
-		if (!Q_strncmp(out->texinfo->texture->name, "*", 1)) //turbulent
+		if (!Q_strncmp(out->texinfo->texture->name, "{", 1)) // cutout
 		{
+			out->flags |= (SURF_DRAWCUTOUT);
+			hascutouts = 1;
+			continue;
+		}
+		if (out->texinfo->texture->name[0] == '*') { // warp surface
 			out->flags |= (SURF_DRAWTURB | SURF_DRAWTILED);
 			for (i = 0; i < 2; i++) {
 				out->extents[i] = 16384;
 				out->texturemins[i] = -8192;
 			}
-			continue;
-		}
-		if (!Q_strncmp(out->texinfo->texture->name, "{", 1)) // cutout
-		{
-			out->flags |= (SURF_DRAWCUTOUT);
-			hascutouts = 1;
+			if (!Q_strncmp(out->texinfo->texture->name, "*lava", 5))
+				out->flags |= (SURF_DRAWLAVA);
+			else if (!Q_strncmp(out->texinfo->texture->name, "*slime", 6))
+				out->flags |= (SURF_DRAWCUTOUT);
+			else if (!Q_strncmp(out->texinfo->texture->name, "*tele", 5))
+				out->flags |= (SURF_DRAWCUTOUT);
+			else
+				out->flags |= SURF_DRAWWATER;
 			continue;
 		}
 	}

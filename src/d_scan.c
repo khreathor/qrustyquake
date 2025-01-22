@@ -10,6 +10,8 @@ unsigned char *r_turb_pbase, *r_turb_pdest;
 fixed16_t r_turb_s, r_turb_t, r_turb_sstep, r_turb_tstep;
 int *r_turb_turb;
 int r_turb_spancount;
+short *pz; // Manoel Kasimier - translucent water
+int izi, izistep;
 
 void D_DrawTurbulent8Span();
 
@@ -44,13 +46,34 @@ void D_WarpScreen() // this performs a slight compression of the screen at the
 void D_DrawTurbulent8Span()
 {
 	do {
-		int s =
-		    ((r_turb_s +
+		int s = ((r_turb_s +
 		      r_turb_turb[(r_turb_t >> 16) & (CYCLE - 1)]) >> 16) & 63;
-		int t =
-		    ((r_turb_t +
+		int t = ((r_turb_t +
 		      r_turb_turb[(r_turb_s >> 16) & (CYCLE - 1)]) >> 16) & 63;
 		*r_turb_pdest++ = *(r_turb_pbase + (t << 6) + s);
+		r_turb_s += r_turb_sstep;
+		r_turb_t += r_turb_tstep;
+	} while (--r_turb_spancount > 0);
+}
+
+void D_DrawTurbulent8SpanAlpha ()
+{
+	int sturb, tturb;
+	unsigned char temp, temp2;
+	do
+	{
+		if (*pz <= (izi >> 16))
+		{
+			sturb = ((r_turb_s + r_turb_turb[(r_turb_t>>16)&(CYCLE-1)])>>16)&63;
+			tturb = ((r_turb_t + r_turb_turb[(r_turb_s>>16)&(CYCLE-1)])>>16)&63;
+			temp = *(r_turb_pbase + (tturb<<6) + sturb);
+			temp2 = ((int)r_turb_pdest & 3);
+			if (temp2 == 0 || temp2 == 2) // Baker's easy stipple method
+				*r_turb_pdest = *(r_turb_pbase + (tturb<<6) + sturb);
+		}
+		*r_turb_pdest++;
+		izi += izistep;
+		pz++;
 		r_turb_s += r_turb_sstep;
 		r_turb_t += r_turb_tstep;
 	} while (--r_turb_spancount > 0);
@@ -65,8 +88,10 @@ void Turbulent8(espan_t *pspan)
 	float sdivz16stepu = d_sdivzstepu * 16;
 	float tdivz16stepu = d_tdivzstepu * 16;
 	float zi16stepu = d_zistepu * 16;
+	izistep = (int)(d_zistepu * 0x8000 * 0x10000);
 	do {
 		r_turb_pdest = (byte *) ((byte *) d_viewbuffer + (screenwidth * pspan->v) + pspan->u);
+		pz = d_pzbuffer + (d_zwidth * pspan->v) + pspan->u; // Manoel Kasimier - translucent water
 		int count = pspan->count;
 		float du = (float)pspan->u; // calculate the initial s/z, t/z,
 		float dv = (float)pspan->v; // 1/z, s, and t and clamp
@@ -141,7 +166,11 @@ void Turbulent8(espan_t *pspan)
 			}
 			r_turb_s = r_turb_s & ((CYCLE << 16) - 1);
 			r_turb_t = r_turb_t & ((CYCLE << 16) - 1);
-			D_DrawTurbulent8Span();
+			int r_wateralphapass = 1;
+			if (r_wateralphapass)
+				D_DrawTurbulent8SpanAlpha();
+			else
+				D_DrawTurbulent8Span();
 			r_turb_s = snext;
 			r_turb_t = tnext;
 		} while (count > 0);

@@ -224,6 +224,15 @@ void R_EmitCachedEdge()
 
 void R_RenderFace(msurface_t *fa, int clipflags)
 {
+	float winquake_surface_liquid_alpha = 1;
+	if (fa->flags & SURF_DRAWLAVA) winquake_surface_liquid_alpha = 0.5;//frame.lavaalpha;
+	else if (fa->flags & SURF_DRAWSLIME) winquake_surface_liquid_alpha = 0.5;//frame.slimealpha;
+	else if (fa->flags & SURF_DRAWWATER) winquake_surface_liquid_alpha = 0.5;//frame.wateralpha;
+	if (!r_wateralphapass && winquake_surface_liquid_alpha < 1)
+        {
+                r_foundtranswater = true;
+                return;
+        }
 	if ((surface_p) >= surf_max) { // skip out if no more surfs
 		r_outofsurfaces++;
 		return;

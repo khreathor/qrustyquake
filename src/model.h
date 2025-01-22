@@ -13,6 +13,11 @@
 #define SURF_DRAWTILED 0x20
 #define SURF_DRAWBACKGROUND 0x40
 #define SURF_DRAWCUTOUT 0x80
+#define SURF_DRAWLAVA           0x400
+#define SURF_DRAWSLIME          0x800
+#define SURF_DRAWTELE           0x1000
+#define SURF_DRAWWATER          0x2000
+#define SURF_WINQUAKE_DRAWTRANSLUCENT (SURF_DRAWLAVA | SURF_DRAWSLIME | SURF_DRAWWATER)
 #define EF_ROCKET 1 // leave a trail
 #define EF_GRENADE 2 // leave a trail
 #define EF_GIB 4 // leave a trail
