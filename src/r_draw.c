@@ -228,7 +228,7 @@ void R_RenderFace(msurface_t *fa, int clipflags)
 	if (fa->flags & SURF_DRAWLAVA) winquake_surface_liquid_alpha = 0.5;//frame.lavaalpha;
 	else if (fa->flags & SURF_DRAWSLIME) winquake_surface_liquid_alpha = 0.5;//frame.slimealpha;
 	else if (fa->flags & SURF_DRAWWATER) winquake_surface_liquid_alpha = 0.5;//frame.wateralpha;
-	if (!r_wateralphapass && winquake_surface_liquid_alpha < 1)
+	if (((int)r_twopass.value&1 && !r_pass) && winquake_surface_liquid_alpha < 1)
         {
                 r_foundtranswater = true;
                 return;

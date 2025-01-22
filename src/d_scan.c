@@ -58,22 +58,44 @@ void D_DrawTurbulent8Span()
 
 void D_DrawTurbulent8SpanAlpha ()
 {
-	int sturb, tturb;
-	unsigned char temp, temp2;
-	do
-	{
-		if (*pz <= (izi >> 16))
-		{
-			sturb = ((r_turb_s + r_turb_turb[(r_turb_t>>16)&(CYCLE-1)])>>16)&63;
-			tturb = ((r_turb_t + r_turb_turb[(r_turb_s>>16)&(CYCLE-1)])>>16)&63;
-			temp = *(r_turb_pbase + (tturb<<6) + sturb);
-			temp2 = ((int)r_turb_pdest & 3);
-			if (temp2 == 0 || temp2 == 2) // Baker's easy stipple method
-				*r_turb_pdest = *(r_turb_pbase + (tturb<<6) + sturb);
+	int odd = ((long)r_turb_pdest/vid.width)&1;
+	int pattern = 0;
+	do {
+		int s=((r_turb_s+r_turb_turb[(r_turb_t>>16)&(CYCLE-1)])>>16)&63;
+		int t=((r_turb_t+r_turb_turb[(r_turb_s>>16)&(CYCLE-1)])>>16)&63;
+		switch (pattern) {
+		case 6: // 83%
+			if(!(!((long)r_turb_pdest%3) && odd))
+				*r_turb_pdest = *(r_turb_pbase + (t << 6) + s);
+			break;
+		case 5: // 75%
+			if(!((long)r_turb_pdest&1 && odd))
+				*r_turb_pdest = *(r_turb_pbase + (t << 6) + s);
+			break;
+		case 4: // 66%
+			if(!((long)r_turb_pdest%3 && odd))
+				*r_turb_pdest = *(r_turb_pbase + (t << 6) + s);
+			break;
+		case 3: // 50%
+			if(((long)r_turb_pdest&1 && odd)
+				|| (!((long)r_turb_pdest&1) && !odd))
+				*r_turb_pdest = *(r_turb_pbase + (t << 6) + s);
+			break;
+		case 2: // 33%
+			if(((long)r_turb_pdest%3 && odd))
+				*r_turb_pdest = *(r_turb_pbase + (t << 6) + s);
+			break;
+		case 1: // 25%
+			if((long)r_turb_pdest&1 && odd)
+				*r_turb_pdest = *(r_turb_pbase + (t << 6) + s);
+			break;
+		case 0: // 16%
+		default:
+			if(!((long)r_turb_pdest%3) && odd)
+				*r_turb_pdest = *(r_turb_pbase + (t << 6) + s);
+			break;
 		}
-		*r_turb_pdest++;
-		izi += izistep;
-		pz++;
+		r_turb_pdest++;
 		r_turb_s += r_turb_sstep;
 		r_turb_t += r_turb_tstep;
 	} while (--r_turb_spancount > 0);
@@ -166,8 +188,7 @@ void Turbulent8(espan_t *pspan)
 			}
 			r_turb_s = r_turb_s & ((CYCLE << 16) - 1);
 			r_turb_t = r_turb_t & ((CYCLE << 16) - 1);
-			int r_wateralphapass = 1;
-			if (r_wateralphapass)
+			if ((int)r_twopass.value&1 && r_pass)
 				D_DrawTurbulent8SpanAlpha();
 			else
 				D_DrawTurbulent8Span();

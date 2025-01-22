@@ -5,8 +5,8 @@
 
 #define	 VIEWMODNAME_LENGTH 256
 
-byte r_foundtranswater, r_wateralphapass; // Manoel Kasimier - translucent water
-int r_pass; // CyanBun96: 1 - cutout textures 0 - everything else
+byte r_foundtranswater; // Manoel Kasimier - translucent water
+int r_pass; // CyanBun96: 1 - cutout textures & transwater 0 - everything else
 void *colormap;
 vec3_t viewlightvec;
 alight_t r_viewlighting = { 128, 192, viewlightvec };
@@ -581,11 +581,10 @@ void R_RenderView_() // r_refdef must be set before the first call
 	R_MarkLeaves(); // done here so we know if we're in water
 	if (!cl_entities[0].model || !cl.worldmodel)
 		Sys_Error("R_RenderView: NULL worldmodel");
-	r_foundtranswater = r_wateralphapass = false; // Manoel Kasimier - translucent water
+	r_foundtranswater = false; // Manoel Kasimier - translucent water
 	r_pass = 0;
 	R_EdgeDrawing();
 	if ((int)r_twopass.value&1) {
-		r_wateralphapass = true;
 		r_pass = 1;
 		R_EdgeDrawing();
 	}
