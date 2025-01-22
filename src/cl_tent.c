@@ -49,6 +49,7 @@ void CL_ParseBeam(model_t *m)
 			return;
 		}
 	// find a free beam
+	b = cl_beams;
 	for (int i = 0; i < MAX_BEAMS; i++, b++)
 		if (!b->model || b->endtime < cl.time) {
 			b->entity = ent;
