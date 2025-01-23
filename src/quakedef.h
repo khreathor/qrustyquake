@@ -210,7 +210,7 @@ extern qboolean msg_suppress_1; // suppresses resolution and cache size console
 extern int current_skill; // skill level for currently loaded level (in case
 			  // the user changes the cvar while the level is
 			  // running, this reflects the level actually in use)
-extern byte r_foundtranswater; // Manoel Kasimier - translucent water
+extern byte r_foundtranswater, r_wateralphapass; // Manoel Kasimier - translucent water
 
 void Host_ClearMemory();
 void Host_ServerFrame();

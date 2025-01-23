@@ -5,8 +5,8 @@
 
 #define	 VIEWMODNAME_LENGTH 256
 
-byte r_foundtranswater; // Manoel Kasimier - translucent water
-int r_pass; // CyanBun96: 1 - cutout textures & transwater 0 - everything else
+byte r_foundtranswater, r_wateralphapass; // Manoel Kasimier - translucent water
+int r_pass; // CyanBun96: 1 - cutout textures 0 - everything else
 void *colormap;
 vec3_t viewlightvec;
 alight_t r_viewlighting = { 128, 192, viewlightvec };
@@ -580,45 +580,31 @@ void R_EdgeDrawing()
 }
 
 void R_RenderView_() // r_refdef must be set before the first call
-{
+{ // CyanBun96: three-pass rendering. consider *not* doing that, or doing it less sloppily
 	byte warpbuffer[WARP_WIDTH * WARP_HEIGHT];
 	r_warpbuffer = warpbuffer;
-	if (r_timegraph.value || r_speeds.value || r_dspeeds.value)
-		r_time1 = Sys_FloatTime();
 	R_SetupFrame();
 	R_MarkLeaves(); // done here so we know if we're in water
 	if (!cl_entities[0].model || !cl.worldmodel)
 		Sys_Error("R_RenderView: NULL worldmodel");
-	r_foundtranswater = false; // Manoel Kasimier - translucent water
+	r_foundtranswater =  r_wateralphapass = false; // Manoel Kasimier - translucent water
 	r_pass = 0;
 	R_EdgeDrawing();
 	if ((int)r_twopass.value&1) {
 		r_pass = 1;
 		R_EdgeDrawing();
 	}
-	if (r_dspeeds.value)
-		de_time1 = se_time2 = Sys_FloatTime();
 	R_DrawEntitiesOnList();
-	if (r_dspeeds.value)
-		dv_time1 = de_time2 = Sys_FloatTime();
+	if (r_foundtranswater) {
+		r_wateralphapass = true;
+		R_EdgeDrawing ();
+	}
 	R_DrawViewModel();
-	if (r_dspeeds.value)
-		dp_time1 = dv_time2 = Sys_FloatTime();
 	R_DrawParticles();
-	if (r_dspeeds.value)
-		dp_time2 = Sys_FloatTime();
 	if (r_dowarp)
 		D_WarpScreen();
 	V_SetContentsColor(r_viewleaf->contents);
-	if (r_timegraph.value)
-		R_TimeGraph();
-	if (r_aliasstats.value)
-		R_PrintAliasStats();
-	if (r_speeds.value)
-		R_PrintTimes();
-	if (r_dspeeds.value)
-		R_PrintDSpeeds();
-	if (r_reportsurfout.value && r_outofsurfaces)
+	if (r_reportsurfout.value && r_outofsurfaces) // TODO r_dspeds and such
 		Con_Printf("Short %d surfaces\n", r_outofsurfaces);
 	if (r_reportedgeout.value && r_outofedges)
 		Con_Printf("Short roughly %d edges\n", r_outofedges * 2 / 3);

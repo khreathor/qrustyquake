@@ -141,6 +141,7 @@ extern mnode_t *r_pefragtopnode;
 extern int r_clipflags;
 extern unsigned int r_dlightframecount;
 extern qboolean r_fov_greater_than_90;
+extern cvar_t r_wateralpha, r_slimealpha, r_lavaalpha, r_telealpha;
 extern int r_pass;
 extern cvar_t r_twopass;
 

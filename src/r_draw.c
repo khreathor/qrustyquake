@@ -33,6 +33,7 @@ float r_u1, r_v1, r_lzi1;
 int r_ceilv1;
 qboolean r_lastvertvalid;
 static qboolean makeleftedge, makerightedge;
+float winquake_surface_liquid_alpha;
 
 void R_EmitEdge(mvertex_t *pv0, mvertex_t *pv1)
 {
@@ -224,15 +225,23 @@ void R_EmitCachedEdge()
 
 void R_RenderFace(msurface_t *fa, int clipflags)
 {
-	float winquake_surface_liquid_alpha = 1;
-	if (fa->flags & SURF_DRAWLAVA) winquake_surface_liquid_alpha = 0.5;//frame.lavaalpha;
-	else if (fa->flags & SURF_DRAWSLIME) winquake_surface_liquid_alpha = 0.5;//frame.slimealpha;
-	else if (fa->flags & SURF_DRAWWATER) winquake_surface_liquid_alpha = 0.5;//frame.wateralpha;
-	if (((int)r_twopass.value&1 && !r_pass) && winquake_surface_liquid_alpha < 1)
-        {
+	if (fa->flags & SURF_WINQUAKE_DRAWTRANSLUCENT)
+	{
+		if (fa->flags & SURF_DRAWLAVA) winquake_surface_liquid_alpha = r_lavaalpha.value;
+		else if (fa->flags & SURF_DRAWSLIME) winquake_surface_liquid_alpha = r_slimealpha.value;
+		else if (fa->flags & SURF_DRAWWATER) winquake_surface_liquid_alpha = r_wateralpha.value;
+		else if (fa->flags & SURF_DRAWTELE) winquake_surface_liquid_alpha = r_telealpha.value;
+	} else winquake_surface_liquid_alpha = 1;
+        // Baker: Fully transparent = invisible = don't render
+        if (!winquake_surface_liquid_alpha)
+                return;
+        // Baker: If this is the alpha water pass and we aren't alpha water, get out!
+        if (r_wateralphapass && winquake_surface_liquid_alpha == 1)
+                return;
+        if (!r_wateralphapass && winquake_surface_liquid_alpha < 1) {
                 r_foundtranswater = true;
                 return;
-        }
+        }	
 	if ((surface_p) >= surf_max) { // skip out if no more surfs
 		r_outofsurfaces++;
 		return;

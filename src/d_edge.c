@@ -9,7 +9,6 @@ float scale_for_mip;
 int ubasestep, errorterm, erroradjustup, erroradjustdown;
 int vstartscan;
 vec3_t transformed_modelorg;
-float winquake_surface_liquid_alpha;
 
 // FIXME: should go away
 extern void R_RotateBmodel();
@@ -107,6 +106,19 @@ void D_DrawSurfaces()
 			if (!s->spans)
 				continue;
 			r_drawnpolycount++;
+			// Baker: Need to determine what kind of liquid we are
+			if (s->flags & SURF_WINQUAKE_DRAWTRANSLUCENT) {
+				if (s->flags & SURF_DRAWLAVA)
+					winquake_surface_liquid_alpha = r_lavaalpha.value;
+				else if (s->flags & SURF_DRAWSLIME)
+					winquake_surface_liquid_alpha = r_slimealpha.value;
+				else if (s->flags & SURF_DRAWWATER)
+					winquake_surface_liquid_alpha = r_wateralpha.value;
+				else if (s->flags & SURF_DRAWTELE)
+					winquake_surface_liquid_alpha = r_telealpha.value;
+			} else winquake_surface_liquid_alpha = 1;
+			if (r_wateralphapass && winquake_surface_liquid_alpha == 1)
+				continue; // Manoel Kasimier - translucent water
 			d_zistepu = s->d_zistepu;
 			d_zistepv = s->d_zistepv;
 			d_ziorigin = s->d_ziorigin;
@@ -126,11 +138,6 @@ void D_DrawSurfaces()
 				else D_DrawSolidSurface(s, 0xFF);
 				D_DrawZSpans(s->spans);
 			} else if (s->flags & SURF_DRAWTURB) {
-				if ((s->flags & SURF_DRAWLAVA
-					|| s->flags & SURF_DRAWSLIME
-					|| s->flags & SURF_DRAWWATER)
-					&& ((int)r_twopass.value&1 && !r_pass))
-					continue;
 				msurface_t *pface = s->data;
 				miplevel = 0;
 				cacheblock = (pixel_t *)
@@ -152,16 +159,18 @@ void D_DrawSurfaces()
 				}
 				D_CalcGradients(pface);
 				float opacity = 1;
-				if (s->flags & SURF_DRAWLAVA) opacity = 
-					r_lavaalpha.value;
-				else if (s->flags & SURF_DRAWSLIME) opacity =
-					r_slimealpha.value;
-				else if (s->flags & SURF_DRAWWATER) opacity =
-					r_wateralpha.value;
-				else if (s->flags & SURF_DRAWTELE) opacity =
-					r_telealpha.value;
+				if ((int)r_twopass.value&1) {
+					if (s->flags & SURF_DRAWLAVA) opacity = 
+						r_lavaalpha.value;
+					else if (s->flags & SURF_DRAWSLIME) opacity =
+						r_slimealpha.value;
+					else if (s->flags & SURF_DRAWWATER) opacity =
+						r_wateralpha.value;
+					else if (s->flags & SURF_DRAWTELE) opacity =
+						r_telealpha.value;
+				}
 				Turbulent8(s->spans, opacity);
-				if ((int)r_twopass.value&1 && !r_pass) // Manoel Kasimier - translucent water
+				if (!r_wateralphapass) // Manoel Kasimier - translucent water
 					D_DrawZSpans(s->spans);
 				if (s->insubmodel) {
 					// restore the old drawing state
@@ -199,7 +208,7 @@ void D_DrawSurfaces()
 				cacheblock = (pixel_t *) pcurrentcache->data;
 				cachewidth = pcurrentcache->width;
 				D_CalcGradients(pface);
-				(*d_drawspans) (s->spans);
+				(*d_drawspans)(s->spans);
 				D_DrawZSpans(s->spans);
 				if (s->insubmodel) {
 					// restore the old drawing state

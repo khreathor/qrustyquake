@@ -52,6 +52,7 @@ extern short *zspantable[MAXHEIGHT];
 extern int d_minmip;
 extern float d_scalemip[3];
 extern int r_pass;
+extern float winquake_surface_liquid_alpha;
 extern cvar_t r_wateralpha;
 extern cvar_t r_slimealpha;
 extern cvar_t r_lavaalpha;
