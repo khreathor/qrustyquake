@@ -87,6 +87,10 @@ cvar_t r_maxedges = { "r_maxedges", "0", false, false, 0, NULL };
 cvar_t r_numedges = { "r_numedges", "0", false, false, 0, NULL };
 cvar_t r_aliastransbase = { "r_aliastransbase", "200", false, false, 0, NULL };
 cvar_t r_aliastransadj = { "r_aliastransadj", "100", false, false, 0, NULL };
+cvar_t r_wateralpha = { "r_wateralpha", "1", true, false, 0, NULL };
+cvar_t r_slimealpha = { "r_slimealpha", "1", true, false, 0, NULL };
+cvar_t r_lavaalpha = { "r_lavaalpha", "1", true, false, 0, NULL };
+cvar_t r_telealpha = { "r_telealpha", "1", true, false, 0, NULL };
 cvar_t r_twopass = { "r_twopass", "1", true, false, 0, NULL }; // CyanBun96
 	// 0 - off (smart) 1 - on (smart) 2 - force off 3 - force on
 	// smart gets set on map load if cutouts were found
@@ -147,6 +151,10 @@ void R_Init()
 	Cvar_RegisterVariable(&r_numedges);
 	Cvar_RegisterVariable(&r_aliastransbase);
 	Cvar_RegisterVariable(&r_aliastransadj);
+	Cvar_RegisterVariable(&r_wateralpha);
+	Cvar_RegisterVariable(&r_slimealpha);
+	Cvar_RegisterVariable(&r_lavaalpha);
+	Cvar_RegisterVariable(&r_telealpha);
 	Cvar_RegisterVariable(&r_twopass);
 	Cvar_SetValue("r_maxedges", (float)NUMSTACKEDGES);
 	Cvar_SetValue("r_maxsurfs", (float)NUMSTACKSURFACES);

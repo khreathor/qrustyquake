@@ -151,7 +151,16 @@ void D_DrawSurfaces()
 					// make entity passed in
 				}
 				D_CalcGradients(pface);
-				Turbulent8(s->spans);
+				float opacity = 1;
+				if (s->flags & SURF_DRAWLAVA) opacity = 
+					r_lavaalpha.value;
+				else if (s->flags & SURF_DRAWSLIME) opacity =
+					r_slimealpha.value;
+				else if (s->flags & SURF_DRAWWATER) opacity =
+					r_wateralpha.value;
+				else if (s->flags & SURF_DRAWTELE) opacity =
+					r_telealpha.value;
+				Turbulent8(s->spans, opacity);
 				if ((int)r_twopass.value&1 && !r_pass) // Manoel Kasimier - translucent water
 					D_DrawZSpans(s->spans);
 				if (s->insubmodel) {

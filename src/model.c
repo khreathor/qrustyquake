@@ -509,9 +509,9 @@ void Mod_LoadFaces(lump_t *l)
 			if (!Q_strncmp(out->texinfo->texture->name, "*lava", 5))
 				out->flags |= (SURF_DRAWLAVA);
 			else if (!Q_strncmp(out->texinfo->texture->name, "*slime", 6))
-				out->flags |= (SURF_DRAWCUTOUT);
+				out->flags |= (SURF_DRAWSLIME);
 			else if (!Q_strncmp(out->texinfo->texture->name, "*tele", 5))
-				out->flags |= (SURF_DRAWCUTOUT);
+				out->flags |= (SURF_DRAWTELE);
 			else
 				out->flags |= SURF_DRAWWATER;
 			continue;

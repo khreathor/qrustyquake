@@ -56,10 +56,17 @@ void D_DrawTurbulent8Span()
 	} while (--r_turb_spancount > 0);
 }
 
-void D_DrawTurbulent8SpanAlpha ()
+void D_DrawTurbulent8SpanAlpha (float opacity)
 {
 	int odd = ((long)r_turb_pdest/vid.width)&1;
 	int pattern = 0;
+	if (opacity >= 0.83f) pattern = 6;
+	else if (opacity >= 0.75f) pattern = 5;
+	else if (opacity >= 0.66f) pattern = 4;
+	else if (opacity >= 0.50f) pattern = 3;
+	else if (opacity >= 0.33f) pattern = 2;
+	else if (opacity >= 0.25f) pattern = 1;
+	else pattern = 0;
 	do {
 		int s=((r_turb_s+r_turb_turb[(r_turb_t>>16)&(CYCLE-1)])>>16)&63;
 		int t=((r_turb_t+r_turb_turb[(r_turb_s>>16)&(CYCLE-1)])>>16)&63;
@@ -101,8 +108,10 @@ void D_DrawTurbulent8SpanAlpha ()
 	} while (--r_turb_spancount > 0);
 }
 
-void Turbulent8(espan_t *pspan)
+void Turbulent8(espan_t *pspan, float opacity)
 {
+	if ((int)r_twopass.value&1 && r_pass && opacity == 0)
+		return;
 	r_turb_turb = sintable + ((int)(cl.time * SPEED) & (CYCLE - 1));
 	r_turb_sstep = 0; // keep compiler happy
 	r_turb_tstep = 0; // ditto
@@ -188,8 +197,8 @@ void Turbulent8(espan_t *pspan)
 			}
 			r_turb_s = r_turb_s & ((CYCLE << 16) - 1);
 			r_turb_t = r_turb_t & ((CYCLE << 16) - 1);
-			if ((int)r_twopass.value&1 && r_pass)
-				D_DrawTurbulent8SpanAlpha();
+			if ((int)r_twopass.value&1 && r_pass && opacity < 1)
+				D_DrawTurbulent8SpanAlpha(opacity);
 			else
 				D_DrawTurbulent8Span();
 			r_turb_s = snext;
