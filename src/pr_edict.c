@@ -356,7 +356,7 @@ void ED_Write(FILE *f, edict_t *ed)
 		int *v = (int *)((char *)&ed->v + d->ofs * 4);
 		// if the value is still all 0, skip the field
 		int type = d->type & ~DEF_SAVEGLOBAL;
-		for (; j < type_size[type]; j++)
+		for (j = 0; j < type_size[type]; j++)
 			if (v[j])
 				break;
 		if (j == type_size[type])
