@@ -26,7 +26,6 @@ int r_maxsurfsseen, r_maxedgesseen, r_cnumsurfs;
 qboolean r_surfsonstack;
 int r_clipflags;
 byte *r_warpbuffer;
-byte *r_stack_start;
 qboolean r_fov_greater_than_90;
 // view origin
 vec3_t vup, base_vup;
@@ -124,9 +123,6 @@ void R_InitTextures()
 
 void R_Init()
 {
-	int dummy;
-	// get stack position so we can guess if we are going to overflow
-	r_stack_start = (byte *) & dummy;
 	R_InitTurb();
 	Cmd_AddCommand("timerefresh", R_TimeRefresh_f);
 	Cmd_AddCommand("pointfile", R_ReadPointFile_f);
@@ -579,7 +575,7 @@ void R_EdgeDrawing()
 	R_ScanEdges();
 }
 
-void R_RenderView_() // r_refdef must be set before the first call
+void R_RenderView() // r_refdef must be set before the first call
 { // CyanBun96: three-pass rendering. consider *not* doing that, or doing it less sloppily
 	byte warpbuffer[WARP_WIDTH * WARP_HEIGHT];
 	r_warpbuffer = warpbuffer;
@@ -608,21 +604,6 @@ void R_RenderView_() // r_refdef must be set before the first call
 		Con_Printf("Short %d surfaces\n", r_outofsurfaces);
 	if (r_reportedgeout.value && r_outofedges)
 		Con_Printf("Short roughly %d edges\n", r_outofedges * 2 / 3);
-}
-
-void R_RenderView()
-{ // TODO CyanBun96: are those checks necessary?
-	int dummy;
-	int delta = (byte *) & dummy - r_stack_start;
-	if (delta < -10000 || delta > 10000)
-		Sys_Error("R_RenderView: called without enough stack");
-	if (Hunk_LowMark() & 3)
-		Sys_Error("Hunk is missaligned");
-	if ((long)(&dummy) & 3)
-		Sys_Error("Stack is missaligned");
-	if ((long)(&r_warpbuffer) & 3)
-		Sys_Error("Globals are missaligned");
-	R_RenderView_();
 }
 
 void R_InitTurb()
