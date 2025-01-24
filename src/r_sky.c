@@ -81,26 +81,6 @@ void R_GenSkyTile(void *pdest)
 	}
 }
 
-void R_GenSkyTile16(void *pdest)
-{
-	int xshift = skytime * skyspeed;
-	int yshift = skytime * skyspeed;
-	byte *pnewsky = (byte *) & newsky[0];
-	unsigned short *pd = (unsigned short *)pdest;
-	for (int y = 0; y < SKYSIZE; y++) {
-		int baseofs = ((y + yshift) & SKYMASK) * 131;
-		for (int x = 0; x < SKYSIZE; x++) {
-			int ofs = baseofs + ((x + xshift) & SKYMASK);
-			*pd = d_8to16table[(*(pnewsky + 128) &
-					*(byte *) & bottommask[ofs]) |
-					*(byte *) & bottomsky[ofs]];
-			pnewsky++;
-			pd++;
-		}
-		pnewsky += TILE_SIZE;
-	}
-}
-
 void R_SetSkyFrame()
 {
 	skyspeed = iskyspeed;
