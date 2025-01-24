@@ -449,6 +449,7 @@ qboolean SV_SendClientDatagram(client_t *client)
 	}
 	return true;
 }
+
 void SV_UpdateToReliableMessages()
 {
 	int i, j;
@@ -604,7 +605,6 @@ void SV_SendReconnect()
 	if (cls.state != ca_dedicated)
 		Cmd_ExecuteString("reconnect\n", src_command);
 }
-
 
 void SV_SaveSpawnparms() // Grabs the current state of each client for saving
 { // across the transition to another level

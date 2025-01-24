@@ -366,8 +366,6 @@ float MSG_ReadAngle()
 	return MSG_ReadChar() * (360.0 / 256);
 }
 
-// =============================================================================
-
 void SZ_Alloc(sizebuf_t *buf, int startsize)
 {
 	if (startsize < 256)

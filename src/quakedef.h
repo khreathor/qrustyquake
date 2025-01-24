@@ -51,8 +51,8 @@
 #define MAX_QPATH 64 // max length of a quake game pathname
 #define MAX_OSPATH 128 // max length of a filesystem pathname
 #define ON_EPSILON 0.1 // point on plane side epsilon
-#define MAX_MSGLEN 8000 // max length of a reliable message
-#define MAX_DATAGRAM 1024 // max length of unreliable message
+#define MAX_MSGLEN 65536 // max length of a reliable message, from Mark V
+#define MAX_DATAGRAM 65527 // max length of unreliable message, from Mark V
 #define MAX_EDICTS 32000 // FIXME: ouch! ouch! ouch!
 #define MAX_LIGHTSTYLES 64
 #define MAX_MODELS 2048 // these are sent over the net as bytes

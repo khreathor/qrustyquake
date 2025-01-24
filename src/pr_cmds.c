@@ -294,11 +294,7 @@ void PF_particle()
 	count = G_FLOAT(OFS_PARM3);
 	SV_StartParticle(org, dir, color, count);
 }
-/*
-   =================
-   PF_ambientsound
-   =================
-   */
+
 void PF_ambientsound()
 {
 	float *pos = G_VECTOR(OFS_PARM0);

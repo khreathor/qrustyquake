@@ -89,7 +89,7 @@ typedef struct
 	sizebuf_t reliable_datagram; // copied to all clients at end of frame
 	byte reliable_datagram_buf[MAX_DATAGRAM];
 	sizebuf_t signon;
-	byte signon_buf[8192];
+	byte signon_buf[MAX_MSGLEN-2];
 } server_t;
 
 typedef struct client_s
@@ -110,9 +110,7 @@ typedef struct client_s
 	int colors;
 	float ping_times[NUM_PING_TIMES];
 	int num_pings; // ping_times[num_pings%NUM_PING_TIMES]
-
 	float spawn_parms[NUM_SPAWN_PARMS]; // spawn parms are carried from level to level
-
 	int old_frags; // client known data for deltas 
 } client_t;
 
