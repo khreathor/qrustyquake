@@ -65,6 +65,9 @@ qboolean m_serverInfoMessage = false;
 double m_serverInfoMessageTime;
 int gameoptions_cursor_table[] = { 40, 56, 64, 72, 80, 88, 96, 112, 120 };
 int gameoptions_cursor;
+byte identityTable[256];
+byte translationTable[256];
+int fpslimits[] = { 30,60,72,100,120,144,165,180,200,240,300,360,500,999999 };
 
 typedef struct {
 	char *name;
@@ -249,7 +252,6 @@ void M_Menu_LanConfig_f();
 void M_Menu_GameOptions_f();
 void M_Menu_Search_f();
 void M_Menu_ServerList_f();
-
 void M_Main_Draw();
 void M_SinglePlayer_Draw();
 void M_Load_Draw();
@@ -267,7 +269,6 @@ void M_LanConfig_Draw();
 void M_GameOptions_Draw();
 void M_Search_Draw();
 void M_ServerList_Draw();
-
 void M_Main_Key(int key);
 void M_SinglePlayer_Key(int key);
 void M_Load_Key(int key);
@@ -283,21 +284,22 @@ void M_Quit_Key(int key);
 void M_LanConfig_Key(int key);
 void M_GameOptions_Key(int key);
 void M_ServerList_Key(int key);
+void M_ConfigureNetSubsystem();
 int help_page;
 qboolean searchComplete = false;
 double searchCompleteTime;
 int slist_cursor;
 qboolean slist_sorted;
-
-
 qboolean m_entersound; // play after drawing a frame, so caching won't disrupt the sound
 qboolean m_recursiveDraw;
-
 int m_return_state;
 qboolean m_return_onerror;
 char m_return_reason[32];
-
-void M_ConfigureNetSubsystem();
+extern cvar_t r_wateralpha;
+extern cvar_t r_slimealpha;
+extern cvar_t r_lavaalpha;
+extern cvar_t host_maxfps;
+extern cvar_t r_twopass;
 
 void M_DrawCharacter(int cx, int line, int num)
 { // Draws one solid graphics character
@@ -344,9 +346,6 @@ void M_DrawPic(int x, int y, qpic_t *pic)
 	Draw_PicScaled(x * uiscale + ((vid.width - 320 * uiscale) >> 1),
 		       y * uiscale, pic, uiscale);
 }
-
-byte identityTable[256];
-byte translationTable[256];
 
 void M_BuildTranslationTable(int top, int bottom)
 {
@@ -1366,48 +1365,68 @@ void M_New_Draw()
 	M_Print(xoffset, 56, "           FPS Counter");
 	M_DrawCheckbox(xoffset + 204, 56, scr_showfps.value);
 	if (new_cursor == 2) {
-		M_DrawTextBox(52, 134, 30, 2);
-		M_Print(64, 142, "  This menu can be restored");
-		M_Print(64, 150, "with the              command");
-		M_PrintWhite(64, 150, "         newoptions 1");
+		M_DrawTextBox(52, 150, 30, 2);
+		M_Print(64, 158, "  This menu can be restored");
+		M_Print(64, 166, "with the              command");
+		M_PrintWhite(64, 166, "         newoptions 1");
 	}
 	M_Print(xoffset, 64, "         Y Mouse Speed");
 	sprintf(temp, "%0.1f\n", sensitivityyscale.value);
 	M_Print(xoffset + 204, 64, temp);
-	M_Print(xoffset, 72, "           Window Mode");
-	if (newwinmode == 0)
-		M_Print(xoffset + 204, 72, "Windowed");
-	else if (newwinmode == 1)
-		M_Print(xoffset + 204, 72, "Fullscreen");
+	M_Print(xoffset, 72, "       Cutout Textures");
+	if (r_twopass.value == 0)
+		M_Print(xoffset + 204, 72, "Off (smart)");
+	else if (r_twopass.value == 1)
+		M_Print(xoffset + 204, 72, "On (smart)");
+	else if (r_twopass.value == 2)
+		M_Print(xoffset + 204, 72, "Force Off");
 	else
-		M_Print(xoffset + 204, 72, "Desktop");
-	M_Print(xoffset, 84, "          Custom Width");
-	M_DrawTextBox(xoffset + 196, 76, 8, 1);
-	M_Print(xoffset + 204, 84, customwidthstr);
-	if (new_cursor == 6) {
-		M_DrawCursorLine(xoffset+204 + 8 * strlen(customwidthstr), 84);
+		M_Print(xoffset + 204, 72, "Force On");
+	M_Print(xoffset, 80, "          Liquid Alpha");
+	sprintf(temp, "%0.1f\n", r_wateralpha.value);
+	M_Print(xoffset + 204, 80, temp);
+	M_Print(xoffset, 88, "             FPS Limit");
+	sprintf(temp, "%d\n", (int)host_maxfps.value);
+	M_Print(xoffset + 204, 88, temp);
+	if (new_cursor == 7 && (int)host_maxfps.value > 72) {
+		M_DrawTextBox(52, 150, 30, 1);
+		M_Print(64, 158, "Values above    break physics");
+		M_PrintWhite(64, 158, "             72");
+	}
+	M_Print(xoffset, 96, "           Window Mode");
+	if (newwinmode == 0)
+		M_Print(xoffset + 204, 96, "Windowed");
+	else if (newwinmode == 1)
+		M_Print(xoffset + 204, 96, "Fullscreen");
+	else
+		M_Print(xoffset + 204, 96, "Desktop");
+	M_Print(xoffset, 108, "          Custom Width");
+	M_DrawTextBox(xoffset + 196, 100, 8, 1);
+	M_Print(xoffset + 204, 108, customwidthstr);
+	if (new_cursor == 9) {
+		M_DrawCursorLine(xoffset+204 + 8 * strlen(customwidthstr), 108);
 		sprintf(temp, "%d", MAXWIDTH);
-		M_DrawTextBox(xoffset + 68, 134, 16 + strlen(temp), 1);
-		M_Print(xoffset + 80, 142, "320 <= Width <=");
-		M_Print(xoffset + 208, 142, temp);
+		M_DrawTextBox(xoffset + 68, 150, 16 + strlen(temp), 1);
+		M_Print(xoffset + 80, 158, "320 <= Width <=");
+		M_Print(xoffset + 208, 158, temp);
 	}
-	M_Print(xoffset, 100, "         Custom Height");
-	M_DrawTextBox(xoffset + 196, 92, 8, 1);
-	M_Print(xoffset + 204, 100, customheightstr);
-	if (new_cursor == 7) {
-		M_DrawCursorLine(xoffset+204+8 * strlen(customheightstr), 100);
+	M_Print(xoffset, 124, "         Custom Height");
+	M_DrawTextBox(xoffset + 196, 116, 8, 1);
+	M_Print(xoffset + 204, 124, customheightstr);
+	if (new_cursor == 10) {
+		M_DrawCursorLine(xoffset+204+8 * strlen(customheightstr), 124);
 		sprintf(temp, "%d", MAXHEIGHT);
-		M_DrawTextBox(xoffset + 68, 134, 17 + strlen(temp), 1);
-		M_Print(xoffset + 80, 142, "200 <= Height <=");
-		M_Print(xoffset + 216, 142, temp);
+		M_DrawTextBox(xoffset + 68, 150, 17 + strlen(temp), 1);
+		M_Print(xoffset + 80, 158, "200 <= Height <=");
+		M_Print(xoffset + 216, 158, temp);
 	}
-	M_Print(xoffset + 204, 112, "Set Mode");
-	if (new_cursor == 6)
-		M_DrawCursor(xoffset + 192, 84);
-	else if (new_cursor == 7)
-		M_DrawCursor(xoffset + 192, 100);
-	else if (new_cursor == 8)
-		M_DrawCursor(xoffset + 192, 112);
+	M_Print(xoffset + 204, 136, "Set Mode");
+	if (new_cursor == 9)
+		M_DrawCursor(xoffset + 192, 108);
+	else if (new_cursor == 10)
+		M_DrawCursor(xoffset + 192, 124);
+	else if (new_cursor == 11)
+		M_DrawCursor(xoffset + 192, 136);
 	else
 		M_DrawCursor(xoffset + 192, 32 + new_cursor * 8);
 }
@@ -1435,6 +1454,24 @@ void M_New_Key(int k)
 			Cvar_SetValue("sensitivityyscale",
 				      sensitivityyscale.value - 0.1);
 		else if (new_cursor == 5) {
+			if (r_twopass.value == 0)
+				Cvar_SetValue("r_twopass", 3);
+			else
+				Cvar_SetValue("r_twopass", r_twopass.value - 1);
+		} else if (new_cursor == 6 && r_wateralpha.value >= 0.1) {
+			Cvar_SetValue("r_wateralpha", r_wateralpha.value - 0.1);
+			Cvar_SetValue("r_lavaalpha", r_wateralpha.value);
+			Cvar_SetValue("r_slimealpha", r_wateralpha.value);
+		} else if (new_cursor == 7) {
+			int i = 0;
+			for (; i < (int)sizeof(fpslimits) / 4 - 1; ++i)
+				if (fpslimits[i] >= (int)host_maxfps.value)
+					break;
+			--i;
+			if (i < 0 || i > (int)sizeof(fpslimits) / 4 - 1)
+				i = sizeof(fpslimits) / 4 - 1;
+			Cvar_SetValue("host_maxfps", fpslimits[i]);
+		} else if (new_cursor == 8) {
 			if (newwinmode == 0)
 				newwinmode = 2;
 			else
@@ -1444,13 +1481,13 @@ void M_New_Key(int k)
 	case K_UPARROW:
 		S_LocalSound("misc/menu1.wav");
 		if (new_cursor == 0)
-			new_cursor = 8;
+			new_cursor = 11;
 		else
 			new_cursor--;
 		break;
 	case K_DOWNARROW:
 		S_LocalSound("misc/menu1.wav");
-		if (new_cursor == 8)
+		if (new_cursor == 11)
 			new_cursor = 0;
 		else
 			new_cursor++;
@@ -1471,11 +1508,29 @@ void M_New_Key(int k)
 			Cvar_SetValue("sensitivityyscale",
 				      sensitivityyscale.value + 0.1);
 		else if (new_cursor == 5) {
+			if (r_twopass.value == 3)
+				Cvar_SetValue("r_twopass", 0);
+			else
+				Cvar_SetValue("r_twopass", r_twopass.value + 1);
+		} else if (new_cursor == 6 && r_wateralpha.value < 1.0) {
+			Cvar_SetValue("r_wateralpha", r_wateralpha.value + 0.1);
+			Cvar_SetValue("r_lavaalpha", r_wateralpha.value);
+			Cvar_SetValue("r_slimealpha", r_wateralpha.value);
+		} else if (new_cursor == 7) {
+			int i = 0;
+			for (; i < (int)sizeof(fpslimits) / 4 - 1; ++i)
+				if (fpslimits[i] >= (int)host_maxfps.value)
+					break;
+			++i;
+			if (i < 0 || i > (int)sizeof(fpslimits) / 4 - 1)
+				i = 0;
+			Cvar_SetValue("host_maxfps", fpslimits[i]);
+		} else if (new_cursor == 8) {
 			if (newwinmode == 2)
 				newwinmode = 0;
 			else
 				newwinmode++;
-		} else if (new_cursor == 8
+		} else if (new_cursor == 11
 			   && Q_atoi(customwidthstr) >= 320
 			   && Q_atoi(customheightstr) >= 200
 			   && Q_atoi(customwidthstr) <= MAXWIDTH
@@ -1485,21 +1540,21 @@ void M_New_Key(int k)
 				    vid_curpal);
 		break;
 	case K_BACKSPACE:
-		if (new_cursor == 6 && strlen(customwidthstr))
+		if (new_cursor == 9 && strlen(customwidthstr))
 			customwidthstr[strlen(customwidthstr) - 1] = 0;
-		else if (new_cursor == 7 && strlen(customheightstr))
+		else if (new_cursor == 10 && strlen(customheightstr))
 			customheightstr[strlen(customheightstr) - 1] = 0;
 		break;
 	default:
 		if (k < '0' || k > '9')
 			break;
-		if (new_cursor == 6) {
+		if (new_cursor == 9) {
 			int l = strlen(customwidthstr);
 			if (l < 7) {
 				customwidthstr[l + 1] = 0;
 				customwidthstr[l] = k;
 			}
-		} else if (new_cursor == 7) {
+		} else if (new_cursor == 10) {
 			int l = strlen(customheightstr);
 			if (l < 7) {
 				customheightstr[l + 1] = 0;
