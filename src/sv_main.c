@@ -3,7 +3,7 @@
 #include "quakedef.h"
 server_t sv;
 server_static_t svs;
-char localmodels[MAX_MODELS][5]; // inline model names for precache
+char localmodels[MAX_MODELS][6]; // inline model names for precache
 int fatbytes;
 byte fatpvs[MAX_MAP_LEAFS / 8];
 extern float scr_centertime_off;
