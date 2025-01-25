@@ -301,7 +301,7 @@ void SV_WriteEntitiesToClient(edict_t *clent, sizebuf_t *msg)
 		else
 			MSG_WriteByte(msg, e);
 		if (bits & U_MODEL)
-			MSG_WriteByte(msg, ent->v.modelindex);
+			MSG_WriteShort(msg, ent->v.modelindex); // CyanBun96: was byte
 		if (bits & U_FRAME)
 			MSG_WriteByte(msg, ent->v.frame);
 		if (bits & U_COLORMAP)

@@ -216,7 +216,7 @@ void CL_ParseUpdate(int bits)
 	ent->msgtime = cl.mtime[0];
 	int modnum;
 	if (bits & U_MODEL) {
-		modnum = MSG_ReadByte();
+		modnum = MSG_ReadShort(); // CyanBun96: was byte
 		if (modnum >= MAX_MODELS)
 			Host_Error("CL_ParseModel: bad modnum");
 	} else
