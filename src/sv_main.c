@@ -407,7 +407,7 @@ void SV_WriteClientdataToMessage(edict_t *ent, sizebuf_t *msg)
 	if (bits & SU_ARMOR)
 		MSG_WriteByte(msg, ent->v.armorvalue);
 	if (bits & SU_WEAPON)
-		MSG_WriteByte(msg,
+		MSG_WriteShort(msg,
 				SV_ModelIndex(PR_GetString(ent->v.weaponmodel)));
 	MSG_WriteShort(msg, ent->v.health);
 	MSG_WriteByte(msg, ent->v.currentammo);
@@ -581,9 +581,9 @@ void SV_CreateBaseline()
 		// add to the message
 		MSG_WriteByte(&sv.signon, svc_spawnbaseline);
 		MSG_WriteShort(&sv.signon, entnum);
-		MSG_WriteByte(&sv.signon, svent->baseline.modelindex);
+		MSG_WriteShort(&sv.signon, svent->baseline.modelindex);
 		MSG_WriteByte(&sv.signon, svent->baseline.frame);
-		MSG_WriteByte(&sv.signon, svent->baseline.colormap);
+		//MSG_WriteByte(&sv.signon, svent->baseline.colormap);
 		MSG_WriteByte(&sv.signon, svent->baseline.skin);
 		for (int i = 0; i < 3; i++) {
 			MSG_WriteCoord(&sv.signon, svent->baseline.origin[i]);

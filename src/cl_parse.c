@@ -272,9 +272,9 @@ void CL_ParseUpdate(int bits)
 
 void CL_ParseBaseline(entity_t *ent)
 {
-	ent->baseline.modelindex = MSG_ReadByte();
+	ent->baseline.modelindex = MSG_ReadShort();
 	ent->baseline.frame = MSG_ReadByte();
-	ent->baseline.colormap = MSG_ReadByte();
+	//ent->baseline.colormap = MSG_ReadByte();
 	ent->baseline.skin = MSG_ReadByte();
 	for (int i = 0; i < 3; i++) {
 		ent->baseline.origin[i] = MSG_ReadCoord();
@@ -308,7 +308,7 @@ void CL_ParseClientdata(int bits)
 		cl.stats[STAT_ARMOR] = i;
 		Sbar_Changed();
 	}
-	i = bits & SU_WEAPON ? MSG_ReadByte() : 0;
+	i = bits & SU_WEAPON ? MSG_ReadShort() : 0;
 	if (cl.stats[STAT_WEAPON] != i) {
 		cl.stats[STAT_WEAPON] = i;
 		Sbar_Changed();
