@@ -20,6 +20,8 @@ cvar_t m_pitch = { "m_pitch", "0.022", true, false, 0, NULL };
 cvar_t m_yaw = { "m_yaw", "0.022", true, false, 0, NULL };
 cvar_t m_forward = { "m_forward", "1", true, false, 0, NULL };
 cvar_t m_side = { "m_side", "0.8", true, false, 0, NULL };
+cvar_t  cl_maxpitch = {"cl_maxpitch", "90", CVAR_ARCHIVE}; //johnfitz -- variable pitch clamping
+cvar_t  cl_minpitch = {"cl_minpitch", "-90", CVAR_ARCHIVE}; //johnfitz -- variable pitch clamping
 
 client_static_t cls;
 client_state_t cl;
@@ -424,6 +426,8 @@ void CL_Init()
 	Cvar_RegisterVariable(&m_yaw);
 	Cvar_RegisterVariable(&m_forward);
 	Cvar_RegisterVariable(&m_side);
+	Cvar_RegisterVariable (&cl_maxpitch); //johnfitz -- variable pitch clamping
+	Cvar_RegisterVariable (&cl_minpitch); //johnfitz -- variable pitch clamping
 	Cmd_AddCommand("entities", CL_PrintEntities_f);
 	Cmd_AddCommand("disconnect", CL_Disconnect_f);
 	Cmd_AddCommand("record", CL_Record_f);

@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 dprograms_t		*progs;
 dfunction_t		*pr_functions;
 
-char		*pr_strings;
+static	char		*pr_strings;
 static	int		pr_stringssize;
 static	const char	**pr_knownstrings;
 static	int		pr_maxknownstrings;
@@ -1098,13 +1098,12 @@ to avoid conflicts (e.g. Arcane Dimensions uses bit 32 for its explosions)
 */
 static int PR_FindSupportedEffects (void)
 {
-	return 0; /* TODO
-	qboolean isqex = 
+/*	qboolean isqex = 
 		PR_HasGlobal ("EF_QUADLIGHT", EF_QEX_QUADLIGHT) &&
 		(PR_HasGlobal ("EF_PENTLIGHT", EF_QEX_PENTALIGHT) || PR_HasGlobal ("EF_PENTALIGHT", EF_QEX_PENTALIGHT))
 	;
-	return isqex ? -1 : -1 & ~(EF_QEX_QUADLIGHT|EF_QEX_PENTALIGHT|EF_QEX_CANDLELIGHT);
-	*/
+	return isqex ? -1 : -1 & ~(EF_QEX_QUADLIGHT|EF_QEX_PENTALIGHT|EF_QEX_CANDLELIGHT);*/
+	return 0;
 }
 
 
@@ -1280,8 +1279,8 @@ ED_Nomonsters_f
 */
 static void ED_Nomonsters_f (cvar_t *cvar)
 {
-	if (cvar->value)
-		printf ("\"%s\" can break gameplay.\n", cvar->name);
+//	if (cvar->value)
+//		Con_Warning ("\"%s\" can break gameplay.\n", cvar->name);
 }
 
 
@@ -1338,7 +1337,7 @@ int NUM_FOR_EDICT(edict_t *e)
 static void PR_AllocStringSlots (void)
 {
 	pr_maxknownstrings += PR_STRING_ALLOCSLOTS;
-	printf("PR_AllocStringSlots: realloc'ing for %d slots\n", pr_maxknownstrings);
+	//Con_DPrintf2("PR_AllocStringSlots: realloc'ing for %d slots\n", pr_maxknownstrings);
 	pr_knownstrings = (const char **) Z_Realloc ((void *)pr_knownstrings, pr_maxknownstrings * sizeof(char *));
 }
 

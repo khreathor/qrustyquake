@@ -1,5 +1,7 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
 
+#define TEX_SPECIAL             1               // sky or slime, no lightmap or 256 subdivision
+#define TEX_MISSING             2               // johnfitz -- this texinfo does not have a texture
 #define MAX_MAP_HULLS 4 // upper design bounds
 #define MAX_MAP_MODELS 256
 #define MAX_MAP_BRUSHES 4096
@@ -22,8 +24,23 @@
 #define MAX_MAP_PORTALS 65536
 #define MAX_KEY 32 // key / value pair sizes
 #define MAX_VALUE 1024
-#define BSPVERSION 29
-#define TOOLVERSION 2
+#define BSPVERSION      29
+
+#ifdef BSP29_VALVE
+#define BSPVERSION_VALVE 30
+#endif
+
+/* RMQ support (2PSB). 32bits instead of shorts for all but bbox sizes (which
+ * still use shorts) */
+#define BSP2VERSION_2PSB (('B' << 24) | ('S' << 16) | ('P' << 8) | '2')
+
+/* BSP2 support. 32bits instead of shorts for everything (bboxes use floats) */
+#define BSP2VERSION_BSP2 (('B' << 0) | ('S' << 8) | ('P' << 16) | ('2'<<24))
+
+// Quake64
+#define BSPVERSION_QUAKE64 (('Q' << 24) | ('6' << 16) | ('4' << 8) | ' ')
+
+#define TOOLVERSION     2
 #define LUMP_ENTITIES 0
 #define LUMP_PLANES 1
 #define LUMP_TEXTURES 2
@@ -126,6 +143,26 @@ typedef struct
 
 typedef struct
 {
+        int                     planenum;
+        int                     children[2];    // negative numbers are -(leafs+1), not nodes
+        short           mins[3];                // for sphere culling
+        short           maxs[3];
+        unsigned int    firstface;
+        unsigned int    numfaces;       // counting both sides
+} dl1node_t;
+
+typedef struct
+{
+        int                     planenum;
+        int                     children[2];    // negative numbers are -(leafs+1), not nodes
+        float           mins[3];                // for sphere culling
+        float           maxs[3];
+        unsigned int    firstface;
+        unsigned int    numfaces;       // counting both sides
+} dl2node_t;
+
+typedef struct
+{
 	int planenum;
 	short children[2]; // negative numbers are contents
 } dclipnode_t;
@@ -144,6 +181,11 @@ typedef struct // note that edge 0 is never used, because negative edge nums are
 
 typedef struct
 {
+        unsigned int    v[2];           // vertex numbers
+} dledge_t;
+
+typedef struct
+{
 	short planenum;
 	short side;
 	int firstedge; // we must support > 64k edges
@@ -152,6 +194,20 @@ typedef struct
 	byte styles[MAXLIGHTMAPS]; // lighting info
 	int lightofs; // start of [numstyles*surfsize] samples
 } dface_t;
+
+typedef struct
+{
+        int                     planenum;
+        int                     side;
+
+        int                     firstedge;              // we must support > 64k edges
+        int                     numedges;
+        int                     texinfo;
+
+// lighting info
+        byte            styles[MAXLIGHTMAPS];
+        int                     lightofs;               // start of [numstyles*surfsize] samples
+} dlface_t;
 
 typedef struct // leaf 0 is the generic CONTENTS_SOLID leaf, used for all solid
 { // areas, all other leafs need visibility info
@@ -163,3 +219,32 @@ typedef struct // leaf 0 is the generic CONTENTS_SOLID leaf, used for all solid
 	unsigned short nummarksurfaces;
 	byte ambient_level[NUM_AMBIENTS];
 } dleaf_t;
+
+typedef struct
+{
+        int                     contents;
+        int                     visofs;                         // -1 = no visibility info
+
+        short           mins[3];                        // for frustum culling
+        short           maxs[3];
+
+        unsigned int            firstmarksurface;
+        unsigned int            nummarksurfaces;
+
+        byte            ambient_level[NUM_AMBIENTS];
+} dl1leaf_t;
+
+typedef struct
+{
+        int                     contents;
+        int                     visofs;                         // -1 = no visibility info
+
+        float           mins[3];                        // for frustum culling
+        float           maxs[3];
+
+        unsigned int            firstmarksurface;
+        unsigned int            nummarksurfaces;
+
+        byte            ambient_level[NUM_AMBIENTS];
+} dl2leaf_t;
+

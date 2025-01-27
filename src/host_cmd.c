@@ -447,32 +447,48 @@ void Host_Loadgame_f()
 	}
 }
 
-void Host_Name_f()
+/*
+======================
+Host_Name_f
+======================
+*/
+static void Host_Name_f (void)
 {
-	if (Cmd_Argc() == 1) {
-		Con_Printf("\"name\" is \"%s\"\n", cl_name.string);
-		return;
-	}
-	char *newName = Cmd_Argc() == 2 ? Cmd_Argv(1) : Cmd_Args();
-	newName[15] = 0;
-	if (cmd_source == src_command) {
-		if (Q_strcmp(cl_name.string, newName) == 0)
-			return;
-		Cvar_Set("_cl_name", newName);
-		if (cls.state == ca_connected)
-			Cmd_ForwardToServer();
-		return;
-	}
-	if (host_client->name[0] && strcmp(host_client->name, "unconnected"))
-		if (Q_strcmp(host_client->name, newName) != 0)
-			Con_Printf("%s renamed to %s\n", host_client->name,
-					newName);
-	Q_strcpy(host_client->name, newName);
-	host_client->edict->v.netname = host_client->name - pr_strings;
-	// send notification to all clients
-	MSG_WriteByte(&sv.reliable_datagram, svc_updatename);
-	MSG_WriteByte(&sv.reliable_datagram, host_client - svs.clients);
-	MSG_WriteString(&sv.reliable_datagram, host_client->name);
+        char    newName[32];
+
+        if (Cmd_Argc () == 1)
+        {
+                Con_Printf ("\"name\" is \"%s\"\n", cl_name.string);
+                return;
+        }
+        if (Cmd_Argc () == 2)
+                strlcpy(newName, Cmd_Argv(1), sizeof(newName));
+        else
+                strlcpy(newName, Cmd_Args(), sizeof(newName));
+        newName[15] = 0;        // client_t structure actually says name[32].
+
+        if (cmd_source == src_command)
+        {
+                if (Q_strcmp(cl_name.string, newName) == 0)
+                        return;
+                Cvar_Set ("_cl_name", newName);
+                if (cls.state == ca_connected)
+                        Cmd_ForwardToServer ();
+                return;
+        }
+
+        if (host_client->name[0] && strcmp(host_client->name, "unconnected") )
+        {
+                if (Q_strcmp(host_client->name, newName) != 0)
+                        Con_Printf ("%s renamed to %s\n", host_client->name, newName);
+        }
+        Q_strcpy (host_client->name, newName);
+        host_client->edict->v.netname = PR_SetEngineString(host_client->name);
+
+// send notification to all clients
+        MSG_WriteByte (&sv.reliable_datagram, svc_updatename);
+        MSG_WriteByte (&sv.reliable_datagram, host_client - svs.clients);
+        MSG_WriteString (&sv.reliable_datagram, host_client->name);
 }
 
 void Host_Version_f()
@@ -1155,7 +1171,7 @@ void Host_InitCommands()
 	Cmd_AddCommand("viewframe", Host_Viewframe_f);
 	Cmd_AddCommand("viewnext", Host_Viewnext_f);
 	Cmd_AddCommand("viewprev", Host_Viewprev_f);
-	Cmd_AddCommand("mcache", Mod_Print);
+	//FIXMECmd_AddCommand("mcache", Mod_Print);
 #ifdef IDGODS
 	Cmd_AddCommand("please", Host_Please_f);
 #endif

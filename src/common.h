@@ -2,6 +2,12 @@
 // Copyright (C) 2002-2009 John Fitzgibbons and others
 // GPLv3 See LICENSE for details.
 
+#define LOADFILE_ZONE           0
+#define LOADFILE_HUNK           1
+#define LOADFILE_TEMPHUNK       2
+#define LOADFILE_CACHE          3
+#define LOADFILE_STACK          4
+#define LOADFILE_MALLOC         5
 #define MAX_FILES_IN_PACK 2048
 #define Q_MAXCHAR ((char)0x7f)
 #define Q_MAXSHORT ((short)0x7fff)
@@ -25,6 +31,12 @@
 #define BigFloat(f) SDL_SwapFloatBE((f))
 #define LittleFloat(f) SDL_SwapFloatLE((f))
 #define STRUCT_FROM_LINK(l,t,m) ((t *)((byte *)l - offsetof(t,m)))
+
+#define VEC_HEADER(v) (((vec_header_t*)(v))[-1])
+#define VEC_PUSH(v,n) do { Vec_Grow((void**)&(v), sizeof((v)[0]), 1); (v)[VEC_HEADER(v).size++] = (n); } while (0)
+#define VEC_SIZE(v)   ((v) ? VEC_HEADER(v).size : 0)
+#define VEC_FREE(v)   Vec_Free((void**)&(v))
+#define VEC_CLEAR(v)  Vec_Clear((void**)&(v))
 
 typedef enum
 {
@@ -71,7 +83,17 @@ typedef struct searchpath_s {
 	char filename[MAX_OSPATH];
 	pack_t *pack; // only one of filename / pack will be used
 	struct searchpath_s *next;
+	int path_id;
 } searchpath_t;
+
+typedef struct _fshandle_t
+{
+        FILE *file;
+        qboolean pak;   /* is the file read from a pak */
+        long start;     /* file or data start position */
+        long length;    /* file or data size */
+        long pos;       /* current position relative to start */
+} fshandle_t;
 
 typedef struct link_s
 {
@@ -156,3 +178,17 @@ void SZ_Print(sizebuf_t *buf, char *data); // strcats onto the sizebuf
 const char *COM_SkipPath (const char *pathname);
 void COM_StripExtension (const char *in, char *out, size_t outsize);
 const char *COM_FileGetExtension (const char *in);
+const char* LOC_GetString (const char *key);
+qboolean LOC_HasPlaceholders (const char *str);
+size_t LOC_Format (const char *format, const char* (*getarg_fn) (int idx, void* userdata), void* userdata, char* out, size_t len);
+void COM_AddExtension (char *path, const char *extension, size_t len);
+byte *COM_LoadHunkFile2 (const char *path, unsigned int *path_id);
+byte *COM_LoadFile2 (const char *path, int usehunk, unsigned int *path_id);
+byte *COM_LoadStackFile2 (const char *path, void *buffer, int bufsize, unsigned int *path_id);
+void COM_FileBase2 (const char *in, char *out, size_t outsize);
+int FS_fseek(fshandle_t *fh, long offset, int whence);
+size_t FS_fread(void *ptr, size_t size, size_t nmemb, fshandle_t *fh);
+int COM_OpenFile2 (const char *filename, int *handle, unsigned int *path_id);
+int COM_FOpenFile2 (const char *filename, FILE **file, unsigned int *path_id);
+byte *COM_LoadMallocFile (const char *path, unsigned int *path_id);
+int FS_fclose(fshandle_t *fh);

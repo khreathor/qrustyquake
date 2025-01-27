@@ -135,6 +135,7 @@
 #define MAX_SCOREBOARDNAME 32
 #define SOUND_CHANNELS 8
 #define DATAGRAM_MTU 1400 // johnfitz -- actual limit for unreliable messages to nonlocal clients
+#define DIST_EPSILON (0.03125) // 1/32 epsilon to keep floating point happy (moved from world.c)
 // This makes anyone on id's net privileged
 // Use for multiplayer testing only - VERY dangerous!!!
 // #define IDGODS

@@ -222,10 +222,6 @@ SV_WaterMove
 
 ===================
 */
-vec_t VectorLength(vec3_t v)
-{ //TODO move this to mathlib
-        return sqrt(DotProduct(v,v));
-}
 void SV_WaterMove (void)
 {
 	int		i;

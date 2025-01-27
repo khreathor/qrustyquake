@@ -39,56 +39,6 @@ static char *PR_GetTempString (void)
 #define	MSG_ALL		2		// reliable to all
 #define	MSG_INIT	3		// write to the init string
 
-/* TODO move this to common
-================
-LOC_GetRawString
-
-Returns localized string if available, or NULL otherwise
-================
-*/
-const char* LOC_GetRawString (const char *key)
-{
-        /*unsigned pos, end;
-
-        if (!localization.numindices || !key || !*key || *key != '$')
-                return NULL;
-        key++;
-
-        pos = COM_HashString(key) % localization.numindices;
-        end = pos;
-
-        do
-        {
-                unsigned idx = localization.indices[pos];
-                locentry_t *entry;
-                if (!idx)
-                        return NULL;
-
-                entry = &localization.entries[idx - 1];
-                if (!Q_strcmp(entry->key, key))
-                        return entry->value;
-
-                ++pos;
-                if (pos == localization.numindices)
-                        pos = 0;
-        } while (pos != end);*/
-
-        return NULL;
-}
-/*
-================
-LOC_GetString
-
-Returns localized string if available, or input string otherwise
-================
-*/
-const char* LOC_GetString (const char *key)
-{
-        const char* value = LOC_GetRawString(key);
-        return value ? value : key;
-}
-
-
 /*
 ===============================================================================
 
@@ -120,32 +70,32 @@ static char *PF_VarString (int	first)
 		return out;
 
 	format = LOC_GetString(G_STRING((OFS_PARM0 + first * 3)));
-	if (0)//(LOC_HasPlaceholders(format))
-	{/* TODO
+	if (LOC_HasPlaceholders(format))
+	{
 		int offset = first + 1;
 		s = LOC_Format(format, PF_GetStringArg, &offset, out, sizeof(out));
-	*/}
+	}
 	else
-	{/*
+	{
 		for (i = first; i < pr_argc; i++)
 		{
-			s = q_strlcat(out, LOC_GetString(G_STRING(OFS_PARM0+i*3)), sizeof(out));
+			s = strlcat(out, LOC_GetString(G_STRING(OFS_PARM0+i*3)), sizeof(out));
 			if (s >= sizeof(out))
 			{
 				printf("PF_VarString: overflow (string truncated)\n");
 				return out;
 			}
 		}
-	*/}
+	}
 	if (s > 255)
-	{/*
-		if (!dev_overflows.varstring || dev_overflows.varstring + CONSOLE_RESPAM_TIME < realtime)
+	{
+		/*if (!dev_overflows.varstring || dev_overflows.varstring + CONSOLE_RESPAM_TIME < realtime)
 		{
 			printf("PF_VarString: %i characters exceeds standard limit of 255 (max = %d).\n",
 								(int) s, (int)(sizeof(out) - 1));
 			dev_overflows.varstring = realtime;
-		}
-	*/}
+		}*/
+	}
 	return out;
 }
 
@@ -1617,7 +1567,7 @@ static void PF_WriteCoord (void)
 
 static void PF_WriteString (void)
 {
-	MSG_WriteString (WriteDest(), (const char *)LOC_GetString(G_STRING(OFS_PARM1)));
+	MSG_WriteString (WriteDest(), LOC_GetString(G_STRING(OFS_PARM1)));
 }
 
 static void PF_WriteEntity (void)
