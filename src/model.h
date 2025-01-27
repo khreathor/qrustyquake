@@ -251,6 +251,7 @@ typedef struct model_s
 	byte *lightdata;
 	char *entities;
 	cache_user_t cache; // only access through Mod_Extradata
+	vec3_t clipmins, clipmaxs;
 } model_t;
 
 void Mod_Init();

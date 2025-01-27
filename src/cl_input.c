@@ -205,39 +205,74 @@ void CL_BaseMove(usercmd_t *cmd)
 	}
 }
 
-void CL_SendMove(usercmd_t *cmd)
+void CL_SendMove (const usercmd_t *cmd)
 {
-	sizebuf_t buf;
-	byte data[128];
-	buf.maxsize = 128;
-	buf.cursize = 0;
-	buf.data = data;
-	cl.cmd = *cmd;
-	MSG_WriteByte(&buf, clc_move); // send the movement message
-	MSG_WriteFloat(&buf, cl.mtime[0]); // so server can get ping times
-	for (int i = 0; i < 3; i++)
-		MSG_WriteAngle(&buf, cl.viewangles[i]);
-	MSG_WriteShort(&buf, cmd->forwardmove);
-	MSG_WriteShort(&buf, cmd->sidemove);
-	MSG_WriteShort(&buf, cmd->upmove);
-	int bits = 0; // send button bits
-	if (in_attack.state & 3)
-		bits |= 1;
-	in_attack.state &= ~2;
-	if (in_jump.state & 3)
-		bits |= 2;
-	in_jump.state &= ~2;
-	MSG_WriteByte(&buf, bits);
-	MSG_WriteByte(&buf, in_impulse);
-	in_impulse = 0;
-	if (cls.demoplayback) // deliver the message
-		return;
-	if (++cl.movemessages <= 2) // allways dump the first two message since
-		return; // it may contain leftover inputs from the last level
-	if (NET_SendUnreliableMessage(cls.netcon, &buf) == -1) {
-		Con_Printf("CL_SendMove: lost server connection\n");
-		CL_Disconnect();
-	}
+        int             i;
+        int             bits;
+        sizebuf_t       buf;
+        byte    data[128];
+
+        buf.maxsize = 128;
+        buf.cursize = 0;
+        buf.data = data;
+
+        cl.cmd = *cmd;
+
+//
+// send the movement message
+//
+        MSG_WriteByte (&buf, clc_move);
+
+        MSG_WriteFloat (&buf, cl.mtime[0]);     // so server can get ping times
+
+        for (i=0 ; i<3 ; i++)
+                //johnfitz -- 16-bit angles for PROTOCOL_FITZQUAKE
+                if (cl.protocol == PROTOCOL_NETQUAKE)
+                        MSG_WriteAngle (&buf, cl.viewangles[i], cl.protocolflags);
+                else
+                        MSG_WriteAngle16 (&buf, cl.viewangles[i], cl.protocolflags);
+                //johnfitz
+
+        MSG_WriteShort (&buf, cmd->forwardmove);
+        MSG_WriteShort (&buf, cmd->sidemove);
+        MSG_WriteShort (&buf, cmd->upmove);
+
+//
+// send button bits
+//
+        bits = 0;
+
+        if ( in_attack.state & 3 )
+                bits |= 1;
+        in_attack.state &= ~2;
+
+        if (in_jump.state & 3)
+                bits |= 2;
+        in_jump.state &= ~2;
+
+        MSG_WriteByte (&buf, bits);
+
+        MSG_WriteByte (&buf, in_impulse);
+        in_impulse = 0;
+
+//
+// deliver the message
+//
+        if (cls.demoplayback)
+                return;
+
+//
+// allways dump the first two message, because it may contain leftover inputs
+// from the last level
+//
+        if (++cl.movemessages <= 2)
+                return;
+
+        if (NET_SendUnreliableMessage (cls.netcon, &buf) == -1)
+        {
+                Con_Printf ("CL_SendMove: lost server connection\n");
+                CL_Disconnect ();
+        }
 }
 
 void CL_InitInput()

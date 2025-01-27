@@ -52,6 +52,17 @@
 #define SPAWNFLAG_NOT_HARD 1024
 #define SPAWNFLAG_NOT_DEATHMATCH 2048
 
+#define SIGNON_SIZE 31500
+#define MAX_SIGNON_BUFFERS 256
+
+enum sendsignon_e
+{
+        PRESPAWN_DONE,
+        PRESPAWN_FLUSH=1,
+        PRESPAWN_SIGNONBUFS,
+        PRESPAWN_SIGNONMSG,
+};
+
 typedef enum {ss_loading, ss_active} server_state_t;
 
 typedef struct
@@ -65,31 +76,43 @@ typedef struct
 
 typedef struct
 {
-	qboolean active; // false if only a net client
-	qboolean paused;
-	qboolean loadgame; // handle connections specially
-	double time;
-	int lastcheck; // used by PF_checkclient
-	double lastchecktime;
-	char name[64]; // map name
-	char modelname[64]; // maps/<name>.bsp, for model_precache[0]
-	struct model_s *worldmodel;
-	char *model_precache[MAX_MODELS]; // NULL terminated
-	struct model_s *models[MAX_MODELS];
-	char *sound_precache[MAX_SOUNDS]; // NULL terminated
-	char *lightstyles[MAX_LIGHTSTYLES];
-	int num_edicts;
-	int max_edicts;
-	edict_t *edicts; // can NOT be array indexed, because
-			 // edict_t is variable sized, but can
-			 // be used to reference the world ent
-	server_state_t state; // some actions are only valid during load
-	sizebuf_t datagram;
-	byte datagram_buf[MAX_DATAGRAM];
-	sizebuf_t reliable_datagram; // copied to all clients at end of frame
-	byte reliable_datagram_buf[MAX_DATAGRAM];
-	sizebuf_t signon;
-	byte signon_buf[MAX_MSGLEN-2];
+        qboolean        active;                         // false if only a net client
+
+        qboolean        paused;
+        qboolean        loadgame;                       // handle connections specially
+        qboolean        nomonsters;                     // server started with 'nomonsters' cvar active
+
+        double          time;
+
+        int                     lastcheck;                      // used by PF_checkclient
+        double          lastchecktime;
+
+        char            name[64];                       // map name
+        char            modelname[64];          // maps/<name>.bsp, for model_precache[0]
+        struct model_s *worldmodel;
+        const char      *model_precache[MAX_MODELS];    // NULL terminated
+        struct model_s *models[MAX_MODELS];
+        const char      *sound_precache[MAX_SOUNDS];    // NULL terminated
+        const char      *lightstyles[MAX_LIGHTSTYLES];
+        int                     num_edicts;
+        int                     max_edicts;
+        edict_t         *edicts;                        // can NOT be array indexed, because
+                                                                        // edict_t is variable sized, but can
+                                                                        // be used to reference the world ent
+        server_state_t  state;                  // some actions are only valid during load
+
+        sizebuf_t       datagram;
+        byte            datagram_buf[MAX_DATAGRAM];
+
+        sizebuf_t       reliable_datagram;      // copied to all clients at end of frame
+        byte            reliable_datagram_buf[MAX_DATAGRAM];
+
+        sizebuf_t       *signon;
+        int                     num_signon_buffers;
+        sizebuf_t       *signon_buffers[MAX_SIGNON_BUFFERS];
+
+        unsigned        protocol; //johnfitz
+        unsigned        protocolflags;
 } server_t;
 
 typedef struct client_s
@@ -112,6 +135,7 @@ typedef struct client_s
 	int num_pings; // ping_times[num_pings%NUM_PING_TIMES]
 	float spawn_parms[NUM_SPAWN_PARMS]; // spawn parms are carried from level to level
 	int old_frags; // client known data for deltas 
+	int signonidx;
 } client_t;
 
 extern cvar_t teamplay;
@@ -129,8 +153,7 @@ extern edict_t *sv_player;
 
 void SV_Init();
 void SV_StartParticle(vec3_t org, vec3_t dir, int color, int count);
-void SV_StartSound(edict_t *entity, int channel, char *sample, int volume,
-		float attenuation);
+void SV_StartSound(edict_t *entity, int channel, const char *sample, int volume, float attenuation);
 void SV_DropClient(qboolean crash);
 void SV_SendClientMessages();
 void SV_ClearDatagram();
@@ -149,4 +172,5 @@ void SV_MoveToGoal();
 void SV_CheckForNewClients();
 void SV_RunClients();
 void SV_SaveSpawnparms();
-void SV_SpawnServer(char *server);
+void SV_SpawnServer(const char *server);
+void SV_ReserveSignonSpace(int numbytes);

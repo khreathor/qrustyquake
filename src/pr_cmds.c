@@ -149,25 +149,43 @@ void PF_setsize()
 }
 
 // setmodel(entity, model)
-void PF_setmodel()
+static void PF_setmodel (void)
 {
-	edict_t *e = G_EDICT(OFS_PARM0);
-	char *m = G_STRING(OFS_PARM1);
-	// check to see if model was properly precached
-	char **check;
-	int i;
-	for (i = 0, check = sv.model_precache; *check; i++, check++)
-		if (!strcmp(*check, m))
-			break;
-	if (!*check)
-		PR_RunError("no precache: %s\n", m);
-	e->v.model = PR_SetEngineString(*check);
-	e->v.modelindex = i; //SV_ModelIndex (m);
-	model_t *mod = sv.models[(int)e->v.modelindex]; // Mod_ForName(m, true);
-	if (mod)
-		SetMinMaxSize(e, mod->mins, mod->maxs, true);
-	else
-		SetMinMaxSize(e, vec3_origin, vec3_origin, true);
+        int             i;
+        const char      *m, **check;
+        model_t        *mod;
+        edict_t         *e;
+
+        e = G_EDICT(OFS_PARM0);
+        m = G_STRING(OFS_PARM1);
+
+// check to see if model was properly precached
+        for (i = 0, check = sv.model_precache; *check; i++, check++)
+        {
+                if (!strcmp(*check, m))
+                        break;
+        }
+
+        if (!*check)
+        {
+                PR_RunError ("no precache: %s", m);
+        }
+        e->v.model = PR_SetEngineString(*check);
+        e->v.modelindex = i; //SV_ModelIndex (m);
+
+        mod = sv.models[ (int)e->v.modelindex];  // Mod_ForName (m, true);
+
+        if (mod)
+        //johnfitz -- correct physics cullboxes for bmodels
+        {
+                if (mod->type == mod_brush)
+                        SetMinMaxSize (e, mod->clipmins, mod->clipmaxs, true);
+                else
+                        SetMinMaxSize (e, mod->mins, mod->maxs, true);
+        }
+        //johnfitz
+        else
+                SetMinMaxSize (e, vec3_origin, vec3_origin, true);
 }
 
 // broadcast print to everyone on server
@@ -295,27 +313,66 @@ void PF_particle()
 	SV_StartParticle(org, dir, color, count);
 }
 
-void PF_ambientsound()
+static void PF_ambientsound (void)
 {
-	float *pos = G_VECTOR(OFS_PARM0);
-	char *samp = G_STRING(OFS_PARM1);
-	float vol = G_FLOAT(OFS_PARM2);
-	float attenuation = G_FLOAT(OFS_PARM3);
-	int soundnum = 0; // check to see if samp was properly precached
-	char **check;
-	for (check = sv.sound_precache; *check; check++, soundnum++)
-		if (!strcmp(*check, samp))
-			break;
-	if (!*check) {
-		Con_Printf("no precache: %s\n", samp);
-		return;
-	} // add an svc_spawnambient command to the level signon packet
-	MSG_WriteByte(&sv.signon, svc_spawnstaticsound);
-	for (int i = 0; i < 3; i++)
-		MSG_WriteCoord(&sv.signon, pos[i]);
-	MSG_WriteByte(&sv.signon, soundnum);
-	MSG_WriteByte(&sv.signon, vol * 255);
-	MSG_WriteByte(&sv.signon, attenuation * 64);
+        const char      *samp, **check;
+        float           *pos;
+        float           vol, attenuation;
+        int             i, soundnum;
+        int             large = false; //johnfitz -- PROTOCOL_FITZQUAKE
+
+        pos = G_VECTOR (OFS_PARM0);
+        samp = G_STRING(OFS_PARM1);
+        vol = G_FLOAT(OFS_PARM2);
+        attenuation = G_FLOAT(OFS_PARM3);
+
+// check to see if samp was properly precached
+        for (soundnum = 0, check = sv.sound_precache; *check; check++, soundnum++)
+        {
+                if (!strcmp(*check, samp))
+                        break;
+        }
+
+        if (!*check)
+        {
+                Con_Printf ("no precache: %s\n", samp);
+                return;
+        }
+
+        //johnfitz -- PROTOCOL_FITZQUAKE
+        if (soundnum > 255)
+        {
+                if (sv.protocol == PROTOCOL_NETQUAKE)
+                        return; //don't send any info protocol can't support
+                else
+                        large = true;
+        }
+        //johnfitz
+
+        SV_ReserveSignonSpace (17);
+
+// add an svc_spawnambient command to the level signon packet
+
+        //johnfitz -- PROTOCOL_FITZQUAKE
+        if (large)
+                MSG_WriteByte (sv.signon,svc_spawnstaticsound2);
+        else
+                MSG_WriteByte (sv.signon,svc_spawnstaticsound);
+        //johnfitz
+
+        for (i = 0; i < 3; i++)
+                MSG_WriteCoord(sv.signon, pos[i], sv.protocolflags);
+
+        //johnfitz -- PROTOCOL_FITZQUAKE
+        if (large)
+                MSG_WriteShort(sv.signon, soundnum);
+        else
+                MSG_WriteByte (sv.signon, soundnum);
+        //johnfitz
+
+        MSG_WriteByte (sv.signon, vol*255);
+        MSG_WriteByte (sv.signon, attenuation*64);
+
 }
 
 // Each entity can have eight independant sound sources, like voice,
@@ -799,51 +856,134 @@ void PF_changeyaw()
 	ent->v.angles[1] = anglemod(current + move);
 }
 
-sizebuf_t *WriteDest() // Message writing
+static sizebuf_t *WriteDest (void)
 {
-	int dest = G_FLOAT(OFS_PARM0);
-	switch (dest) {
-		case MSG_BROADCAST:
-			return &sv.datagram;
-		case MSG_ONE:
-			edict_t*ent=PROG_TO_EDICT(pr_global_struct->msg_entity);
-			int entnum = NUM_FOR_EDICT(ent);
-			if (entnum < 1 || entnum > svs.maxclients)
-				PR_RunError("WriteDest: not a client");
-			return &svs.clients[entnum - 1].message;
-		case MSG_ALL:
-			return &sv.reliable_datagram;
-		case MSG_INIT:
-			return &sv.signon;
-		default:
-			PR_RunError("WriteDest: bad destination");
-			break;
-	}
-	return NULL;
+        int             entnum;
+        int             dest;
+        edict_t *ent;
+
+        dest = G_FLOAT(OFS_PARM0);
+        switch (dest)
+        {
+        case MSG_BROADCAST:
+                return &sv.datagram;
+
+        case MSG_ONE:
+                ent = PROG_TO_EDICT(pr_global_struct->msg_entity);
+                entnum = NUM_FOR_EDICT(ent);
+                if (entnum < 1 || entnum > svs.maxclients)
+                        PR_RunError ("WriteDest: not a client");
+                return &svs.clients[entnum-1].message;
+
+        case MSG_ALL:
+                return &sv.reliable_datagram;
+
+        case MSG_INIT:
+                return sv.signon;
+
+        default:
+                PR_RunError ("WriteDest: bad destination");
+                break;
+        }
+
+        return NULL;
 }
 
 void PF_WriteByte() { MSG_WriteByte(WriteDest(), G_FLOAT(OFS_PARM1)); }
 void PF_WriteChar() { MSG_WriteChar(WriteDest(), G_FLOAT(OFS_PARM1)); }
 void PF_WriteShort() { MSG_WriteShort(WriteDest(), G_FLOAT(OFS_PARM1)); }
 void PF_WriteLong() { MSG_WriteLong(WriteDest(), G_FLOAT(OFS_PARM1)); }
-void PF_WriteAngle() { MSG_WriteAngle(WriteDest(), G_FLOAT(OFS_PARM1)); }
-void PF_WriteCoord() { MSG_WriteCoord(WriteDest(), G_FLOAT(OFS_PARM1)); }
+void PF_WriteAngle() { MSG_WriteAngle(WriteDest(), G_FLOAT(OFS_PARM1), sv.protocolflags); }
+void PF_WriteCoord() { MSG_WriteCoord(WriteDest(), G_FLOAT(OFS_PARM1), sv.protocolflags); }
 void PF_WriteString() { MSG_WriteString(WriteDest(), G_STRING(OFS_PARM1)); }
 void PF_WriteEntity() { MSG_WriteShort(WriteDest(), G_EDICTNUM(OFS_PARM1)); }
 
-void PF_makestatic()
+static void PF_makestatic (void)
 {
-	edict_t *ent = G_EDICT(OFS_PARM0);
-	MSG_WriteByte(&sv.signon, svc_spawnstatic);
-	MSG_WriteByte(&sv.signon, SV_ModelIndex(PR_GetString(ent->v.model)));
-	MSG_WriteByte(&sv.signon, ent->v.frame);
-	MSG_WriteByte(&sv.signon, ent->v.colormap);
-	MSG_WriteByte(&sv.signon, ent->v.skin);
-	for (int i = 0; i < 3; i++) {
-		MSG_WriteCoord(&sv.signon, ent->v.origin[i]);
-		MSG_WriteAngle(&sv.signon, ent->v.angles[i]);
-	}
-	ED_Free(ent); // throw the entity away now
+        edict_t *ent;
+        int             i;
+        int     bits = 0; //johnfitz -- PROTOCOL_FITZQUAKE
+
+        ent = G_EDICT(OFS_PARM0);
+
+        //johnfitz -- don't send invisible static entities
+        if (ent->alpha == ENTALPHA_ZERO) {
+                ED_Free (ent);
+                return;
+        }
+        //johnfitz
+
+        //johnfitz -- PROTOCOL_FITZQUAKE
+        if (sv.protocol == PROTOCOL_NETQUAKE)
+        {
+                if (SV_ModelIndex(PR_GetString(ent->v.model)) & 0xFF00 || (int)(ent->v.frame) & 0xFF00)
+                {
+                        ED_Free (ent);
+                        return; //can't display the correct model & frame, so don't show it at all
+                }
+        }
+        else
+        {
+                if (SV_ModelIndex(PR_GetString(ent->v.model)) & 0xFF00)
+                        bits |= B_LARGEMODEL;
+                if ((int)(ent->v.frame) & 0xFF00)
+                        bits |= B_LARGEFRAME;
+                if (ent->alpha != ENTALPHA_DEFAULT)
+                        bits |= B_ALPHA;
+
+                if (sv.protocol == PROTOCOL_RMQ)
+                {
+                        eval_t* val;
+                        val = GetEdictFieldValue(ent, "scale");
+                        if (val)
+                                ent->scale = ENTSCALE_ENCODE(val->_float);
+                        else
+                                ent->scale = ENTSCALE_DEFAULT;
+
+                        if (ent->scale != ENTSCALE_DEFAULT)
+                                bits |= B_SCALE;
+                }
+        }
+
+        SV_ReserveSignonSpace (34);
+
+        if (bits)
+        {
+                MSG_WriteByte (sv.signon, svc_spawnstatic2);
+                MSG_WriteByte (sv.signon, bits);
+        }
+        else
+                MSG_WriteByte (sv.signon, svc_spawnstatic);
+
+        if (bits & B_LARGEMODEL)
+                MSG_WriteShort (sv.signon, SV_ModelIndex(PR_GetString(ent->v.model)));
+        else
+                MSG_WriteByte (sv.signon, SV_ModelIndex(PR_GetString(ent->v.model)));
+
+        if (bits & B_LARGEFRAME)
+                MSG_WriteShort (sv.signon, ent->v.frame);
+        else
+                MSG_WriteByte (sv.signon, ent->v.frame);
+        //johnfitz
+
+        MSG_WriteByte (sv.signon, ent->v.colormap);
+        MSG_WriteByte (sv.signon, ent->v.skin);
+        for (i = 0; i < 3; i++)
+        {
+                MSG_WriteCoord(sv.signon, ent->v.origin[i], sv.protocolflags);
+                MSG_WriteAngle(sv.signon, ent->v.angles[i], sv.protocolflags);
+        }
+
+        //johnfitz -- PROTOCOL_FITZQUAKE
+        if (bits & B_ALPHA)
+                MSG_WriteByte (sv.signon, ent->alpha);
+        //johnfitz
+
+        if (bits & B_SCALE)
+                MSG_WriteByte (sv.signon, ent->scale);
+
+// throw the entity away now
+        ED_Free (ent);
 }
 
 void PF_setspawnparms()

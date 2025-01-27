@@ -38,6 +38,7 @@
 #include <setjmp.h>
 
 #define VERSION 1.09
+#define FITZQUAKE_VERSION 0.85
 #define GAMENAME "id1"
 #define CMDLINE_LENGTH 256
 #define DEFAULT_MEMORY (128 * 1024 * 1024)
@@ -54,6 +55,7 @@
 #define MAX_MSGLEN 65536 // max length of a reliable message, from Mark V
 #define MAX_DATAGRAM 65527 // max length of unreliable message, from Mark V
 #define MAX_EDICTS 32000 // FIXME: ouch! ouch! ouch!
+#define MIN_EDICTS 256 // johnfitz -- lowest allowed value for max_edicts cvar
 #define MAX_LIGHTSTYLES 64
 #define MAX_MODELS 2048 // these are sent over the net as bytes
 #define MAX_SOUNDS 2048 // so they cannot be blindly increased
@@ -137,15 +139,6 @@
 // #define IDGODS
 
 #include "mathlib.h"
-typedef struct {
-	vec3_t origin;
-	vec3_t angles;
-	unsigned short modelindex; //johnfitz -- was int
-	unsigned short frame; //johnfitz -- was int
-	unsigned char colormap; //johnfitz -- was int
-	unsigned char skin; //johnfitz -- was int
-	int effects;
-} entity_state_t;
 
 // the host system specifies the base of the directory tree, the
 // command line parms passed to the program, and the amount of memory
@@ -211,6 +204,7 @@ extern int current_skill; // skill level for currently loaded level (in case
 			  // the user changes the cvar while the level is
 			  // running, this reflects the level actually in use)
 extern byte r_foundtranswater, r_wateralphapass; // Manoel Kasimier - translucent water
+extern cvar_t max_edicts;
 
 void Host_ClearMemory();
 void Host_ServerFrame();

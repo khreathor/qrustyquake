@@ -99,8 +99,9 @@ void MSG_WriteShort(sizebuf_t *sb, int c);
 void MSG_WriteLong(sizebuf_t *sb, int c);
 void MSG_WriteFloat(sizebuf_t *sb, float f);
 void MSG_WriteString(sizebuf_t *sb, char *s);
-void MSG_WriteCoord(sizebuf_t *sb, float f);
-void MSG_WriteAngle(sizebuf_t *sb, float f);
+void MSG_WriteCoord(sizebuf_t *sb, float f, unsigned int flags);
+void MSG_WriteAngle(sizebuf_t *sb, float f, unsigned int flags);
+void MSG_WriteAngle16(sizebuf_t *sb, float f, unsigned int flags);
 void MSG_BeginReading();
 int MSG_ReadChar();
 int MSG_ReadByte();
@@ -143,3 +144,6 @@ void SZ_Clear(sizebuf_t *buf);
 void *SZ_GetSpace(sizebuf_t *buf, int length);
 void SZ_Write(sizebuf_t *buf, void *data, int length);
 void SZ_Print(sizebuf_t *buf, char *data); // strcats onto the sizebuf
+const char *COM_SkipPath (const char *pathname);
+void COM_StripExtension (const char *in, char *out, size_t outsize);
+const char *COM_FileGetExtension (const char *in);

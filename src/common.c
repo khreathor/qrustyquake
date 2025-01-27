@@ -260,14 +260,38 @@ void MSG_WriteCoord16(sizebuf_t *sb, float f)
 	MSG_WriteShort(sb, Q_rint(f * 8));
 }
 
-void MSG_WriteCoord(sizebuf_t *sb, float f)
+void MSG_WriteCoord24 (sizebuf_t *sb, float f)
 {
-	MSG_WriteCoord16(sb, f);
+        MSG_WriteShort (sb, f);
+        MSG_WriteByte (sb, (int)(f*255)%255);
 }
 
-void MSG_WriteAngle(sizebuf_t *sb, float f)
-{ //johnfitz -- use Q_rint instead of (int)
-	MSG_WriteByte(sb, Q_rint(f * 256.0 / 360.0) & 255);
+void MSG_WriteCoord (sizebuf_t *sb, float f, unsigned int flags)
+{
+        if (flags & PRFL_FLOATCOORD)
+                MSG_WriteFloat (sb, f);
+        else if (flags & PRFL_INT32COORD)
+                MSG_WriteLong (sb, Q_rint (f * 16));
+        else if (flags & PRFL_24BITCOORD)
+                MSG_WriteCoord24 (sb, f);
+        else MSG_WriteCoord16 (sb, f);
+}
+
+void MSG_WriteAngle (sizebuf_t *sb, float f, unsigned int flags)
+{
+        if (flags & PRFL_FLOATANGLE)
+                MSG_WriteFloat (sb, f);
+        else if (flags & PRFL_SHORTANGLE)
+                MSG_WriteShort (sb, Q_rint(f * 65536.0 / 360.0) & 65535);
+        else MSG_WriteByte (sb, Q_rint(f * 256.0 / 360.0) & 255); //johnfitz -- use Q_rint instead of (int)     }
+}
+
+//johnfitz -- for PROTOCOL_FITZQUAKE
+void MSG_WriteAngle16 (sizebuf_t *sb, float f, unsigned int flags)
+{
+        if (flags & PRFL_FLOATANGLE)
+                MSG_WriteFloat (sb, f);
+        else MSG_WriteShort (sb, Q_rint(f * 65536.0 / 360.0) & 65535);
 }
 
 void MSG_BeginReading() // Reading Functions ------------------
@@ -356,14 +380,29 @@ float MSG_ReadCoord16()
 	return MSG_ReadShort() * (1.0 / 8);
 }
 
-float MSG_ReadCoord()
+float MSG_ReadCoord24()
 {
-	return MSG_ReadCoord16();
+        return MSG_ReadShort() + MSG_ReadByte() * (1.0/255);
 }
 
-float MSG_ReadAngle()
+float MSG_ReadCoord(unsigned int flags)
 {
-	return MSG_ReadChar() * (360.0 / 256);
+	if (flags & PRFL_FLOATCOORD)
+		return MSG_ReadFloat ();
+	else if (flags & PRFL_INT32COORD)
+		return MSG_ReadLong () * (1.0 / 16.0);
+	else if (flags & PRFL_24BITCOORD)
+		return MSG_ReadCoord24 ();
+	else return MSG_ReadCoord16 ();
+}
+
+float MSG_ReadAngle(unsigned int flags)
+{
+	if (flags & PRFL_FLOATANGLE)
+		return MSG_ReadFloat ();
+	else if (flags & PRFL_SHORTANGLE)
+		return MSG_ReadShort () * (360.0 / 65536);
+	else return MSG_ReadChar () * (360.0 / 256);
 }
 
 void SZ_Alloc(sizebuf_t *buf, int startsize)
@@ -410,6 +449,60 @@ void SZ_Print(sizebuf_t *buf, char *data)
 		Q_memcpy(SZ_GetSpace(buf, len), data, len);
 	else // write over trailing 0
 		Q_memcpy(SZ_GetSpace(buf, len - 1) - 1, data, len);
+}
+
+const char *COM_SkipPath (const char *pathname)
+{
+        const char      *last;
+
+        last = pathname;
+        while (*pathname)
+        {
+                if (*pathname == '/')
+                        last = pathname + 1;
+                pathname++;
+        }
+        return last;
+}
+
+void COM_StripExtension (const char *in, char *out, size_t outsize)
+{
+        int     length;
+
+        if (!*in)
+        {
+                *out = '\0';
+                return;
+        }
+        if (in != out)  /* copy when not in-place editing */
+                strlcpy (out, in, outsize);
+        length = (int)strlen(out) - 1;
+        while (length > 0 && out[length] != '.')
+        {
+                --length;
+                if (out[length] == '/' || out[length] == '\\')
+                        return; /* no extension */
+        }
+        if (length > 0)
+                out[length] = '\0';
+}
+
+const char *COM_FileGetExtension (const char *in)
+{ // COM_FileGetExtension - doesn't return NULL
+        const char      *src;
+        size_t          len;
+
+        len = strlen(in);
+        if (len < 2)    /* nothing meaningful */
+                return "";
+
+        src = in + len - 1;
+        while (src != in && src[-1] != '.')
+                src--;
+        if (src == in || strchr(src, '/') != NULL || strchr(src, '\\') != NULL)
+                return "";      /* no extension, or parent directory has a dot */
+
+        return src;
 }
 
 char *COM_FileExtension(char *in)

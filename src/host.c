@@ -43,6 +43,7 @@ cvar_t coop = { "coop", "0", false, false, 0, NULL };
 cvar_t pausable = { "pausable", "1", false, false, 0, NULL };
 cvar_t temp1 = { "temp1", "0", false, false, 0, NULL };
 cvar_t host_maxfps = {"host_maxfps", "72", true, false, 0, NULL}; //johnfitz
+cvar_t  max_edicts = {"max_edicts", "8192", false, false, 0, NULL}; //johnfitz //ericw -- changed from 2048 to 8192, removed CVAR_ ARCHIVE
 
 extern void IN_MLookDown();
 
