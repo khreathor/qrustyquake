@@ -247,7 +247,7 @@ void MSG_WriteFloat(sizebuf_t *sb, float f)
 	SZ_Write(sb, &dat.l, 4);
 }
 
-void MSG_WriteString(sizebuf_t *sb, char *s)
+void MSG_WriteString(sizebuf_t *sb, const char *s)
 {
 	if (!s)
 		SZ_Write(sb, "", 1);
@@ -405,6 +405,13 @@ float MSG_ReadAngle(unsigned int flags)
 	else return MSG_ReadChar () * (360.0 / 256);
 }
 
+float MSG_ReadAngle16 (unsigned int flags)
+{
+        if (flags & PRFL_FLOATANGLE)
+                return MSG_ReadFloat ();        // make sure
+        else return MSG_ReadShort () * (360.0 / 65536);
+}
+
 void SZ_Alloc(sizebuf_t *buf, int startsize)
 {
 	if (startsize < 256)
@@ -546,6 +553,105 @@ void COM_DefaultExtension(char *path, char *extension)
 		src--;
 	}
 	strcat(path, extension);
+}
+
+/*
+==============
+COM_ParseEx
+
+Parse a token out of a string
+
+The mode argument controls how overflow is handled:
+- CPE_NOTRUNC:          return NULL (abort parsing)
+- CPE_ALLOWTRUNC:       truncate com_token (ignore the extra characters in this token)
+==============
+*/
+const char *COM_ParseEx (const char *data, cpe_mode mode)
+{
+        int             c;
+        int             len;
+
+        len = 0;
+        com_token[0] = 0;
+
+        if (!data)
+                return NULL;
+
+// skip whitespace
+skipwhite:
+        while ((c = *data) <= ' ')
+        {
+                if (c == 0)
+                        return NULL;    // end of file
+                data++;
+        }
+
+// skip // comments
+        if (c == '/' && data[1] == '/')
+        {
+                while (*data && *data != '\n')
+                        data++;
+                goto skipwhite;
+        }
+
+// skip /*..*/ comments
+        if (c == '/' && data[1] == '*')
+        {
+                data += 2;
+                while (*data && !(*data == '*' && data[1] == '/'))
+                        data++;
+                if (*data)
+                        data += 2;
+                goto skipwhite;
+        }
+
+// handle quoted strings specially
+        if (c == '\"')
+        {
+                data++;
+                while (1)
+                {
+                        if ((c = *data) != 0)
+                                ++data;
+                        if (c == '\"' || !c)
+                        {
+                                com_token[len] = 0;
+                                return data;
+                        }
+                        if (len < Q_COUNTOF(com_token) - 1)
+                                com_token[len++] = c;
+                        else if (mode == CPE_NOTRUNC)
+                                return NULL;
+                }
+        }
+
+// parse single characters
+        if (c == '{' || c == '}'|| c == '('|| c == ')' || c == '\'' || c == ':')
+        {
+                if (len < Q_COUNTOF(com_token) - 1)
+                        com_token[len++] = c;
+                else if (mode == CPE_NOTRUNC)
+                        return NULL;
+                com_token[len] = 0;
+                return data+1;
+        }
+
+// parse a regular word
+        do
+        {
+                if (len < Q_COUNTOF(com_token) - 1)
+                        com_token[len++] = c;
+                else if (mode == CPE_NOTRUNC)
+                        return NULL;
+                data++;
+                c = *data;
+                /* commented out the check for ':' so that ip:port works */
+                if (c == '{' || c == '}'|| c == '('|| c == ')' || c == '\''/* || c == ':' */)
+                        break;
+        } while (c > 32);
+
+        com_token[len] = 0;
+        return data;
 }
 
 char *COM_Parse(char *data)

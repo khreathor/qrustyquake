@@ -134,6 +134,7 @@
 #define MAX_SCOREBOARD 16
 #define MAX_SCOREBOARDNAME 32
 #define SOUND_CHANNELS 8
+#define DATAGRAM_MTU 1400 // johnfitz -- actual limit for unreliable messages to nonlocal clients
 // This makes anyone on id's net privileged
 // Use for multiplayer testing only - VERY dangerous!!!
 // #define IDGODS
@@ -152,6 +153,7 @@ typedef struct {
 	int memsize;
 } quakeparms_t;
 
+#include "q_stdinc.h"
 #include "common.h"
 #include "bspfile.h"
 #include "vid.h"
@@ -181,6 +183,7 @@ typedef struct {
 #include "crc.h"
 #include "vid.h"
 
+extern double host_time;
 extern SDL_Window *window; // global for checking windowed state in options
 extern Uint32 SDLWindowFlags;
 extern qboolean noclip_anglehack;
@@ -219,4 +222,5 @@ void Host_ClientCommands(char *fmt, ...);
 void Host_ShutdownServer(qboolean crash);
 void Chase_Init();
 void Chase_Update();
+void Cvar_SetCallback(cvar_t *var, cvarcallback_t func);
 #endif

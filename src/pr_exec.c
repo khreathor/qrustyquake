@@ -113,7 +113,7 @@ void PR_Profile_f()
 	} while (best);
 }
 
-void PR_RunError(char *error, ...)
+void PR_RunError(const char *error, ...)
 { // Aborts the currently executing function
 	va_list argptr;
 	char string[1024];

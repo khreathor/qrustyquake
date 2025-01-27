@@ -7,6 +7,14 @@
 cvar_t *cvar_vars;
 char *cvar_null_string = "";
 
+void Cvar_SetCallback (cvar_t *var, cvarcallback_t func)
+{
+/*TODO        var->callback = func;
+        if (func)
+                var->flags |= CVAR_CALLBACK;
+        else    var->flags &= ~CVAR_CALLBACK;*/
+}
+
 cvar_t *Cvar_FindVar(const char *var_name)
 {
 	for (cvar_t *var = cvar_vars; var; var = var->next)

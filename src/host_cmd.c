@@ -8,6 +8,7 @@
 
 int current_skill;
 
+extern char *pr_strings;
 extern cvar_t pausable;
 
 void Mod_Print();
@@ -69,7 +70,7 @@ void Host_God_f() // Sets client to godmode
 		Cmd_ForwardToServer();
 		return;
 	}
-	if (pr_global_struct->deathmatch && !host_client->privileged)
+	if (pr_global_struct->deathmatch/*FIXME && !host_client->privileged*/)
 		return;
 	sv_player->v.flags = (int)sv_player->v.flags ^ FL_GODMODE;
 	if (!((int)sv_player->v.flags & FL_GODMODE))
@@ -84,7 +85,7 @@ void Host_Notarget_f()
 		Cmd_ForwardToServer();
 		return;
 	}
-	if (pr_global_struct->deathmatch && !host_client->privileged)
+	if (pr_global_struct->deathmatch/*FIXME && !host_client->privileged*/)
 		return;
 	sv_player->v.flags = (int)sv_player->v.flags ^ FL_NOTARGET;
 	if (!((int)sv_player->v.flags & FL_NOTARGET))
@@ -98,7 +99,7 @@ void Host_Noclip_f()
 		Cmd_ForwardToServer();
 		return;
 	}
-	if (pr_global_struct->deathmatch && !host_client->privileged)
+	if (pr_global_struct->deathmatch/*FIXME && !host_client->privileged*/)
 		return;
 	if (sv_player->v.movetype != MOVETYPE_NOCLIP) {
 		noclip_anglehack = true;
@@ -117,7 +118,7 @@ void Host_Fly_f()
 		Cmd_ForwardToServer();
 		return;
 	}
-	if (pr_global_struct->deathmatch && !host_client->privileged)
+	if (pr_global_struct->deathmatch/*FIXME && !host_client->privileged*/)
 		return;
 	if (sv_player->v.movetype != MOVETYPE_FLY) {
 		sv_player->v.movetype = MOVETYPE_FLY;
@@ -833,7 +834,7 @@ void Host_Kick_f() // Kicks a user off of the server
 			Cmd_ForwardToServer();
 			return;
 		}
-	} else if (pr_global_struct->deathmatch && !host_client->privileged)
+	} else if (pr_global_struct->deathmatch/*FIXME && !host_client->privileged*/)
 		return;
 	save = host_client;
 	if (Cmd_Argc() > 2 && Q_strcmp(Cmd_Argv(1), "#") == 0) {
@@ -887,7 +888,7 @@ void Host_Give_f()
 		Cmd_ForwardToServer();
 		return;
 	}
-	if (pr_global_struct->deathmatch && !host_client->privileged)
+	if (pr_global_struct->deathmatch/*FIXME && !host_client->privileged*/)
 		return;
 	char *t = Cmd_Argv(1);
 	int v = atoi(Cmd_Argv(2));

@@ -24,6 +24,13 @@
 #define LittleLong(l) ((int)SDL_SwapLE32((l)))
 #define BigFloat(f) SDL_SwapFloatBE((f))
 #define LittleFloat(f) SDL_SwapFloatLE((f))
+#define STRUCT_FROM_LINK(l,t,m) ((t *)((byte *)l - offsetof(t,m)))
+
+typedef enum
+{
+        CPE_NOTRUNC,            // return parse error in case of overflow
+        CPE_ALLOWTRUNC          // truncate com_token in case of overflow
+} cpe_mode;
 
 typedef unsigned char byte;
 typedef int qboolean;
@@ -98,7 +105,7 @@ void MSG_WriteByte(sizebuf_t *sb, int c);
 void MSG_WriteShort(sizebuf_t *sb, int c);
 void MSG_WriteLong(sizebuf_t *sb, int c);
 void MSG_WriteFloat(sizebuf_t *sb, float f);
-void MSG_WriteString(sizebuf_t *sb, char *s);
+void MSG_WriteString(sizebuf_t *sb, const char *s);
 void MSG_WriteCoord(sizebuf_t *sb, float f, unsigned int flags);
 void MSG_WriteAngle(sizebuf_t *sb, float f, unsigned int flags);
 void MSG_WriteAngle16(sizebuf_t *sb, float f, unsigned int flags);
@@ -110,7 +117,8 @@ int MSG_ReadLong();
 float MSG_ReadFloat();
 char *MSG_ReadString();
 float MSG_ReadCoord();
-float MSG_ReadAngle();
+float MSG_ReadAngle(unsigned int flags);
+float MSG_ReadAngle16 (unsigned int flags);
 void Q_memset(void *dest, int fill, size_t count);
 void Q_memcpy(void *dest, const void *src, size_t count);
 void Q_strcpy(char *dest, const char *src);
@@ -124,6 +132,7 @@ int Q_strcasecmp(const char *s1, const char *s2);
 int Q_strncasecmp(const char *s1, const char *s2, int n);
 int Q_atoi(const char *str);
 float Q_atof(const char *str);
+const char *COM_ParseEx(const char *data, cpe_mode mode);
 char *COM_Parse(char *data);
 int COM_CheckParm(char *parm);
 void COM_Init();
