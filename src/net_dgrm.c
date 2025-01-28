@@ -69,7 +69,7 @@ static void NET_Ban_f()
 			//print_fn("Banning not active\n");
 		break;
 	case 2:
-		if (Q_strcasecmp(Cmd_Argv(1), "off") == 0)
+		if (q_strcasecmp(Cmd_Argv(1), "off") == 0)
 			banAddr.s_addr = INADDR_ANY;
 		else
 			banAddr.s_addr = inet_addr(Cmd_Argv(1));
@@ -349,12 +349,12 @@ static void NET_Stats_f()
 			PrintStats(s);
 	} else {
 		for (s = net_activeSockets; s; s = s->next) {
-			if (Q_strcasecmp(Cmd_Argv(1), s->address) == 0)
+			if (q_strcasecmp(Cmd_Argv(1), s->address) == 0)
 				break;
 		}
 		if (s == NULL) {
 			for (s = net_freeSockets; s; s = s->next) {
-				if (Q_strcasecmp(Cmd_Argv(1), s->address) == 0)
+				if (q_strcasecmp(Cmd_Argv(1), s->address) == 0)
 					break;
 			}
 		}
@@ -452,7 +452,7 @@ static void Test_f()
 	host = Strip_Port(Cmd_Argv(1));
 	if (host && hostCacheCount) {
 		for (n = 0; n < hostCacheCount; n++) {
-			if (Q_strcasecmp(host, hostcache[n].name) == 0) {
+			if (q_strcasecmp(host, hostcache[n].name) == 0) {
 				if (hostcache[n].driver != myDriverLevel)
 					continue;
 				net_landriverlevel = hostcache[n].ldriver;
@@ -567,7 +567,7 @@ static void Test2_f()
 	host = Strip_Port(Cmd_Argv(1));
 	if (host && hostCacheCount) {
 		for (n = 0; n < hostCacheCount; n++) {
-			if (Q_strcasecmp(host, hostcache[n].name) == 0) {
+			if (q_strcasecmp(host, hostcache[n].name) == 0) {
 				if (hostcache[n].driver != myDriverLevel)
 					continue;
 				net_landriverlevel = hostcache[n].ldriver;
@@ -993,7 +993,7 @@ static void _Datagram_SearchForHosts(qboolean xmit)
 		for (i = 0; i < hostCacheCount; i++) {
 			if (i == n)
 				continue;
-			if (Q_strcasecmp(hostcache[n].name, hostcache[i].name)
+			if (q_strcasecmp(hostcache[n].name, hostcache[i].name)
 			    == 0) {
 				i = Q_strlen(hostcache[n].name);
 				if (i < 15 && hostcache[n].name[i - 1] > '8') {

@@ -26,10 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int				wad_numlumps;
 lumpinfo_t		*wad_lumps;
 byte			*wad_base = NULL;
-int file_from_pak;
-
-unsigned long q_min(unsigned long v1, unsigned long v2);
-unsigned long q_max(unsigned long v1, unsigned long v2);
 
 void SwapPic (qpic_t *pic);
 
@@ -87,7 +83,7 @@ void W_LoadWadFile (void) //johnfitz -- filename is now hard-coded for honesty
 			   "Basedir is: %s\n\n"
 			   "Check that this has an " GAMENAME " subdirectory containing pak0.pak and pak1.pak, "
 			   "or use the -basedir command-line option to specify another directory.",
-			   filename, /*FIXME*/ filename);
+			   filename, com_basedir);
 
 	header = (wadinfo_t *)wad_base;
 
@@ -166,7 +162,7 @@ static qboolean W_OpenWadFile (const char *filename, fshandle_t *fh)
 	FILE *f;
 	long  length;
 
-	length = (long)COM_FOpenFile2 (filename, &f, NULL);
+	length = (long)COM_FOpenFile (filename, &f, NULL);
 	if (length == -1)
 		return false;
 
@@ -269,7 +265,7 @@ W_LoadWadList
 */
 wad_t *W_LoadWadList (const char *names)
 {
-	char	  *newnames = strdup (names);
+	char	  *newnames = q_strdup (names);
 	char	  *name, *e;
 	wad_t	  *wad, *wads = NULL;
 	char	   filename[MAX_QPATH];
@@ -282,7 +278,7 @@ wad_t *W_LoadWadList (const char *names)
 			*e++ = 0;
 
 		// remove all of the leading garbage left by the map editor
-		COM_FileBase2 (name, filename, sizeof (filename));
+		COM_FileBase (name, filename, sizeof (filename));
 		COM_AddExtension (filename, ".wad", sizeof (filename));
 
 		if (!W_OpenWadFile (filename, &fh))

@@ -91,7 +91,7 @@ void R_ReadPointFile_f()
 	char name[MAX_OSPATH];
 	sprintf(name, "maps/%s.pts", sv.name);
 	FILE *f;
-	COM_FOpenFile(name, &f);
+	COM_FOpenFile(name, &f, NULL);
 	if (!f) {
 		Con_Printf("couldn't open %s\n", name);
 		return;

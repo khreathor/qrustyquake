@@ -1,24 +1,7 @@
-/*
-Copyright (C) 1996-2001 Id Software, Inc.
-Copyright (C) 2002-2009 John Fitzgibbons and others
-Copyright (C) 2010-2014 QuakeSpasm developers
+// Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
+// Copyright (C) 2002-2009 John Fitzgibbons and others
+// Copyright (C) 2010-2014 QuakeSpasm developers
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
 // models.c -- model loading and caching
 
 // models are the only shared resource between a client and server running
@@ -35,6 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 static model_t*	loadmodel;
 static char	loadname[32];	// for hunk tags
+static byte	*mod_base;
 
 static void Mod_LoadSpriteModel (model_t *mod, void *buffer);
 static void Mod_LoadBrushModel (model_t *mod, void *buffer);
@@ -60,131 +44,76 @@ static int		mod_numknown;
 extern texture_t	*r_notexture_mip;
 texture_t	*r_notexture_mip2; //johnfitz -- used for non-lightmapped surfs with a missing texture
 
-/*
-===============
-Mod_Init
-===============
-*/
-void Mod_Init (void)
+void Mod_Init ()
 {
-	//Cvar_RegisterVariable (&gl_subdivide_size);
 	Cvar_RegisterVariable (&external_vis);
 	Cvar_RegisterVariable (&external_ents);
 	Cvar_RegisterVariable (&external_textures);
-
 	Cmd_AddCommand ("mcache", Mod_Print);
-
 	//johnfitz -- create notexture miptex
 	r_notexture_mip = (texture_t *) Hunk_AllocName (sizeof(texture_t), "r_notexture_mip");
 	strcpy (r_notexture_mip->name, "notexture");
 	r_notexture_mip->height = r_notexture_mip->width = 32;
-
 	r_notexture_mip2 = (texture_t *) Hunk_AllocName (sizeof(texture_t), "r_notexture_mip2");
 	strcpy (r_notexture_mip2->name, "notexture2");
 	r_notexture_mip2->height = r_notexture_mip2->width = 32;
 	//johnfitz
 }
 
-/*
-===============
-Mod_Extradata
-
-Caches the data if needed
-===============
-*/
 void *Mod_Extradata (model_t *mod)
-{
-	void	*r;
-
-	r = Cache_Check (&mod->cache);
+{ // Caches the data if needed
+	void *r = Cache_Check (&mod->cache);
 	if (r)
 		return r;
-
 	Mod_LoadModel (mod, true);
-
 	if (!mod->cache.data)
 		Sys_Error ("Mod_Extradata: caching failed");
 	return mod->cache.data;
 }
 
-/*
-===============
-Mod_PointInLeaf
-===============
-*/
 mleaf_t *Mod_PointInLeaf (vec3_t p, model_t *model)
 {
-	mnode_t		*node;
-	float		d;
-	mplane_t	*plane;
-
 	if (!model || !model->nodes)
 		Sys_Error ("Mod_PointInLeaf: bad model");
-
-	node = model->nodes;
+	mnode_t *node = model->nodes;
 	while (1)
 	{
 		if (node->contents < 0)
 			return (mleaf_t *)node;
-		plane = node->plane;
-		d = DotProduct (p,plane->normal) - plane->dist;
-		if (d > 0)
-			node = node->children[0];
-		else
-			node = node->children[1];
+		mplane_t *plane = node->plane;
+		float d = DotProduct (p,plane->normal) - plane->dist;
+		node = node->children[d > 0 ? 0 : 1];
 	}
-
-	return NULL;	// never reached
+	return NULL; // never reached
 }
 
-
-/*
-===================
-Mod_DecompressVis
-===================
-*/
 static byte *Mod_DecompressVis (byte *in, model_t *model)
 {
-	int		c;
-	byte	*out;
-	byte	*outend;
-	int		row;
-
-	row = (model->numleafs+7)>>3;
-	if (mod_decompressed == NULL || row > mod_decompressed_capacity)
-	{
+	int row = (model->numleafs+7)>>3;
+	if (mod_decompressed == NULL || row > mod_decompressed_capacity) {
 		mod_decompressed_capacity = row;
 		mod_decompressed = (byte *) realloc (mod_decompressed, mod_decompressed_capacity);
 		if (!mod_decompressed)
 			Sys_Error ("Mod_DecompressVis: realloc() failed on %d bytes", mod_decompressed_capacity);
 	}
-	out = mod_decompressed;
-	outend = mod_decompressed + row;
-
-	if (!in)
-	{	// no vis info, so make all visible
-		while (row)
-		{
+	byte *out = mod_decompressed;
+	byte *outend = mod_decompressed + row;
+	if (!in) { // no vis info, so make all visible
+		while (row) {
 			*out++ = 0xff;
 			row--;
 		}
 		return mod_decompressed;
 	}
-
-	do
-	{
-		if (*in)
-		{
+	do {
+		if (*in) {
 			*out++ = *in++;
 			continue;
 		}
-
-		c = in[1];
+		int c = in[1];
 		in += 2;
-		while (c)
-		{
-			if (out == outend)
-			{
+		while (c) {
+			if (out == outend) {
 				if(!model->viswarn) {
 					model->viswarn = true;
 					printf("Mod_DecompressVis: output overrun on model \"%s\"\n", model->name);
@@ -195,7 +124,6 @@ static byte *Mod_DecompressVis (byte *in, model_t *model)
 			c--;
 		}
 	} while (out - mod_decompressed < row);
-
 	return mod_decompressed;
 }
 
@@ -206,53 +134,39 @@ byte *Mod_LeafPVS (mleaf_t *leaf, model_t *model)
 	return Mod_DecompressVis (leaf->compressed_vis, model);
 }
 
+
 byte *Mod_NoVisPVS (model_t *model)
 {
-	int pvsbytes;
- 
-	pvsbytes = (model->numleafs+7)>>3;
-	if (mod_novis == NULL || pvsbytes > mod_novis_capacity)
-	{
+	int pvsbytes = (model->numleafs+7)>>3;
+	if (mod_novis == NULL || pvsbytes > mod_novis_capacity) {
 		mod_novis_capacity = pvsbytes;
 		mod_novis = (byte *) realloc (mod_novis, mod_novis_capacity);
 		if (!mod_novis)
 			Sys_Error ("Mod_NoVisPVS: realloc() failed on %d bytes", mod_novis_capacity);
-		
 		memset(mod_novis, 0xff, mod_novis_capacity);
 	}
 	return mod_novis;
 }
 
-/*
-===================
-Mod_ClearAll
-===================
-*/
-void Mod_ClearAll (void)
+void Mod_ClearAll ()
 {
-	int		i;
-	model_t	*mod;
-
-	for (i=0 , mod=mod_known ; i<mod_numknown ; i++, mod++)
-	{
-		if (mod->type != mod_alias)
-		{
+	int i = 0;
+	model_t *mod = mod_known;
+	for (; i<mod_numknown ; i++, mod++) {
+		if (mod->type != mod_alias) {
 			mod->needload = true;
 	//		TexMgr_FreeTexturesForOwner (mod); //johnfitz
 		}
 	}
 }
 
-void Mod_ResetAll (void)
+void Mod_ResetAll ()
 {
-	int		i;
-	model_t	*mod;
-
 	//ericw -- free alias model VBOs
 	//GLMesh_DeleteVertexBuffers ();
-
-	for (i=0 , mod=mod_known ; i<mod_numknown ; i++, mod++)
-	{
+	int i = 0;
+	model_t *mod = mod_known;
+	for (i=0 , mod=mod_known ; i<mod_numknown ; i++, mod++) {
 	//	if (!mod->needload) //otherwise Mod_ClearAll() did it already
 	//		TexMgr_FreeTexturesForOwner (mod);
 		memset(mod, 0, sizeof(model_t));
@@ -260,262 +174,92 @@ void Mod_ResetAll (void)
 	mod_numknown = 0;
 }
 
-/*
-==================
-Mod_FindName
-
-==================
-*/
-/*TODOstatic model_t *Mod_FindName (const char *name)
+static model_t *Mod_FindName (const char *name)
 {
-	int		i;
-	model_t	*mod;
-
 	if (!name[0])
 		Sys_Error ("Mod_FindName: NULL name"); //johnfitz -- was "Mod_ForName"
-
-//
-// search the currently loaded models
-//
-	for (i=0 , mod=mod_known ; i<mod_numknown ; i++, mod++)
-	{
-		if (!strcmp (mod->name, name) )
+	// search the currently loaded models
+	int i = 0;
+	model_t *mod = mod_known;
+	for (; i<mod_numknown ; i++, mod++)
+		if (!strcmp (mod->name, name))
 			break;
-	}
-
-	if (i == mod_numknown)
-	{
+	if (i == mod_numknown) {
 		if (mod_numknown == MAX_MOD_KNOWN)
 			Sys_Error ("mod_numknown == MAX_MOD_KNOWN");
 		strlcpy (mod->name, name, MAX_QPATH);
 		mod->needload = true;
 		mod_numknown++;
 	}
-
 	return mod;
-}*/
-
-model_t *Mod_FindName(char *name)
-{
-        if (!name[0])
-                Sys_Error("Mod_ForName: NULL name");
-        // search the currently loaded models
-        model_t *avail = NULL;
-        int i = 0;
-        model_t *mod = mod_known;
-        for (; i < mod_numknown; i++, mod++) {
-                if (!strcmp(mod->name, name))
-                        break;
-                if (mod->needload == NL_UNREFERENCED)
-                        if (!avail || mod->type != mod_alias)
-                                avail = mod;
-        }
-        if (i == mod_numknown) {
-                if (mod_numknown == MAX_MOD_KNOWN) {
-                        if (avail) {
-                                mod = avail;
-                                if (mod->type == mod_alias)
-                                        if (Cache_Check(&mod->cache))
-                                                Cache_Free(&mod->cache);
-                        } else
-                                Sys_Error("mod_numknown == MAX_MOD_KNOWN");
-                } else
-                        mod_numknown++;
-                strcpy(mod->name, name);
-                mod->needload = NL_NEEDS_LOADED;
-        }
-        return mod;
 }
 
-
-/*
-==================
-Mod_TouchModel
-
-==================
-*/
 void Mod_TouchModel (const char *name)
 {
-/*	model_t	*mod;
-
-	mod = Mod_FindName (name);
-
-	if (!mod->needload)
-	{
-		if (mod->type == mod_alias)
-			Cache_Check (&mod->cache);
-	}*/
-	        model_t *mod = Mod_FindName(name);
-        if (mod->needload == NL_PRESENT)
-                if (mod->type == mod_alias)
-                        Cache_Check(&mod->cache);
+	model_t	*mod = Mod_FindName (name);
+	if (!mod->needload && mod->type == mod_alias)
+		Cache_Check (&mod->cache);
 }
 
-/*
-==================
-Mod_LoadModel
 
-Loads a model into the cache
-==================
-*/
-/*TODOstatic model_t *Mod_LoadModel (model_t *mod, qboolean crash)
-{
-	byte	*buf;
-	byte	stackbuf[1024];		// avoid dirtying the cache heap
-	int	mod_type;
-
-	if (!mod->needload)
-	{
-		if (mod->type == mod_alias)
-		{
+static model_t *Mod_LoadModel (model_t *mod, qboolean crash)
+{ // Loads a model into the cache
+	byte stackbuf[1024]; // avoid dirtying the cache heap
+	if (!mod->needload) {
+		if (mod->type == mod_alias) {
 			if (Cache_Check (&mod->cache))
 				return mod;
 		}
 		else
 			return mod;		// not cached at all
 	}
-
-//
-// because the world is so huge, load it one piece at a time
-//
-	if (!crash)
-	{
-
-	}
-
-//
-// load the file
-//
-	buf = COM_LoadStackFile2 (mod->name, stackbuf, sizeof(stackbuf), & mod->path_id);
-	if (!buf)
-	{
-		if (crash)
-			Host_Error ("Mod_LoadModel: %s not found", mod->name); //johnfitz -- was "Mod_NumForName"
+	// because the world is so huge, load it one piece at a time
+	byte *buf = COM_LoadStackFile (mod->name, stackbuf, sizeof(stackbuf), &mod->path_id);
+	if (!buf) {
+		if (crash) //johnfitz -- was "Mod_NumForName"
+			Host_Error ("Mod_LoadModel: %s not found", mod->name);
 		return NULL;
 	}
-
-//
-// allocate a new model
-//
-	COM_FileBase2 (mod->name, loadname, sizeof(loadname));
-
+	// allocate a new model
+	COM_FileBase (mod->name, loadname, sizeof(loadname));
 	loadmodel = mod;
-
-//
-// fill it in
-//
-
-// call the apropriate loader
+	// fill it in, call the apropriate loader
 	mod->needload = false;
-
-	mod_type = (buf[0] | (buf[1] << 8) | (buf[2] << 16) | (buf[3] << 24));
-	switch (mod_type)
-	{
+	int mod_type = (buf[0] | (buf[1]<<8) | (buf[2]<<16) | (buf[3]<<24));
+	switch (mod_type) {
 	case IDPOLYHEADER:
 		Mod_LoadAliasModel (mod, buf);
 		break;
-
 	case IDSPRITEHEADER:
 		Mod_LoadSpriteModel (mod, buf);
 		break;
-
 	default:
 		Mod_LoadBrushModel (mod, buf);
 		break;
 	}
-
 	return mod;
-}*/
-
-model_t *Mod_LoadModel(model_t *mod, qboolean crash)
-{ // Loads a model into the cache
-        byte stackbuf[1024]; // avoid dirtying the cache heap
-        if (mod->type == mod_alias) {
-                if (Cache_Check(&mod->cache)) {
-                        mod->needload = NL_PRESENT;
-                        return mod;
-                }
-        } else if (mod->needload == NL_PRESENT)
-                        return mod;
-        // because the world is so huge, load it one piece at a time
-        // load the file
-        unsigned int *buf = (unsigned int*)COM_LoadStackFile(mod->name,stackbuf,
-                                sizeof(stackbuf));
-        if (!buf) {
-                if (crash)
-                        Sys_Error("Mod_NumForName: %s not found", mod->name);
-                return NULL;
-        }
-        COM_FileBase(mod->name, loadname); // allocate a new model
-        loadmodel = mod;
-        mod->needload = NL_PRESENT; // fill it in, call the apropriate loader
-        switch (LittleLong(*(unsigned *)buf)) {
-                case IDPOLYHEADER:
-                        Mod_LoadAliasModel(mod, buf);
-                        break;
-                case IDSPRITEHEADER:
-                        Mod_LoadSpriteModel(mod, buf);
-                        break;
-                default:
-                        Mod_LoadBrushModel(mod, buf);
-                        break;
-        }
-        return mod;
 }
 
-/*
-==================
-Mod_ForName
-
-Loads in a model for the given name
-==================
-*/
 model_t *Mod_ForName (const char *name, qboolean crash)
-{
-	model_t	*mod;
-
-	mod = Mod_FindName (name);
-
+{ // Loads in a model for the given name
+	model_t	*mod = Mod_FindName (name);
 	return Mod_LoadModel (mod, crash);
 }
 
-
-/*
-===============================================================================
-
-					BRUSHMODEL LOADING
-
-===============================================================================
-*/
-
-static byte	*mod_base;
-
-/*
-=============
-Mod_LoadWadFiles
-
-load all of the wads listed in the worldspawn "wad" field
-=============
-*/
 static wad_t *Mod_LoadWadFiles (model_t *mod)
-{
-	char		key[128], value[4096];
-	const char *data;
-
+{ // load all of the wads listed in the worldspawn "wad" field
+	char key[128], value[4096];
 	if (!external_textures.value)
 		return NULL;
-
 	// disregard if this isn't the world model
 	if (strcmp (mod->name, sv.modelname))
 		return NULL;
-
-	data = COM_Parse (mod->entities);
+	const char *data = COM_Parse (mod->entities);
 	if (!data)
 		return NULL; // error
 	if (com_token[0] != '{')
 		return NULL; // error
-	while (1)
-	{
+	while (1) {
 		data = COM_Parse (data);
 		if (!data)
 			return NULL; // error
@@ -531,150 +275,100 @@ static wad_t *Mod_LoadWadFiles (model_t *mod)
 		if (!data)
 			return NULL; // error
 		strlcpy (value, com_token, sizeof (value));
-
-		if (!strcmp ("wad", key))
-		{
+		if (!strcmp ("wad", key)) {
 			return W_LoadWadList (value);
 		}
 	}
 	return NULL;
 }
 
-// CyanBun96
-unsigned long q_min(unsigned long v1, unsigned long v2){
-	return v1>v2?v2:v1;
-}
-unsigned long q_max(unsigned long v1, unsigned long v2){
-	return v1<v2?v2:v1;
-}
-
-/*
-=================
-Mod_LoadWadTexture
-
-look for an external texture in any of the loaded map wads
-=================
-*/
 static texture_t *Mod_LoadWadTexture (model_t *mod, wad_t *wads, const char *name, qboolean *out_pal, int *out_pixels)
-{
-	int			   i, pixels, palette, tex_bytes, lump_bytes, pixels_pos, palette_pos;
-	lumpinfo_t	  *info;
-	wad_t		  *wad;
-	miptex_t	   mt;
-	texture_t	  *tx;
-	qboolean	   pal;
-	unsigned short colors;
-
+{ // look for an external texture in any of the loaded map wads
 	// look for the lump in any of the loaded wads
-	info = W_GetLumpinfoList (wads, name, &wad);
-
+	wad_t *wad;
+	lumpinfo_t *info = W_GetLumpinfoList (wads, name, &wad);
 	// ensure we're dealing with a miptex
 	if (!info || (info->type != TYP_MIPTEX && (wad->id != WADID_VALVE || info->type != TYP_MIPTEX_PALETTE)))
 	{
 		printf ("Missing texture %s in %s!\n", name, mod->name);
 		return NULL;
 	}
-
 	// override the texture from the bsp file
+	miptex_t mt;
 	FS_fseek (&wad->fh, info->filepos, SEEK_SET);
 	FS_fread (&mt, 1, sizeof (miptex_t), &wad->fh);
-
 	mt.width = LittleLong (mt.width);
 	mt.height = LittleLong (mt.height);
-	for (i = 0; i < MIPLEVELS; i++)
+	for (int i = 0; i < MIPLEVELS; i++)
 		mt.offsets[i] = LittleLong (mt.offsets[i]);
-
-	if (mt.width == 0 || mt.height == 0)
-	{
+	if (mt.width == 0 || mt.height == 0) {
 		printf ("Zero sized texture %s in %s!\n", mt.name, wad->name);
 		return NULL;
 	}
-
-	if ((mt.width & 15) || (mt.height & 15))
-	{
+	if ((mt.width & 15) || (mt.height & 15)) {
 		if (mod->bspversion != BSPVERSION_QUAKE64)
 			printf ("Texture %s (%d x %d) is not 16 aligned\n", mt.name, mt.width, mt.height);
 		return NULL;
 	}
-
-	pal = wad->id == WADID_VALVE && info->type == TYP_MIPTEX_PALETTE;
-
-	pixels = mt.width * mt.height; // only copy the first mip, the rest are auto-generated
-	pixels_pos = info->filepos + sizeof (miptex_t);
+	qboolean pal = wad->id == WADID_VALVE && info->type == TYP_MIPTEX_PALETTE;
+	int pixels = mt.width * mt.height; // only copy the first mip, the rest are auto-generated
+	int pixels_pos = info->filepos + sizeof (miptex_t);
 	// valve textures have a color palette immediately following the pixels
-	if (pal)
-	{
+	int palette, tex_bytes, lump_bytes, palette_pos;
+	if (pal) {
 		palette_pos = pixels_pos + pixels / 64 * 85;
-
 		// add space for the color count
 		palette = 2;
-
-		if ((pixels / 64 * 85 + 2) <= info->size)
-		{
+		if ((pixels / 64 * 85 + 2) <= info->size) {
 			// the palette is basically garunteed to be 256 colors but,
 			// we might as well use the value since it *does* exist
 			FS_fseek (&wad->fh, palette_pos, SEEK_SET);
+			unsigned short colors;
 			FS_fread (&colors, 1, 2, &wad->fh);
 			colors = LittleShort (colors);
 			// add space for the color palette
 			palette += colors * 3;
 		}
-
 		tex_bytes = pixels + palette;
 		lump_bytes = pixels / 64 * 85 + palette;
 	}
-	else
-	{
+	else {
 		palette_pos = 0;
 		palette = 0;
 		tex_bytes = pixels;
 		lump_bytes = pixels;
 	}
-	tx = (texture_t *)Hunk_AllocName (sizeof (texture_t) + tex_bytes, loadname);
-
+	texture_t *tx = (texture_t *)Hunk_AllocName (sizeof (texture_t) + tex_bytes, loadname);
 	memcpy (tx->name, mt.name, sizeof (tx->name));
 	tx->width = mt.width;
 	tx->height = mt.height;
 	// the pixels immediately follow the structures
-
 	// check for pixels extending past the end of the lump
-	if (lump_bytes > info->size)
-	{
+	if (lump_bytes > info->size) {
 		printf ("Texture %s extends past end of lump\n", mt.name);
 		lump_bytes = info->size;
 		if (pal)
 			palette = q_min(palette, q_max(0, lump_bytes - pixels / 64 * 85));
 		pixels = q_min(pixels, lump_bytes);
 	}
-
 	tx->update_warp = false; //johnfitz
 	//tx->warpimage = NULL; //johnfitz
 	//tx->fullbright = NULL; //johnfitz
 	tx->shift = 0;	// Q64 only
-
 	FS_fseek (&wad->fh, pixels_pos, SEEK_SET);
 	FS_fread (tx + 1, 1, pixels, &wad->fh);
-	if (pal && palette)
-	{
+	if (pal && palette) {
 		FS_fseek (&wad->fh, palette_pos, SEEK_SET);
 		FS_fread ((byte *)(tx + 1) + pixels, 1, palette, &wad->fh);
 	}
-
 	*out_pal = pal;
 	*out_pixels = pixels;
 	return tx;
 }
 
-/*
-=================
-Mod_CheckFullbrights -- johnfitz
-=================
-*/
 static qboolean Mod_CheckFullbrights (byte *pixels, int count)
-{
-	int i;
-	for (i = 0; i < count; i++)
-	{
+{ // -- johnfitz
+	for (int i = 0; i < count; i++) {
 		if (*pixels++ > 223)
 			return true;
 	}
@@ -1278,7 +972,7 @@ static void Mod_LoadLighting (lump_t *l)
 	COM_StripExtension(litfilename, litfilename, sizeof(litfilename));
 	strlcat(litfilename, ".lit", sizeof(litfilename));
 	mark = Hunk_LowMark();
-	data = (byte*) COM_LoadHunkFile2 (litfilename, &path_id);
+	data = (byte*) COM_LoadHunkFile (litfilename, &path_id);
 	if (data)
 	{
 		// use lit file only from the same gamedir as the map
@@ -1419,13 +1113,13 @@ Mod_LoadEntities
 
 	snprintf(entfilename, sizeof(entfilename), "%s@%04x.ent", basemapname, crc);
 	printf("trying to load %s\n", entfilename);
-	ents = (char *) COM_LoadHunkFile2 (entfilename, &path_id);
+	ents = (char *) COM_LoadHunkFile (entfilename, &path_id);
 
 	if (!ents)
 	{
 		snprintf(entfilename, sizeof(entfilename), "%s.ent", basemapname);
 		printf("trying to load %s\n", entfilename);
-		ents = (char *) COM_LoadHunkFile2 (entfilename, &path_id);
+		ents = (char *) COM_LoadHunkFile (entfilename, &path_id);
 	}
 
 	if (ents)

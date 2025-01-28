@@ -4,6 +4,7 @@
 #define	MAX_HANDLES 32
 
 // File IO
+int Sys_FileType (const char *path);
 int Sys_FileOpenRead (char *path, int *hndl);
 int Sys_FileOpenWrite (char *path);
 void Sys_FileClose (int handle);

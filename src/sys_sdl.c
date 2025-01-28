@@ -89,6 +89,24 @@ int Sys_FileTime(char *path)
 }
 
 #ifndef _WIN32
+int Sys_FileType (const char *path)
+{
+        /*
+        if (access(path, R_OK) == -1)
+                return 0;
+        */
+        struct stat     st;
+
+        if (stat(path, &st) != 0)
+                return FS_ENT_NONE;
+        if (S_ISDIR(st.st_mode))
+                return FS_ENT_DIRECTORY;
+        if (S_ISREG(st.st_mode))
+                return FS_ENT_FILE;
+
+        return FS_ENT_NONE;
+}
+
 int Sys_FileOpenWrite(char *path)
 {
 	int i = findhandle();
@@ -130,18 +148,18 @@ int main(int c, char **v)
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
 		Sys_Error("SDL_Init failed: %s", SDL_GetError());
 	quakeparms_t parms;
-	parms.argc = c;
-	parms.argv = v;
-	COM_InitArgv(parms.argc, parms.argv);
-	parms.memsize = DEFAULT_MEMORY;
+	host_parms.argc = c;
+	host_parms.argv = v;
+	COM_InitArgv(host_parms.argc, host_parms.argv);
+	host_parms.memsize = DEFAULT_MEMORY;
 	if (COM_CheckParm("-heapsize")) {
 		int t = COM_CheckParm("-heapsize") + 1;
 		if (t < c)
 			parms.memsize = Q_atoi(v[t]) * 1024;
 	}
-	parms.membase = malloc(parms.memsize);
-	parms.basedir = ".";
-	Host_Init(&parms);
+	host_parms.membase = malloc(host_parms.memsize);
+	host_parms.basedir = ".";
+	Host_Init();
 	double oldtime = Sys_FloatTime() - 0.1;
 	while (1) {
 		double newtime = Sys_FloatTime();

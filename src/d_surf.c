@@ -37,8 +37,7 @@ void D_ClearCacheGuard()
 
 void D_InitCaches(void *buffer, int size)
 {
-	if (!msg_suppress_1)
-		Con_Printf("%ik surface cache\n", size / 1024);
+	Con_Printf("%ik surface cache\n", size / 1024);
 	sc_size = size - GUARDSIZE;
 	sc_base = (surfcache_t *) buffer;
 	sc_rover = sc_base;

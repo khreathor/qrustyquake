@@ -263,13 +263,13 @@ qsocket_t *NET_Connect(const char *host)
 	if (host && *host == 0)
 		host = NULL;
 	if (host) {
-		if (Q_strcasecmp(host, "local") == 0) {
+		if (q_strcasecmp(host, "local") == 0) {
 			numdrivers = 1;
 			goto JustDoIt;
 		}
 		if (hostCacheCount) {
 			for (n = 0; n < hostCacheCount; n++)
-				if (Q_strcasecmp(host, hostcache[n].name) == 0) {
+				if (q_strcasecmp(host, hostcache[n].name) == 0) {
 					host = hostcache[n].cname;
 					break;
 				}
@@ -290,7 +290,7 @@ qsocket_t *NET_Connect(const char *host)
 	}
 	if (hostCacheCount) {
 		for (n = 0; n < hostCacheCount; n++) {
-			if (Q_strcasecmp(host, hostcache[n].name) == 0) {
+			if (q_strcasecmp(host, hostcache[n].name) == 0) {
 				host = hostcache[n].cname;
 				break;
 			}

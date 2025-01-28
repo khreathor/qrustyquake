@@ -138,7 +138,7 @@ void Cmd_Exec_f()
 		return;
 	}
 	int mark = Hunk_LowMark();
-	char *f = (char *)COM_LoadHunkFile(Cmd_Argv(1));
+	char *f = (char *)COM_LoadHunkFile(Cmd_Argv(1), NULL);
 	if (!f) {
 		Con_Printf("couldn't exec %s\n", Cmd_Argv(1));
 		return;
@@ -394,18 +394,18 @@ void Cmd_ExecuteString(char *text, cmd_source_t src)
 	if (!Cmd_Argc()) // execute the command line
 		return; // no tokens
 	for (cmd_function_t *cmd = cmd_functions; cmd; cmd = cmd->next) {
-		if (!Q_strcasecmp(cmd_argv[0], cmd->name)) { // check functions
+		if (!q_strcasecmp(cmd_argv[0], cmd->name)) { // check functions
 			cmd->function();
 			return;
 		}
 	}
 	for (cmdalias_t *a = cmd_alias; a; a = a->next) { // check alias
-		if (!Q_strcasecmp(cmd_argv[0], a->name)) {
+		if (!q_strcasecmp(cmd_argv[0], a->name)) {
 			Cbuf_InsertText(a->value);
 			return;
 		}
-	}
-	if (!Cvar_Command()) // check cvars
+	} // CyanBun96: fog is coming, some day, maybe, don't spam for now.
+	if (!Cvar_Command() && strncmp("fog", Cmd_Argv(0), 3)) // check cvars
 		Con_Printf("Unknown command \"%s\"\n", Cmd_Argv(0));
 }
 
@@ -418,7 +418,7 @@ void Cmd_ForwardToServer()
 	if (cls.demoplayback)
 		return; // not really connected
 	MSG_WriteByte(&cls.message, clc_stringcmd);
-	if (Q_strcasecmp(Cmd_Argv(0), "cmd") != 0) {
+	if (q_strcasecmp(Cmd_Argv(0), "cmd") != 0) {
 		SZ_Print(&cls.message, Cmd_Argv(0));
 		SZ_Print(&cls.message, " ");
 	}

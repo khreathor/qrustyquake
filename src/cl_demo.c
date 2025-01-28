@@ -142,7 +142,7 @@ void CL_Record_f()
 	sprintf(name, "%s/%s", com_gamedir, Cmd_Argv(1));
 	if (c > 2) // start the map up
 		Cmd_ExecuteString(va("map %s", Cmd_Argv(2)), src_command);
-	COM_DefaultExtension(name, ".dem"); // open the demo file
+	COM_AddExtension (name, ".dem", sizeof(name));
 	Con_Printf("recording to %s.\n", name);
 	cls.demofile = fopen(name, "wb");
 	if (!cls.demofile) {
@@ -168,9 +168,9 @@ void CL_PlayDemo_f()
 	CL_Disconnect(); // disconnect from server
 	char name[256];
 	strcpy(name, Cmd_Argv(1)); // open the demo file
-	COM_DefaultExtension(name, ".dem");
+	COM_AddExtension (name, ".dem", sizeof(name));
 	Con_Printf("Playing demo from %s.\n", name);
-	COM_FOpenFile(name, &cls.demofile);
+	COM_FOpenFile(name, &cls.demofile, NULL);
 	if (!cls.demofile) {
 		Con_Printf("ERROR: couldn't open.\n");
 		cls.demonum = -1; // stop demo loop

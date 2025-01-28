@@ -418,17 +418,17 @@ void Host_Frame(float time)
 	Con_Printf("serverprofile: %2i clients %2i msec\n", c, m);
 }
 
-void Host_Init(quakeparms_t *parms)
+void Host_Init()
 {
-	host_parms = *parms;
-	com_argc = parms->argc;
-	com_argv = parms->argv;
-	Memory_Init(parms->membase, parms->memsize);
+	com_argc = host_parms.argc;
+	com_argv = host_parms.argv;
+	Memory_Init(host_parms.membase, host_parms.memsize);
 	Cbuf_Init();
 	Cmd_Init();
 	V_Init();
 	Chase_Init();
-	COM_Init(parms->basedir);
+	COM_Init();
+	COM_InitFilesystem();
 	Host_InitLocal();
 	W_LoadWadFile();
 	Key_Init();
@@ -439,13 +439,13 @@ void Host_Init(quakeparms_t *parms)
 	NET_Init();
 	SV_Init();
 	Con_Printf("Exe: " __TIME__ " " __DATE__ "\n");
-	Con_Printf("%4.1f megabyte heap\n", parms->memsize / (1024 * 1024.0));
+	Con_Printf("%4.1f megabyte heap\n", host_parms.memsize / (1024 * 1024.0));
 	R_InitTextures(); // needed even for dedicated servers
 	if (cls.state != ca_dedicated) {
-		host_basepal = (byte *) COM_LoadHunkFile("gfx/palette.lmp");
+		host_basepal = (byte *) COM_LoadHunkFile("gfx/palette.lmp", NULL);
 		if (!host_basepal)
 			Sys_Error("Couldn't load gfx/palette.lmp");
-		host_colormap = (byte *) COM_LoadHunkFile("gfx/colormap.lmp");
+		host_colormap = (byte *) COM_LoadHunkFile("gfx/colormap.lmp", NULL);
 		if (!host_colormap)
 			Sys_Error("Couldn't load gfx/colormap.lmp");
 		IN_Init();

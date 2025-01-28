@@ -315,7 +315,7 @@ void Host_Savegame_f()
 			return;
 		}
 	sprintf(name, "%s/%s", com_gamedir, Cmd_Argv(1));
-	COM_DefaultExtension(name, ".sav");
+	COM_AddExtension(name, ".sav", sizeof(name));
 	Con_Printf("Saving game to %s...\n", name);
 	FILE *f = fopen(name, "w");
 	if (!f) {
@@ -359,7 +359,7 @@ void Host_Loadgame_f()
 	}
 	cls.demonum = -1; // stop demo loop in case this fails
 	sprintf(name, "%s/%s", com_gamedir, Cmd_Argv(1));
-	COM_DefaultExtension(name, ".sav");
+	COM_AddExtension(name, ".sav", sizeof(name));
 	// we can't call SCR_BeginLoadingPlaque, because too much stack space has
 	// been used. The menu calls it before stuffing loadgame command
 	// SCR_BeginLoadingPlaque ();
@@ -614,7 +614,7 @@ void Host_Tell_f()
 	for (client_t *client = svs.clients; j < svs.maxclients; j++, client++) {
 		if (!client->active || !client->spawned)
 			continue;
-		if (Q_strcasecmp(client->name, Cmd_Argv(1)))
+		if (q_strcasecmp(client->name, Cmd_Argv(1)))
 			continue;
 		host_client = client;
 		SV_ClientPrintf("%s", text);
@@ -866,7 +866,7 @@ void Host_Kick_f() // Kicks a user off of the server
 				i++, host_client++) {
 			if (!host_client->active)
 				continue;
-			if (Q_strcasecmp(host_client->name, Cmd_Argv(1)) == 0)
+			if (q_strcasecmp(host_client->name, Cmd_Argv(1)) == 0)
 				break;
 		}
 	}
