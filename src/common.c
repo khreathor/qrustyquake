@@ -348,6 +348,11 @@ void Q_memset(void *dest, int fill, size_t count)
 	memset(dest, fill, count);
 }
 
+void Q_memmove(void *dest, const void *src, size_t count)
+{
+	memmove(dest, src, count);
+}
+
 void Q_memcpy(void *dest, const void *src, size_t count)
 {
 	memcpy(dest, src, count);
