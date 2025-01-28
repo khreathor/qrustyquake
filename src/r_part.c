@@ -122,19 +122,24 @@ void R_ReadPointFile_f()
 	Con_Printf("%i points read\n", c);
 }
 
-void R_ParseParticleEffect() // Parse an effect out of the server message
+void R_ParseParticleEffect (void)
 {
-	vec3_t org, dir;
-	for (int i = 0; i < 3; i++)
-		org[i] = MSG_ReadCoord();
-	for (int i = 0; i < 3; i++)
-		dir[i] = MSG_ReadChar() * (1.0 / 16);
-	int msgcount = MSG_ReadByte();
-	int color = MSG_ReadByte();
-	int count = msgcount;
-	if (msgcount == 255)
-		count = 1024;
-	R_RunParticleEffect(org, dir, color, count);
+        vec3_t          org, dir;
+        int                     i, count, msgcount, color;
+
+        for (i=0 ; i<3 ; i++)
+                org[i] = MSG_ReadCoord (cl.protocolflags);
+        for (i=0 ; i<3 ; i++)
+                dir[i] = MSG_ReadChar () * (1.0/16);
+        msgcount = MSG_ReadByte ();
+        color = MSG_ReadByte ();
+
+        if (msgcount == 255)
+                count = 1024;
+        else
+                count = msgcount;
+
+        R_RunParticleEffect (org, dir, color, count);
 }
 
 // CyanBun96: TODO a lot of shared code between these. consolidate?

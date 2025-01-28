@@ -8,6 +8,7 @@
 
 int current_skill;
 
+extern char *pr_strings;
 extern cvar_t pausable;
 
 void Mod_Print();
@@ -69,7 +70,7 @@ void Host_God_f() // Sets client to godmode
 		Cmd_ForwardToServer();
 		return;
 	}
-	if (pr_global_struct->deathmatch && !host_client->privileged)
+	if (pr_global_struct->deathmatch/*FIXME && !host_client->privileged*/)
 		return;
 	sv_player->v.flags = (int)sv_player->v.flags ^ FL_GODMODE;
 	if (!((int)sv_player->v.flags & FL_GODMODE))
@@ -84,7 +85,7 @@ void Host_Notarget_f()
 		Cmd_ForwardToServer();
 		return;
 	}
-	if (pr_global_struct->deathmatch && !host_client->privileged)
+	if (pr_global_struct->deathmatch/*FIXME && !host_client->privileged*/)
 		return;
 	sv_player->v.flags = (int)sv_player->v.flags ^ FL_NOTARGET;
 	if (!((int)sv_player->v.flags & FL_NOTARGET))
@@ -98,7 +99,7 @@ void Host_Noclip_f()
 		Cmd_ForwardToServer();
 		return;
 	}
-	if (pr_global_struct->deathmatch && !host_client->privileged)
+	if (pr_global_struct->deathmatch/*FIXME && !host_client->privileged*/)
 		return;
 	if (sv_player->v.movetype != MOVETYPE_NOCLIP) {
 		noclip_anglehack = true;
@@ -117,7 +118,7 @@ void Host_Fly_f()
 		Cmd_ForwardToServer();
 		return;
 	}
-	if (pr_global_struct->deathmatch && !host_client->privileged)
+	if (pr_global_struct->deathmatch/*FIXME && !host_client->privileged*/)
 		return;
 	if (sv_player->v.movetype != MOVETYPE_FLY) {
 		sv_player->v.movetype = MOVETYPE_FLY;
@@ -147,39 +148,75 @@ void Host_Ping_f()
 	}
 }
 
+/*
+======================
+Host_Map_f
 
+handle a
+map <servername>
+command from the console.  Active clients are kicked off.
+======================
+*/
+static void Host_Map_f (void)
+{
+        int             i;
+        char    name[MAX_QPATH], *p;
 
-void Host_Map_f() // handle a map <servername> command from the console.
-{ // Active clients are kicked off.
-	char name[MAX_QPATH];
-	if (cmd_source != src_command)
-		return;
-	cls.demonum = -1; // stop demo loop in case this fails
-	CL_Disconnect();
-	Host_ShutdownServer(false);
-	key_dest = key_game; // remove console or menu
-	SCR_BeginLoadingPlaque();
-	cls.mapstring[0] = 0;
-	for (int i = 0; i < Cmd_Argc(); i++) {
-		strcat(cls.mapstring, Cmd_Argv(i));
-		strcat(cls.mapstring, " ");
-	}
-	strcat(cls.mapstring, "\n");
-	svs.serverflags = 0; // haven't completed an episode yet
-	strcpy(name, Cmd_Argv(1));
-	SV_SpawnServer(name);
-	if (!sv.active)
-		return;
-	if (cls.state != ca_dedicated) {
-		strcpy(cls.spawnparms, "");
-		for (int i = 2; i < Cmd_Argc(); i++) {
-			strcat(cls.spawnparms, Cmd_Argv(i));
-			strcat(cls.spawnparms, " ");
-		}
-		Cmd_ExecuteString("connect local", src_command);
-	}
+        if (Cmd_Argc() < 2)     //no map name given
+        {
+                if (cls.state == ca_dedicated)
+                {
+                        if (sv.active)
+                                Con_Printf ("Current map: %s\n", sv.name);
+                        else
+                                Con_Printf ("Server not active\n");
+                }
+                else if (cls.state == ca_connected)
+                {
+                        Con_Printf ("Current map: %s ( %s )\n", cl.levelname, cl.mapname);
+                }
+                else
+                {
+                        Con_Printf ("map <levelname>: start a new server\n");
+                }
+                return;
+        }
+
+        if (cmd_source != src_command)
+                return;
+
+        cls.demonum = -1;               // stop demo loop in case this fails
+
+        CL_Disconnect ();
+        Host_ShutdownServer(false);
+
+        //if (cls.state != ca_dedicated)
+        //        IN_Activate();
+        key_dest = key_game;                    // remove console or menu
+        SCR_BeginLoadingPlaque ();
+
+        svs.serverflags = 0;                    // haven't completed an episode yet
+        strlcpy (name, Cmd_Argv(1), sizeof(name));
+        // remove (any) trailing ".bsp" from mapname -- S.A.
+        p = strstr(name, ".bsp");
+        if (p && p[4] == '\0')
+                *p = '\0';
+        SV_SpawnServer (name);
+        if (!sv.active)
+                return;
+
+        if (cls.state != ca_dedicated)
+        {
+                memset (cls.spawnparms, 0, MAX_MAPSTRING);
+                for (i = 2; i < Cmd_Argc(); i++)
+                {
+                        strlcat (cls.spawnparms, Cmd_Argv(i), MAX_MAPSTRING);
+                        strlcat (cls.spawnparms, " ", MAX_MAPSTRING);
+                }
+
+                Cmd_ExecuteString ("connect local", src_command);
+        }
 }
-
 
 void Host_Changelevel_f()
 { // Goes to a new map, taking all clients along
@@ -410,32 +447,48 @@ void Host_Loadgame_f()
 	}
 }
 
-void Host_Name_f()
+/*
+======================
+Host_Name_f
+======================
+*/
+static void Host_Name_f (void)
 {
-	if (Cmd_Argc() == 1) {
-		Con_Printf("\"name\" is \"%s\"\n", cl_name.string);
-		return;
-	}
-	char *newName = Cmd_Argc() == 2 ? Cmd_Argv(1) : Cmd_Args();
-	newName[15] = 0;
-	if (cmd_source == src_command) {
-		if (Q_strcmp(cl_name.string, newName) == 0)
-			return;
-		Cvar_Set("_cl_name", newName);
-		if (cls.state == ca_connected)
-			Cmd_ForwardToServer();
-		return;
-	}
-	if (host_client->name[0] && strcmp(host_client->name, "unconnected"))
-		if (Q_strcmp(host_client->name, newName) != 0)
-			Con_Printf("%s renamed to %s\n", host_client->name,
-					newName);
-	Q_strcpy(host_client->name, newName);
-	host_client->edict->v.netname = host_client->name - pr_strings;
-	// send notification to all clients
-	MSG_WriteByte(&sv.reliable_datagram, svc_updatename);
-	MSG_WriteByte(&sv.reliable_datagram, host_client - svs.clients);
-	MSG_WriteString(&sv.reliable_datagram, host_client->name);
+        char    newName[32];
+
+        if (Cmd_Argc () == 1)
+        {
+                Con_Printf ("\"name\" is \"%s\"\n", cl_name.string);
+                return;
+        }
+        if (Cmd_Argc () == 2)
+                strlcpy(newName, Cmd_Argv(1), sizeof(newName));
+        else
+                strlcpy(newName, Cmd_Args(), sizeof(newName));
+        newName[15] = 0;        // client_t structure actually says name[32].
+
+        if (cmd_source == src_command)
+        {
+                if (Q_strcmp(cl_name.string, newName) == 0)
+                        return;
+                Cvar_Set ("_cl_name", newName);
+                if (cls.state == ca_connected)
+                        Cmd_ForwardToServer ();
+                return;
+        }
+
+        if (host_client->name[0] && strcmp(host_client->name, "unconnected") )
+        {
+                if (Q_strcmp(host_client->name, newName) != 0)
+                        Con_Printf ("%s renamed to %s\n", host_client->name, newName);
+        }
+        Q_strcpy (host_client->name, newName);
+        host_client->edict->v.netname = PR_SetEngineString(host_client->name);
+
+// send notification to all clients
+        MSG_WriteByte (&sv.reliable_datagram, svc_updatename);
+        MSG_WriteByte (&sv.reliable_datagram, host_client - svs.clients);
+        MSG_WriteString (&sv.reliable_datagram, host_client->name);
 }
 
 void Host_Version_f()
@@ -654,98 +707,126 @@ void Host_PreSpawn_f()
 		Con_Printf("prespawn not valid -- allready spawned\n");
 		return;
 	}
-	SZ_Write(&host_client->message, sv.signon.data, sv.signon.cursize);
-	MSG_WriteByte(&host_client->message, svc_signonnum);
-	MSG_WriteByte(&host_client->message, 2);
-	host_client->sendsignon = true;
+	//SZ_Write(&host_client->message, sv.signon.data, sv.signon.cursize);
+	//MSG_WriteByte(&host_client->message, svc_signonnum);
+	//MSG_WriteByte(&host_client->message, 2);
+	//host_client->sendsignon = true;
+	host_client->sendsignon = PRESPAWN_SIGNONBUFS;
+        host_client->signonidx = 0;
 }
 
-void Host_Spawn_f()
+static void Host_Spawn_f (void)
 {
-	int i;
-	client_t *client;
-	edict_t *ent;
-	if (cmd_source == src_command) {
-		Con_Printf("spawn is not valid from the console\n");
-		return;
-	}
-	if (host_client->spawned) {
-		Con_Printf("Spawn not valid -- allready spawned\n");
-		return;
-	}
-	// run the entrance script
-	if (sv.loadgame) { // loaded games are fully inited allready
-			   // if this is the last client to be connected, unpause
-		sv.paused = false;
-	} else {
-		// set up the edict
-		ent = host_client->edict;
-		memset(&ent->v, 0, progs->entityfields * 4);
-		ent->v.colormap = NUM_FOR_EDICT(ent);
-		ent->v.team = (host_client->colors & 15) + 1;
-		ent->v.netname = host_client->name - pr_strings;
-		// copy spawn parms out of the client_t
-		for (i = 0; i < NUM_SPAWN_PARMS; i++)
-			(&pr_global_struct->parm1)[i] =
-				host_client->spawn_parms[i];
-		// call the spawn function
-		pr_global_struct->time = sv.time;
-		pr_global_struct->self = EDICT_TO_PROG(sv_player);
-		PR_ExecuteProgram(pr_global_struct->ClientConnect);
-		if ((Sys_FloatTime() -
-					host_client->netconnection->connecttime) <= sv.time)
-			Sys_Printf("%s entered the game\n", host_client->name);
-		PR_ExecuteProgram(pr_global_struct->PutClientInServer);
-	}
-	// send all current names, colors, and frag counts
-	SZ_Clear(&host_client->message);
-	// send time of update
-	MSG_WriteByte(&host_client->message, svc_time);
-	MSG_WriteFloat(&host_client->message, sv.time);
-	for (i = 0, client = svs.clients; i < svs.maxclients; i++, client++) {
-		MSG_WriteByte(&host_client->message, svc_updatename);
-		MSG_WriteByte(&host_client->message, i);
-		MSG_WriteString(&host_client->message, client->name);
-		MSG_WriteByte(&host_client->message, svc_updatefrags);
-		MSG_WriteByte(&host_client->message, i);
-		MSG_WriteShort(&host_client->message, client->old_frags);
-		MSG_WriteByte(&host_client->message, svc_updatecolors);
-		MSG_WriteByte(&host_client->message, i);
-		MSG_WriteByte(&host_client->message, client->colors);
-	}
-	// send all current light styles
-	for (i = 0; i < MAX_LIGHTSTYLES; i++) {
-		MSG_WriteByte(&host_client->message, svc_lightstyle);
-		MSG_WriteByte(&host_client->message, (char)i);
-		MSG_WriteString(&host_client->message, sv.lightstyles[i]);
-	}
-	// send some stats
-	MSG_WriteByte(&host_client->message, svc_updatestat);
-	MSG_WriteByte(&host_client->message, STAT_TOTALSECRETS);
-	MSG_WriteLong(&host_client->message, pr_global_struct->total_secrets);
-	MSG_WriteByte(&host_client->message, svc_updatestat);
-	MSG_WriteByte(&host_client->message, STAT_TOTALMONSTERS);
-	MSG_WriteLong(&host_client->message, pr_global_struct->total_monsters);
-	MSG_WriteByte(&host_client->message, svc_updatestat);
-	MSG_WriteByte(&host_client->message, STAT_SECRETS);
-	MSG_WriteLong(&host_client->message, pr_global_struct->found_secrets);
-	MSG_WriteByte(&host_client->message, svc_updatestat);
-	MSG_WriteByte(&host_client->message, STAT_MONSTERS);
-	MSG_WriteLong(&host_client->message, pr_global_struct->killed_monsters);
-	// send a fixangle
-	// Never send a roll angle, because savegames can catch the server
-	// in a state where it is expecting the client to correct the angle
-	// and it won't happen if the game was just loaded, so you wind up
-	// with a permanent head tilt
-	ent = EDICT_NUM(1 + (host_client - svs.clients));
-	MSG_WriteByte(&host_client->message, svc_setangle);
-	for (i = 0; i < 2; i++)
-		MSG_WriteAngle(&host_client->message, ent->v.angles[i]);
-	MSG_WriteAngle(&host_client->message, 0);
-	SV_WriteClientdataToMessage(sv_player, &host_client->message);
-	MSG_WriteByte(&host_client->message, svc_signonnum);
-	MSG_WriteByte(&host_client->message, 3);
-	host_client->sendsignon = true;
+        int             i;
+        client_t        *client;
+        edict_t *ent;
+
+        if (cmd_source == src_command)
+        {
+                Con_Printf ("spawn is not valid from the console\n");
+                return;
+        }
+
+        if (host_client->spawned)
+        {
+                Con_Printf ("Spawn not valid -- already spawned\n");
+                return;
+        }
+
+// run the entrance script
+        if (sv.loadgame)
+        {       // loaded games are fully inited already
+                // if this is the last client to be connected, unpause
+                sv.paused = false;
+        }
+        else
+        {
+                // set up the edict
+                ent = host_client->edict;
+
+                memset (&ent->v, 0, progs->entityfields * 4);
+                ent->v.colormap = NUM_FOR_EDICT(ent);
+                ent->v.team = (host_client->colors & 15) + 1;
+                ent->v.netname = PR_SetEngineString(host_client->name);
+
+                // copy spawn parms out of the client_t
+                for (i=0 ; i< NUM_SPAWN_PARMS ; i++)
+                        (&pr_global_struct->parm1)[i] = host_client->spawn_parms[i];
+                // call the spawn function
+                pr_global_struct->time = sv.time;
+                pr_global_struct->self = EDICT_TO_PROG(sv_player);
+                PR_ExecuteProgram (pr_global_struct->ClientConnect);
+
+                if ((Sys_DoubleTime() - host_client->netconnection->connecttime) <= sv.time)
+                        Sys_Printf ("%s entered the game\n", host_client->name);
+
+                PR_ExecuteProgram (pr_global_struct->PutClientInServer);
+        }
+
+// send all current names, colors, and frag counts
+        SZ_Clear (&host_client->message);
+
+// send time of update
+        MSG_WriteByte (&host_client->message, svc_time);
+        MSG_WriteFloat (&host_client->message, sv.time);
+
+        for (i = 0, client = svs.clients; i < svs.maxclients; i++, client++)
+        {
+                MSG_WriteByte (&host_client->message, svc_updatename);
+                MSG_WriteByte (&host_client->message, i);
+                MSG_WriteString (&host_client->message, client->name);
+                MSG_WriteByte (&host_client->message, svc_updatefrags);
+                MSG_WriteByte (&host_client->message, i);
+                MSG_WriteShort (&host_client->message, client->old_frags);
+                MSG_WriteByte (&host_client->message, svc_updatecolors);
+                MSG_WriteByte (&host_client->message, i);
+                MSG_WriteByte (&host_client->message, client->colors);
+        }
+
+// send all current light styles
+        for (i = 0; i < MAX_LIGHTSTYLES; i++)
+        {
+                MSG_WriteByte (&host_client->message, svc_lightstyle);
+                MSG_WriteByte (&host_client->message, (char)i);
+                MSG_WriteString (&host_client->message, sv.lightstyles[i]);
+        }
+
+//
+// send some stats
+//
+        MSG_WriteByte (&host_client->message, svc_updatestat);
+        MSG_WriteByte (&host_client->message, STAT_TOTALSECRETS);
+        MSG_WriteLong (&host_client->message, pr_global_struct->total_secrets);
+
+        MSG_WriteByte (&host_client->message, svc_updatestat);
+        MSG_WriteByte (&host_client->message, STAT_TOTALMONSTERS);
+        MSG_WriteLong (&host_client->message, pr_global_struct->total_monsters);
+
+        MSG_WriteByte (&host_client->message, svc_updatestat);
+        MSG_WriteByte (&host_client->message, STAT_SECRETS);
+        MSG_WriteLong (&host_client->message, pr_global_struct->found_secrets);
+
+        MSG_WriteByte (&host_client->message, svc_updatestat);
+        MSG_WriteByte (&host_client->message, STAT_MONSTERS);
+        MSG_WriteLong (&host_client->message, pr_global_struct->killed_monsters);
+
+//
+// send a fixangle
+// Never send a roll angle, because savegames can catch the server
+// in a state where it is expecting the client to correct the angle
+// and it won't happen if the game was just loaded, so you wind up
+// with a permanent head tilt
+        ent = EDICT_NUM( 1 + (host_client - svs.clients) );
+        MSG_WriteByte (&host_client->message, svc_setangle);
+        for (i = 0; i < 2; i++)
+                MSG_WriteAngle (&host_client->message, ent->v.angles[i], sv.protocolflags );
+        MSG_WriteAngle (&host_client->message, 0, sv.protocolflags );
+
+        SV_WriteClientdataToMessage (sv_player, &host_client->message);
+
+        MSG_WriteByte (&host_client->message, svc_signonnum);
+        MSG_WriteByte (&host_client->message, 3);
+        host_client->sendsignon = PRESPAWN_FLUSH;
 }
 
 void Host_Begin_f()
@@ -769,7 +850,7 @@ void Host_Kick_f() // Kicks a user off of the server
 			Cmd_ForwardToServer();
 			return;
 		}
-	} else if (pr_global_struct->deathmatch && !host_client->privileged)
+	} else if (pr_global_struct->deathmatch/*FIXME && !host_client->privileged*/)
 		return;
 	save = host_client;
 	if (Cmd_Argc() > 2 && Q_strcmp(Cmd_Argv(1), "#") == 0) {
@@ -823,7 +904,7 @@ void Host_Give_f()
 		Cmd_ForwardToServer();
 		return;
 	}
-	if (pr_global_struct->deathmatch && !host_client->privileged)
+	if (pr_global_struct->deathmatch/*FIXME && !host_client->privileged*/)
 		return;
 	char *t = Cmd_Argv(1);
 	int v = atoi(Cmd_Argv(2));
@@ -1090,7 +1171,7 @@ void Host_InitCommands()
 	Cmd_AddCommand("viewframe", Host_Viewframe_f);
 	Cmd_AddCommand("viewnext", Host_Viewnext_f);
 	Cmd_AddCommand("viewprev", Host_Viewprev_f);
-	Cmd_AddCommand("mcache", Mod_Print);
+	//FIXMECmd_AddCommand("mcache", Mod_Print);
 #ifdef IDGODS
 	Cmd_AddCommand("please", Host_Please_f);
 #endif
