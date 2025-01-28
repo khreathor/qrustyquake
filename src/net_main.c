@@ -42,7 +42,6 @@ static void Slist_Poll(void *);
 static PollProcedure slistSendProcedure = { NULL, 0.0, Slist_Send, NULL };
 static PollProcedure slistPollProcedure = { NULL, 0.0, Slist_Poll, NULL };
 
-double Sys_DoubleTime() { return Sys_FloatTime(); }
 double SetNetTime()
 {
 	net_time = Sys_DoubleTime();

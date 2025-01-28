@@ -38,6 +38,7 @@
 #include <setjmp.h>
 
 #define VERSION 1.09
+#define FITZQUAKE_VERSION 0.85
 #define GAMENAME "id1"
 #define CMDLINE_LENGTH 256
 #define DEFAULT_MEMORY (128 * 1024 * 1024)
@@ -51,9 +52,10 @@
 #define MAX_QPATH 64 // max length of a quake game pathname
 #define MAX_OSPATH 128 // max length of a filesystem pathname
 #define ON_EPSILON 0.1 // point on plane side epsilon
-#define MAX_MSGLEN 8000 // max length of a reliable message
-#define MAX_DATAGRAM 1024 // max length of unreliable message
+#define MAX_MSGLEN 65536 // max length of a reliable message, from Mark V
+#define MAX_DATAGRAM 65527 // max length of unreliable message, from Mark V
 #define MAX_EDICTS 32000 // FIXME: ouch! ouch! ouch!
+#define MIN_EDICTS 256 // johnfitz -- lowest allowed value for max_edicts cvar
 #define MAX_LIGHTSTYLES 64
 #define MAX_MODELS 2048 // these are sent over the net as bytes
 #define MAX_SOUNDS 2048 // so they cannot be blindly increased
@@ -132,20 +134,13 @@
 #define MAX_SCOREBOARD 16
 #define MAX_SCOREBOARDNAME 32
 #define SOUND_CHANNELS 8
+#define DATAGRAM_MTU 1400 // johnfitz -- actual limit for unreliable messages to nonlocal clients
+#define DIST_EPSILON (0.03125) // 1/32 epsilon to keep floating point happy (moved from world.c)
 // This makes anyone on id's net privileged
 // Use for multiplayer testing only - VERY dangerous!!!
 // #define IDGODS
 
 #include "mathlib.h"
-typedef struct {
-	vec3_t origin;
-	vec3_t angles;
-	unsigned short modelindex; //johnfitz -- was int
-	unsigned short frame; //johnfitz -- was int
-	unsigned char colormap; //johnfitz -- was int
-	unsigned char skin; //johnfitz -- was int
-	int effects;
-} entity_state_t;
 
 // the host system specifies the base of the directory tree, the
 // command line parms passed to the program, and the amount of memory
@@ -159,6 +154,7 @@ typedef struct {
 	int memsize;
 } quakeparms_t;
 
+#include "q_stdinc.h"
 #include "common.h"
 #include "bspfile.h"
 #include "vid.h"
@@ -188,6 +184,7 @@ typedef struct {
 #include "crc.h"
 #include "vid.h"
 
+extern double host_time;
 extern SDL_Window *window; // global for checking windowed state in options
 extern Uint32 SDLWindowFlags;
 extern qboolean noclip_anglehack;
@@ -211,6 +208,7 @@ extern int current_skill; // skill level for currently loaded level (in case
 			  // the user changes the cvar while the level is
 			  // running, this reflects the level actually in use)
 extern byte r_foundtranswater, r_wateralphapass; // Manoel Kasimier - translucent water
+extern cvar_t max_edicts;
 
 void Host_ClearMemory();
 void Host_ServerFrame();
@@ -225,4 +223,5 @@ void Host_ClientCommands(char *fmt, ...);
 void Host_ShutdownServer(qboolean crash);
 void Chase_Init();
 void Chase_Update();
+void Cvar_SetCallback(cvar_t *var, cvarcallback_t func);
 #endif

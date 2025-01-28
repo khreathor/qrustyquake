@@ -43,6 +43,7 @@ cvar_t coop = { "coop", "0", false, false, 0, NULL };
 cvar_t pausable = { "pausable", "1", false, false, 0, NULL };
 cvar_t temp1 = { "temp1", "0", false, false, 0, NULL };
 cvar_t host_maxfps = {"host_maxfps", "72", true, false, 0, NULL}; //johnfitz
+cvar_t  max_edicts = {"max_edicts", "8192", false, false, 0, NULL}; //johnfitz //ericw -- changed from 2048 to 8192, removed CVAR_ ARCHIVE
 
 extern void IN_MLookDown();
 
@@ -142,6 +143,7 @@ void Host_InitLocal()
 	Cvar_RegisterVariable(&pausable);
 	Cvar_RegisterVariable(&temp1);
 	Cvar_RegisterVariable(&host_maxfps); // johnfitz
+	Cvar_RegisterVariable(&max_edicts); //johnfitz
 	Host_FindMaxClients();
 	host_time = 1.0; // so a think at time 0 won't get called
 }
@@ -164,7 +166,7 @@ void Host_WriteConfiguration()
 	}
 }
 
-void SV_ClientPrintf(char *fmt, ...) // Sends text across to be displayed 
+void SV_ClientPrintf(const char *fmt, ...) // Sends text across to be displayed 
 { // FIXME: make this just a stuffed echo?
 	va_list argptr;
 	char string[1024];
@@ -175,7 +177,7 @@ void SV_ClientPrintf(char *fmt, ...) // Sends text across to be displayed
 	MSG_WriteString(&host_client->message, string);
 }
 
-void SV_BroadcastPrintf(char *fmt, ...)
+void SV_BroadcastPrintf(const char *fmt, ...)
 { // Sends text to all active clients
 	va_list argptr;
 	char string[1024];

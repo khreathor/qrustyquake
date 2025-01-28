@@ -30,6 +30,7 @@ searchpath_t *com_searchpaths;
 cache_user_t *loadcache;
 unsigned char *loadbuf;
 int loadsize;
+extern int file_from_pak;
 
 cvar_t registered = { "registered", "0", false, false, 0, NULL };
 cvar_t cmdline = { "cmdline", "", false, true, 0, NULL };
@@ -90,6 +91,145 @@ quality sound edition.  Because they are added at the end, they will not
 override an explicit setting on the original command line.
 */
 
+typedef struct
+{
+        char *key;
+        char *value;
+} locentry_t;
+
+typedef struct
+{
+        int                     numentries;
+        int                     maxnumentries;
+        int                     numindices;
+        unsigned        *indices;
+        locentry_t      *entries;
+        char            *text;
+} localization_t;
+
+static localization_t localization;
+
+static inline int q_isdigit(int c)
+{
+        return (c >= '0' && c <= '9');
+}
+
+/*
+================
+LOC_ParseArg
+
+Returns argument index (>= 0) and advances the string if it starts with a placeholder ({} or {N}),
+otherwise returns a negative value and leaves the pointer unchanged
+================
+*/
+static int LOC_ParseArg (const char **pstr)
+{
+        int arg;
+        const char *str = *pstr;
+
+        // opening brace
+        if (*str != '{')
+                return -1;
+        ++str;
+
+        // optional index, defaulting to 0
+        arg = 0;
+        while (q_isdigit(*str))
+                arg = arg * 10 + *str++ - '0';
+
+        // closing brace
+        if (*str != '}')
+                return -1;
+        *pstr = ++str;
+
+        return arg;
+}
+
+/*
+================
+LOC_HasPlaceholders
+================
+*/
+qboolean LOC_HasPlaceholders (const char *str)
+{
+        if (!localization.numindices)
+                return false;
+        while (*str)
+        {
+                if (LOC_ParseArg(&str) >= 0)
+                        return true;
+                str++;
+        }
+        return false;
+}
+
+/*
+================
+COM_HashString
+Computes the FNV-1a hash of string str
+================
+*/
+unsigned COM_HashString (const char *str)
+{
+        unsigned hash = 0x811c9dc5u;
+        while (*str)
+        {
+                hash ^= *str++;
+                hash *= 0x01000193u;
+        }
+        return hash;
+}
+
+/*
+================
+LOC_GetRawString
+
+Returns localized string if available, or NULL otherwise
+================
+*/
+const char* LOC_GetRawString (const char *key)
+{
+        unsigned pos, end;
+
+        if (!localization.numindices || !key || !*key || *key != '$')
+                return NULL;
+        key++;
+
+        pos = COM_HashString(key) % localization.numindices;
+        end = pos;
+
+        do
+        {
+                unsigned idx = localization.indices[pos];
+                locentry_t *entry;
+                if (!idx)
+                        return NULL;
+
+                entry = &localization.entries[idx - 1];
+                if (!Q_strcmp(entry->key, key))
+                        return entry->value;
+
+                ++pos;
+                if (pos == localization.numindices)
+                        pos = 0;
+        } while (pos != end);
+
+        return NULL;
+}
+
+/*
+================
+LOC_GetString
+
+Returns localized string if available, or input string otherwise
+================
+*/
+const char* LOC_GetString (const char *key)
+{
+        const char* value = LOC_GetRawString(key);
+        return value ? value : key;
+}
+
 void ClearLink(link_t *l) // ClearLink is used for new headnodes
 {
 	l->prev = l->next = l;
@@ -116,6 +256,87 @@ void InsertLinkAfter(link_t *l, link_t *after)
 	l->prev->next = l;
 	l->next->prev = l;
 }
+
+size_t FS_fread(void *ptr, size_t size, size_t nmemb, fshandle_t *fh)
+{
+        long byte_size;
+        long bytes_read;
+        size_t nmemb_read;
+
+        if (!fh) {
+                errno = EBADF;
+                return 0;
+        }
+        if (!ptr) {
+                errno = EFAULT;
+                return 0;
+        }
+        if (!size || !nmemb) {  /* no error, just zero bytes wanted */
+                errno = 0;
+                return 0;
+        }
+
+        byte_size = nmemb * size;
+        if (byte_size > fh->length - fh->pos)   /* just read to end */
+                byte_size = fh->length - fh->pos;
+        bytes_read = fread(ptr, 1, byte_size, fh->file);
+        fh->pos += bytes_read;
+
+        /* fread() must return the number of elements read,
+         * not the total number of bytes. */
+        nmemb_read = bytes_read / size;
+        /* even if the last member is only read partially
+         * it is counted as a whole in the return value. */
+        if (bytes_read % size)
+                nmemb_read++;
+
+        return nmemb_read;
+}
+
+int FS_fseek(fshandle_t *fh, long offset, int whence)
+{
+/* I don't care about 64 bit off_t or fseeko() here.
+ * the quake/hexen2 file system is 32 bits, anyway. */
+        int ret;
+
+        if (!fh) {
+                errno = EBADF;
+                return -1;
+        }
+
+        /* the relative file position shouldn't be smaller
+         * than zero or bigger than the filesize. */
+        switch (whence)
+        {
+        case SEEK_SET:
+                break;
+        case SEEK_CUR:
+                offset += fh->pos;
+                break;
+        case SEEK_END:
+                offset = fh->length + offset;
+                break;
+        default:
+                errno = EINVAL;
+                return -1;
+        }
+
+        if (offset < 0) {
+                errno = EINVAL;
+                return -1;
+        }
+
+        if (offset > fh->length)        /* just seek to end */
+                offset = fh->length;
+
+        ret = fseek(fh->file, fh->start + offset, SEEK_SET);
+        if (ret < 0)
+                return ret;
+
+        fh->pos = offset;
+        return 0;
+}
+
 
 // Library Replacement Functions
 // CyanBun96: the standard functions should be faster and more reliable, and
@@ -252,7 +473,7 @@ void MSG_WriteFloat(sizebuf_t *sb, float f)
 	SZ_Write(sb, &dat.l, 4);
 }
 
-void MSG_WriteString(sizebuf_t *sb, char *s)
+void MSG_WriteString(sizebuf_t *sb, const char *s)
 {
 	if (!s)
 		SZ_Write(sb, "", 1);
@@ -265,14 +486,38 @@ void MSG_WriteCoord16(sizebuf_t *sb, float f)
 	MSG_WriteShort(sb, Q_rint(f * 8));
 }
 
-void MSG_WriteCoord(sizebuf_t *sb, float f)
+void MSG_WriteCoord24 (sizebuf_t *sb, float f)
 {
-	MSG_WriteCoord16(sb, f);
+        MSG_WriteShort (sb, f);
+        MSG_WriteByte (sb, (int)(f*255)%255);
 }
 
-void MSG_WriteAngle(sizebuf_t *sb, float f)
-{ //johnfitz -- use Q_rint instead of (int)
-	MSG_WriteByte(sb, Q_rint(f * 256.0 / 360.0) & 255);
+void MSG_WriteCoord (sizebuf_t *sb, float f, unsigned int flags)
+{
+        if (flags & PRFL_FLOATCOORD)
+                MSG_WriteFloat (sb, f);
+        else if (flags & PRFL_INT32COORD)
+                MSG_WriteLong (sb, Q_rint (f * 16));
+        else if (flags & PRFL_24BITCOORD)
+                MSG_WriteCoord24 (sb, f);
+        else MSG_WriteCoord16 (sb, f);
+}
+
+void MSG_WriteAngle (sizebuf_t *sb, float f, unsigned int flags)
+{
+        if (flags & PRFL_FLOATANGLE)
+                MSG_WriteFloat (sb, f);
+        else if (flags & PRFL_SHORTANGLE)
+                MSG_WriteShort (sb, Q_rint(f * 65536.0 / 360.0) & 65535);
+        else MSG_WriteByte (sb, Q_rint(f * 256.0 / 360.0) & 255); //johnfitz -- use Q_rint instead of (int)     }
+}
+
+//johnfitz -- for PROTOCOL_FITZQUAKE
+void MSG_WriteAngle16 (sizebuf_t *sb, float f, unsigned int flags)
+{
+        if (flags & PRFL_FLOATANGLE)
+                MSG_WriteFloat (sb, f);
+        else MSG_WriteShort (sb, Q_rint(f * 65536.0 / 360.0) & 65535);
 }
 
 void MSG_BeginReading() // Reading Functions ------------------
@@ -361,17 +606,37 @@ float MSG_ReadCoord16()
 	return MSG_ReadShort() * (1.0 / 8);
 }
 
-float MSG_ReadCoord()
+float MSG_ReadCoord24()
 {
-	return MSG_ReadCoord16();
+        return MSG_ReadShort() + MSG_ReadByte() * (1.0/255);
 }
 
-float MSG_ReadAngle()
+float MSG_ReadCoord(unsigned int flags)
 {
-	return MSG_ReadChar() * (360.0 / 256);
+	if (flags & PRFL_FLOATCOORD)
+		return MSG_ReadFloat ();
+	else if (flags & PRFL_INT32COORD)
+		return MSG_ReadLong () * (1.0 / 16.0);
+	else if (flags & PRFL_24BITCOORD)
+		return MSG_ReadCoord24 ();
+	else return MSG_ReadCoord16 ();
 }
 
-// =============================================================================
+float MSG_ReadAngle(unsigned int flags)
+{
+	if (flags & PRFL_FLOATANGLE)
+		return MSG_ReadFloat ();
+	else if (flags & PRFL_SHORTANGLE)
+		return MSG_ReadShort () * (360.0 / 65536);
+	else return MSG_ReadChar () * (360.0 / 256);
+}
+
+float MSG_ReadAngle16 (unsigned int flags)
+{
+        if (flags & PRFL_FLOATANGLE)
+                return MSG_ReadFloat ();        // make sure
+        else return MSG_ReadShort () * (360.0 / 65536);
+}
 
 void SZ_Alloc(sizebuf_t *buf, int startsize)
 {
@@ -419,6 +684,60 @@ void SZ_Print(sizebuf_t *buf, char *data)
 		Q_memcpy(SZ_GetSpace(buf, len - 1) - 1, data, len);
 }
 
+const char *COM_SkipPath (const char *pathname)
+{
+        const char      *last;
+
+        last = pathname;
+        while (*pathname)
+        {
+                if (*pathname == '/')
+                        last = pathname + 1;
+                pathname++;
+        }
+        return last;
+}
+
+void COM_StripExtension (const char *in, char *out, size_t outsize)
+{
+        int     length;
+
+        if (!*in)
+        {
+                *out = '\0';
+                return;
+        }
+        if (in != out)  /* copy when not in-place editing */
+                strlcpy (out, in, outsize);
+        length = (int)strlen(out) - 1;
+        while (length > 0 && out[length] != '.')
+        {
+                --length;
+                if (out[length] == '/' || out[length] == '\\')
+                        return; /* no extension */
+        }
+        if (length > 0)
+                out[length] = '\0';
+}
+
+const char *COM_FileGetExtension (const char *in)
+{ // COM_FileGetExtension - doesn't return NULL
+        const char      *src;
+        size_t          len;
+
+        len = strlen(in);
+        if (len < 2)    /* nothing meaningful */
+                return "";
+
+        src = in + len - 1;
+        while (src != in && src[-1] != '.')
+                src--;
+        if (src == in || strchr(src, '/') != NULL || strchr(src, '\\') != NULL)
+                return "";      /* no extension, or parent directory has a dot */
+
+        return src;
+}
+
 char *COM_FileExtension(char *in)
 {
 	static char exten[8];
@@ -460,6 +779,105 @@ void COM_DefaultExtension(char *path, char *extension)
 		src--;
 	}
 	strcat(path, extension);
+}
+
+/*
+==============
+COM_ParseEx
+
+Parse a token out of a string
+
+The mode argument controls how overflow is handled:
+- CPE_NOTRUNC:          return NULL (abort parsing)
+- CPE_ALLOWTRUNC:       truncate com_token (ignore the extra characters in this token)
+==============
+*/
+const char *COM_ParseEx (const char *data, cpe_mode mode)
+{
+        int             c;
+        int             len;
+
+        len = 0;
+        com_token[0] = 0;
+
+        if (!data)
+                return NULL;
+
+// skip whitespace
+skipwhite:
+        while ((c = *data) <= ' ')
+        {
+                if (c == 0)
+                        return NULL;    // end of file
+                data++;
+        }
+
+// skip // comments
+        if (c == '/' && data[1] == '/')
+        {
+                while (*data && *data != '\n')
+                        data++;
+                goto skipwhite;
+        }
+
+// skip /*..*/ comments
+        if (c == '/' && data[1] == '*')
+        {
+                data += 2;
+                while (*data && !(*data == '*' && data[1] == '/'))
+                        data++;
+                if (*data)
+                        data += 2;
+                goto skipwhite;
+        }
+
+// handle quoted strings specially
+        if (c == '\"')
+        {
+                data++;
+                while (1)
+                {
+                        if ((c = *data) != 0)
+                                ++data;
+                        if (c == '\"' || !c)
+                        {
+                                com_token[len] = 0;
+                                return data;
+                        }
+                        if (len < Q_COUNTOF(com_token) - 1)
+                                com_token[len++] = c;
+                        else if (mode == CPE_NOTRUNC)
+                                return NULL;
+                }
+        }
+
+// parse single characters
+        if (c == '{' || c == '}'|| c == '('|| c == ')' || c == '\'' || c == ':')
+        {
+                if (len < Q_COUNTOF(com_token) - 1)
+                        com_token[len++] = c;
+                else if (mode == CPE_NOTRUNC)
+                        return NULL;
+                com_token[len] = 0;
+                return data+1;
+        }
+
+// parse a regular word
+        do
+        {
+                if (len < Q_COUNTOF(com_token) - 1)
+                        com_token[len++] = c;
+                else if (mode == CPE_NOTRUNC)
+                        return NULL;
+                data++;
+                c = *data;
+                /* commented out the check for ':' so that ip:port works */
+                if (c == '{' || c == '}'|| c == '('|| c == ')' || c == '\''/* || c == ':' */)
+                        break;
+        } while (c > 32);
+
+        com_token[len] = 0;
+        return data;
 }
 
 char *COM_Parse(char *data)
@@ -808,9 +1226,256 @@ unsigned char *COM_LoadFile(char *path, int usehunk)
 	return buf;
 }
 
+long COM_filelength (FILE *f)
+{
+        long            pos, end;
+
+        pos = ftell (f);
+        fseek (f, 0, SEEK_END);
+        end = ftell (f);
+        fseek (f, pos, SEEK_SET);
+
+        return end;
+}
+
+/*
+===========
+COM_FindFile
+
+Finds the file in the search path.
+Sets com_filesize and one of handle or file
+If neither of file or handle is set, this
+can be used for detecting a file's presence.
+===========
+*/
+static int COM_FindFile2 (const char *filename, int *handle, FILE **file,
+                                                        unsigned int *path_id)
+{
+        searchpath_t    *search;
+        char            netpath[MAX_OSPATH];
+        pack_t          *pak;
+        int             i;
+
+        if (file && handle)
+                Sys_Error ("COM_FindFile: both handle and file set");
+
+        file_from_pak = 0;
+
+//
+// search through the path, one element at a time
+//
+        for (search = com_searchpaths; search; search = search->next)
+        {
+                if (search->pack)       /* look through all the pak file elements */
+                {
+                        pak = search->pack;
+                        for (i = 0; i < pak->numfiles; i++)
+                        {
+                                if (strcmp(pak->files[i].name, filename) != 0)
+                                        continue;
+                                // found it!
+                                com_filesize = pak->files[i].filelen;
+                                file_from_pak = 1;
+                                if (path_id)
+                                        *path_id = search->path_id;
+                                if (handle)
+                                {
+                                        *handle = pak->handle;
+                                        Sys_FileSeek (pak->handle, pak->files[i].filepos);
+                                        return com_filesize;
+                                }
+                                else if (file)
+                                { /* open a new file on the pakfile */
+                                        *file = fopen (pak->filename, "rb");
+                                        if (*file)
+                                                fseek (*file, pak->files[i].filepos, SEEK_SET);
+                                        return com_filesize;
+                                }
+                                else /* for COM_FileExists() */
+                                {
+                                        return com_filesize;
+                                }
+                        }
+                }
+                else    /* check a file in the directory tree */
+                {
+                        if (!registered.value)
+                        { /* if not a registered version, don't ever go beyond base */
+                                if ( strchr (filename, '/') || strchr (filename,'\\'))
+                                        continue;
+                        }
+
+                        snprintf (netpath, sizeof(netpath), "%s/%s",search->filename, filename);
+                        //if (! (Sys_FileType(netpath) & FS_ENT_FILE))
+                        //FIXME        continue;
+
+                        if (path_id)
+                                *path_id = search->path_id;
+                        if (handle)
+                        {
+                                com_filesize = Sys_FileOpenRead (netpath, &i);
+                                *handle = i;
+                                return com_filesize;
+                        }
+                        else if (file)
+                        {
+                                *file = fopen (netpath, "rb");
+                                com_filesize = (*file == NULL) ? -1 : COM_filelength (*file);
+                                return com_filesize;
+                        }
+                        else
+                        {
+                                return 0; /* dummy valid value for COM_FileExists() */
+                        }
+                }
+        }
+
+        if (strcmp(COM_FileGetExtension(filename), "pcx") != 0
+                && strcmp(COM_FileGetExtension(filename), "tga") != 0
+                && strcmp(COM_FileGetExtension(filename), "lit") != 0
+                && strcmp(COM_FileGetExtension(filename), "vis") != 0
+                && strcmp(COM_FileGetExtension(filename), "ent") != 0)
+                printf ("FindFile: can't find %s\n", filename);
+        else    printf("FindFile: can't find %s\n", filename);
+
+        if (handle)
+                *handle = -1;
+        if (file)
+                *file = NULL;
+        com_filesize = -1;
+        return com_filesize;
+}
+
+void COM_FileBase2 (const char *in, char *out, size_t outsize)
+{
+        const char      *dot, *slash, *s;
+
+        s = in;
+        slash = in;
+        dot = NULL;
+        while (*s)
+        {
+                if (*s == '/' || *s == '\\')
+                        slash = s + 1;
+                if (*s == '.')
+                        dot = s;
+                s++;
+        }
+        if (dot == NULL)
+                dot = s;
+
+        if (dot - slash < 2)
+                strlcpy (out, "?model?", outsize);
+        else
+        {
+                size_t  len = dot - slash;
+                if (len >= outsize)
+                        len = outsize - 1;
+                memcpy (out, slash, len);
+                out[len] = '\0';
+        }
+}
+
+byte *COM_LoadStackFile2 (const char *path, void *buffer, int bufsize, unsigned int *path_id)
+{
+        byte    *buf;
+
+        loadbuf = (byte *)buffer;
+        loadsize = bufsize;
+        buf = COM_LoadFile2 (path, LOADFILE_STACK, path_id);
+
+        return buf;
+}
+
+int FS_fclose(fshandle_t *fh)
+{
+        if (!fh) {
+                errno = EBADF;
+                return -1;
+        }
+        return fclose(fh->file);
+}
+
+byte *COM_LoadMallocFile (const char *path, unsigned int *path_id)
+{
+        return COM_LoadFile2 (path, LOADFILE_MALLOC, path_id);
+}
+
+int COM_FOpenFile2 (const char *filename, FILE **file, unsigned int *path_id)
+{
+        return COM_FindFile2 (filename, NULL, file, path_id);
+}
+
+int COM_OpenFile2 (const char *filename, int *handle, unsigned int *path_id)
+{
+        return COM_FindFile2 (filename, handle, NULL, path_id);
+}
+
+byte *COM_LoadFile2 (const char *path, int usehunk, unsigned int *path_id)
+{
+        int             h;
+        byte    *buf;
+        char    base[32];
+        int     len, nread;
+
+        buf = NULL;     // quiet compiler warning
+
+// look for it in the filesystem or pack files
+        len = COM_OpenFile2 (path, &h, path_id);
+        if (h == -1)
+                return NULL;
+
+// extract the filename base name for hunk tag
+        COM_FileBase2 (path, base, sizeof(base));
+
+        switch (usehunk)
+        {
+        case LOADFILE_HUNK:
+                buf = (byte *) Hunk_AllocName (len+1, base);
+                break;
+        case LOADFILE_TEMPHUNK:
+                buf = (byte *) Hunk_TempAlloc (len+1);
+                break;
+        case LOADFILE_ZONE:
+                buf = (byte *) Z_Malloc (len+1);
+                break;
+        case LOADFILE_CACHE:
+                buf = (byte *) Cache_Alloc (loadcache, len+1, base);
+                break;
+        case LOADFILE_STACK:
+                if (len < loadsize)
+                        buf = loadbuf;
+                else
+                        buf = (byte *) Hunk_TempAlloc (len+1);
+                break;
+        case LOADFILE_MALLOC:
+                buf = (byte *) malloc (len+1);
+                break;
+        default:
+                Sys_Error ("COM_LoadFile: bad usehunk");
+        }
+
+        if (!buf)
+                Sys_Error ("COM_LoadFile: not enough space for %s", path);
+
+        ((byte *)buf)[len] = 0;
+
+        nread = Sys_FileRead (h, buf, len);
+        COM_CloseFile (h);
+        if (nread != len)
+                Sys_Error ("COM_LoadFile: Error reading %s", path);
+
+        return buf;
+}
+
 unsigned char *COM_LoadHunkFile(char *path)
 {
 	return COM_LoadFile(path, 1);
+}
+
+byte *COM_LoadHunkFile2 (const char *path, unsigned int *path_id)
+{
+        return COM_LoadFile2 (path, LOADFILE_HUNK, path_id);
 }
 
 void COM_LoadCacheFile(char *path, struct cache_user_s *cu)
@@ -965,4 +1630,67 @@ void COM_InitFilesystem() //johnfitz -- modified based on topaz's tutorial
 	}
 	if (COM_CheckParm("-proghack"))
 		proghack = true;
+}
+
+void COM_AddExtension (char *path, const char *extension, size_t len)
+{
+        if (strcmp(COM_FileGetExtension(path), extension + 1) != 0)
+                strlcat(path, extension, len);
+}
+
+/*
+================
+LOC_Format
+
+Replaces placeholders (of the form {} or {N}) with the corresponding arguments
+
+Returns number of written chars, excluding the NUL terminator
+If len > 0, output is always NUL-terminated
+================
+*/
+size_t LOC_Format (const char *format, const char* (*getarg_fn) (int idx, void* userdata), void* userdata, char* out, size_t len)
+{
+        size_t written = 0;
+        int numargs = 0;
+
+        if (!len)
+        {
+                Con_DPrintf("LOC_Format: no output space\n");
+                return 0;
+        }
+        --len; // reserve space for the terminator
+
+        while (*format && written < len)
+        {
+                const char* insert;
+                size_t space_left;
+                size_t insert_len;
+                int argindex = LOC_ParseArg(&format);
+
+                if (argindex < 0)
+                {
+                        out[written++] = *format++;
+                        continue;
+                }
+
+                insert = getarg_fn(argindex, userdata);
+                space_left = len - written;
+                insert_len = Q_strlen(insert);
+
+                if (insert_len > space_left)
+                {
+                        Con_DPrintf("LOC_Format: overflow at argument #%d\n", numargs);
+                        insert_len = space_left;
+                }
+
+                Q_memcpy(out + written, insert, insert_len);
+                written += insert_len;
+        }
+
+        if (*format)
+                Con_DPrintf("LOC_Format: overflow\n");
+
+        out[written] = 0;
+
+        return written;
 }

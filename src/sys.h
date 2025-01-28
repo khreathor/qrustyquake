@@ -18,3 +18,4 @@ void Sys_Error (char *error, ...);
 void Sys_Printf (char *fmt, ...);
 void Sys_Quit ();
 double Sys_FloatTime ();
+double Sys_DoubleTime ();

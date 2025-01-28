@@ -172,45 +172,69 @@ qboolean V_CheckGamma()
 	return true;
 }
 
-void V_ParseDamage()
+void V_ParseDamage (void)
 {
-	int armor = MSG_ReadByte();
-	int blood = MSG_ReadByte();
-	vec3_t from;
-	for (int i = 0; i < 3; i++)
-		from[i] = MSG_ReadCoord();
-	float count = blood * 0.5 + armor * 0.5;
-	if (count < 10)
-		count = 10;
-	cl.faceanimtime = cl.time + 0.2; // but sbar face into pain frame
-	cl.cshifts[CSHIFT_DAMAGE].percent += 3 * count;
-	if (cl.cshifts[CSHIFT_DAMAGE].percent < 0)
-		cl.cshifts[CSHIFT_DAMAGE].percent = 0;
-	if (cl.cshifts[CSHIFT_DAMAGE].percent > 150)
-		cl.cshifts[CSHIFT_DAMAGE].percent = 150;
-	if (armor > blood) {
-		cl.cshifts[CSHIFT_DAMAGE].destcolor[0] = 200;
-		cl.cshifts[CSHIFT_DAMAGE].destcolor[1] = 100;
-		cl.cshifts[CSHIFT_DAMAGE].destcolor[2] = 100;
-	} else if (armor) {
-		cl.cshifts[CSHIFT_DAMAGE].destcolor[0] = 220;
-		cl.cshifts[CSHIFT_DAMAGE].destcolor[1] = 50;
-		cl.cshifts[CSHIFT_DAMAGE].destcolor[2] = 50;
-	} else {
-		cl.cshifts[CSHIFT_DAMAGE].destcolor[0] = 255;
-		cl.cshifts[CSHIFT_DAMAGE].destcolor[1] = 0;
-		cl.cshifts[CSHIFT_DAMAGE].destcolor[2] = 0;
-	}
-	entity_t *ent = &cl_entities[cl.viewentity];//calculate view angle kicks
-	VectorSubtract(from, ent->origin, from);
-	VectorNormalize(from);
-	vec3_t forward, right, up;
-	AngleVectors(ent->angles, forward, right, up);
-	float side = DotProduct(from, right);
-	v_dmg_roll = count * side * v_kickroll.value;
-	side = DotProduct(from, forward);
-	v_dmg_pitch = count * side * v_kickpitch.value;
-	v_dmg_time = v_kicktime.value;
+        int             armor, blood;
+        vec3_t  from;
+        int             i;
+        vec3_t  forward, right, up;
+        entity_t        *ent;
+        float   side;
+        float   count;
+
+        armor = MSG_ReadByte ();
+        blood = MSG_ReadByte ();
+        for (i=0 ; i<3 ; i++)
+                from[i] = MSG_ReadCoord (cl.protocolflags);
+
+        count = blood*0.5 + armor*0.5;
+        if (count < 10)
+                count = 10;
+
+        cl.faceanimtime = cl.time + 0.2;                // but sbar face into pain frame
+
+        cl.cshifts[CSHIFT_DAMAGE].percent += 3*count;
+        if (cl.cshifts[CSHIFT_DAMAGE].percent < 0)
+                cl.cshifts[CSHIFT_DAMAGE].percent = 0;
+        if (cl.cshifts[CSHIFT_DAMAGE].percent > 150)
+                cl.cshifts[CSHIFT_DAMAGE].percent = 150;
+
+        if (armor > blood)
+        {
+                cl.cshifts[CSHIFT_DAMAGE].destcolor[0] = 200;
+                cl.cshifts[CSHIFT_DAMAGE].destcolor[1] = 100;
+                cl.cshifts[CSHIFT_DAMAGE].destcolor[2] = 100;
+        }
+        else if (armor)
+        {
+                cl.cshifts[CSHIFT_DAMAGE].destcolor[0] = 220;
+                cl.cshifts[CSHIFT_DAMAGE].destcolor[1] = 50;
+                cl.cshifts[CSHIFT_DAMAGE].destcolor[2] = 50;
+        }
+        else
+        {
+                cl.cshifts[CSHIFT_DAMAGE].destcolor[0] = 255;
+                cl.cshifts[CSHIFT_DAMAGE].destcolor[1] = 0;
+                cl.cshifts[CSHIFT_DAMAGE].destcolor[2] = 0;
+        }
+
+//
+// calculate view angle kicks
+//
+        ent = &cl_entities[cl.viewentity];
+
+        VectorSubtract (from, ent->origin, from);
+        VectorNormalize (from);
+
+        AngleVectors (ent->angles, forward, right, up);
+
+        side = DotProduct (from, right);
+        v_dmg_roll = count*side*v_kickroll.value;
+
+        side = DotProduct (from, forward);
+        v_dmg_pitch = count*side*v_kickpitch.value;
+
+        v_dmg_time = v_kicktime.value;
 }
 
 void V_cshift_f()

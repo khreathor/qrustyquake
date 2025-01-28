@@ -105,7 +105,7 @@ int Sys_FileWrite(int handle, void *src, int count)
 }
 
 double Sys_FloatTime()
-{
+{ // CyanBun96: TODO move this to DoubleTime and remove FloatTime
 	struct timeval tp;
 	struct timezone tzp;
 	static int secbase;
@@ -116,6 +116,8 @@ double Sys_FloatTime()
 	}
 	return (tp.tv_sec - secbase) + tp.tv_usec / 1000000.0;
 }
+
+double Sys_DoubleTime() { return Sys_FloatTime(); }
 
 void Sys_mkdir(char *path)
 {
