@@ -3391,22 +3391,19 @@ void Mod_SetExtraFlags (model_t *mod)
 }
 
 void *Mod_LoadAliasSkin(void *pin, int *pskinindex, int skinsize,
-                aliashdr_t *pheader)
+		aliashdr_t *pheader)
 {
-        byte *pskin = Hunk_AllocName(skinsize * r_pixbytes, loadname);
-        byte *pinskin = (byte *) pin;
-        *pskinindex = (byte *) pskin - (byte *) pheader;
-        if (r_pixbytes == 1)
-                Q_memcpy(pskin, pinskin, skinsize);
-        else if (r_pixbytes == 2) {
-                unsigned short *pusskin = (unsigned short *)pskin;
-                for (int i = 0; i < skinsize; i++)
-                        pusskin[i] = d_8to16table[pinskin[i]];
-        } else
-                Sys_Error ("Mod_LoadAliasSkin: driver set invalid r_pixbytes: %d\n",
-                         r_pixbytes);
-        pinskin += skinsize;
-        return ((void *)pinskin);
+	byte *pskin = Hunk_AllocName(skinsize * r_pixbytes, loadname);
+	byte *pinskin = (byte *) pin;
+	*pskinindex = (byte *) pskin - (byte *) pheader;
+	if (r_pixbytes == 1)
+		Q_memcpy(pskin, pinskin, skinsize);
+	else
+		Sys_Error ("Mod_LoadAliasSkin: driver set invalid r_pixbytes: %d\n",
+			 r_pixbytes);
+	pinskin += skinsize;
+	return ((void *)pinskin);
+
 }
 
 void *Mod_LoadAliasSkinGroup(void *pin, int *pskinindex, int skinsize,
@@ -3582,34 +3579,29 @@ void Mod_LoadAliasModel(model_t *mod, void *buffer)
 
 void *Mod_LoadSpriteFrame(void *pin, mspriteframe_t **ppframe)
 {
-        int i, width, height, size, origin[2];
-        dspriteframe_t *pinframe = (dspriteframe_t *) pin;
-        width = LittleLong(pinframe->width);
-        height = LittleLong(pinframe->height);
-        size = width * height;
-        mspriteframe_t *pspriteframe = Hunk_AllocName(sizeof(mspriteframe_t) +
-                        size * r_pixbytes, loadname);
-        Q_memset(pspriteframe, 0, sizeof(mspriteframe_t) + size);
-        *ppframe = pspriteframe;
-        pspriteframe->width = width;
-        pspriteframe->height = height;
-        origin[0] = LittleLong(pinframe->origin[0]);
-        origin[1] = LittleLong(pinframe->origin[1]);
-        pspriteframe->up = origin[1];
-        pspriteframe->down = origin[1] - height;
-        pspriteframe->left = origin[0];
-        pspriteframe->right = width + origin[0];
-        if (r_pixbytes == 1)
-                Q_memcpy(&pspriteframe->pixels[0], (byte *) (pinframe+1), size);
-        else if (r_pixbytes == 2) {
-                byte *ppixin = (byte *) (pinframe + 1);
-                unsigned short *ppixout = (unsigned short *)&pspriteframe->pixels[0];
-                for (i = 0; i < size; i++)
-                        ppixout[i] = d_8to16table[ppixin[i]];
-        } else {
-                Sys_Error ("Mod_LoadSpriteFrame: driver set invalid r_pixbytes: %d\n", r_pixbytes);
-        }
-        return (void *)((byte *) pinframe + sizeof(dspriteframe_t) + size);
+	int width, height, size, origin[2];
+	dspriteframe_t *pinframe = (dspriteframe_t *) pin;
+	width = LittleLong(pinframe->width);
+	height = LittleLong(pinframe->height);
+	size = width * height;
+	mspriteframe_t *pspriteframe = Hunk_AllocName(sizeof(mspriteframe_t) +
+			size * r_pixbytes, loadname);
+	Q_memset(pspriteframe, 0, sizeof(mspriteframe_t) + size);
+	*ppframe = pspriteframe;
+	pspriteframe->width = width;
+	pspriteframe->height = height;
+	origin[0] = LittleLong(pinframe->origin[0]);
+	origin[1] = LittleLong(pinframe->origin[1]);
+	pspriteframe->up = origin[1];
+	pspriteframe->down = origin[1] - height;
+	pspriteframe->left = origin[0];
+	pspriteframe->right = width + origin[0];
+	if (r_pixbytes == 1)
+		Q_memcpy(&pspriteframe->pixels[0], (byte *) (pinframe+1), size);
+	else {
+		Sys_Error ("Mod_LoadSpriteFrame: driver set invalid r_pixbytes: %d\n", r_pixbytes);
+	}
+	return (void *)((byte *) pinframe + sizeof(dspriteframe_t) + size);
 }
 
 void *Mod_LoadSpriteGroup(void *pin, mspriteframe_t **ppframe)

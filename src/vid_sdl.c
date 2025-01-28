@@ -42,7 +42,6 @@ int vid_testingmode;
 int vid_realmode;
 int vid_default;
 double vid_testendtime;
-unsigned short d_8to16table[256];
 unsigned char vid_curpal[256 * 3];	// save for mode changes
 qboolean vid_initialized;
 qboolean palette_changed;

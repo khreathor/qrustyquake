@@ -74,7 +74,6 @@ extern int vid_testingmode;
 extern int vid_realmode;
 extern int vid_default;
 extern double vid_testendtime;
-extern unsigned short d_8to16table[256];
 extern unsigned char vid_curpal[256 * 3]; // save for mode changes
 extern qboolean vid_initialized;
 extern qboolean palette_changed;
@@ -85,8 +84,6 @@ extern cvar_t scr_uiscale;
 extern cvar_t scr_stretchpixels;
 extern cvar_t newoptions;
 extern cvar_t sensitivityyscale;
-extern unsigned char vid_curpal[256*3];
-extern unsigned short d_8to16table[256];
 
 void VID_SetMode (int modenum, int customw, int customh,
 		int customwinmode, unsigned char *palette);
