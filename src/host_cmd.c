@@ -313,8 +313,8 @@ void Host_Savegame_f()
 		if (svs.clients[i].active&&(svs.clients[i].edict->v.health<=0)){
 			Con_Printf("Can't savegame with a dead player\n");
 			return;
-		}
-	sprintf(name, "%s/%s", com_gamedir, Cmd_Argv(1));
+		} 
+	snprintf (name, sizeof(name), "%s/%s", com_gamedir, Cmd_Argv(1));
 	COM_AddExtension(name, ".sav", sizeof(name));
 	Con_Printf("Saving game to %s...\n", name);
 	FILE *f = fopen(name, "w");
@@ -358,7 +358,7 @@ void Host_Loadgame_f()
 		return;
 	}
 	cls.demonum = -1; // stop demo loop in case this fails
-	sprintf(name, "%s/%s", com_gamedir, Cmd_Argv(1));
+	snprintf (name, sizeof(name), "%s/%s", com_gamedir, Cmd_Argv(1));
 	COM_AddExtension(name, ".sav", sizeof(name));
 	// we can't call SCR_BeginLoadingPlaque, because too much stack space has
 	// been used. The menu calls it before stuffing loadgame command

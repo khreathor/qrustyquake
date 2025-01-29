@@ -563,3 +563,11 @@ void Memory_Init(void *buf, int size)
 
 	Cmd_AddCommand("hunk_print", Hunk_Print_f); //johnfitz
 }
+
+char *Z_Strdup (const char *s)
+{
+        size_t sz = strlen(s) + 1;
+        char *ptr = (char *) Z_Malloc (sz);
+        memcpy (ptr, s, sz);
+        return ptr;
+}

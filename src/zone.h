@@ -75,3 +75,4 @@ void Cache_Free(cache_user_t *c);
 void *Cache_Alloc(cache_user_t *c, int size, char *name); // Returns NULL if
 	// all purgable data was tossed and there still wasn't enough room.
 void Cache_Report();
+char *Z_Strdup(const char *s);

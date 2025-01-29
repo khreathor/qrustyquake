@@ -2210,7 +2210,9 @@ _add_path:
 	if (!been_here && host_parms.userdir != host_parms.basedir)
 	{
 		been_here = true;
-		q_strlcpy(com_gamedir, va("%s/%s", host_parms.userdir, dir), sizeof(com_gamedir));
+		// CyanBun96: this would prepend "(null)" for some reason, breaking stuff
+		// should be: ./id1        with this: (null)/id1
+		//q_strlcpy(com_gamedir, va("%s/%s", host_parms.userdir, dir), sizeof(com_gamedir));
 		Sys_mkdir(com_gamedir);
 		goto _add_path;
 	}
