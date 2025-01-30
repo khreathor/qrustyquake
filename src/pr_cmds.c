@@ -89,7 +89,7 @@ static char *PF_VarString (int	first)
 	}
 	if (s > 255)
 	{
-		/*if (!dev_overflows.varstring || dev_overflows.varstring + CONSOLE_RESPAM_TIME < realtime)
+		/*TODOif (!dev_overflows.varstring || dev_overflows.varstring + CONSOLE_RESPAM_TIME < realtime)
 		{
 			printf("PF_VarString: %i characters exceeds standard limit of 255 (max = %d).\n",
 								(int) s, (int)(sizeof(out) - 1));

@@ -320,33 +320,33 @@ static const char *PR_ValueString (int type, eval_t *val)
 	switch (type)
 	{
 	case ev_string:
-		snprintf (line, sizeof(line), "%s", PR_GetString(val->string));
+		q_snprintf (line, sizeof(line), "%s", PR_GetString(val->string));
 		break;
 	case ev_entity:
-		snprintf (line, sizeof(line), "entity %i", NUM_FOR_EDICT(PROG_TO_EDICT(val->edict)) );
+		q_snprintf (line, sizeof(line), "entity %i", NUM_FOR_EDICT(PROG_TO_EDICT(val->edict)) );
 		break;
 	case ev_function:
 		f = pr_functions + val->function;
-		snprintf (line, sizeof(line), "%s()", PR_GetString(f->s_name));
+		q_snprintf (line, sizeof(line), "%s()", PR_GetString(f->s_name));
 		break;
 	case ev_field:
 		def = ED_FieldAtOfs ( val->_int );
-		snprintf (line, sizeof(line), ".%s", PR_GetString(def->s_name));
+		q_snprintf (line, sizeof(line), ".%s", PR_GetString(def->s_name));
 		break;
 	case ev_void:
-		snprintf (line, sizeof(line), "void");
+		q_snprintf (line, sizeof(line), "void");
 		break;
 	case ev_float:
-		snprintf (line, sizeof(line), "%5.1f", val->_float);
+		q_snprintf (line, sizeof(line), "%5.1f", val->_float);
 		break;
 	case ev_vector:
-		snprintf (line, sizeof(line), "'%5.1f %5.1f %5.1f'", val->vector[0], val->vector[1], val->vector[2]);
+		q_snprintf (line, sizeof(line), "'%5.1f %5.1f %5.1f'", val->vector[0], val->vector[1], val->vector[2]);
 		break;
 	case ev_pointer:
-		snprintf (line, sizeof(line), "pointer");
+		q_snprintf (line, sizeof(line), "pointer");
 		break;
 	default:
-		snprintf (line, sizeof(line), "bad type %i", type);
+		q_snprintf (line, sizeof(line), "bad type %i", type);
 		break;
 	}
 
@@ -373,30 +373,30 @@ static const char *PR_UglyValueString (int type, eval_t *val)
 	switch (type)
 	{
 	case ev_string:
-		snprintf (line, sizeof(line), "%s", PR_GetString(val->string));
+		q_snprintf (line, sizeof(line), "%s", PR_GetString(val->string));
 		break;
 	case ev_entity:
-		snprintf (line, sizeof(line), "%i", NUM_FOR_EDICT(PROG_TO_EDICT(val->edict)));
+		q_snprintf (line, sizeof(line), "%i", NUM_FOR_EDICT(PROG_TO_EDICT(val->edict)));
 		break;
 	case ev_function:
 		f = pr_functions + val->function;
-		snprintf (line, sizeof(line), "%s", PR_GetString(f->s_name));
+		q_snprintf (line, sizeof(line), "%s", PR_GetString(f->s_name));
 		break;
 	case ev_field:
 		def = ED_FieldAtOfs ( val->_int );
-		snprintf (line, sizeof(line), "%s", PR_GetString(def->s_name));
+		q_snprintf (line, sizeof(line), "%s", PR_GetString(def->s_name));
 		break;
 	case ev_void:
-		snprintf (line, sizeof(line), "void");
+		q_snprintf (line, sizeof(line), "void");
 		break;
 	case ev_float:
-		snprintf (line, sizeof(line), "%f", val->_float);
+		q_snprintf (line, sizeof(line), "%f", val->_float);
 		break;
 	case ev_vector:
-		snprintf (line, sizeof(line), "%f %f %f", val->vector[0], val->vector[1], val->vector[2]);
+		q_snprintf (line, sizeof(line), "%f %f %f", val->vector[0], val->vector[1], val->vector[2]);
 		break;
 	default:
-		snprintf (line, sizeof(line), "bad type %i", type);
+		q_snprintf (line, sizeof(line), "bad type %i", type);
 		break;
 	}
 
@@ -423,11 +423,11 @@ const char *PR_GlobalString (int ofs)
 	val = (void *)&pr_globals[ofs];
 	def = ED_GlobalAtOfs(ofs);
 	if (!def)
-		snprintf (line, sizeof(line), "%i(?)", ofs);
+		q_snprintf (line, sizeof(line), "%i(?)", ofs);
 	else
 	{
 		s = PR_ValueString (def->type, (eval_t *)val);
-		snprintf (line, sizeof(line), "%i(%s)%s", ofs, PR_GetString(def->s_name), s);
+		q_snprintf (line, sizeof(line), "%i(%s)%s", ofs, PR_GetString(def->s_name), s);
 	}
 
 	i = strlen(line);
@@ -451,9 +451,9 @@ const char *PR_GlobalStringNoContents (int ofs)
 
 	def = ED_GlobalAtOfs(ofs);
 	if (!def)
-		snprintf (line, sizeof(line), "%i(?)", ofs);
+		q_snprintf (line, sizeof(line), "%i(?)", ofs);
 	else
-		snprintf (line, sizeof(line), "%i(%s)", ofs, PR_GetString(def->s_name));
+		q_snprintf (line, sizeof(line), "%i(%s)", ofs, PR_GetString(def->s_name));
 
 	i = strlen(line);
 	for ( ; i < 20; i++)
@@ -1098,12 +1098,11 @@ to avoid conflicts (e.g. Arcane Dimensions uses bit 32 for its explosions)
 */
 static int PR_FindSupportedEffects (void)
 {
-/*	qboolean isqex = 
+	qboolean isqex = 
 		PR_HasGlobal ("EF_QUADLIGHT", EF_QEX_QUADLIGHT) &&
 		(PR_HasGlobal ("EF_PENTLIGHT", EF_QEX_PENTALIGHT) || PR_HasGlobal ("EF_PENTALIGHT", EF_QEX_PENTALIGHT))
 	;
-	return isqex ? -1 : -1 & ~(EF_QEX_QUADLIGHT|EF_QEX_PENTALIGHT|EF_QEX_CANDLELIGHT);*/
-	return 0;
+	return isqex ? -1 : -1 & ~(EF_QEX_QUADLIGHT|EF_QEX_PENTALIGHT|EF_QEX_CANDLELIGHT);
 }
 
 
@@ -1279,8 +1278,8 @@ ED_Nomonsters_f
 */
 static void ED_Nomonsters_f (cvar_t *cvar)
 {
-//	if (cvar->value)
-//		Con_Warning ("\"%s\" can break gameplay.\n", cvar->name);
+	if (cvar->value)
+		printf ("\"%s\" can break gameplay.\n", cvar->name);
 }
 
 
@@ -1337,7 +1336,7 @@ int NUM_FOR_EDICT(edict_t *e)
 static void PR_AllocStringSlots (void)
 {
 	pr_maxknownstrings += PR_STRING_ALLOCSLOTS;
-	//Con_DPrintf2("PR_AllocStringSlots: realloc'ing for %d slots\n", pr_maxknownstrings);
+	printf("PR_AllocStringSlots: realloc'ing for %d slots\n", pr_maxknownstrings);
 	pr_knownstrings = (const char **) Z_Realloc ((void *)pr_knownstrings, pr_maxknownstrings * sizeof(char *));
 }
 
