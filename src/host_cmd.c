@@ -196,7 +196,7 @@ static void Host_Map_f (void)
         SCR_BeginLoadingPlaque ();
 
         svs.serverflags = 0;                    // haven't completed an episode yet
-        strlcpy (name, Cmd_Argv(1), sizeof(name));
+        q_strlcpy (name, Cmd_Argv(1), sizeof(name));
         // remove (any) trailing ".bsp" from mapname -- S.A.
         p = strstr(name, ".bsp");
         if (p && p[4] == '\0')
@@ -210,8 +210,8 @@ static void Host_Map_f (void)
                 memset (cls.spawnparms, 0, MAX_MAPSTRING);
                 for (i = 2; i < Cmd_Argc(); i++)
                 {
-                        strlcat (cls.spawnparms, Cmd_Argv(i), MAX_MAPSTRING);
-                        strlcat (cls.spawnparms, " ", MAX_MAPSTRING);
+                        q_strlcat (cls.spawnparms, Cmd_Argv(i), MAX_MAPSTRING);
+                        q_strlcat (cls.spawnparms, " ", MAX_MAPSTRING);
                 }
 
                 Cmd_ExecuteString ("connect local", src_command);
@@ -462,9 +462,9 @@ static void Host_Name_f (void)
                 return;
         }
         if (Cmd_Argc () == 2)
-                strlcpy(newName, Cmd_Argv(1), sizeof(newName));
+                q_strlcpy(newName, Cmd_Argv(1), sizeof(newName));
         else
-                strlcpy(newName, Cmd_Args(), sizeof(newName));
+                q_strlcpy(newName, Cmd_Args(), sizeof(newName));
         newName[15] = 0;        // client_t structure actually says name[32].
 
         if (cmd_source == src_command)

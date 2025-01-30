@@ -23,6 +23,23 @@ double Sys_FloatTime()
 	return (clock() - starttime) * 1.0 / 1024;
 }
 
+double Sys_DoubleTime() { return Sys_FloatTime(); }
+
+#ifndef INVALID_FILE_ATTRIBUTES
+#define INVALID_FILE_ATTRIBUTES ((DWORD)-1)
+#endif
+int Sys_FileType (const char *path)
+{
+        DWORD result = GetFileAttributes(path);
+
+        if (result == INVALID_FILE_ATTRIBUTES)
+                return FS_ENT_NONE;
+        if (result & FILE_ATTRIBUTE_DIRECTORY)
+                return FS_ENT_DIRECTORY;
+
+        return FS_ENT_FILE;
+}
+
 void CommandLineToArgv(const char *lpCmdLine, int *argc, char ***argv)
 { // Function to parse lpCmdLine into argc and argv
 	*argc = 0;

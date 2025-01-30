@@ -1540,7 +1540,7 @@ void SV_SpawnServer (const char *server)
 	//memset (&sv, 0, sizeof(sv));
 	Host_ClearMemory ();
 
-	strlcpy (sv.name, server, sizeof(sv.name));
+	q_strlcpy (sv.name, server, sizeof(sv.name));
 
 	sv.protocol = sv_protocol; // johnfitz
 	
@@ -1585,7 +1585,7 @@ void SV_SpawnServer (const char *server)
 
 	sv.time = 1.0;
 
-	strlcpy (sv.name, server, sizeof(sv.name));
+	q_strlcpy (sv.name, server, sizeof(sv.name));
 	snprintf (sv.modelname, sizeof(sv.modelname), "maps/%s.bsp", server);
 	sv.worldmodel = Mod_ForName (sv.modelname, false);
 	if (!sv.worldmodel)

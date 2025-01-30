@@ -248,7 +248,7 @@ static wad_t *W_AddWadFile (const char *name, fshandle_t *fh)
 	}
 
 	wad = (wad_t *)malloc (sizeof (wad_t));
-	strlcpy (wad->name, name, sizeof (wad->name));
+	q_strlcpy (wad->name, name, sizeof (wad->name));
 	wad->id = id;
 	wad->fh = *fh;
 	wad->numlumps = numlumps;

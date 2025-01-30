@@ -406,7 +406,8 @@ int FS_fclose(fshandle_t *fh);
 int FS_fgetc(fshandle_t *fh);
 char *FS_fgets(char *s, int size, fshandle_t *fh);
 long FS_filelength (fshandle_t *fh);
-
+int q_strlcpy (char *dst, const char *src, size_t siz);
+size_t q_strlcat (char *dst, const char *src, size_t siz);
 
 extern struct cvar_s	registered;
 extern qboolean		standard_quake, rogue, hipnotic;

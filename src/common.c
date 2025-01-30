@@ -215,7 +215,7 @@ void Vec_Free (void **pvec)
 ============================================================================
 */
 
-// $OpenBSD: strlcpy.c,v 1.11 2006/05/05 15:27:38 millert Exp $
+// $OpenBSD: q_strlcpy.c,v 1.11 2006/05/05 15:27:38 millert Exp $
 // Copyright (c) 1998 Todd C. Miller <Todd.Miller@courtesan.com>
 int q_strlcpy (char *dst, const char *src, size_t siz)
 {
@@ -236,7 +236,7 @@ int q_strlcpy (char *dst, const char *src, size_t siz)
 	return(s - src - 1); // count does not include NUL
 }
 
-// $OpenBSD: strlcat.c,v 1.13 2005/08/08 08:05:37 espie Exp $
+// $OpenBSD: q_strlcat.c,v 1.13 2005/08/08 08:05:37 espie Exp $
 size_t q_strlcat (char *dst, const char *src, size_t siz)
 {
         char *d = dst;

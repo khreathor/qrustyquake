@@ -201,7 +201,7 @@ static model_t *Mod_FindName (const char *name)
 	if (i == mod_numknown) {
 		if (mod_numknown == MAX_MOD_KNOWN)
 			Sys_Error ("mod_numknown == MAX_MOD_KNOWN");
-		strlcpy (mod->name, name, MAX_QPATH);
+		q_strlcpy (mod->name, name, MAX_QPATH);
 		mod->needload = true;
 		mod_numknown++;
 	}
@@ -280,15 +280,15 @@ static wad_t *Mod_LoadWadFiles (model_t *mod)
 		if (com_token[0] == '}')
 			break; // end of worldspawn
 		if (com_token[0] == '_')
-			strlcpy (key, com_token + 1, sizeof (key));
+			q_strlcpy (key, com_token + 1, sizeof (key));
 		else
-			strlcpy (key, com_token, sizeof (key));
+			q_strlcpy (key, com_token, sizeof (key));
 		while (key[0] && key[strlen (key) - 1] == ' ') // remove trailing spaces
 			key[strlen (key) - 1] = 0;
 		data = COM_ParseEx (data, CPE_ALLOWTRUNC);
 		if (!data)
 			return NULL; // error
-		strlcpy (value, com_token, sizeof (value));
+		q_strlcpy (value, com_token, sizeof (value));
 		if (!strcmp ("wad", key)) {
 			return W_LoadWadList (value);
 		}
@@ -716,7 +716,7 @@ _load_texture:
 				//now load whatever we found
 				if (data) //load external image
 				{
-					strlcpy (texturename, filename, sizeof(texturename));
+					q_strlcpy (texturename, filename, sizeof(texturename));
 					tx->gltexture = TexMgr_LoadImage (loadmodel, texturename, fwidth, fheight,
 						SRC_RGBA, data, filename, 0, TEXPREF_NONE);
 				}
@@ -960,9 +960,9 @@ static void Mod_LoadLighting (lump_t *l)
 
 	loadmodel->lightdata = NULL;
 	// LordHavoc: check for a .lit file
-	strlcpy(litfilename, loadmodel->name, sizeof(litfilename));
+	q_strlcpy(litfilename, loadmodel->name, sizeof(litfilename));
 	COM_StripExtension(litfilename, litfilename, sizeof(litfilename));
-	strlcat(litfilename, ".lit", sizeof(litfilename));
+	q_strlcat(litfilename, ".lit", sizeof(litfilename));
 	mark = Hunk_LowMark();
 	data = (byte*) COM_LoadHunkFile (litfilename, &path_id);
 	if (data)
@@ -1089,7 +1089,7 @@ static void Mod_LoadVisibility (lump_t *l)
 		crc = CRC_Block(mod_base + l->fileofs, l->filelen - 1);
 	}
 
-	strlcpy(basemapname, loadmodel->name, sizeof(basemapname));
+	q_strlcpy(basemapname, loadmodel->name, sizeof(basemapname));
 	COM_StripExtension(basemapname, basemapname, sizeof(basemapname));
 
 	snprintf(entfilename, sizeof(entfilename), "%s@%04x.ent", basemapname, crc);
@@ -2129,6 +2129,9 @@ static FILE *Mod_FindVisibilityExternal()
 
 static byte *Mod_LoadVisibilityExternal(FILE* f)
 {
+#ifdef _WIN32
+	return NULL; // CyanBun96: weendouz shits itself on fread. fixme.
+#endif
 	int filelen = 0;
 	if (!fread(&filelen, 4, 1, f)) return NULL;
 	filelen = LittleLong(filelen);
@@ -2213,7 +2216,9 @@ static void Mod_LoadBrushModel (model_t *mod, void *buffer)
 			if (loadmodel->visdata) {
 				Mod_LoadLeafsExternal(fvis);
 			}
+#ifndef _WIN32 // CyanBun96: wuindeez appears to crap out at all f* fs funcs. fixme.
 			fclose(fvis);
+#endif
 			if (loadmodel->visdata && loadmodel->leafs && loadmodel->numleafs) {
 				goto visdone;
 			}

@@ -79,7 +79,7 @@ static char *PF_VarString (int	first)
 	{
 		for (i = first; i < pr_argc; i++)
 		{
-			s = strlcat(out, LOC_GetString(G_STRING(OFS_PARM0+i*3)), sizeof(out));
+			s = q_strlcat(out, LOC_GetString(G_STRING(OFS_PARM0+i*3)), sizeof(out));
 			if (s >= sizeof(out))
 			{
 				printf("PF_VarString: overflow (string truncated)\n");
