@@ -22,6 +22,10 @@ OBJS = $(SRCS:.c=.o)
 
 BUILD_TYPE ?= release
 
+ifeq ($(CC),tcc)
+CFLAGS += -DSDL_DISABLE_IMMINTRIN_H
+endif
+
 DEBUG_FLAGS = -g -O0
 RELEASE_FLAGS = -O3
 
