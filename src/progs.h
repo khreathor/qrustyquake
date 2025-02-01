@@ -142,9 +142,6 @@ extern	int		pr_xstatement;
 extern	unsigned short	pr_crc;
 
 FUNC_NORETURN void PR_RunError (const char *error, ...) FUNC_PRINTF(1,2);
-#ifdef __WATCOMC__
-#pragma aux PR_RunError aborts;
-#endif
 
 void ED_PrintEdicts (void);
 void ED_PrintNum (int ent);
