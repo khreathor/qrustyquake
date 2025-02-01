@@ -10,7 +10,7 @@
 #include "quakedef.h"
 #include "r_local.h"
 
-#define MAX_MOD_KNOWN 1024 // CyanBun96: was 256
+#define	MAX_MOD_KNOWN 2048 /*johnfitz -- was 512 */
 #define ANIM_CYCLE 2
 #define NL_PRESENT 0 // values for model_t's needload
 #define NL_NEEDS_LOADED 1
@@ -51,7 +51,6 @@ static int	mod_novis_capacity;
 static byte	*mod_decompressed;
 static int	mod_decompressed_capacity;
 
-#define	MAX_MOD_KNOWN	2048 /*johnfitz -- was 512 */
 static model_t	mod_known[MAX_MOD_KNOWN];
 static int		mod_numknown;
 

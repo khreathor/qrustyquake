@@ -178,8 +178,6 @@ typedef ptrdiff_t	ssize_t;
 #define FUNC_NORETURN	__attribute__((__noreturn__))
 #elif defined(_MSC_VER) && (_MSC_VER >= 1200)
 #define FUNC_NORETURN		__declspec(noreturn)
-#elif defined(__WATCOMC__)
-#define FUNC_NORETURN /* use the 'aborts' aux pragma */
 #else
 #define FUNC_NORETURN
 #endif
