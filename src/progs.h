@@ -141,7 +141,7 @@ extern	int		pr_xstatement;
 
 extern	unsigned short	pr_crc;
 
-FUNC_NORETURN void PR_RunError (const char *error, ...) FUNC_PRINTF(1,2);
+void PR_RunError (const char *error, ...) FUNC_PRINTF(1,2);
 
 void ED_PrintEdicts (void);
 void ED_PrintNum (int ent);
