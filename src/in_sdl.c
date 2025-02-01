@@ -8,13 +8,14 @@ int mouse_oldbuttonstate;
 void Sys_SendKeyEvents()
 {
 	SDL_Event event;
+	int sym, state, modstate; // keep here for OpenBSD compiler
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
 		case SDL_KEYDOWN:
 		case SDL_KEYUP:
-			int sym = event.key.keysym.sym;
-			int state = event.key.state;
-			int modstate = SDL_GetModState();
+			sym = event.key.keysym.sym;
+			state = event.key.state;
+			modstate = SDL_GetModState();
 			switch (sym) {
 			case SDLK_DELETE: sym = K_DEL; break;
 			case SDLK_BACKSPACE: sym = K_BACKSPACE; break;

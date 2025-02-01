@@ -202,6 +202,7 @@ void D_DrawNonSubdiv()
 void D_PolysetRecursiveTriangle(int *lp1, int *lp2, int *lp3)
 {
 	int *temp;
+	int new[6]; // keep here for OpenBSD compiler
 	int d = lp2[0] - lp1[0];
 	if (d < -1 || d > 1)
 		goto split;
@@ -233,7 +234,6 @@ split2:
 	lp2 = lp3;
 	lp3 = temp;
 split: // split this edge
-	int new[6];
 	new[0] = (lp1[0] + lp2[0]) >> 1;
 	new[1] = (lp1[1] + lp2[1]) >> 1;
 	new[2] = (lp1[2] + lp2[2]) >> 1;

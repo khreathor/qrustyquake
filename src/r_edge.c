@@ -173,6 +173,7 @@ void R_LeadingEdgeBackwards(edge_t *edge)
 	// don't start a span if this is an inverted span, with the end edge
 	// preceding the start edge (that is, we've already seen the end edge)
 	surf_t *surf2;
+	int iu; // keep here for the OpenBSD compiler
 	if (++surf->spanstate == 1) {
 		surf2 = surfaces[1].next;
 		if (surf->key > surf2->key)
@@ -198,7 +199,7 @@ continue_search:
 		}
 		goto gotposition;
 newtop:
-		int iu = edge->u >> 20; // emit a span (obscures current top)
+		iu = edge->u >> 20; // emit a span (obscures current top)
 		if (iu > surf2->last_u) {
 			espan_t *span = span_p++;
 			span->u = surf2->last_u;
@@ -243,6 +244,7 @@ void R_TrailingEdge(surf_t *surf, edge_t *edge)
 void R_LeadingEdge (edge_t *edge)
 {
 	surf_t *surf, *surf2;
+	int iu; // keep here for the OpenBSD compiler
 	if (edge->surfs[1])
 	{
 		// it's adding a new surface in, so find the correct place
@@ -304,7 +306,7 @@ continue_search:
 			goto gotposition;
 newtop:
 			// emit a span (obscures current top)
-			int iu = edge->u >> 20;
+			iu = edge->u >> 20;
 			if (iu > surf2->last_u)
 			{
 				espan_t *span = span_p++;

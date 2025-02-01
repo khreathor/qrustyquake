@@ -1302,6 +1302,7 @@ void M_Keys_Key(int k)
 		bind_grab = false;
 		return;
 	}
+	int keys[2]; // keep here for the OpenBSD compiler
 	switch (k) {
 	case K_ESCAPE:
 		M_Menu_Options_f();
@@ -1321,7 +1322,6 @@ void M_Keys_Key(int k)
 			keys_cursor = 0;
 		break;
 	case K_ENTER: // go into bind mode
-		int keys[2];
 		M_FindKeysForCommand(bindnames[keys_cursor][0], keys);
 		S_LocalSound("misc/menu2.wav");
 		if (keys[1] != -1)

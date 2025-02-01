@@ -124,6 +124,8 @@ VM is VirtualBox unless specified otherwise.
 
    - The main platform that this port is developed on. The most likely one to work
 
+   - Tweaked and built on kernel 6.12.10-arch1-1 with TCC by erysdren
+
    - Other Linuxes not tested yet, but should be the same with the gcc/make toolchain
 
    - TODO other compilers, Alpine
@@ -134,7 +136,7 @@ VM is VirtualBox unless specified otherwise.
 
 - OpenBSD [VM, HW] v0.4
 
-   - Broken as of v0.4, working on it
+   - Seemingly perfect, use the commit with OpenBSD-specific fixes shortly after v0.4
 
 - Ubuntu [HW, MangoPi MQ Pro, RISC-V] v0.3
 

@@ -167,6 +167,7 @@ void Cmd_Alias_f() // johnfitz -- rewritten
 	cmdalias_t *a;
 	char cmd[1024];
 	int i;
+	char *s; // keep here for OpenBSD compiler
 	switch (Cmd_Argc()) {
 	case 1:	//list all aliases
 		for (a = cmd_alias, i = 0; a; a = a->next, i++)
@@ -177,12 +178,13 @@ void Cmd_Alias_f() // johnfitz -- rewritten
 			Con_SafePrintf("no alias commands found\n");
 		break;
 	case 2:	//output current alias string
-		for (a = cmd_alias; a; a = a->next)
+		for (a = cmd_alias; a; a = a->next) {
 			if (!strcmp(Cmd_Argv(1), a->name))
 				Con_Printf("   %s: %s", a->name, a->value);
+		}
 		break;
 	default: //set alias string
-		char *s = Cmd_Argv(1);
+		s = Cmd_Argv(1);
 		if (strlen(s) >= MAX_ALIAS_NAME) {
 			Con_Printf("Alias name is too long\n");
 			return;
@@ -216,13 +218,13 @@ void Cmd_Alias_f() // johnfitz -- rewritten
 
 void Cmd_Unalias_f() // -- johnfitz
 {
+	cmdalias_t *a, *prev; // keep here for OpenBSD compiler
 	switch (Cmd_Argc()) {
 	default:
 	case 1:
 		Con_Printf("unalias <name> : delete alias\n");
 		break;
 	case 2:
-		cmdalias_t *a, *prev;
 		for (prev = a = cmd_alias; a; a = a->next) {
 			if (!strcmp(Cmd_Argv(1), a->name)) {
 				prev->next = a->next;

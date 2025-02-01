@@ -2128,9 +2128,7 @@ static FILE *Mod_FindVisibilityExternal()
 
 static byte *Mod_LoadVisibilityExternal(FILE* f)
 {
-#ifdef _WIN32
-	return NULL; // CyanBun96: weendouz shits itself on fread. fixme.
-#endif
+	return NULL; // CyanBun: TODO implement with fread from common.c
 	int filelen = 0;
 	if (!fread(&filelen, 4, 1, f)) return NULL;
 	filelen = LittleLong(filelen);
@@ -2215,9 +2213,7 @@ static void Mod_LoadBrushModel (model_t *mod, void *buffer)
 			if (loadmodel->visdata) {
 				Mod_LoadLeafsExternal(fvis);
 			}
-#ifndef _WIN32 // CyanBun96: wuindeez appears to crap out at all f* fs funcs. fixme.
-			fclose(fvis);
-#endif
+			//fclose(fvis); CyanBun96: TODO implement with fclose wrapper from common.c
 			if (loadmodel->visdata && loadmodel->leafs && loadmodel->numleafs) {
 				goto visdone;
 			}

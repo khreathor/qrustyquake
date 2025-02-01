@@ -178,7 +178,7 @@ void Con_Print(char *txt)
 		mask = 128; // go to colored text
 		txt++;
 	}
-	int c, l;
+	int c, l, y; // keep here for OpenBSD compiler
 	while ((c = *txt)) {
 		for (l = 0; l < con_linewidth; l++) // count word length
 			if (txt[l] <= ' ')
@@ -204,7 +204,7 @@ void Con_Print(char *txt)
 			cr = 1;
 			break;
 		default: // display character and advance
-			int y = con_current % con_totallines;
+			y = con_current % con_totallines;
 			con_text[y * con_linewidth + con_x] = c | mask;
 			con_x++;
 			con_x = con_x >= con_linewidth ? 0 : con_x;

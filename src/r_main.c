@@ -475,11 +475,12 @@ void R_DrawBEntitiesOnList()
 	VectorCopy(modelorg, oldorigin);
 	insubmodel = true;
 	r_dlightframecount = r_framecount;
+	model_t *clmodel; // keep here for the OpenBSD compiler
 	for (int i = 0; i < cl_numvisedicts; i++) {
 		currententity = cl_visedicts[i];
 		switch (currententity->model->type) {
 		case mod_brush:
-			model_t *clmodel = currententity->model;
+			clmodel = currententity->model;
 			// see if the bounding box lets us trivially reject
 			// also sets trivial accept status
 			for (int j = 0; j < 3; j++) {
