@@ -42,11 +42,7 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
 - Proper UI scaling
 
-- Advanced audio configuration
-
-   - The default audio rate is 11025 for more muffled WinQuake sound
-
-   - New flags -sndsamples and -sndpitch (try -sndpitch 5 or 15)
+- The default audio rate is 11025 for more muffled WinQuake sound
 
 - vim-like keybinds that work in menus, enable with -vimmode flag
 
@@ -54,21 +50,57 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
 - FPS counter, scr_showfps 1
 
+- Unlocked FPS with host_maxfps cvar
+
+   - No client-server separation yet, be careful with values > 72 (the default)
+
+- Expanded limits, Fitzquake protocol allowing for moden mod support
+
+   - Underdark Overbright and Honey have been tested and are 100% playable (with minor visual bugs)
+
+   - BSP2 and other modern features coming soon, ish.
+
+- Software imitations of modern rendering features
+
+   - Translucent liquids on supported maps (r_{water,slime,lava,tele}alpha 0-1)
+
+   - Cutout textures (transparency)
+
+      - Very limited and glitch-prone in their current implementation
+
 # Planned
 
 - Overhaul, modernization and trimming of the source code - removal of dead platforms and platform-specific code in favor of portable, properly formatted and readable code.
 
    - The codebase has been reduced by more than 50% compared to original WinQuake release in v0.3
 
+      - ... and then bloated back up in v0.4. i'm working on it though.
+
    - The formatting has also been unified, along with tons of other minor readability improvements
+
+      - ... except for the v0.4 bits
 
    - Most of the changes to the original code (that wasn't deleted) are purely cosmetic so far, deeper refactoring with more meaningful improvements is planned
 
    - The long-term goal for this port keeping it as well-maintained as a 1996 game can be.
 
-- (maybe) Modern mod support
+- Modern mod support
+
+   - Partially implemented, currently being worked on
+
+- Other modern features (optional)
+
+   - Status bar styles
+
+   - Fog (software implementation)
+
+   - More modern console
+
+   - Client-server separation (mostly for 72< framerates)
 
 - (definitely not) CD Audio
+
+   - Might have been pulled from Quakespasm along with the rest of the sound system, though I have no way or desire to test it.
 
 Contributions of any kind are very welcome. If someone implements CD audio or something I'll definitely try to merge it.
 
@@ -88,7 +120,7 @@ x86_64 unless specified otherwise.
 
 VM is VirtualBox unless specified otherwise.
 
-- Arch Linux [HW]
+- Arch Linux [HW] v0.4
 
    - The main platform that this port is developed on. The most likely one to work
 
@@ -96,25 +128,31 @@ VM is VirtualBox unless specified otherwise.
 
    - TODO other compilers, Alpine
 
-- FreeBSD [VM]
+- FreeBSD [VM] v0.4
 
    - Seemingly perfect, though the audio sample rate sounds too high
 
-- OpenBSD [VM, HW]
+- OpenBSD [VM, HW] v0.4
 
-   - The sound is crackly both on VM and HW for some reason
+   - Broken as of v0.4, working on it
 
-- Ubuntu [HW, MangoPi MQ Pro, RISC-V]
+- Ubuntu [HW, MangoPi MQ Pro, RISC-V] v0.3
 
    - Works just fine at a playable framerate (20-30~ FPS)
 
-- Android [HW, Termux, AARCH64]
+- Android [HW, Termux, AARCH64] v0.3
 
    - Ran through X11 with touch controls. *unpleasant*
 
-- Windows [VM, HW]
+- Windows [VM, HW] v0.4
 
    - Tested with w10 on hardware and w11 on a VM
+
+   - The official binary is cross-compiled, and seems to have broken network
+
+   - Quakespasm breaks exactly the same way, so must be general cross-compilation issue
+
+   - Some FS read/write functions seem to be broken too. That's on the to-do list, though quite low
 
 # Credits
 
@@ -123,6 +161,8 @@ This port started out as a fork of https://github.com/atsb/sdlwinquake
 Which was a fork of another fork. It's forks all the way down...
 
 Features some fixes from Quakespasm and other ports. I wasn't the one to implement them, but will try and give credit as I peruse the source further.
+
+The Fitzquake protocol implementation, both client and server, sound system, model loading, filesystem functions, cvars and a whole lot more has been pulled directly from Quakespasm.
 
 A lot of code is adapted from Ironwail. Most of the netcode is a direct copy, other chunks are adapted with minor changes.
 
