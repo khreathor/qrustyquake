@@ -93,6 +93,12 @@ cvar_t r_telealpha = { "r_telealpha", "1", true, false, 0, NULL };
 cvar_t r_twopass = { "r_twopass", "1", true, false, 0, NULL }; // CyanBun96
 	// 0 - off (smart) 1 - on (smart) 2 - force off 3 - force on
 	// smart gets set on map load if cutouts were found
+
+// johnfitz -- new cvars TODO actually implement these, they're currently placeholders
+cvar_t  r_nolerp_list = {"r_nolerp_list", "progs/flame.mdl,progs/flame2.mdl,progs/braztall.mdl,pro gs/brazshrt.mdl,progs/longtrch.mdl,progs/flame_pyre.mdl,progs/v_saw.mdl,progs/v_xfist.mdl,progs/h2 stuff/newfire.mdl", false, false, 0, NULL};
+cvar_t  r_noshadow_list = {"r_noshadow_list", "progs/flame2.mdl,progs/flame.mdl,progs/bolt1.mdl,pr ogs/bolt2.mdl,progs/bolt3.mdl,progs/laser.mdl", false, false, 0, NULL};
+// johnfitz
+
 extern cvar_t scr_fov;
 
 void CreatePassages();

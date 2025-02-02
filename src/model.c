@@ -943,14 +943,8 @@ _load_texture:
 	}
 }TODO*/
 
-/*
-=================
-Mod_LoadLighting -- johnfitz -- replaced with lit support code via lordhavoc
-=================
-*/
-/*TODO
-static void Mod_LoadLighting (lump_t *l)
-{
+/*TODO - colored lighting static void Mod_LoadLighting (lump_t *l)
+{ // johnfitz -- replaced with lit support code via lordhavoc
 	int i, mark;
 	byte *in, *out, *data;
 	byte d, q64_b0, q64_b1;
@@ -964,23 +958,17 @@ static void Mod_LoadLighting (lump_t *l)
 	q_strlcat(litfilename, ".lit", sizeof(litfilename));
 	mark = Hunk_LowMark();
 	data = (byte*) COM_LoadHunkFile (litfilename, &path_id);
-	if (data)
-	{
+	if (data) {
 		// use lit file only from the same gamedir as the map
 		// itself or from a searchpath with higher priority.
-		if (path_id < loadmodel->path_id)
-		{
+		if (path_id < loadmodel->path_id) {
 			Hunk_FreeToLowMark(mark);
 			Con_DPrintf("ignored %s from a gamedir with lower priority\n", litfilename);
 		}
-		else
-		if (data[0] == 'Q' && data[1] == 'L' && data[2] == 'I' && data[3] == 'T')
-		{
+		else if (data[0] == 'Q' && data[1] == 'L' && data[2] == 'I' && data[3] == 'T') {
 			i = LittleLong(((int *)data)[1]);
-			if (i == 1)
-			{
-				if (8+l->filelen*3 == com_filesize)
-				{
+			if (i == 1) {
+				if (8+l->filelen*3 == com_filesize) {
 					printf("%s loaded\n", litfilename);
 					loadmodel->lightdata = data + 8;
 					return;
@@ -988,14 +976,12 @@ static void Mod_LoadLighting (lump_t *l)
 				Hunk_FreeToLowMark(mark);
 				Con_Printf("Outdated .lit file (%s should be %u bytes, not %u)\n", litfilename, 8+l->filelen*3, com_filesize);
 			}
-			else
-			{
+			else {
 				Hunk_FreeToLowMark(mark);
 				Con_Printf("Unknown .lit file version (%d)\n", i);
 			}
 		}
-		else
-		{
+		else {
 			Hunk_FreeToLowMark(mark);
 			Con_Printf("Corrupt .lit file (old version?), ignoring\n");
 		}
@@ -1003,10 +989,8 @@ static void Mod_LoadLighting (lump_t *l)
 	// LordHavoc: no .lit found, expand the white lighting data to color
 	if (!l->filelen)
 		return;
-
 	// Quake64 bsp lighmap data
-	if (loadmodel->bspversion == BSPVERSION_QUAKE64)
-	{
+	if (loadmodel->bspversion == BSPVERSION_QUAKE64) {
 		// RGB lightmap samples are packed in 16bits.
 		// RRRRR GGGGG BBBBBB
 
@@ -1014,8 +998,7 @@ static void Mod_LoadLighting (lump_t *l)
 		in = mod_base + l->fileofs;
 		out = loadmodel->lightdata;
 
-		for (i = 0;i < (l->filelen / 2) ;i++)
-		{
+		for (i = 0;i < (l->filelen / 2) ;i++) {
 			q64_b0 = *in++;
 			q64_b1 = *in++;
 
@@ -1071,7 +1054,55 @@ static void Mod_LoadVisibility (lump_t *l)
 	memcpy (loadmodel->visdata, mod_base + l->fileofs, l->filelen);
 }
 
-/*TODOstatic void Mod_LoadEntities (lump_t *l)
+static void Mod_LoadEdges (lump_t *l, int bsp2)
+{
+        if (bsp2) {
+                dledge_t *in = (dledge_t *)(mod_base + l->fileofs);
+                if (l->filelen % sizeof(*in))
+                        Sys_Error ("MOD_LoadEdges: funny lump size in %s",loadmodel->name);
+                int count = l->filelen / sizeof(*in);
+                medge_t *out = (medge_t *) Hunk_AllocName
+			((count + 1) * sizeof(*out), loadname);
+                loadmodel->edges = out;
+                loadmodel->numedges = count;
+                for (int i = 0; i < count; i++, in++, out++) {
+                        out->v[0] = LittleLong(in->v[0]);
+                        out->v[1] = LittleLong(in->v[1]);
+                }
+        }
+        else {
+                dedge_t *in = (dedge_t *)(mod_base + l->fileofs);
+                if (l->filelen % sizeof(*in))
+                        Sys_Error ("MOD_LoadEdges: funny lump size in %s",loadmodel->name);
+                int count = l->filelen / sizeof(*in);
+                medge_t *out = (medge_t *) Hunk_AllocName
+			((count + 1) * sizeof(*out), loadname);
+                loadmodel->edges = out;
+                loadmodel->numedges = count;
+                for (int i = 0; i<count; i++, in++, out++) {
+                        out->v[0] = (unsigned short)LittleShort(in->v[0]);
+                        out->v[1] = (unsigned short)LittleShort(in->v[1]);
+                }
+        }
+}
+
+static void Mod_LoadVertexes (lump_t *l)
+{
+	dvertex_t *in = (dvertex_t *)(mod_base + l->fileofs);
+	if (l->filelen % sizeof(*in))
+		Sys_Error ("MOD_LoadVertexes: funny lump size in %s",loadmodel->name);
+	int count = l->filelen / sizeof(*in);
+	mvertex_t *out=(mvertex_t *)Hunk_AllocName(count*sizeof(*out),loadname);
+	loadmodel->vertexes = out;
+	loadmodel->numvertexes = count;
+	for (int i = 0; i < count; i++, in++, out++) {
+		out->position[0] = LittleFloat (in->point[0]);
+		out->position[1] = LittleFloat (in->point[1]);
+		out->position[2] = LittleFloat (in->point[2]);
+	}
+}
+
+static void Mod_LoadEntities (lump_t *l)
 {
 	char	basemapname[MAX_QPATH];
 	char	entfilename[MAX_QPATH];
@@ -1127,118 +1158,9 @@ _load_embedded:
 	}
 	loadmodel->entities = (char *) Hunk_AllocName ( l->filelen, loadname);
 	memcpy (loadmodel->entities, mod_base + l->fileofs, l->filelen);
-}*/
-
-void Mod_LoadEntities(lump_t *l)
-{
-        if (!l->filelen) {
-                loadmodel->entities = NULL;
-                return;
-        }
-        loadmodel->entities = Hunk_AllocName(l->filelen, loadname);
-        memcpy(loadmodel->entities, mod_base + l->fileofs, l->filelen);
 }
 
-static void Mod_LoadVertexes (lump_t *l)
-{
-	dvertex_t *in = (dvertex_t *)(mod_base + l->fileofs);
-	if (l->filelen % sizeof(*in))
-		Sys_Error ("MOD_LoadVertexes: funny lump size in %s",loadmodel->name);
-	int count = l->filelen / sizeof(*in);
-	mvertex_t *out=(mvertex_t *)Hunk_AllocName(count*sizeof(*out),loadname);
-	loadmodel->vertexes = out;
-	loadmodel->numvertexes = count;
-	for (int i = 0; i < count; i++, in++, out++) {
-		out->position[0] = LittleFloat (in->point[0]);
-		out->position[1] = LittleFloat (in->point[1]);
-		out->position[2] = LittleFloat (in->point[2]);
-	}
-}
-
-static void Mod_LoadEdges (lump_t *l, int bsp2)
-{
-        if (bsp2) {
-                dledge_t *in = (dledge_t *)(mod_base + l->fileofs);
-                if (l->filelen % sizeof(*in))
-                        Sys_Error ("MOD_LoadEdges: funny lump size in %s",loadmodel->name);
-                int count = l->filelen / sizeof(*in);
-                medge_t *out = (medge_t *) Hunk_AllocName
-			((count + 1) * sizeof(*out), loadname);
-                loadmodel->edges = out;
-                loadmodel->numedges = count;
-                for (int i = 0; i < count; i++, in++, out++) {
-                        out->v[0] = LittleLong(in->v[0]);
-                        out->v[1] = LittleLong(in->v[1]);
-                }
-        }
-        else {
-                dedge_t *in = (dedge_t *)(mod_base + l->fileofs);
-                if (l->filelen % sizeof(*in))
-                        Sys_Error ("MOD_LoadEdges: funny lump size in %s",loadmodel->name);
-                int count = l->filelen / sizeof(*in);
-                medge_t *out = (medge_t *) Hunk_AllocName
-			((count + 1) * sizeof(*out), loadname);
-                loadmodel->edges = out;
-                loadmodel->numedges = count;
-                for (int i = 0; i<count; i++, in++, out++) {
-                        out->v[0] = (unsigned short)LittleShort(in->v[0]);
-                        out->v[1] = (unsigned short)LittleShort(in->v[1]);
-                }
-        }
-}
-
-/*TODO
-static void Mod_LoadTexinfo (lump_t *l)
-{
-	texinfo_t *in;
-	mtexinfo_t *out;
-	int	i, j, count, miptex;
-	int missing = 0; //johnfitz
-
-	in = (texinfo_t *)(mod_base + l->fileofs);
-	if (l->filelen % sizeof(*in))
-		Sys_Error ("MOD_LoadBmodel: funny lump size in %s",loadmodel->name);
-	count = l->filelen / sizeof(*in);
-	out = (mtexinfo_t *) Hunk_AllocName ( count*sizeof(*out), loadname);
-
-	loadmodel->texinfo = out;
-	loadmodel->numtexinfo = count;
-
-	for (i=0 ; i<count ; i++, in++, out++)
-	{
-		for (j=0 ; j<4 ; j++)
-		{
-			out->vecs[0][j] = LittleFloat (in->vecs[0][j]);
-			out->vecs[1][j] = LittleFloat (in->vecs[1][j]);
-		}
-
-		miptex = LittleLong (in->miptex);
-		out->flags = LittleLong (in->flags);
-
-		//johnfitz -- rewrote this section
-		if (miptex >= loadmodel->numtextures-1 || !loadmodel->textures[miptex])
-		{
-			if (out->flags & TEX_SPECIAL)
-				out->texture = loadmodel->textures[loadmodel->numtextures-1];
-			else
-				out->texture = loadmodel->textures[loadmodel->numtextures-2];
-			out->flags |= TEX_MISSING;
-			missing++;
-		}
-		else
-		{
-			out->texture = loadmodel->textures[miptex];
-		}
-		//johnfitz
-	}
-
-	//johnfitz: report missing textures
-	if (missing && loadmodel->numtextures > 1)
-		Con_Printf ("Mod_LoadTexinfo: %d texture(s) missing from BSP file\n", missing);
-	//johnfitz
-}*/
-
-void Mod_LoadTexinfo(lump_t *l)
+static void Mod_LoadTexinfo(lump_t *l)
 {
         texinfo_t *in = (void *)(mod_base + l->fileofs);
         if (l->filelen % sizeof(*in))
@@ -1280,7 +1202,6 @@ void Mod_LoadTexinfo(lump_t *l)
         }
 }
 
-/*TODO
 static void CalcSurfaceExtents (msurface_t *s)
 { // Fills in s->texturemins[] and s->extents[]
 	float	mins[2], maxs[2], val;
@@ -1341,41 +1262,8 @@ static void CalcSurfaceExtents (msurface_t *s)
 		if ( !(tex->flags & TEX_SPECIAL) && s->extents[i] > 2000) //johnfitz -- was 512 in glquake, 256 in winquake
 			Sys_Error ("Bad surface extents");
 	}
-}*/
-
-void CalcSurfaceExtents(msurface_t *s)
-{ // Fills in s->texturemins[] and s->extents[]
-        float mins[2], maxs[2], val;
-        int bmins[2], bmaxs[2];
-        mins[0] = mins[1] = 999999;
-        maxs[0] = maxs[1] = -99999;
-        mtexinfo_t *tex = s->texinfo;
-        for (int i = 0; i < s->numedges; i++) {
-                int e = loadmodel->surfedges[s->firstedge + i];
-                mvertex_t *v;
-                if (e >= 0)
-                        v = &loadmodel->vertexes[loadmodel->edges[e].v[0]];
-                else
-                        v = &loadmodel->vertexes[loadmodel->edges[-e].v[1]];
-                for (int j = 0; j < 2; j++) {
-                        val = v->position[0] * tex->vecs[j][0] + v->position[1]
-                                * tex->vecs[j][1] + v->position[2]
-                                * tex->vecs[j][2] + tex->vecs[j][3];
-                        if (val < mins[j])
-                                mins[j] = val;
-                        if (val > maxs[j])
-                                maxs[j] = val;
-                }
-        }
-        for (int i = 0; i < 2; i++) {
-                bmins[i] = floor(mins[i] / 16);
-                bmaxs[i] = ceil(maxs[i] / 16);
-                s->texturemins[i] = bmins[i] * 16;
-                s->extents[i] = (bmaxs[i] - bmins[i]) * 16;
-                if (!(tex->flags & TEX_SPECIAL) && s->extents[i] > 256)
-                        Sys_Error("Bad surface extents");
-        }
 }
+
 
 /*
 ================
@@ -1574,7 +1462,7 @@ static void Mod_LoadFaces (lump_t *l, qboolean bsp2)
 		}
 		//johnfitz
 	}
-TODO*/
+TODO colored lighting*/
 	dface_t *in = (void *)(mod_base + l->fileofs);
         if (l->filelen % sizeof(*in))
                 Sys_Error("MOD_LoadFaces: funny lump size in %s",
@@ -1868,7 +1756,6 @@ static void Mod_LoadLeafs (lump_t *l, int bsp2)
 
 static void Mod_LoadClipnodes (lump_t *l, qboolean bsp2)
 {
-
 	dsclipnode_t *ins;
 	dlclipnode_t *inl;
 	int count;
@@ -2072,13 +1959,13 @@ static void Mod_LoadSubmodels (lump_t *l)
 		printf ("%i visleafs exceeds standard limit of 8192.\n", out->visleafs);
 }
 
-static fshandle_t *Mod_FindVisibilityExternal()
-{/*TODO
+static FILE *Mod_FindVisibilityExternal()
+{
 	vispatch_t header;
 	char visfilename[MAX_QPATH];
 	const char* shortname;
 	unsigned int path_id;
-	fshandle_t *f;
+	FILE *f;
 	long pos;
 	size_t r;
 
@@ -2096,7 +1983,7 @@ static fshandle_t *Mod_FindVisibilityExternal()
 	}
 	if (path_id < loadmodel->path_id)
 	{
-		FS_fclose(f);
+		fclose(f);
 		Con_DPrintf("ignored %s from a gamedir with lower priority\n", visfilename);
 		return NULL;
 	}
@@ -2105,11 +1992,11 @@ static fshandle_t *Mod_FindVisibilityExternal()
 
 	shortname = COM_SkipPath(loadmodel->name);
 	pos = 0;
-	while ((r = FS_fread(&header, 1, VISPATCH_HEADER_LEN, f)) == VISPATCH_HEADER_LEN)
+	while ((r = fread(&header, 1, VISPATCH_HEADER_LEN, f)) == VISPATCH_HEADER_LEN)
 	{
 		header.filelen = LittleLong(header.filelen);
 		if (header.filelen <= 0) {	// bad entry -- don't trust the rest.
-			FS_fclose(f);
+			fclose(f);
 			return NULL;
 		}
 		if (!strcasecmp(header.mapname, shortname))
@@ -2118,41 +2005,38 @@ static fshandle_t *Mod_FindVisibilityExternal()
 		fseek(f, pos, SEEK_SET);
 	}
 	if (r != VISPATCH_HEADER_LEN) {
-		FS_fclose(f);
+		fclose(f);
 		Con_DPrintf("%s not found in %s\n", shortname, visfilename);
 		return NULL;
 	}
 
-	return f;*/
+	return f;
 }
 
-static byte *Mod_LoadVisibilityExternal(fshandle_t *f)
+static byte *Mod_LoadVisibilityExternal(FILE *f)
 {
 	int filelen = 0;
-	if (!FS_fread(&filelen, 4, 1, f)) return NULL;
+	if (!fread(&filelen, 4, 1, f)) return NULL;
 	filelen = LittleLong(filelen);
 	if (filelen <= 0) return NULL;
 	Con_DPrintf("...%d bytes visibility data\n", filelen);
 	byte *visdata = (byte *) Hunk_AllocName(filelen, "EXT_VIS");
-	if (!FS_fread(visdata, filelen, 1, f))
+	if (!fread(visdata, filelen, 1, f))
 		return NULL;
 	return visdata;
 }
 
-static void Mod_LoadLeafsExternal(fshandle_t *f)
-{/*
-	int	filelen;
-	void*	in;
-
-	filelen = 0;
-	if (!FS_fread(&filelen, 4, 1, f)) return;
+static void Mod_LoadLeafsExternal(FILE *f)
+{
+	int filelen = 0;
+	if (!fread(&filelen, 4, 1, f)) return;
 	filelen = LittleLong(filelen);
 	if (filelen <= 0) return;
 	Con_DPrintf("...%d bytes leaf data\n", filelen);
-	in = Hunk_AllocName(filelen, "EXT_LEAF");
-	if (!FS_fread(in, filelen, 1, f))
+	void *in = Hunk_AllocName(filelen, "EXT_LEAF");
+	if (!fread(in, filelen, 1, f))
 		return;
-	Mod_ProcessLeafs_S((dleaf_t *)in, filelen); TODO*/
+	Mod_ProcessLeafs_S((dleaf_t *)in, filelen);
 }
 
 static void Mod_LoadBrushModel (model_t *mod, void *buffer)
@@ -2200,7 +2084,7 @@ static void Mod_LoadBrushModel (model_t *mod, void *buffer)
 	Mod_LoadMarksurfaces (&header->lumps[LUMP_MARKSURFACES], bsp2);
 	if (mod->bspversion == BSPVERSION && external_vis.value &&
 			sv.modelname[0] && !strcasecmp(loadname, sv.name)) {
-		fshandle_t *fvis;
+		FILE *fvis;
 		Con_DPrintf("trying to open external vis file\n");
 		fvis = Mod_FindVisibilityExternal();
 		if (fvis) {
@@ -2212,7 +2096,7 @@ static void Mod_LoadBrushModel (model_t *mod, void *buffer)
 			if (loadmodel->visdata) {
 				Mod_LoadLeafsExternal(fvis);
 			}
-			FS_fclose(fvis);
+			fclose(fvis);
 			if (loadmodel->visdata && loadmodel->leafs && loadmodel->numleafs) {
 				goto visdone;
 			}
@@ -2568,13 +2452,10 @@ void Mod_SetExtraFlags (model_t *mod)
 	if (!mod || mod->type != mod_alias)
 		return;
 	mod->flags &= (0xFF | MF_HOLEY); //only preserve first byte, plus MF_HOLEY
-	//TODO nolerp flag
-	//if (nameInList(r_nolerp_list.string, mod->name))
-	//	mod->flags |= MOD_NOLERP;
-
-	//TODO noshadow flag
-	//if (nameInList(r_noshadow_list.string, mod->name))
-	//	mod->flags |= MOD_NOSHADOW;
+	if (nameInList(r_nolerp_list.string, mod->name))
+		mod->flags |= MOD_NOLERP;
+	if (nameInList(r_noshadow_list.string, mod->name))
+		mod->flags |= MOD_NOSHADOW;
 	// fullbright hack (TODO: make this a cvar list)
 	if (!strcmp (mod->name, "progs/flame2.mdl") ||
 		!strcmp (mod->name, "progs/flame.mdl") ||
