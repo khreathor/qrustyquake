@@ -1,7 +1,5 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-//
-// sbar.c -- status bar code
-//
+
 #include "quakedef.h"
 
 #define STAT_MINUS 10 // num frame for '-' stats digit

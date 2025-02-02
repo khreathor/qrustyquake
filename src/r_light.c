@@ -1,7 +1,5 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
 
-// r_light.c
-
 #include "quakedef.h"
 #include "r_local.h"
 

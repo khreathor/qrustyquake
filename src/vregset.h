@@ -1,12 +1,8 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
 
-//
 // vregset.h: header file for video register-setting interpreter
-//
 
-//
 // registers & subregisters
-//
 #define MISC_OUTPUT	0x3C2
 
 #define SC_INDEX		0x3C4
@@ -27,9 +23,7 @@
 #define UNDERLINE		0x14
 #define	MODE_CONTROL	0x17
 
-//
 // register-set commands
-//
 #define VRS_END			0
 #define VRS_BYTE_OUT	1
 #define VRS_BYTE_RMW	2

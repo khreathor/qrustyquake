@@ -2,6 +2,7 @@
 // Copyright (C) 2007-2008 Kristian Duske
 // Copyright (C) 2010-2014 QuakeSpasm developers
 // GPLv3 See LICENSE for details.
+
 #include "net_sys.h"
 #include "quakedef.h"
 #include "net_defs.h"
