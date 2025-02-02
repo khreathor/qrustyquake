@@ -58,6 +58,7 @@ extern cvar_t r_slimealpha;
 extern cvar_t r_lavaalpha;
 extern cvar_t r_telealpha;
 extern cvar_t r_twopass;
+extern cvar_t fog;
 
 void D_DrawSpans8(espan_t *pspans);
 void D_DrawSpans16(espan_t *pspans);

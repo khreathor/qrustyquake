@@ -93,6 +93,7 @@ cvar_t r_telealpha = { "r_telealpha", "1", true, false, 0, NULL };
 cvar_t r_twopass = { "r_twopass", "1", true, false, 0, NULL }; // CyanBun96
 	// 0 - off (smart) 1 - on (smart) 2 - force off 3 - force on
 	// smart gets set on map load if cutouts were found
+cvar_t fog = { "fog", "1", true, false, 0, NULL }; // CyanBun96, just the density for now
 
 // johnfitz -- new cvars TODO actually implement these, they're currently placeholders
 cvar_t  r_nolerp_list = {"r_nolerp_list", "progs/flame.mdl,progs/flame2.mdl,progs/braztall.mdl,pro gs/brazshrt.mdl,progs/longtrch.mdl,progs/flame_pyre.mdl,progs/v_saw.mdl,progs/v_xfist.mdl,progs/h2 stuff/newfire.mdl", false, false, 0, NULL};
@@ -158,6 +159,7 @@ void R_Init()
 	Cvar_RegisterVariable(&r_lavaalpha);
 	Cvar_RegisterVariable(&r_telealpha);
 	Cvar_RegisterVariable(&r_twopass);
+	Cvar_RegisterVariable(&fog);
 	Cvar_SetValue("r_maxedges", (float)NUMSTACKEDGES);
 	Cvar_SetValue("r_maxsurfs", (float)NUMSTACKSURFACES);
 	view_clipplanes[0].leftedge = true;

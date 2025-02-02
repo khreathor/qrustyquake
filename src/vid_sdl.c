@@ -264,7 +264,7 @@ void VID_Init(unsigned char *palette)
 		Con_Printf("Detected video mode %d", vid_modenum);
 }
 
-void VID_Shutdown(void)
+void VID_Shutdown()
 {
 	if (vid_initialized) {
 		if (screen != NULL && lockcount > 0)
@@ -315,10 +315,31 @@ void VID_CalcScreenDimensions()
 	destRect.h = destH;
 }
 
+// Minimal 16-bit LFSR (taps at bits 16 and 14)
+static uint16_t lfsr = 0x1337; // Nonzero seed
+
+uint16_t lfsr_random() {
+	lfsr ^= lfsr >> 7;
+	lfsr ^= lfsr << 9;
+	lfsr ^= lfsr >> 13;
+	return lfsr;
+}
+
+float compute_fog(int z, float fog_density) { // Compute fog threshold
+	z/=10;
+	return expf(-fog_density * fog_density * (float)(z * z));
+}
+
 void VID_Update()
 {
+	for (int i = 0; i < vid.width * vid.height; ++i) { // fog! just a PoC, don't use pls.
+		float fog_factor = compute_fog(d_pzbuffer[i], fog.value);
+		float random_val = (lfsr_random() & 0xFFFF) / 65535.0f; // LFSR random number normalized to [0,1]
+		if (random_val < fog_factor)
+			((unsigned char *)(screen->pixels))[i] = 0; // replace with black, TODO colors
+	}
 	// Machines without a proper GPU will try to simulate one with software,
-	// adding a lot of overhead. In my tests, software rendering accomplished
+	// adding a lot of overhead. In my tests software rendering accomplished
 	// the same result with almost a 200% performance increase.
 	if (force_old_render) {	// pure software rendering
 		SDL_UpperBlit(screen, NULL, scaleBuffer, NULL);
