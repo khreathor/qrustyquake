@@ -1,13 +1,16 @@
 #include "sys_sdl.c"
-// CyanBun96: i ain't touching this shit anymore, if you want this to work on windoze fix it yourself
-int Sys_FileOpenWrite(char *path)
+int Sys_FileOpenWrite (char *path) // CyanBun96: pasta from Quakespasm
 {
-	return 0;
+	int i = findhandle ();
+	FILE *f = fopen(path, "wb");
+	if (!f) Sys_Error ("Error opening %s: %s", path, strerror(errno));
+	sys_handles[i] = f;
+	return i;
 }
 
-int Sys_FileWrite(int handle, void *src, int count)
+int Sys_FileWrite (int handle, void *data, int count) // ditto
 {
-	return 0;
+	return fwrite (data, 1, count, sys_handles[handle]);
 }
 
 void Sys_mkdir(char *path)

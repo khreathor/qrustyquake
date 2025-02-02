@@ -2072,13 +2072,13 @@ static void Mod_LoadSubmodels (lump_t *l)
 		printf ("%i visleafs exceeds standard limit of 8192.\n", out->visleafs);
 }
 
-static FILE *Mod_FindVisibilityExternal()
+static fshandle_t *Mod_FindVisibilityExternal()
 {/*TODO
 	vispatch_t header;
 	char visfilename[MAX_QPATH];
 	const char* shortname;
 	unsigned int path_id;
-	FILE *f;
+	fshandle_t *f;
 	long pos;
 	size_t r;
 
@@ -2096,7 +2096,7 @@ static FILE *Mod_FindVisibilityExternal()
 	}
 	if (path_id < loadmodel->path_id)
 	{
-		fclose(f);
+		FS_fclose(f);
 		Con_DPrintf("ignored %s from a gamedir with lower priority\n", visfilename);
 		return NULL;
 	}
@@ -2105,11 +2105,11 @@ static FILE *Mod_FindVisibilityExternal()
 
 	shortname = COM_SkipPath(loadmodel->name);
 	pos = 0;
-	while ((r = fread(&header, 1, VISPATCH_HEADER_LEN, f)) == VISPATCH_HEADER_LEN)
+	while ((r = FS_fread(&header, 1, VISPATCH_HEADER_LEN, f)) == VISPATCH_HEADER_LEN)
 	{
 		header.filelen = LittleLong(header.filelen);
 		if (header.filelen <= 0) {	// bad entry -- don't trust the rest.
-			fclose(f);
+			FS_fclose(f);
 			return NULL;
 		}
 		if (!strcasecmp(header.mapname, shortname))
@@ -2118,7 +2118,7 @@ static FILE *Mod_FindVisibilityExternal()
 		fseek(f, pos, SEEK_SET);
 	}
 	if (r != VISPATCH_HEADER_LEN) {
-		fclose(f);
+		FS_fclose(f);
 		Con_DPrintf("%s not found in %s\n", shortname, visfilename);
 		return NULL;
 	}
@@ -2126,32 +2126,31 @@ static FILE *Mod_FindVisibilityExternal()
 	return f;*/
 }
 
-static byte *Mod_LoadVisibilityExternal(FILE* f)
+static byte *Mod_LoadVisibilityExternal(fshandle_t *f)
 {
-	return NULL; // CyanBun: TODO implement with fread from common.c
 	int filelen = 0;
-	if (!fread(&filelen, 4, 1, f)) return NULL;
+	if (!FS_fread(&filelen, 4, 1, f)) return NULL;
 	filelen = LittleLong(filelen);
 	if (filelen <= 0) return NULL;
 	Con_DPrintf("...%d bytes visibility data\n", filelen);
 	byte *visdata = (byte *) Hunk_AllocName(filelen, "EXT_VIS");
-	if (!fread(visdata, filelen, 1, f))
+	if (!FS_fread(visdata, filelen, 1, f))
 		return NULL;
 	return visdata;
 }
 
-static void Mod_LoadLeafsExternal(FILE* f)
+static void Mod_LoadLeafsExternal(fshandle_t *f)
 {/*
 	int	filelen;
 	void*	in;
 
 	filelen = 0;
-	if (!fread(&filelen, 4, 1, f)) return;
+	if (!FS_fread(&filelen, 4, 1, f)) return;
 	filelen = LittleLong(filelen);
 	if (filelen <= 0) return;
 	Con_DPrintf("...%d bytes leaf data\n", filelen);
 	in = Hunk_AllocName(filelen, "EXT_LEAF");
-	if (!fread(in, filelen, 1, f))
+	if (!FS_fread(in, filelen, 1, f))
 		return;
 	Mod_ProcessLeafs_S((dleaf_t *)in, filelen); TODO*/
 }
@@ -2201,7 +2200,7 @@ static void Mod_LoadBrushModel (model_t *mod, void *buffer)
 	Mod_LoadMarksurfaces (&header->lumps[LUMP_MARKSURFACES], bsp2);
 	if (mod->bspversion == BSPVERSION && external_vis.value &&
 			sv.modelname[0] && !strcasecmp(loadname, sv.name)) {
-		FILE* fvis;
+		fshandle_t *fvis;
 		Con_DPrintf("trying to open external vis file\n");
 		fvis = Mod_FindVisibilityExternal();
 		if (fvis) {
@@ -2213,7 +2212,7 @@ static void Mod_LoadBrushModel (model_t *mod, void *buffer)
 			if (loadmodel->visdata) {
 				Mod_LoadLeafsExternal(fvis);
 			}
-			//fclose(fvis); CyanBun96: TODO implement with fclose wrapper from common.c
+			FS_fclose(fvis);
 			if (loadmodel->visdata && loadmodel->leafs && loadmodel->numleafs) {
 				goto visdone;
 			}
