@@ -42,10 +42,10 @@ int vid_testingmode;
 int vid_realmode;
 int vid_default;
 double vid_testendtime;
-unsigned char vid_curpal[256 * 3];	// save for mode changes
+unsigned char vid_curpal[256 * 3]; // save for mode changes
 qboolean vid_initialized;
 qboolean palette_changed;
-viddef_t vid;			// global video state
+viddef_t vid; // global video state
 
 cvar_t vid_mode = { "vid_mode", "0", 0, 0, 0, 0 };
 cvar_t _vid_default_mode_win = { "_vid_default_mode_win", "3", 1, 0, 0, 0 };
@@ -280,7 +280,7 @@ void VID_CalcScreenDimensions()
 {
 	uiscale = (vid.width / 320);
 	if (uiscale * 200 > vid.height)
-		uiscale = 1;	// For weird resolutions like 800x200
+		uiscale = 1; // For weird resolutions like 800x200
 	Cvar_SetValue("scr_uiscale", uiscale);
 	// Scaling code, courtesy of ChatGPT
 	// Original, pre-scale screen size
@@ -326,17 +326,37 @@ uint16_t lfsr_random() {
 }
 
 float compute_fog(int z, float fog_density) { // Compute fog threshold
-	z/=10;
+	z /= 10;
 	return expf(-fog_density * fog_density * (float)(z * z));
+}
+
+unsigned char sw_avg(unsigned char v1, float f) { // TODO colors?
+	unsigned char retv;
+	if (v1 < 0x80)
+		retv = v1 & 0x0F;
+	else if (v1 < 0xE0)
+		retv = 0x10 - (v1 & 0x0F);
+	else if (1 || v1 < 0xF0)
+		retv = v1 & 0x0F;
+	else retv = v1;
+	if ((int)(f*16) >= retv)
+		return 0;
+	return retv - (int)(f*16);
 }
 
 void VID_Update()
 {
+	int fogstyle = 0;
 	for (int i = 0; i < vid.width * vid.height; ++i) { // fog! just a PoC, don't use pls.
 		float fog_factor = compute_fog(d_pzbuffer[i], fog.value);
-		float random_val = (lfsr_random() & 0xFFFF) / 65535.0f; // LFSR random number normalized to [0,1]
-		if (random_val < fog_factor)
-			((unsigned char *)(screen->pixels))[i] = 0; // replace with black, TODO colors
+		if (fogstyle == 0) {
+			float random_val = (lfsr_random() & 0xFFFF) / 65535.0f; // LFSR random number normalized to [0,1]
+			if (random_val < fog_factor)
+				((unsigned char *)(screen->pixels))[i] = 0; // replace with black, TODO colors
+		}
+		else {
+			((unsigned char *)(screen->pixels))[i] = sw_avg(((unsigned char *)(screen->pixels))[i], fog_factor);
+		}
 	}
 	// Machines without a proper GPU will try to simulate one with software,
 	// adding a lot of overhead. In my tests software rendering accomplished
