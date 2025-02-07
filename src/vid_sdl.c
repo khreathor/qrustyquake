@@ -15,6 +15,7 @@ unsigned int oldmodes[NUM_OLDMODES * 2] = {
 	640, 400, 640, 480, 800, 600
 };
 
+float *randarr; // used for fog
 char modelist[NUM_OLDMODES][8];	// "320x240" etc. for menus
 SDL_Window *window;
 SDL_Surface *windowSurface;
@@ -387,11 +388,12 @@ int dither(int x, int y, float f) {
 
 void VID_Update()
 {
-	int fogstyle = 1;
+	int fogstyle = 2;
 	for (int y = 0; y < vid.height; ++y) { // fog! just a PoC, don't use pls.
 	for (int x = 0; x < vid.width; ++x) {
 		int i = x + y * vid.width;
-		float fog_factor = compute_fog(d_pzbuffer[i], fog.value);
+		int bias = randarr[vid.width*vid.height - i] * 10;
+		float fog_factor = compute_fog(d_pzbuffer[i] + bias, fog.value);
 		if (fogstyle == 0) { // noisy
 			float random_val = (lfsr_random() & 0xFFFF) / 65535.0f; // LFSR random number normalized to [0,1]
 			if (random_val < fog_factor)
@@ -399,7 +401,13 @@ void VID_Update()
 		}
 		else if (fogstyle == 1) { // dither
 			if (dither(x, y, fog_factor))
-				((unsigned char *)(screen->pixels))[i] = 0; // replace with black, TODO colors
+				((unsigned char *)(screen->pixels))[i] = 0;
+		}
+		else if (fogstyle == 2) { // dither + noise
+			fog_factor += (randarr[i] - 0.5) * 0.2;
+			fog_factor = fog_factor < 0.1 ? 0 : fog_factor;
+			if (dither(x, y, fog_factor))
+				((unsigned char *)(screen->pixels))[i] = 14;
 		}
 		else { // mix
 			((unsigned char *)(screen->pixels))[i] = sw_avg(((unsigned char *)(screen->pixels))[i], fog_factor);
@@ -414,7 +422,7 @@ void VID_Update()
 		SDL_UpperBlitScaled(scaleBuffer, &blitRect, windowSurface,
 				    &destRect);
 		SDL_UpdateWindowSurface(window);
-	} else {		// hardware-accelerated rendering
+	} else { // hardware-accelerated rendering
 		SDL_LockTexture(texture, &blitRect, &argbbuffer->pixels,
 				&argbbuffer->pitch);
 		SDL_LowerBlit(screen, &blitRect, argbbuffer, &blitRect);
@@ -468,6 +476,9 @@ void VID_AllocBuffers()
 	unsigned char *cache = (byte *) d_pzbuffer
 	    + vid.width * vid.height * sizeof(*d_pzbuffer);
 	D_InitCaches(cache, cachesize);
+	randarr = malloc(vid.width * vid.height * sizeof(float)); // TODO not optimal
+	for (int i = 0; i < vid.width * vid.height; ++i) // fog bias array
+		randarr[i] = (lfsr_random() & 0xFFFF) / 65535.0f; // LFSR random number normalized to [0,1]
 }
 
 void VID_SetMode(int modenum, int customw, int customh, int customwinmode,
