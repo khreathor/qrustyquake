@@ -11,12 +11,10 @@ static float fog_blue; // palette before use, stored in fog_pal_index
 unsigned char fog_pal_index;
 extern unsigned char vid_curpal[256 * 3]; // RGB palette
 extern cvar_t r_fogstyle;
+unsigned char *rgb_to_index_precalc;
 
-unsigned char rgb_to_index(float inr, float ing, float inb)
+unsigned char rgb_to_index(unsigned char r, unsigned char g, unsigned char b)
 {
-	unsigned char r = inr * 255;
-	unsigned char g = ing * 255;
-	unsigned char b = inb * 255;
 	unsigned char reti = 0;
 	int mindist = 99999;
 	unsigned char *pal = vid_curpal;
@@ -96,7 +94,7 @@ void Fog_FogCommand_f () // yanked from Quakespasm, mostly
 	fog_red = r;
 	fog_green = g;
 	fog_blue = b;
-	fog_pal_index = rgb_to_index(r, g, b);
+	fog_pal_index = rgb_to_index(r*255.0f, g*255.0f, b*255.0f);
 }
 
 unsigned int lfsr_random() {
@@ -113,13 +111,14 @@ float compute_fog(int z) {
 
 unsigned char sw_avg(unsigned char v1, float f) {
 	// the incredibly slow color version
-	float scr_red = (float)vid_curpal[v1*3 + 0] / 256.0f;
-	float scr_green = (float)vid_curpal[v1*3 + 1] / 256.0f;
-	float scr_blue = (float)vid_curpal[v1*3 + 2] / 256.0f;
-	float new_red = fog_red * f + scr_red * (1.0f - f);
-	float new_green = fog_green * f + scr_green * (1.0f - f);
-	float new_blue = fog_blue * f + scr_blue * (1.0f - f);
-	return rgb_to_index(new_red, new_green, new_blue);
+	unsigned char scr_red = vid_curpal[v1*3 + 0];
+	unsigned char scr_green = vid_curpal[v1*3 + 1];
+	unsigned char scr_blue = vid_curpal[v1*3 + 2];
+	unsigned char new_red = fog_red * 255.0f * f + scr_red * (1.0f - f);
+	unsigned char new_green = fog_green * 255.0f * f + scr_green * (1.0f - f);
+	unsigned char new_blue = fog_blue * 255.0f * f + scr_blue * (1.0f - f);
+	//return rgb_to_index(new_red, new_green, new_blue);
+	return rgb_to_index_precalc[new_red+new_green*256+new_blue*256*256];
 	/* the efficient but monochrome version
 	unsigned char retv;
 	if (v1 < 0x80)
@@ -156,6 +155,13 @@ void R_InitFog()
 	randarr = malloc(vid.width * vid.height * sizeof(float)); // TODO not optimal, use the zone
 	for (int i = 0; i < vid.width * vid.height; ++i) // fog bias array
 		randarr[i] = (lfsr_random() & 0xFFFF) / 65535.0f; // LFSR random number normalized to [0,1]
+	if (!rgb_to_index_precalc) { // the only way to make mix-style fog fast that I could think of
+		rgb_to_index_precalc = malloc(256*256*256);
+		for (int r = 0; r < 256; ++r)
+		for (int g = 0; g < 256; ++g)
+		for (int b = 0; b < 256; ++b)
+			rgb_to_index_precalc[r+g*256+b*256*256] = rgb_to_index(r, g, b);
+	}
 	fog_initialized = 1;
 }
 
@@ -163,29 +169,33 @@ void R_DrawFog()
 {
 	if (!fog_initialized)
 		R_InitFog();
+	int style = r_fogstyle.value;
 	for (int y = 0; y < vid.height; ++y) {
 	for (int x = 0; x < vid.width; ++x) {
 		int i = x + y * vid.width;
 		int bias = randarr[vid.width*vid.height - i] * 10;
 		float fog_factor = compute_fog(d_pzbuffer[i] + bias);
-		if (r_fogstyle.value == 0) { // noisy
+		switch (style) {
+		default:
+		case 0: // noisy
 			float random_val = (lfsr_random() & 0xFFFF) / 65535.0f; // LFSR random number normalized to [0,1]
 			if (random_val < fog_factor)
 				((unsigned char *)(screen->pixels))[i] = fog_pal_index;
-		}
-		else if (r_fogstyle.value == 1) { // dither
+			break;
+		case 1: // dither
 			if (dither(x, y, fog_factor))
 				((unsigned char *)(screen->pixels))[i] = fog_pal_index;
-		}
-		else if (r_fogstyle.value == 2) { // dither + noise
+			break;
+		case 2: // dither + noise
 			fog_factor += (randarr[i] - 0.5) * 0.2;
 			fog_factor = fog_factor < 0.1 ? 0 : fog_factor;
 			if (dither(x, y, fog_factor))
 				((unsigned char *)(screen->pixels))[i] = fog_pal_index;
-		}
-		else { // mix
+			break;
+		case 3: // mix
 			if (fog_factor < 1)
 				((unsigned char *)(screen->pixels))[i] = sw_avg(((unsigned char *)(screen->pixels))[i], fog_factor);
+			break;
 		}
 	}
 	}
