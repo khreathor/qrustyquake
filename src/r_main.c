@@ -93,6 +93,7 @@ cvar_t r_telealpha = { "r_telealpha", "1", true, false, 0, NULL };
 cvar_t r_twopass = { "r_twopass", "1", true, false, 0, NULL }; // CyanBun96
 	// 0 - off (smart) 1 - on (smart) 2 - force off 3 - force on
 	// smart gets set on map load if cutouts were found
+cvar_t r_fogstyle = { "r_fogstyle", "2", true, false, 0, NULL }; // CyanBun96
 
 // johnfitz -- new cvars TODO actually implement these, they're currently placeholders
 cvar_t  r_nolerp_list = {"r_nolerp_list", "progs/flame.mdl,progs/flame2.mdl,progs/braztall.mdl,pro gs/brazshrt.mdl,progs/longtrch.mdl,progs/flame_pyre.mdl,progs/v_saw.mdl,progs/v_xfist.mdl,progs/h2 stuff/newfire.mdl", false, false, 0, NULL};
@@ -100,9 +101,10 @@ cvar_t  r_noshadow_list = {"r_noshadow_list", "progs/flame2.mdl,progs/flame.mdl,
 // johnfitz
 
 extern cvar_t scr_fov;
-extern cvar_t fog;
+extern float fog_density;
 extern int fog_initialized;
 extern void R_DrawFog();
+extern void Fog_FogCommand_f();
 
 void CreatePassages();
 void SetVisibilityByPassages();
@@ -135,6 +137,7 @@ void R_Init()
 	R_InitTurb();
 	Cmd_AddCommand("timerefresh", R_TimeRefresh_f);
 	Cmd_AddCommand("pointfile", R_ReadPointFile_f);
+	Cmd_AddCommand("fog", Fog_FogCommand_f);
 	Cvar_RegisterVariable(&r_draworder);
 	Cvar_RegisterVariable(&r_speeds);
 	Cvar_RegisterVariable(&r_timegraph);
@@ -161,7 +164,7 @@ void R_Init()
 	Cvar_RegisterVariable(&r_lavaalpha);
 	Cvar_RegisterVariable(&r_telealpha);
 	Cvar_RegisterVariable(&r_twopass);
-	Cvar_RegisterVariable(&fog);
+	Cvar_RegisterVariable(&r_fogstyle);
 	Cvar_SetValue("r_maxedges", (float)NUMSTACKEDGES);
 	Cvar_SetValue("r_maxsurfs", (float)NUMSTACKSURFACES);
 	view_clipplanes[0].leftedge = true;
@@ -611,7 +614,7 @@ void R_RenderView() // r_refdef must be set before the first call
 	R_DrawParticles();
 	if (r_dowarp)
 		D_WarpScreen();
-        if (!r_dowarp && fog.value < 1) // broken underwater, fixme?
+        if (!r_dowarp && fog_density < 1) // broken underwater, fixme?
                 R_DrawFog();
 	V_SetContentsColor(r_viewleaf->contents);
 	if (r_reportsurfout.value && r_outofsurfaces) // TODO r_dspeds and such
