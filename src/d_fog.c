@@ -109,29 +109,16 @@ float compute_fog(int z) {
 	return expf(-(1.0f-fog_density) * (1.0f-fog_density) * (float)(z * z));
 }
 
-unsigned char sw_avg(unsigned char v1, float f) {
-	// the incredibly slow color version
-	unsigned char scr_red = vid_curpal[v1*3 + 0];
-	unsigned char scr_green = vid_curpal[v1*3 + 1];
-	unsigned char scr_blue = vid_curpal[v1*3 + 2];
-	unsigned char new_red = fog_red * 255.0f * f + scr_red * (1.0f - f);
-	unsigned char new_green = fog_green * 255.0f * f + scr_green * (1.0f - f);
-	unsigned char new_blue = fog_blue * 255.0f * f + scr_blue * (1.0f - f);
-	//return rgb_to_index(new_red, new_green, new_blue);
-	return rgb_to_index_precalc[new_red+new_green*256+new_blue*256*256];
-	/* the efficient but monochrome version
-	unsigned char retv;
-	if (v1 < 0x80)
-		retv = v1 & 0x0F;
-	else if (v1 < 0xE0)
-		retv = 0x10 - (v1 & 0x0F);
-	else if (1 || v1 < 0xF0)
-		retv = v1 & 0x0F;
-	else retv = v1;
-	if ((int)(f*16) >= retv)
-		return 0;
-	return retv - (int)(f*16);
-	*/
+static inline unsigned char sw_avg_impl(unsigned char scr, float f,
+		const unsigned char *curpal, const unsigned char *rgb_precalc) {
+	unsigned char scr_red   = curpal[scr * 3 + 0];
+	unsigned char scr_green = curpal[scr * 3 + 1];
+	unsigned char scr_blue  = curpal[scr * 3 + 2];
+	// Perform the blend (using the lerp form for efficiency):
+	unsigned char new_red   = (unsigned char)(scr_red   + f * ((fog_red   * 255.0f) - scr_red));
+	unsigned char new_green = (unsigned char)(scr_green + f * ((fog_green * 255.0f) - scr_green));
+	unsigned char new_blue  = (unsigned char)(scr_blue  + f * ((fog_blue  * 255.0f) - scr_blue));
+	return rgb_precalc[new_red + new_green * 256 + new_blue * 256 * 256];
 }
 
 int dither(int x, int y, float f) {
@@ -165,39 +152,44 @@ void R_InitFog()
 	fog_initialized = 1;
 }
 
-void R_DrawFog()
-{
+void R_DrawFog() {
 	if (!fog_initialized)
 		R_InitFog();
 	int style = r_fogstyle.value;
+	// Cache invariant pointers once per frame (or game)
+	const unsigned char *curpal = vid_curpal; // vid_curpal is defined as vid_curpal[256][3]
+	const unsigned char *rgb_precalc = rgb_to_index_precalc; // Allocated once at game start
 	for (int y = 0; y < vid.height; ++y) {
 	for (int x = 0; x < vid.width; ++x) {
 		int i = x + y * vid.width;
 		int bias = randarr[vid.width*vid.height - i] * 10;
 		float fog_factor = compute_fog(d_pzbuffer[i] + bias);
 		switch (style) {
-		default:
-		case 0: // noisy
-			float random_val = (lfsr_random() & 0xFFFF) / 65535.0f; // LFSR random number normalized to [0,1]
-			if (random_val < fog_factor)
-				((unsigned char *)(screen->pixels))[i] = fog_pal_index;
-			break;
-		case 1: // dither
-			if (dither(x, y, fog_factor))
-				((unsigned char *)(screen->pixels))[i] = fog_pal_index;
-			break;
-		case 2: // dither + noise
-			fog_factor += (randarr[i] - 0.5) * 0.2;
-			fog_factor = fog_factor < 0.1 ? 0 : fog_factor;
-			if (dither(x, y, fog_factor))
-				((unsigned char *)(screen->pixels))[i] = fog_pal_index;
-			break;
-		case 3: // mix
-			if (fog_factor < 1)
-				((unsigned char *)(screen->pixels))[i] = sw_avg(((unsigned char *)(screen->pixels))[i], fog_factor);
-			break;
+			default:
+			case 0: // noisy
+				float random_val = (lfsr_random() & 0xFFFF) / 65535.0f;
+				if (random_val < fog_factor)
+					((unsigned char *)(screen->pixels))[i] = fog_pal_index;
+				break;
+			case 1: // dither
+				if (dither(x, y, fog_factor))
+					((unsigned char *)(screen->pixels))[i] = fog_pal_index;
+				break;
+			case 2: // dither + noise
+				fog_factor += (randarr[i] - 0.5f) * 0.2f;
+				fog_factor = fog_factor < 0.1f ? 0 : fog_factor;
+				if (dither(x, y, fog_factor))
+					((unsigned char *)(screen->pixels))[i] = fog_pal_index;
+				break;
+			case 3: // mix
+				if (fog_factor < 1)
+					((unsigned char *)(screen->pixels))[i] =
+						sw_avg_impl(((unsigned char *)(screen->pixels))[i],
+								fog_factor,
+								curpal,
+								rgb_precalc);
+				break;
 		}
 	}
 	}
 }
-
