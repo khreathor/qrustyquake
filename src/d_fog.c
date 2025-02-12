@@ -1,6 +1,8 @@
 #include "quakedef.h"
 #include "d_local.h"
 
+#define FOG_LUT_LEVELS 32
+
 float *randarr; // used for noise bias
 int fog_initialized = 0;
 static unsigned int lfsr = 0x1337; // non-zero seed
@@ -11,24 +13,33 @@ static float fog_blue; // palette before use, stored in fog_pal_index
 unsigned char fog_pal_index;
 extern unsigned char vid_curpal[256 * 3]; // RGB palette
 extern cvar_t r_fogstyle;
-unsigned char *rgb_to_index_precalc;
+unsigned char color_mix_lut[256][256][FOG_LUT_LEVELS];
+int fog_lut_built = 0;
 
-unsigned char rgb_to_index(unsigned char r, unsigned char g, unsigned char b)
-{
-	unsigned char reti = 0;
-	int mindist = 99999;
-	unsigned char *pal = vid_curpal;
-	for (int i = 0; i < 256; ++i) { // a very naive algo, replace with
-		int dist = 0; // something actually color-theory based
-		dist += r > pal[i*3+0] ? r - pal[i*3+0] : pal[i*3+0] - r;
-		dist += g > pal[i*3+1] ? g - pal[i*3+1] : pal[i*3+1] - g;
-		dist += b > pal[i*3+2] ? b - pal[i*3+2] : pal[i*3+2] - b;
-		if (mindist > dist) {
-			mindist = dist;
-			reti = i;
+unsigned char rgbtoi(unsigned char r, unsigned char g, unsigned char b)
+{ // todo? lab color or really anything more accurate
+	unsigned char besti = 0;
+	int bestdist = 9999999;
+	unsigned char *p = vid_curpal;
+	for (int i = 0; i < 256; ++i) {
+		int pr = p[0];
+		int pg = p[1];
+		int pb = p[2];
+		int dr = r - pr;
+		int dg = g - pg;
+		int db = b - pb;
+		int dist = (dr < 0 ? -dr : dr) +
+			(dg < 0 ? -dg : dg) +
+			(db < 0 ? -db : db);
+		if (dist < bestdist) {
+			bestdist = dist;
+			besti = (unsigned char)i;
+			if (dist == 0)
+				break; // found an exact match, return early
 		}
+		p += 3;
 	}
-	return reti;
+	return besti;
 }
 
 void Fog_FogCommand_f () // yanked from Quakespasm, mostly
@@ -94,7 +105,7 @@ void Fog_FogCommand_f () // yanked from Quakespasm, mostly
 	fog_red = r;
 	fog_green = g;
 	fog_blue = b;
-	fog_pal_index = rgb_to_index(r*255.0f, g*255.0f, b*255.0f);
+	fog_pal_index = rgbtoi(r*255.0f, g*255.0f, b*255.0f);
 }
 
 unsigned int lfsr_random() {
@@ -107,18 +118,6 @@ unsigned int lfsr_random() {
 float compute_fog(int z) {
 	z /= 10; // TODO adjust
 	return expf(-(1.0f-fog_density) * (1.0f-fog_density) * (float)(z * z));
-}
-
-static inline unsigned char sw_avg_impl(unsigned char scr, float f,
-		const unsigned char *curpal, const unsigned char *rgb_precalc) {
-	unsigned char scr_red   = curpal[scr * 3 + 0];
-	unsigned char scr_green = curpal[scr * 3 + 1];
-	unsigned char scr_blue  = curpal[scr * 3 + 2];
-	// Perform the blend (using the lerp form for efficiency):
-	unsigned char new_red   = (unsigned char)(scr_red   + f * ((fog_red   * 255.0f) - scr_red));
-	unsigned char new_green = (unsigned char)(scr_green + f * ((fog_green * 255.0f) - scr_green));
-	unsigned char new_blue  = (unsigned char)(scr_blue  + f * ((fog_blue  * 255.0f) - scr_blue));
-	return rgb_precalc[new_red + new_green * 256 + new_blue * 256 * 256];
 }
 
 int dither(int x, int y, float f) {
@@ -137,18 +136,37 @@ int dither(int x, int y, float f) {
 	return 1; // don't draw
 }
 
+void build_color_mix_lut()
+{
+    for (int c1 = 0; c1 < 256; c1++) {
+        for (int c2 = 0; c2 < 256; c2++) {
+            unsigned char r1 = vid_curpal[c1*3+0];
+            unsigned char g1 = vid_curpal[c1*3+1];
+            unsigned char b1 = vid_curpal[c1*3+2];
+            unsigned char r2 = vid_curpal[c2*3+0];
+            unsigned char g2 = vid_curpal[c2*3+1];
+            unsigned char b2 = vid_curpal[c2*3+2];
+            for (int level = 0; level < FOG_LUT_LEVELS; level++) {
+                float factor = (float)level / (FOG_LUT_LEVELS-1);
+                // learp each RGB component
+                unsigned char r = (unsigned char)(r1 + factor * (r2 - r1));
+                unsigned char g = (unsigned char)(g1 + factor * (g2 - g1));
+                unsigned char b = (unsigned char)(b1 + factor * (b2 - b1));
+                unsigned char mixed_index = rgbtoi(r, g, b);
+                color_mix_lut[c1][c2][level] = mixed_index;
+            }
+        }
+    }
+    fog_lut_built = 1;
+}
+
 void R_InitFog()
 {
 	randarr = malloc(vid.width * vid.height * sizeof(float)); // TODO not optimal, use the zone
 	for (int i = 0; i < vid.width * vid.height; ++i) // fog bias array
 		randarr[i] = (lfsr_random() & 0xFFFF) / 65535.0f; // LFSR random number normalized to [0,1]
-	if (!rgb_to_index_precalc) { // the only way to make mix-style fog fast that I could think of
-		rgb_to_index_precalc = malloc(256*256*256);
-		for (int r = 0; r < 256; ++r)
-		for (int g = 0; g < 256; ++g)
-		for (int b = 0; b < 256; ++b)
-			rgb_to_index_precalc[r+g*256+b*256*256] = rgb_to_index(r, g, b);
-	}
+	if (!fog_lut_built)
+		build_color_mix_lut();
 	fog_initialized = 1;
 }
 
@@ -156,9 +174,6 @@ void R_DrawFog() {
 	if (!fog_initialized)
 		R_InitFog();
 	int style = r_fogstyle.value;
-	// Cache invariant pointers once per frame (or game)
-	const unsigned char *curpal = vid_curpal; // vid_curpal is defined as vid_curpal[256][3]
-	const unsigned char *rgb_precalc = rgb_to_index_precalc; // Allocated once at game start
 	for (int y = 0; y < vid.height; ++y) {
 	for (int x = 0; x < vid.width; ++x) {
 		int i = x + y * vid.width;
@@ -184,10 +199,8 @@ void R_DrawFog() {
 			case 3: // mix
 				if (fog_factor < 1)
 					((unsigned char *)(screen->pixels))[i] =
-						sw_avg_impl(((unsigned char *)(screen->pixels))[i],
-								fog_factor,
-								curpal,
-								rgb_precalc);
+						color_mix_lut[((unsigned char *)(screen->pixels))[i]]
+							[fog_pal_index][(int)(fog_factor*(FOG_LUT_LEVELS-1))];
 				break;
 		}
 	}
