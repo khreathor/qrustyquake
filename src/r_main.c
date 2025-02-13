@@ -93,7 +93,7 @@ cvar_t r_telealpha = { "r_telealpha", "1", true, false, 0, NULL };
 cvar_t r_twopass = { "r_twopass", "1", true, false, 0, NULL }; // CyanBun96
 	// 0 - off (smart) 1 - on (smart) 2 - force off 3 - force on
 	// smart gets set on map load if cutouts were found
-cvar_t r_fogstyle = { "r_fogstyle", "2", true, false, 0, NULL }; // CyanBun96
+cvar_t r_fogstyle = { "r_fogstyle", "3", true, false, 0, NULL }; // CyanBun96
 
 // johnfitz -- new cvars TODO actually implement these, they're currently placeholders
 cvar_t  r_nolerp_list = {"r_nolerp_list", "progs/flame.mdl,progs/flame2.mdl,progs/braztall.mdl,pro gs/brazshrt.mdl,progs/longtrch.mdl,progs/flame_pyre.mdl,progs/v_saw.mdl,progs/v_xfist.mdl,progs/h2 stuff/newfire.mdl", false, false, 0, NULL};
@@ -105,6 +105,7 @@ extern float fog_density;
 extern int fog_initialized;
 extern void R_DrawFog();
 extern void Fog_FogCommand_f();
+extern void Fog_ParseWorldspawn();
 
 void CreatePassages();
 void SetVisibilityByPassages();
@@ -210,6 +211,7 @@ void R_NewMap()
 		: Hunk_AllocName(r_numallocatededges * sizeof(edge_t), "edges");
 	r_dowarpold = false;
 	r_viewchanged = false;
+	Fog_ParseWorldspawn();
 }
 
 void R_SetVrect(vrect_t *pvrectin, vrect_t *pvrect, int lineadj)

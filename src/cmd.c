@@ -406,8 +406,8 @@ void Cmd_ExecuteString(char *text, cmd_source_t src)
 			Cbuf_InsertText(a->value);
 			return;
 		}
-	} // CyanBun96: fog is coming, some day, maybe, don't spam for now.
-	if (!Cvar_Command() && strncmp("fog", Cmd_Argv(0), 3)) // check cvars
+	}
+	if (!Cvar_Command()) // check cvars
 		Con_Printf("Unknown command \"%s\"\n", Cmd_Argv(0));
 }
 

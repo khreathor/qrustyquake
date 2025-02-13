@@ -13,6 +13,7 @@ static float fog_blue; // palette before use, stored in fog_pal_index
 unsigned char fog_pal_index;
 extern unsigned char vid_curpal[256 * 3]; // RGB palette
 extern cvar_t r_fogstyle;
+extern unsigned int sb_updates; // if >= vid.numpages, no update needed
 unsigned char color_mix_lut[256][256][FOG_LUT_LEVELS];
 int fog_lut_built = 0;
 
@@ -108,16 +109,49 @@ void Fog_FogCommand_f () // yanked from Quakespasm, mostly
 	fog_pal_index = rgbtoi(r*255.0f, g*255.0f, b*255.0f);
 }
 
+void Fog_ParseWorldspawn () // from Quakespasm
+{ // called at map load
+	char key[128], value[4096];
+	fog_density = 0; //initially no fog
+	fog_red = 0;
+	fog_green = 0;
+	fog_blue = 0;
+	/*TODOold_density = DEFAULT_DENSITY;
+	old_red = DEFAULT_GRAY;
+	old_green = DEFAULT_GRAY;
+	old_blue = DEFAULT_GRAY;
+	fade_time = 0.0;
+	fade_done = 0.0;*/
+	const char *data = COM_Parse(data);
+	data = COM_Parse(cl.worldmodel->entities);
+	if (!data || com_token[0] != '{')
+		return; // error
+	while (1) {
+		if (!data)
+			return; // error
+		if (com_token[0] == '}')
+			break; // end of worldspawn
+		if (com_token[0] == '_')
+			q_strlcpy(key, com_token + 1, sizeof(key));
+		else
+			q_strlcpy(key, com_token, sizeof(key));
+		while (key[0] && key[strlen(key)-1] == ' ') // remove trailing spaces
+			key[strlen(key)-1] = 0;
+		data = COM_ParseEx(data, CPE_ALLOWTRUNC);
+		if (!data)
+			return; // error
+		q_strlcpy(value, com_token, sizeof(value));
+		if (!strcmp("fog", key))
+			sscanf(value, "%f %f %f %f", &fog_density, &fog_red, &fog_green, &fog_blue);
+	}
+	fog_pal_index = rgbtoi(fog_red*255.0f, fog_green*255.0f, fog_blue*255.0f);
+}
+
 unsigned int lfsr_random() {
 	lfsr ^= lfsr >> 7;
 	lfsr ^= lfsr << 9;
 	lfsr ^= lfsr >> 13;
 	return lfsr;
-}
-
-float compute_fog(int z) {
-	z /= 10; // TODO adjust
-	return expf(-(1.0f-fog_density) * (1.0f-fog_density) * (float)(z * z));
 }
 
 int dither(int x, int y, float f) {
@@ -162,17 +196,34 @@ void build_color_mix_lut()
 
 void R_InitFog()
 {
-	randarr = malloc(vid.width * vid.height * sizeof(float)); // TODO not optimal, use the zone
-	for (int i = 0; i < vid.width * vid.height; ++i) // fog bias array
-		randarr[i] = (lfsr_random() & 0xFFFF) / 65535.0f; // LFSR random number normalized to [0,1]
+	fog_density = 0; //initially no fog
+	fog_red = 0;
+	fog_green = 0;
+	fog_blue = 0;
+	fog_pal_index = rgbtoi(fog_red*255.0f, fog_green*255.0f, fog_blue*255.0f);
+	if (!randarr) {
+		randarr = malloc(vid.width * vid.height * sizeof(float)); // TODO not optimal, use the zone
+		for (int i = 0; i < vid.width * vid.height; ++i) // fog bias array
+			randarr[i] = (lfsr_random() & 0xFFFF) / 65535.0f; // LFSR random number normalized to [0,1]
+	}
 	if (!fog_lut_built)
 		build_color_mix_lut();
 	fog_initialized = 1;
 }
 
+float compute_fog(int z) {
+	const int fog_scale = 32;
+	z = fog_scale > z ? fog_scale : z; // prevent distant objects from getting no fog
+	z /= fog_scale;
+	return expf(-(1.0f-fog_density) * (1.0f-fog_density) * (float)(z * z));
+}
+
 void R_DrawFog() {
+	if (!fog_density)
+		return;
 	if (!fog_initialized)
 		R_InitFog();
+	sb_updates = 0; // draw sbar over fog
 	int style = r_fogstyle.value;
 	for (int y = 0; y < vid.height; ++y) {
 	for (int x = 0; x < vid.width; ++x) {
@@ -180,7 +231,6 @@ void R_DrawFog() {
 		int bias = randarr[vid.width*vid.height - i] * 10;
 		float fog_factor = compute_fog(d_pzbuffer[i] + bias);
 		switch (style) {
-			default:
 			case 0: // noisy
 				float random_val = (lfsr_random() & 0xFFFF) / 65535.0f;
 				if (random_val < fog_factor)
@@ -196,11 +246,12 @@ void R_DrawFog() {
 				if (dither(x, y, fog_factor))
 					((unsigned char *)(screen->pixels))[i] = fog_pal_index;
 				break;
+			default:
 			case 3: // mix
-				if (fog_factor < 1)
+				if (fog_factor < 1) 
 					((unsigned char *)(screen->pixels))[i] =
 						color_mix_lut[((unsigned char *)(screen->pixels))[i]]
-							[fog_pal_index][(int)(fog_factor*(FOG_LUT_LEVELS-1))];
+							[fog_pal_index][(int)(fog_factor*FOG_LUT_LEVELS)];
 				break;
 		}
 	}
