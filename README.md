@@ -68,6 +68,12 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
       - Very limited and glitch-prone in their current implementation
 
+   - Fog (Quakespasm-like syntax "fog" command)
+
+      - r_nofog 1 to disable
+
+      - r_fogstyle 0/1/2/3, with 3 being the default and most "modern-looking"
+
 # Planned
 
 - Overhaul, modernization and trimming of the source code - removal of dead platforms and platform-specific code in favor of portable, properly formatted and readable code.
@@ -91,8 +97,6 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 - Other modern features (optional)
 
    - Status bar styles
-
-   - Fog (software implementation)
 
    - More modern console
 
@@ -120,7 +124,7 @@ x86_64 unless specified otherwise.
 
 VM is VirtualBox unless specified otherwise.
 
-- Arch Linux [HW] v0.4
+- Arch Linux [HW] v0.4.1
 
    - The main platform that this port is developed on. The most likely one to work
 
@@ -146,15 +150,13 @@ VM is VirtualBox unless specified otherwise.
 
    - Ran through X11 with touch controls. *unpleasant*
 
-- Windows [VM, HW] v0.4
+- Windows [VM, HW] v0.4.1
 
    - Tested with w10 on hardware and w11 on a VM
 
    - The official binary is cross-compiled, and seems to have broken network
 
    - Quakespasm breaks exactly the same way, so must be general cross-compilation issue
-
-   - Some FS read/write functions seem to be broken too. That's on the to-do list, though quite low
 
 # Credits
 

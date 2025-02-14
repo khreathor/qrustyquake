@@ -2389,7 +2389,6 @@ void COM_InitFilesystem (void) //johnfitz -- modified based on topaz's tutorial
 		COM_AddGameDirectory (com_basedir, "hipnotic");
 	if (COM_CheckParm ("-quoth"))
 		COM_AddGameDirectory (com_basedir, "quoth");
-
 	i = COM_CheckParm ("-game");
 	if (i && i < com_argc-1)
 	{

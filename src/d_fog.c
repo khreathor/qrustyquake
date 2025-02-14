@@ -13,6 +13,7 @@ static float fog_blue; // palette before use, stored in fog_pal_index
 unsigned char fog_pal_index;
 extern unsigned char vid_curpal[256 * 3]; // RGB palette
 extern cvar_t r_fogstyle;
+extern cvar_t r_nofog;
 extern unsigned int sb_updates; // if >= vid.numpages, no update needed
 unsigned char color_mix_lut[256][256][FOG_LUT_LEVELS];
 int fog_lut_built = 0;
@@ -196,10 +197,6 @@ void build_color_mix_lut()
 
 void R_InitFog()
 {
-	fog_density = 0; //initially no fog
-	fog_red = 0;
-	fog_green = 0;
-	fog_blue = 0;
 	fog_pal_index = rgbtoi(fog_red*255.0f, fog_green*255.0f, fog_blue*255.0f);
 	if (!randarr) {
 		randarr = malloc(vid.width * vid.height * sizeof(float)); // TODO not optimal, use the zone
@@ -219,7 +216,7 @@ float compute_fog(int z) {
 }
 
 void R_DrawFog() {
-	if (!fog_density)
+	if (!fog_density || r_nofog.value)
 		return;
 	if (!fog_initialized)
 		R_InitFog();
