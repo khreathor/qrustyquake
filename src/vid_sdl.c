@@ -54,6 +54,7 @@ cvar_t sensitivityyscale = { "sensitivityyscale", "1.0", 1, 0, 0, 0 };
 cvar_t scr_stretchpixels = { "scr_stretchpixels", "0", 1, 0, 0, 0 };
 cvar_t _windowed_mouse = { "_windowed_mouse", "0", 1, 0, 0, 0 };
 cvar_t newoptions = { "newoptions", "1", 1, 0, 0, 0 };
+cvar_t aspectr = { "aspectr", "0", 1, 0, 0, 0 }; // 0 - auto
 
 void VID_CalcScreenDimensions();
 void VID_AllocBuffers();
@@ -129,7 +130,6 @@ void VID_Init(unsigned char *palette)
 	int defmode;
 	int realwidth;
 	char caption[50];
-
 	Cvar_RegisterVariable(&_windowed_mouse);
 	Cvar_RegisterVariable(&_vid_default_mode_win);
 	Cvar_RegisterVariable(&vid_mode);
@@ -137,7 +137,8 @@ void VID_Init(unsigned char *palette)
 	Cvar_RegisterVariable(&sensitivityyscale);
 	Cvar_RegisterVariable(&scr_stretchpixels);
 	Cvar_RegisterVariable(&newoptions);
-
+	Cvar_RegisterVariable(&aspectr);
+	Cvar_SetCallback(&aspectr, VID_CalcScreenDimensions);
 	// Set up display mode (width and height)
 	vid.maxwarpwidth = WARP_WIDTH;
 	vid.maxwarpheight = WARP_HEIGHT;
@@ -294,9 +295,15 @@ void VID_CalcScreenDimensions()
 	// Get scaleBuffer dimensions
 	int bufW = vid.width;
 	int bufH = vid.height;
-	float bufAspect = (float)bufW / bufH;
-	if (stretchpixels)
-		bufAspect /= 1.2;
+	float bufAspect;
+	if (aspectr.value == 0) {
+		bufAspect = (float)bufW / bufH;
+		if (stretchpixels)
+			bufAspect /= 1.2;
+		Cvar_SetValue("aspectr", bufAspect);
+	}
+	else
+		bufAspect = aspectr.value;
 	// Calculate scaled dimensions
 	int destW, destH;
 	if ((float)winW / winH > bufAspect) {
