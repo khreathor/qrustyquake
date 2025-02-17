@@ -55,6 +55,8 @@ cvar_t scr_stretchpixels = { "scr_stretchpixels", "0", 1, 0, 0, 0 };
 cvar_t _windowed_mouse = { "_windowed_mouse", "0", 1, 0, 0, 0 };
 cvar_t newoptions = { "newoptions", "1", 1, 0, 0, 0 };
 cvar_t aspectr = { "aspectr", "0", 1, 0, 0, 0 }; // 0 - auto
+cvar_t realwidth = { "realwidth", "0", 1, 0, 0, 0 }; // 0 - auto
+cvar_t realheight = { "realheight", "0", 1, 0, 0, 0 }; // 0 - auto
 
 void VID_CalcScreenDimensions();
 void VID_AllocBuffers();
@@ -128,7 +130,6 @@ void VID_Init(unsigned char *palette)
 	int flags;
 	int winmode;
 	int defmode;
-	int realwidth;
 	char caption[50];
 	Cvar_RegisterVariable(&_windowed_mouse);
 	Cvar_RegisterVariable(&_vid_default_mode_win);
@@ -138,7 +139,11 @@ void VID_Init(unsigned char *palette)
 	Cvar_RegisterVariable(&scr_stretchpixels);
 	Cvar_RegisterVariable(&newoptions);
 	Cvar_RegisterVariable(&aspectr);
+	Cvar_RegisterVariable(&realwidth);
+	Cvar_RegisterVariable(&realheight);
 	Cvar_SetCallback(&aspectr, VID_CalcScreenDimensions);
+	Cvar_SetCallback(&realwidth, VID_CalcScreenDimensions);
+	Cvar_SetCallback(&realheight, VID_CalcScreenDimensions);
 	// Set up display mode (width and height)
 	vid.maxwarpwidth = WARP_WIDTH;
 	vid.maxwarpheight = WARP_HEIGHT;
@@ -207,10 +212,11 @@ void VID_Init(unsigned char *palette)
 	else
 		stretchpixels = 0;
 	Cvar_SetValue("scr_stretchpixels", stretchpixels);
-	realwidth = vid.width - (vid.width - vid.width / 1.2) * stretchpixels;
+	realwidth.value = vid.width - (vid.width - vid.width / 1.2) * stretchpixels;
+	realheight.value = vid.height;
 	window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED,
 				  SDL_WINDOWPOS_CENTERED,
-				  realwidth, vid.height, flags);
+				  realwidth.value, realheight.value, flags);
 	screen = SDL_CreateRGBSurfaceWithFormat(0,
 						vid.width,
 						vid.height,
@@ -290,8 +296,17 @@ void VID_CalcScreenDimensions()
 	blitRect.w = vid.width;
 	blitRect.h = vid.height;
 	// Get window dimensions
-	int winW = windowSurface->w;
-	int winH = windowSurface->h;
+	int winW, winH;
+	if (realwidth.value == 0 || realheight.value == 0) {
+		winW = windowSurface->w;
+		winH = windowSurface->h;
+		Cvar_SetValue("realwidth", winW);
+		Cvar_SetValue("realheight", winH);
+	}
+	else {
+		winW = realwidth.value;
+		winH = realheight.value;
+	}
 	// Get scaleBuffer dimensions
 	int bufW = vid.width;
 	int bufH = vid.height;
@@ -440,12 +455,13 @@ void VID_SetMode(int modenum, int customw, int customh, int customwinmode,
 	vid.recalc_refdef = 1;
 	VID_CalcScreenDimensions();
 	VID_SetPalette(palette);
-	int realwidth =
+	realwidth.value =
 	    vid.width - (vid.width - vid.width / 1.2) * stretchpixels;
+	realheight.value = vid.height;
 	if (!customw || !customh) {
 		if (modenum <= 2) {
 			SDL_SetWindowFullscreen(window, 0);
-			SDL_SetWindowSize(window, realwidth, vid.height);
+			SDL_SetWindowSize(window, realwidth.value, realheight.value);
 			SDL_SetWindowPosition(window,
 					      SDL_WINDOWPOS_CENTERED,
 					      SDL_WINDOWPOS_CENTERED);
@@ -456,7 +472,7 @@ void VID_SetMode(int modenum, int customw, int customh, int customwinmode,
 	} else {
 		if (customwinmode == 0) {
 			SDL_SetWindowFullscreen(window, 0);
-			SDL_SetWindowSize(window, realwidth, vid.height);
+			SDL_SetWindowSize(window, realwidth.value, realheight.value);
 			SDL_SetWindowPosition(window,
 					      SDL_WINDOWPOS_CENTERED,
 					      SDL_WINDOWPOS_CENTERED);

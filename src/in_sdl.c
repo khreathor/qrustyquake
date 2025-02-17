@@ -4,6 +4,8 @@ qboolean mouse_avail;
 float mouse_x;
 float mouse_y;
 int mouse_oldbuttonstate;
+extern cvar_t realwidth;
+extern cvar_t realheight;
 
 void Sys_SendKeyEvents()
 {
@@ -153,6 +155,8 @@ void Sys_SendKeyEvents()
 			case SDL_WINDOWEVENT_SIZE_CHANGED:
 				SDLWindowFlags = SDL_GetWindowFlags(window);
 				windowSurface = SDL_GetWindowSurface(window);
+				Cvar_SetValue("realwidth", windowSurface->w);
+				Cvar_SetValue("realheight", windowSurface->h);
 				VID_CalcScreenDimensions();
 				break;
 			}
