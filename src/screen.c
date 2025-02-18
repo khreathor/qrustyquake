@@ -31,6 +31,7 @@ int scr_copyeverything; // unless these variables are flagged
 float scr_con_current;
 float scr_conlines; // lines of console to display
 float oldscreensize, oldfov;
+hudstyle_t hudstyle;
 
 cvar_t scr_viewsize = { "viewsize", "100", true, false, 0, NULL };
 cvar_t scr_fov = { "fov", "90", false, false, 0, NULL };
@@ -41,6 +42,9 @@ cvar_t scr_showturtle = { "showturtle", "0", false, false, 0, NULL };
 cvar_t scr_showpause = { "showpause", "1", false, false, 0, NULL };
 cvar_t scr_printspeed = { "scr_printspeed", "8", false, false, 0, NULL };
 cvar_t scr_showfps = { "scr_showfps", "0", true, false, 0, NULL };
+cvar_t scr_hudstyle = {"hudstyle", "0", true, false, 0, NULL};
+
+void SCR_HUDStyle_f (cvar_t *cvar);
 
 void SCR_CenterPrint(char *str) // Called for important messages
 { // that should stay in the center of the screen for a few moments
@@ -131,7 +135,7 @@ static void SCR_CalcRefdef() // Must be called whenever vid changes
 	r_refdef.fov_y = CalcFov(r_refdef.fov_x,
 		r_refdef.vrect.width, r_refdef.vrect.height);
 	float size = cl.intermission ? 120 : scr_viewsize.value;
-	if (size >= 120)
+	if (size >= 120 || hudstyle != HUD_CLASSIC)
 		sb_lines = 0; // no status bar at all
 	else if (size >= 110)
 		sb_lines = 24 * uiscale; // no inventory
@@ -174,6 +178,8 @@ void SCR_Init()
 	Cvar_RegisterVariable(&scr_centertime);
 	Cvar_RegisterVariable(&scr_printspeed);
 	Cvar_RegisterVariable(&scr_showfps);
+	Cvar_RegisterVariable (&scr_hudstyle);
+	Cvar_SetCallback (&scr_hudstyle, SCR_HUDStyle_f);
 	Cmd_AddCommand("screenshot", SCR_ScreenShot_f);
 	Cmd_AddCommand("sizeup", SCR_SizeUp_f);
 	Cmd_AddCommand("sizedown", SCR_SizeDown_f);
@@ -535,4 +541,11 @@ void SCR_UpdateScreen() // This is called every frame,
 	}
 	V_UpdatePalette();
 	VID_Update();
+}
+
+void SCR_HUDStyle_f (cvar_t *cvar)
+{ // Updates hudstyle variable and invalidates refdef when scr_hudstyle changes
+    int val = (int) cvar->value;
+    hudstyle = (hudstyle_t) CLAMP (0, val, (int) HUD_COUNT - 1);
+    vid.recalc_refdef = 1;
 }
