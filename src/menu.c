@@ -295,6 +295,7 @@ qboolean m_recursiveDraw;
 int m_return_state;
 qboolean m_return_onerror;
 char m_return_reason[32];
+extern cvar_t aspectr;
 extern cvar_t r_wateralpha;
 extern cvar_t r_slimealpha;
 extern cvar_t r_lavaalpha;
@@ -1355,11 +1356,14 @@ void M_New_Draw()
 	M_Print(xoffset, 32, "              UI Scale");
 	sprintf(temp, "x%d\n", (int)scr_uiscale.value);
 	M_Print(xoffset + 204, 32, temp);
-	M_Print(xoffset, 40, "                Pixels");
-	if (scr_stretchpixels.value)
-		M_Print(xoffset + 204, 40, "Stretched");
-	else
-		M_Print(xoffset + 204, 40, "Square");
+	M_Print(xoffset, 40, "          Aspect Ratio");
+	sprintf(temp, "%0.2f\n", aspectr.value);
+	M_Print(xoffset + 204, 40, temp);
+	if (new_cursor == 1) {
+		M_DrawTextBox(52, 150, 30, 1);
+		M_Print(64, 158, "          in console for auto");
+		M_PrintWhite(64, 158, "aspectr 0");
+	}
 	M_Print(xoffset, 48, "             This Menu");
 	M_DrawCheckbox(xoffset + 204, 48, newoptions.value);
 	M_Print(xoffset, 56, "           FPS Counter");
@@ -1444,8 +1448,7 @@ void M_New_Key(int k)
 		if (new_cursor == 0 && scr_uiscale.value > 1)
 			Cvar_SetValue("scr_uiscale", scr_uiscale.value - 1);
 		else if (new_cursor == 1)
-			Cvar_SetValue("scr_stretchpixels",
-				      !scr_stretchpixels.value);
+			Cvar_SetValue("aspectr", aspectr.value - 0.01);
 		else if (new_cursor == 2)
 			Cvar_SetValue("newoptions", !newoptions.value);
 		else if (new_cursor == 3)
@@ -1498,8 +1501,7 @@ void M_New_Key(int k)
 		if (new_cursor == 0 && scr_uiscale.value < (vid.width / 320))
 			Cvar_SetValue("scr_uiscale", scr_uiscale.value + 1);
 		else if (new_cursor == 1)
-			Cvar_SetValue("scr_stretchpixels",
-				      !scr_stretchpixels.value);
+			Cvar_SetValue("aspectr", aspectr.value + 0.01);
 		else if (new_cursor == 2)
 			Cvar_SetValue("newoptions", !newoptions.value);
 		else if (new_cursor == 3)

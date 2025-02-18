@@ -27,7 +27,6 @@ SDL_Surface *scaleBuffer;
 SDL_Surface *screen;
 unsigned int force_old_render;
 unsigned int SDLWindowFlags;
-unsigned int stretchpixels;
 unsigned int uiscale;
 unsigned int vimmode;
 unsigned int VGA_width;
@@ -51,7 +50,6 @@ cvar_t vid_mode = { "vid_mode", "0", 0, 0, 0, 0 };
 cvar_t _vid_default_mode_win = { "_vid_default_mode_win", "3", 1, 0, 0, 0 };
 cvar_t scr_uiscale = { "scr_uiscale", "1", 1, 0, 0, 0 };
 cvar_t sensitivityyscale = { "sensitivityyscale", "1.0", 1, 0, 0, 0 };
-cvar_t scr_stretchpixels = { "scr_stretchpixels", "0", 1, 0, 0, 0 };
 cvar_t _windowed_mouse = { "_windowed_mouse", "0", 1, 0, 0, 0 };
 cvar_t newoptions = { "newoptions", "1", 1, 0, 0, 0 };
 cvar_t aspectr = { "aspectr", "0", 1, 0, 0, 0 }; // 0 - auto
@@ -136,7 +134,6 @@ void VID_Init(unsigned char *palette)
 	Cvar_RegisterVariable(&vid_mode);
 	Cvar_RegisterVariable(&scr_uiscale);
 	Cvar_RegisterVariable(&sensitivityyscale);
-	Cvar_RegisterVariable(&scr_stretchpixels);
 	Cvar_RegisterVariable(&newoptions);
 	Cvar_RegisterVariable(&aspectr);
 	Cvar_RegisterVariable(&realwidth);
@@ -206,44 +203,25 @@ void VID_Init(unsigned char *palette)
 		vimmode = 1;
 	if (vid.width > 1280 || vid.height > 1024)
 		Sys_Printf("vanilla maximum resolution is 1280x1024\n");
-	if (COM_CheckParm("-stretchpixels")
-	    || vid.height == 200 || vid.height == 400)
-		stretchpixels = 1;
-	else
-		stretchpixels = 0;
-	Cvar_SetValue("scr_stretchpixels", stretchpixels);
-	realwidth.value = vid.width - (vid.width - vid.width / 1.2) * stretchpixels;
+	realwidth.value = vid.width;
 	realheight.value = vid.height;
 	window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED,
 				  SDL_WINDOWPOS_CENTERED,
 				  realwidth.value, realheight.value, flags);
-	screen = SDL_CreateRGBSurfaceWithFormat(0,
-						vid.width,
-						vid.height,
-						8, SDL_PIXELFORMAT_INDEX8);
+	screen = SDL_CreateRGBSurfaceWithFormat(0, vid.width, vid.height,
+		8, SDL_PIXELFORMAT_INDEX8);
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 	renderer = SDL_CreateRenderer(window, -1, 0);
 	if (!force_old_render) {
 		argbbuffer = SDL_CreateRGBSurfaceWithFormatFrom(NULL,
-								vid.width,
-								vid.height,
-								0,
-								0,
-								SDL_PIXELFORMAT_ARGB8888);
-		texture = SDL_CreateTexture(renderer,
-					    SDL_PIXELFORMAT_ARGB8888,
-					    SDL_TEXTUREACCESS_STREAMING,
-					    vid.width, vid.height);
+			vid.width, vid.height, 0, 0, SDL_PIXELFORMAT_ARGB8888);
+		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
+			SDL_TEXTUREACCESS_STREAMING, vid.width, vid.height);
 	} else {
-		scaleBuffer = SDL_CreateRGBSurfaceWithFormat(0,
-							     vid.width,
-							     vid.height,
-							     8,
-							     SDL_GetWindowPixelFormat
-							     (window));
+		scaleBuffer = SDL_CreateRGBSurfaceWithFormat(0, vid.width,
+			vid.height, 8, SDL_GetWindowPixelFormat(window));
 	}
 	windowSurface = SDL_GetWindowSurface(window);
-	VID_CalcScreenDimensions();
 	sprintf(caption, "QrustyQuake - Version %4.2f", VERSION);
 	SDL_SetWindowTitle(window, (const char *)&caption);
 	SDLWindowFlags = SDL_GetWindowFlags(window);
@@ -259,10 +237,8 @@ void VID_Init(unsigned char *palette)
 	vid.conbuffer = vid.buffer;
 	vid.conrowbytes = vid.rowbytes;
 	vid.direct = (pixel_t *) screen->pixels;
-	// allocate z buffer and surface cache
-	VID_AllocBuffers();
-	// initialize the mouse
-	SDL_ShowCursor(0);
+	VID_AllocBuffers(); // allocate z buffer, surface cache and the fbuffer
+	SDL_ShowCursor(0); // initialize the mouse
 	vid_initialized = true;
 	vid_modenum = VID_DetermineMode();
 	if (vid_modenum < 0)
@@ -313,8 +289,6 @@ void VID_CalcScreenDimensions()
 	float bufAspect;
 	if (aspectr.value == 0) {
 		bufAspect = (float)bufW / bufH;
-		if (stretchpixels)
-			bufAspect /= 1.2;
 		Cvar_SetValue("aspectr", bufAspect);
 	}
 	else
@@ -360,10 +334,6 @@ void VID_Update()
 	    && vid.width / 320 >= scr_uiscale.value && scr_uiscale.value > 0) {
 		uiscale = scr_uiscale.value;
 		vid.recalc_refdef = 1;
-	}
-	if (stretchpixels != scr_stretchpixels.value) {
-		stretchpixels = scr_stretchpixels.value;
-		VID_CalcScreenDimensions();
 	}
 	if (vid_testingmode) {
 		if (realtime >= vid_testendtime) {
@@ -415,33 +385,23 @@ void VID_SetMode(int modenum, int customw, int customh, int customwinmode,
 	} else {
 		vid.width = oldmodes[modenum * 2];
 		vid.height = oldmodes[modenum * 2 + 1];
-		stretchpixels = modenum == 3 || modenum == 6;
-		Cvar_SetValue("scr_stretchpixels", stretchpixels);
 		vid_modenum = modenum;
 	}
 	// CyanBun96: why do surfaces get freed but textures get destroyed :(
 	SDL_FreeSurface(screen);
 	screen = SDL_CreateRGBSurfaceWithFormat(0, vid.width, vid.height, 8,
-						SDL_PIXELFORMAT_INDEX8);
+		SDL_PIXELFORMAT_INDEX8);
 	if (!force_old_render) {
 		SDL_FreeSurface(argbbuffer);
-		argbbuffer = SDL_CreateRGBSurfaceWithFormatFrom(NULL,
-								vid.width,
-								vid.height, 0,
-								0,
-								SDL_PIXELFORMAT_ARGB8888);
+		argbbuffer = SDL_CreateRGBSurfaceWithFormatFrom(NULL, vid.width,
+			vid.height, 0, 0, SDL_PIXELFORMAT_ARGB8888);
 		SDL_DestroyTexture(texture);
-		texture = SDL_CreateTexture(renderer,
-					    SDL_PIXELFORMAT_ARGB8888,
-					    SDL_TEXTUREACCESS_STREAMING,
-					    vid.width, vid.height);
+		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
+			SDL_TEXTUREACCESS_STREAMING, vid.width, vid.height);
 	} else {
 		SDL_FreeSurface(scaleBuffer);
-		scaleBuffer = SDL_CreateRGBSurfaceWithFormat(0,
-							     vid.width,
-							     vid.height, 8,
-							     SDL_GetWindowPixelFormat
-							     (window));
+		scaleBuffer = SDL_CreateRGBSurfaceWithFormat(0, vid.width,
+			vid.height, 8, SDL_GetWindowPixelFormat (window));
 	}
 	VGA_width = vid.conwidth = vid.width;
 	VGA_height = vid.conheight = vid.height;
@@ -453,35 +413,30 @@ void VID_SetMode(int modenum, int customw, int customh, int customwinmode,
 	vid.direct = (pixel_t *) screen->pixels;
 	VID_AllocBuffers();
 	vid.recalc_refdef = 1;
-	VID_CalcScreenDimensions();
 	VID_SetPalette(palette);
-	realwidth.value =
-	    vid.width - (vid.width - vid.width / 1.2) * stretchpixels;
-	realheight.value = vid.height;
 	if (!customw || !customh) {
 		if (modenum <= 2) {
 			SDL_SetWindowFullscreen(window, 0);
 			SDL_SetWindowSize(window, realwidth.value, realheight.value);
-			SDL_SetWindowPosition(window,
-					      SDL_WINDOWPOS_CENTERED,
-					      SDL_WINDOWPOS_CENTERED);
+			SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED,
+				SDL_WINDOWPOS_CENTERED);
 		} else {
 			SDL_SetWindowFullscreen(window,
-						SDL_WINDOW_FULLSCREEN_DESKTOP);
+				SDL_WINDOW_FULLSCREEN_DESKTOP);
 		}
 	} else {
 		if (customwinmode == 0) {
 			SDL_SetWindowFullscreen(window, 0);
 			SDL_SetWindowSize(window, realwidth.value, realheight.value);
-			SDL_SetWindowPosition(window,
-					      SDL_WINDOWPOS_CENTERED,
-					      SDL_WINDOWPOS_CENTERED);
+			SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED,
+				SDL_WINDOWPOS_CENTERED);
 		} else if (customwinmode == 1) {
 			SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
 		} else {
 			SDL_SetWindowFullscreen(window,
-						SDL_WINDOW_FULLSCREEN_DESKTOP);
+				SDL_WINDOW_FULLSCREEN_DESKTOP);
 		}
 	}
+	VID_CalcScreenDimensions();
 	Cvar_SetValue("vid_mode", (float)vid_modenum);
 }

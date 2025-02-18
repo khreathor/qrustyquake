@@ -59,7 +59,6 @@ extern SDL_Surface *scaleBuffer;
 extern SDL_Surface *screen;
 extern unsigned int force_old_render;
 extern unsigned int SDLWindowFlags;
-extern unsigned int stretchpixels;
 extern unsigned int uiscale;
 extern unsigned int vimmode;
 extern unsigned int VGA_width;
@@ -81,7 +80,6 @@ extern viddef_t vid; // global video state
 extern cvar_t _vid_default_mode_win;
 extern cvar_t _windowed_mouse;
 extern cvar_t scr_uiscale;
-extern cvar_t scr_stretchpixels;
 extern cvar_t newoptions;
 extern cvar_t sensitivityyscale;
 

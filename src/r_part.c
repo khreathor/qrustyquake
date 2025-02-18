@@ -122,23 +122,16 @@ void R_ReadPointFile_f()
 	Con_Printf("%i points read\n", c);
 }
 
-void R_ParseParticleEffect (void)
+void R_ParseParticleEffect ()
 {
-        vec3_t          org, dir;
-        int                     i, count, msgcount, color;
-
-        for (i=0 ; i<3 ; i++)
+        vec3_t org, dir;
+        for (int i=0 ; i<3 ; i++)
                 org[i] = MSG_ReadCoord (cl.protocolflags);
-        for (i=0 ; i<3 ; i++)
+        for (int i=0 ; i<3 ; i++)
                 dir[i] = MSG_ReadChar () * (1.0/16);
-        msgcount = MSG_ReadByte ();
-        color = MSG_ReadByte ();
-
-        if (msgcount == 255)
-                count = 1024;
-        else
-                count = msgcount;
-
+        int msgcount = MSG_ReadByte ();
+        int color = MSG_ReadByte ();
+        int count = msgcount == 255 ? 1024 : msgcount;
         R_RunParticleEffect (org, dir, color, count);
 }
 
