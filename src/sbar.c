@@ -43,7 +43,6 @@ void Sbar_MiniDeathmatchOverlay();
 void Sbar_DeathmatchOverlay();
 void M_DrawPic(int x, int y, qpic_t * pic);
 
-
 void Sbar_ShowScores() // Tab key down
 {
 	if (sb_showscores)
@@ -311,63 +310,131 @@ void Sbar_DrawScoreboard()
 
 void Sbar_DrawInventory()
 {
-	int i;
-	char num[6];
-	float time;
-	int flashon;
-	if (rogue) {
+	if (scr_hudstyle.value) { /* skip the background*/ }
+	else if (rogue) {
 		if (cl.stats[STAT_ACTIVEWEAPON] >= RIT_LAVA_NAILGUN)
 			Sbar_DrawPic(0, -24, rsb_invbar[0]);
 		else
 			Sbar_DrawPic(0, -24, rsb_invbar[1]);
 	} else
 		Sbar_DrawPic(0, -24, sb_ibar);
-	for (int i = 0; i < 7; i++) { // weapons
-		if (cl.items & (IT_SHOTGUN << i)) {
-			time = cl.item_gettime[i];
-			flashon = (int)((cl.time - time) * 10);
-			if (flashon >= 10)
-				flashon = cl.stats[STAT_ACTIVEWEAPON]==
-					(IT_SHOTGUN<<i);
-			else
-				flashon = (flashon % 5) + 2;
-			Sbar_DrawPic(i * 24, -16, sb_weapons[flashon][i]);
+	if (!scr_hudstyle.value) {
+		for (int i = 0; i < 7; i++) { // weapons
+			if (cl.items & (IT_SHOTGUN << i)) {
+				float time = cl.item_gettime[i];
+				int flashon = (int)((cl.time - time) * 10);
+				if (flashon >= 10)
+					flashon = cl.stats[STAT_ACTIVEWEAPON]==
+						(IT_SHOTGUN<<i);
+				else
+					flashon = (flashon % 5) + 2;
+				Sbar_DrawPic(i * 24, -16, sb_weapons[flashon][i]);
+				if (flashon > 1)
+					sb_updates = 0; // force update to remove flash
+			}
+		}
+		int grenadeflashing = 0;
+		for (int i = 0; hipnotic && i < 4; i++) { //MED01/04/97 hipnotic weapons
+			if (!(cl.items & (1 << hipweapons[i])))
+				continue;
+			float time = cl.item_gettime[hipweapons[i]];
+			int flashon = (int)((cl.time - time) * 10);
+			flashon =  flashon >= 10 ?
+				(cl.stats[STAT_ACTIVEWEAPON] == (1 << hipweapons[i])) :
+				(flashon % 5) + 2;
+			if (i == 2) { // check grenade launcher
+				if (cl.items & HIT_PROXIMITY_GUN && flashon) {
+					grenadeflashing = 1;
+					Sbar_DrawPic(96, -16, hsb_weapons[flashon][2]);
+				}
+			} else if (i == 3) {
+				if (cl.items & (IT_SHOTGUN << 4)) {
+					if (flashon && !grenadeflashing)
+						Sbar_DrawPic(96, -16, hsb_weapons[flashon][3]);
+					else if (!grenadeflashing)
+						Sbar_DrawPic(96, -16, hsb_weapons[0][3]);
+				} else
+					Sbar_DrawPic(96, -16, hsb_weapons [flashon][4]);
+			} else
+				Sbar_DrawPic(176+(i*24), -16, hsb_weapons[flashon][i]);
 			if (flashon > 1)
 				sb_updates = 0; // force update to remove flash
 		}
+		if (rogue && cl.stats[STAT_ACTIVEWEAPON] >= RIT_LAVA_NAILGUN)
+			for (int i = 0; i < 5; i++) // check for powered up weapon.
+				if (cl.stats[STAT_ACTIVEWEAPON]==(RIT_LAVA_NAILGUN<<i))
+					Sbar_DrawPic((i + 2) * 24, -16, rsb_weapons[i]);
 	}
-	int grenadeflashing = 0;
-	for (int i = 0; hipnotic && i < 4; i++) { //MED01/04/97 hipnotic weapons
-		if (!(cl.items & (1 << hipweapons[i])))
-			continue;
-		time = cl.item_gettime[hipweapons[i]];
-		flashon = (int)((cl.time - time) * 10);
-		flashon =  flashon >= 10 ?
-			(cl.stats[STAT_ACTIVEWEAPON] == (1 << hipweapons[i])) :
-			(flashon % 5) + 2;
-		if (i == 2) { // check grenade launcher
-			if (cl.items & HIT_PROXIMITY_GUN && flashon) {
-				grenadeflashing = 1;
-				Sbar_DrawPic(96, -16, hsb_weapons[flashon][2]);
+	else if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2)
+	{
+		int ROW_HEIGHT = 16 * uiscale;
+		int x = vid.width;
+		int y = (int)(LERP (0, vid.height - 148, 0.5f) + ROW_HEIGHT * 7 * 0.5f + 0.5f);
+		if (hipnotic)
+			y += 12*uiscale; // move down a bit to accomodate the extra weapons
+		for (int i = 0; i < 7; i++) {
+			if (hipnotic && i == IT_GRENADE_LAUNCHER)
+				continue;
+			if (cl.items & (IT_SHOTGUN<<i)) {
+				qboolean active = (cl.stats[STAT_ACTIVEWEAPON] == (IT_SHOTGUN<<i));
+				float time = cl.item_gettime[i];
+				int flashon = (int)((cl.time - time)*10);
+				if (flashon >= 10)
+					flashon = active;
+				else
+					flashon = (flashon%5) + 2;
+				qpic_t *pic;
+				if (rogue && i >= 2 && cl.stats[STAT_ACTIVEWEAPON] == (RIT_LAVA_NAILGUN << (i - 2))) {
+					pic = rsb_weapons[i - 2]; // powered up weapon
+					active = true;
+				}
+				else
+					pic = sb_weapons[flashon][i];
+				printf("%d\t%d\n", x - (active ? 24 : 18) * uiscale, y - ROW_HEIGHT * i);
+				Draw_PicScaled(x - (active ? 24 : 18) * uiscale, y - ROW_HEIGHT * i, pic, uiscale);
+				if (flashon > 1)
+					sb_updates = 0; // force update to remove flash
 			}
-		} else if (i == 3) {
-			if (cl.items & (IT_SHOTGUN << 4)) {
-				if (flashon && !grenadeflashing)
-					Sbar_DrawPic(96, -16, hsb_weapons[flashon][3]);
-				else if (!grenadeflashing)
-					Sbar_DrawPic(96, -16, hsb_weapons[0][3]);
-			} else
-				Sbar_DrawPic(96, -16, hsb_weapons [flashon][4]);
-		} else
-			Sbar_DrawPic(176+(i*24), -16, hsb_weapons[flashon][i]);
-		if (flashon > 1)
-			sb_updates = 0; // force update to remove flash
+		}
+		if (hipnotic) { // hipnotic weapons
+			int grenadeflashing = 0;
+			for (int i = 0; i < 4; i++) {
+				if (cl.items & (1<<hipweapons[i])) {
+					qboolean active = (cl.stats[STAT_ACTIVEWEAPON] == (1<<hipweapons[i]));
+					float time = cl.item_gettime[hipweapons[i]];
+					int flashon = (int)((cl.time - time)*10);
+					if (flashon >= 10)
+						flashon = active;
+					else
+						flashon = (flashon%5) + 2;
+					if (i == 2) { // check grenade launcher
+						if (cl.items & HIT_PROXIMITY_GUN) {
+							if (flashon) {
+								grenadeflashing = 1;
+								Sbar_DrawPic (x - (active ? 24 : 18), y - ROW_HEIGHT * 4, hsb_weapons[flashon][2]);
+							}
+						}
+					}
+					else if (i == 3) {
+						if (cl.items & (IT_SHOTGUN<<4)) {
+							if (flashon && !grenadeflashing)
+								Sbar_DrawPic (x - (active ? 24 : 18), y - ROW_HEIGHT * 4, hsb_weapons[flashon][3]);
+							else if (!grenadeflashing)
+								Sbar_DrawPic (x - (active ? 24 : 18), y - ROW_HEIGHT * 4, hsb_weapons[0][3]);
+						}
+						else
+							Sbar_DrawPic (x - (active ? 24 : 18), y - ROW_HEIGHT * 4, hsb_weapons[flashon][4]);
+					}
+					else
+						Sbar_DrawPic (x - (active ? 24 : 18), y - ROW_HEIGHT * (i + 7), hsb_weapons[flashon][i]);
+					if (flashon > 1)
+						sb_updates = 0; // force update to remove flash
+				}
+			}
+		}
 	}
-	if (rogue && cl.stats[STAT_ACTIVEWEAPON] >= RIT_LAVA_NAILGUN)
-		for (i = 0; i < 5; i++) // check for powered up weapon.
-			if (cl.stats[STAT_ACTIVEWEAPON]==(RIT_LAVA_NAILGUN<<i))
-				Sbar_DrawPic((i + 2) * 24, -16, rsb_weapons[i]);
-	for (i = 0; i < 4; i++) { // ammo counts
+	for (int i = 0; i < 4; i++) { // ammo counts
+		char num[6];
 		sprintf(num, "%3i", cl.stats[STAT_SHELLS + i]);
 		if (num[0] != ' ')
 			Sbar_DrawCharacter((6*i+1)*8-2,-24,18+num[0]-'0');
@@ -376,10 +443,10 @@ void Sbar_DrawInventory()
 		if (num[2] != ' ')
 			Sbar_DrawCharacter((6*i+3)*8-2,-24,18+num[2]-'0');
 	}
-	flashon = 0;
-	for (i = 0; i < 6; i++) // items
+	int flashon = 0;
+	for (int i = 0; i < 6; i++) // items
 		if (cl.items & (1 << (17 + i))) {
-			time = cl.item_gettime[17 + i];
+			float time = cl.item_gettime[17 + i];
 			if (time && time > cl.time - 2 && flashon) //flash frame
 				sb_updates = 0;
 			else //MED 01/04/97 changed keys
@@ -388,9 +455,9 @@ void Sbar_DrawInventory()
 			if (time && time > cl.time - 2)
 				sb_updates = 0;
 		}
-	for (i = 0; hipnotic && i < 2; i++) //MED 01/04/97 added hipnotic items
+	for (int i = 0; hipnotic && i < 2; i++) //MED 01/04/97 added hipnotic items
 		if (cl.items & (1 << (24 + i))) {
-			time = cl.item_gettime[24 + i];
+			float time = cl.item_gettime[24 + i];
 			if (time && time > cl.time - 2 && flashon) //flash frame
 				sb_updates = 0;
 			else
@@ -398,9 +465,9 @@ void Sbar_DrawInventory()
 			if (time && time > cl.time - 2)
 				sb_updates = 0;
 		}
-	for (i = 0; rogue && i < 2; i++) // new rogue items
+	for (int i = 0; rogue && i < 2; i++) // new rogue items
 		if (cl.items & (1 << (29 + i))) {
-			time = cl.item_gettime[29 + i];
+			float time = cl.item_gettime[29 + i];
 			if (time && time > cl.time - 2 && flashon) //flash frame
 				sb_updates = 0;
 			else
@@ -408,9 +475,9 @@ void Sbar_DrawInventory()
 			if (time && time > cl.time - 2)
 				sb_updates = 0;
 		}
-	for (i = 0; !rogue && i < 4; i++) // sigils
+	for (int i = 0; !rogue && i < 4; i++) // sigils
 		if (cl.items & (1 << (28 + i))) {
-			time = cl.item_gettime[28 + i];
+			float time = cl.item_gettime[28 + i];
 			if (time && time > cl.time - 2 && flashon) //flash frame
 				sb_updates = 0;
 			else
@@ -522,13 +589,13 @@ void Sbar_Draw()
 {
 	if (scr_con_current == vid.height)
 		return; // console is full screen
-	if (sb_updates >= vid.numpages)
+	if (sb_updates >= vid.numpages && !scr_hudstyle.value)
 		return;
 	scr_copyeverything = 1;
 	sb_updates++;
 	if (sb_lines && vid.width > 320)
 		Draw_TileClear(0, vid.height - sb_lines, vid.width, sb_lines);
-	if (sb_lines > 24) {
+	if (scr_hudstyle.value || sb_lines > 24) {
 		Sbar_DrawInventory();
 		if (cl.maxclients != 1)
 			Sbar_DrawFrags();

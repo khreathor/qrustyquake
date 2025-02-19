@@ -110,16 +110,16 @@ void Draw_StringScaled(int x, int y, char *str, int scale)
 
 void Draw_PicScaled(int x, int y, qpic_t *pic, int scale)
 {
-	if ((x < 0) || (x + pic->width > vid.width) ||
-	    (y < 0) || (y + pic->height > vid.height))
-		Sys_Error("Draw_Pic: bad coordinates");
 	byte *source = pic->data;
 	byte *dest = vid.buffer + y * vid.rowbytes + x;
 	for (unsigned int v = 0; v < pic->height; v++) {
+		if (v * scale + y >= vid.height)
+			return;
 		for (int k = 0; k < scale; k++) {
 			for (unsigned int i = 0; i < pic->width; i++) {
 				for (int j = 0; j < scale; j++)
-					dest[i * scale + j] = source[i];
+					if (i * scale + j + x < vid.width)
+						dest[i * scale + j] = source[i];
 			}
 			dest += vid.rowbytes;
 		}
@@ -129,18 +129,18 @@ void Draw_PicScaled(int x, int y, qpic_t *pic, int scale)
 
 void Draw_TransPicScaled(int x, int y, qpic_t *pic, int scale)
 {
-	if (x < 0 || (unsigned int)(x + pic->width) > vid.width || y < 0 ||
-	    (unsigned int)(y + pic->height) > vid.height)
-		Sys_Error("Draw_TransPic: bad coordinates");
 	byte *source = pic->data;
 	byte *dest = vid.buffer + y * vid.rowbytes + x;
 	byte tbyte;
 	for (unsigned int v = 0; v < pic->height; v++) {
+		if (v * scale + y >= vid.height)
+			return;
 		for (int k = 0; k < scale; k++) {
 			for (unsigned int u = 0; u < pic->width; u++)
 				if ((tbyte = source[u]) != TRANSPARENT_COLOR)
 					for (int i = 0; i < scale; i++)
-						dest[u * scale + i] = tbyte;
+						if (u * scale + i + x < vid.width)
+							dest[u * scale + i] = tbyte;
 
 			dest += vid.rowbytes;
 		}
@@ -151,19 +151,18 @@ void Draw_TransPicScaled(int x, int y, qpic_t *pic, int scale)
 void Draw_TransPicTranslateScaled(int x, int y, qpic_t *pic, byte *translation,
 				  int scale)
 {
-	if (x < 0 || (unsigned int)(x + pic->width) > vid.width || y < 0 ||
-	    (unsigned int)(y + pic->height) > vid.height)
-		Sys_Error("Draw_TransPic: bad coordinates");
 	byte *source = pic->data;
 	byte *dest = vid.buffer + y * vid.rowbytes + x;
 	byte tbyte;
 	for (unsigned int v = 0; v < pic->height; v++) {
+		if (v * scale + y >= vid.height)
+			return;
 		for (int k = 0; k < scale; k++) {
 			for (unsigned int u = 0; u < pic->width; u++)
 				if ((tbyte = source[u]) != TRANSPARENT_COLOR)
 					for (int i = 0; i < scale; i++)
-						dest[u * scale + i]
-							= translation[tbyte];
+						if (u * scale + i + x < vid.width)
+							dest[u * scale + i] = translation[tbyte];
 			dest += vid.rowbytes;
 		}
 		source += pic->width;
