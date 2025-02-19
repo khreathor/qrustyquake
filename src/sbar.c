@@ -308,6 +308,13 @@ void Sbar_DrawScoreboard()
 		Sbar_DeathmatchOverlay();
 }
 
+qpic_t *Sbar_InventoryBarPic()
+{
+    if (rogue)
+        return rsb_invbar[cl.stats[STAT_ACTIVEWEAPON] < RIT_LAVA_NAILGUN];
+    return sb_ibar;
+}
+
 void Sbar_DrawInventory()
 {
 	if (scr_hudstyle.value) { /* skip the background*/ }
@@ -390,7 +397,6 @@ void Sbar_DrawInventory()
 				}
 				else
 					pic = sb_weapons[flashon][i];
-				printf("%d\t%d\n", x - (active ? 24 : 18) * uiscale, y - ROW_HEIGHT * i);
 				Draw_PicScaled(x - (active ? 24 : 18) * uiscale, y - ROW_HEIGHT * i, pic, uiscale);
 				if (flashon > 1)
 					sb_updates = 0; // force update to remove flash
@@ -433,15 +439,57 @@ void Sbar_DrawInventory()
 			}
 		}
 	}
-	for (int i = 0; i < 4; i++) { // ammo counts
-		char num[6];
-		sprintf(num, "%3i", cl.stats[STAT_SHELLS + i]);
-		if (num[0] != ' ')
-			Sbar_DrawCharacter((6*i+1)*8-2,-24,18+num[0]-'0');
-		if (num[1] != ' ')
-			Sbar_DrawCharacter((6*i+2)*8-2,-24,18+num[1]-'0');
-		if (num[2] != ' ')
-			Sbar_DrawCharacter((6*i+3)*8-2,-24,18+num[2]-'0');
+	char num[6];
+	if (!scr_hudstyle.value) { // ammo counts
+		for (int i = 0; i < 4; i++) {
+			sprintf(num, "%3i", cl.stats[STAT_SHELLS + i]);
+			if (num[0] != ' ')
+				Sbar_DrawCharacter((6*i+1)*8-2,-24,18+num[0]-'0');
+			if (num[1] != ' ')
+				Sbar_DrawCharacter((6*i+2)*8-2,-24,18+num[1]-'0');
+			if (num[2] != ' ')
+				Sbar_DrawCharacter((6*i+3)*8-2,-24,18+num[2]-'0');
+		}
+	}
+	else {
+		qpic_t *pic = Sbar_InventoryBarPic();
+		if (hudstyle == HUD_MODERN_SIDEAMMO || hudstyle == HUD_QUAKEWORLD) { // right side, 2x2
+			return; //TODO
+			int ITEM_WIDTH = 52 * uiscale;
+			int SBAR2_MARGIN_X = 16 * uiscale;
+			int SBAR2_MARGIN_Y = 10 * uiscale;
+			int x = (int)(vid.width - SBAR2_MARGIN_X - ITEM_WIDTH * 2 + 0.5f);
+			int y = (int)(vid.height - SBAR2_MARGIN_Y - 60 + 0.5f);
+			for (int i = 0; i < 2; i++)
+				Draw_PicScaledPartial(x, y + 24*uiscale - 10*uiscale * i, 160, 8, pic, uiscale);
+			for (int i = 0; i < 4; i++) {
+				sprintf(num, "%3i", cl.stats[STAT_SHELLS + i]);
+				int cx = x + 11 + ITEM_WIDTH * (i&1);
+				int cy = y - 10 * (i>>1);
+				if (num[0] != ' ')
+					Draw_CharacterScaled(cx+ 0*uiscale, cy, 18+num[0]-'0', uiscale);
+				if (num[1] != ' ')
+					Draw_CharacterScaled(cx+ 8*uiscale, cy, 18+num[1]-'0', uiscale);
+				if (num[2] != ' ')
+					Draw_CharacterScaled(cx+16*uiscale, cy, 18+num[2]-'0', uiscale);
+			}
+		}
+		else { // bottom center, 4x1
+			int x = (int)(vid.width * 0.5f + 0.5f) - 96 * uiscale;
+			int y = vid.height;
+			Draw_PicScaledPartial(x, y - 24 * uiscale, 192, 8, pic, uiscale);
+			for (int i = 0; i < 4; i++) {
+				sprintf(num, "%3i", cl.stats[STAT_SHELLS + i]);
+				int cx = x + 8 + 48 * i * uiscale;
+				int cy = y - 24 * uiscale;
+				if (num[0] != ' ')
+					Draw_CharacterScaled(cx+ 0*uiscale, cy, 18+num[0]-'0', uiscale);
+				if (num[1] != ' ')
+					Draw_CharacterScaled(cx+ 8*uiscale, cy, 18+num[1]-'0', uiscale);
+				if (num[2] != ' ')
+					Draw_CharacterScaled(cx+16*uiscale, cy, 18+num[2]-'0', uiscale);
+			}
+		}
 	}
 	int flashon = 0;
 	for (int i = 0; i < 6; i++) // items
