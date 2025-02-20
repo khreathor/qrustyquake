@@ -454,18 +454,17 @@ void Sbar_DrawInventory()
 	else {
 		qpic_t *pic = Sbar_InventoryBarPic();
 		if (hudstyle == HUD_MODERN_SIDEAMMO || hudstyle == HUD_QUAKEWORLD) { // right side, 2x2
-			return; //TODO
-			int ITEM_WIDTH = 52 * uiscale;
-			int SBAR2_MARGIN_X = 16 * uiscale;
-			int SBAR2_MARGIN_Y = 10 * uiscale;
+			int ITEM_WIDTH = 50 * uiscale;
+			int SBAR2_MARGIN_X = 16;
+			int SBAR2_MARGIN_Y = 10;
 			int x = (int)(vid.width - SBAR2_MARGIN_X - ITEM_WIDTH * 2 + 0.5f);
-			int y = (int)(vid.height - SBAR2_MARGIN_Y - 60 + 0.5f);
-			for (int i = 0; i < 2; i++)
-				Draw_PicScaledPartial(x, y + 24*uiscale - 10*uiscale * i, 160, 8, pic, uiscale);
+			int y = (int)(vid.height - SBAR2_MARGIN_Y - 60*uiscale + 0.5f);
+			Draw_PicScaledPartial(x, y + 24 * uiscale, 0, 0, 96, 8, pic, uiscale);
+			Draw_PicScaledPartial(x - 96 * uiscale, y + 25 * uiscale - 10 * uiscale, 96, 8, 192, 16, pic, uiscale);
 			for (int i = 0; i < 4; i++) {
 				sprintf(num, "%3i", cl.stats[STAT_SHELLS + i]);
-				int cx = x + 11 + ITEM_WIDTH * (i&1);
-				int cy = y - 10 * (i>>1);
+				int cx = x + 8 * uiscale + ITEM_WIDTH * (i&1);
+				int cy = y - 9 * uiscale * (i>>1) + 24*uiscale;
 				if (num[0] != ' ')
 					Draw_CharacterScaled(cx+ 0*uiscale, cy, 18+num[0]-'0', uiscale);
 				if (num[1] != ' ')
@@ -477,7 +476,7 @@ void Sbar_DrawInventory()
 		else { // bottom center, 4x1
 			int x = (int)(vid.width * 0.5f + 0.5f) - 96 * uiscale;
 			int y = vid.height;
-			Draw_PicScaledPartial(x, y - 24 * uiscale, 192, 8, pic, uiscale);
+			Draw_PicScaledPartial(x, y - 24 * uiscale, 0, 0, 192, 8, pic, uiscale);
 			for (int i = 0; i < 4; i++) {
 				sprintf(num, "%3i", cl.stats[STAT_SHELLS + i]);
 				int cx = x + 8 + 48 * i * uiscale;

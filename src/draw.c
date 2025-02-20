@@ -127,16 +127,18 @@ void Draw_PicScaled(int x, int y, qpic_t *pic, int scale)
 	}
 }
 
-void Draw_PicScaledPartial(int x, int y, int w, int h, qpic_t *pic, int scale)
+void Draw_PicScaledPartial(int x, int y, int ox, int oy, int w, int h, qpic_t *pic, int scale)
 {
 	byte *source = pic->data;
 	byte *dest = vid.buffer + y * vid.rowbytes + x;
 	for (unsigned int v = 0; v < pic->height; v++) {
 		if (v * scale + y >= vid.height || v > h)
 			return;
+		if (v < oy)
+			continue;
 		for (int k = 0; k < scale; k++) {
 			for (unsigned int i = 0; i < pic->width; i++) {
-				if (i >= w)
+				if (i < ox || i >= w)
 					continue;
 				for (int j = 0; j < scale; j++)
 					if (i * scale + j + x < vid.width)
