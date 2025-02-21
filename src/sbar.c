@@ -440,6 +440,8 @@ void Sbar_DrawInventory()
 		}
 	}
 	char num[6];
+	int SBAR2_MARGIN_X = 16;
+	int SBAR2_MARGIN_Y = 10;
 	if (!scr_hudstyle.value) { // ammo counts
 		for (int i = 0; i < 4; i++) {
 			sprintf(num, "%3i", cl.stats[STAT_SHELLS + i]);
@@ -455,8 +457,6 @@ void Sbar_DrawInventory()
 		qpic_t *pic = Sbar_InventoryBarPic();
 		if (hudstyle == HUD_MODERN_SIDEAMMO || hudstyle == HUD_QUAKEWORLD) { // right side, 2x2
 			int ITEM_WIDTH = 50 * uiscale;
-			int SBAR2_MARGIN_X = 16;
-			int SBAR2_MARGIN_Y = 10;
 			int x = (int)(vid.width - SBAR2_MARGIN_X - ITEM_WIDTH * 2 + 0.5f);
 			int y = (int)(vid.height - SBAR2_MARGIN_Y - 60*uiscale + 0.5f);
 			Draw_PicScaledPartial(x, y + 24 * uiscale, 0, 0, 96, 8, pic, uiscale);
@@ -491,47 +491,98 @@ void Sbar_DrawInventory()
 		}
 	}
 	int flashon = 0;
-	for (int i = 0; i < 6; i++) // items
-		if (cl.items & (1 << (17 + i))) {
-			float time = cl.item_gettime[17 + i];
-			if (time && time > cl.time - 2 && flashon) //flash frame
-				sb_updates = 0;
-			else //MED 01/04/97 changed keys
-				if (!hipnotic || (i > 1))
-					Sbar_DrawPic(192+i*16,-16,sb_items[i]);
-			if (time && time > cl.time - 2)
-				sb_updates = 0;
+	if (!scr_hudstyle.value) { // items
+		for (int i = 0; i < 6; i++)
+			if (cl.items & (1 << (17 + i))) {
+				float time = cl.item_gettime[17 + i];
+				if (time && time > cl.time - 2 && flashon) //flash frame
+					sb_updates = 0;
+				else //MED 01/04/97 changed keys
+					if (!hipnotic || (i > 1))
+						Sbar_DrawPic(192+i*16,-16,sb_items[i]);
+				if (time && time > cl.time - 2)
+					sb_updates = 0;
+			}
+		for (int i = 0; hipnotic && i < 2; i++) //MED 01/04/97 added hipnotic items
+			if (cl.items & (1 << (24 + i))) {
+				float time = cl.item_gettime[24 + i];
+				if (time && time > cl.time - 2 && flashon) //flash frame
+					sb_updates = 0;
+				else
+					Sbar_DrawPic(288+i*16,-16,hsb_items[i]);
+				if (time && time > cl.time - 2)
+					sb_updates = 0;
+			}
+		for (int i = 0; rogue && i < 2; i++) // new rogue items
+			if (cl.items & (1 << (29 + i))) {
+				float time = cl.item_gettime[29 + i];
+				if (time && time > cl.time - 2 && flashon) //flash frame
+					sb_updates = 0;
+				else
+					Sbar_DrawPic(288 + i * 16, -16, rsb_items[i]);
+				if (time && time > cl.time - 2)
+					sb_updates = 0;
+			}
+		for (int i = 0; !rogue && i < 4; i++) // sigils
+			if (cl.items & (1 << (28 + i))) {
+				float time = cl.item_gettime[28 + i];
+				if (time && time > cl.time - 2 && flashon) //flash frame
+					sb_updates = 0;
+				else
+					Sbar_DrawPic(320-32+i*8, -16, sb_sigil[i]);
+				if (time && time > cl.time - 2)
+					sb_updates = 0;
+			}
+	}
+	else { // items
+		int x = vid.width - SBAR2_MARGIN_X - 20*uiscale;
+		int y = vid.height - SBAR2_MARGIN_Y - 68*uiscale;
+		if (hudstyle == HUD_MODERN_SIDEAMMO || hudstyle == HUD_QUAKEWORLD) {
+			x = (int)(vid.width - SBAR2_MARGIN_X - 16*uiscale + 0.5f);
+			y = (int)(vid.height - SBAR2_MARGIN_Y - 68*uiscale - 20*uiscale + 0.5f);
 		}
-	for (int i = 0; hipnotic && i < 2; i++) //MED 01/04/97 added hipnotic items
-		if (cl.items & (1 << (24 + i))) {
-			float time = cl.item_gettime[24 + i];
-			if (time && time > cl.time - 2 && flashon) //flash frame
-				sb_updates = 0;
-			else
-				Sbar_DrawPic(288+i*16,-16,hsb_items[i]);
-			if (time && time > cl.time - 2)
-				sb_updates = 0;
+		if (hipnotic) // hipnotic keys
+			for (int i = 0; i < 2; i++)
+				if (cl.items & (IT_KEY1 << i)) {
+					Draw_PicScaled(x, y + 6, sb_items[i], uiscale);
+					y -= sb_items[i]->height;
+				}
+		for (int i = 0; i < 6; i++) {
+			if (i == 2) {
+				x = (int)(0 + SBAR2_MARGIN_X + 4 + 0.5f);
+				y = (int)(vid.height - SBAR2_MARGIN_Y - 66 + 0.5f);
+				if (cl.items & IT_INVULNERABILITY || cl.stats[STAT_ARMOR] > 0)
+					y -= 24*uiscale; // armor row is visible, move starting position above it
+			}
+			if (cl.items & (1<<(17+i))) { //MED 01/04/97 changed keys
+				float time = cl.item_gettime[17+i];
+				if (!hipnotic || (i > 1)) {
+					Draw_PicScaled(x, y, sb_items[i], uiscale);
+					y -= 16*uiscale;
+				}
+				if (time && time > cl.time - 2)
+					sb_updates = 0;
+			}
 		}
-	for (int i = 0; rogue && i < 2; i++) // new rogue items
-		if (cl.items & (1 << (29 + i))) {
-			float time = cl.item_gettime[29 + i];
-			if (time && time > cl.time - 2 && flashon) //flash frame
-				sb_updates = 0;
-			else
-				Sbar_DrawPic(288 + i * 16, -16, rsb_items[i]);
-			if (time && time > cl.time - 2)
-				sb_updates = 0;
-		}
-	for (int i = 0; !rogue && i < 4; i++) // sigils
-		if (cl.items & (1 << (28 + i))) {
-			float time = cl.item_gettime[28 + i];
-			if (time && time > cl.time - 2 && flashon) //flash frame
-				sb_updates = 0;
-			else
-				Sbar_DrawPic(320-32+i*8, -16, sb_sigil[i]);
-			if (time && time > cl.time - 2)
-				sb_updates = 0;
-		}
+		if (hipnotic) // hipnotic items
+			for (int i = 0; i < 2; i++)
+				if (cl.items & (1<<(24+i))) {
+					float time = cl.item_gettime[24+i];
+					Draw_PicScaled(x, y, hsb_items[i], uiscale);
+					y -= 16*uiscale;
+					if (time && time > cl.time - 2)
+						sb_updates = 0;
+				}
+		if (rogue) // new rogue items
+			for (int i = 0; i < 2; i++)
+				if (cl.items & (1<<(29+i))) {
+					float time = cl.item_gettime[29+i];
+					Draw_PicScaled(x, y, rsb_items[i], uiscale);
+					y -= 16*uiscale;
+					if (time && time > cl.time - 2)
+						sb_updates = 0;
+				}
+	}
 }
 
 void Sbar_DrawFrags()
@@ -651,8 +702,9 @@ void Sbar_Draw()
 		Sbar_DrawPic(0, 0, sb_scorebar);
 		Sbar_DrawScoreboard();
 		sb_updates = 0;
-	} else if (sb_lines) {
-		Sbar_DrawPic(0, 0, sb_sbar);
+	} else if (scr_hudstyle.value || sb_lines) {
+		if (!scr_hudstyle.value)
+			Sbar_DrawPic(0, 0, sb_sbar);
 		//MED 01/04/97 moved keys here so they would not be overwritten
 		if (hipnotic) { // keys (hipnotic only)
 			if (cl.items & IT_KEY1)
@@ -766,7 +818,6 @@ void Sbar_DeathmatchOverlay()
 		Draw_CharacterScaled(x + 24 * uiscale, y, num[2], uiscale);
 		if (k == cl.viewentity - 1)
 			Draw_CharacterScaled(x - 8 * uiscale, y, 12, uiscale);
-
 		Draw_StringScaled(x + 64 * uiscale, y, s->name, uiscale); //name
 		y += 10 * uiscale;
 	}
