@@ -376,7 +376,7 @@ void Sbar_DrawInventory()
 	{
 		int ROW_HEIGHT = 16 * uiscale;
 		int x = vid.width;
-		int y = (int)(LERP (0, vid.height - 148, 0.5f) + ROW_HEIGHT * 7 * 0.5f + 0.5f);
+		int y = vid.height - ROW_HEIGHT * 6;
 		if (hipnotic)
 			y += 12*uiscale; // move down a bit to accomodate the extra weapons
 		for (int i = 0; i < 7; i++) {
@@ -476,11 +476,11 @@ void Sbar_DrawInventory()
 		else { // bottom center, 4x1
 			int x = (int)(vid.width * 0.5f + 0.5f) - 96 * uiscale;
 			int y = vid.height;
-			Draw_PicScaledPartial(x, y - 24 * uiscale, 0, 0, 192, 8, pic, uiscale);
+			Draw_PicScaledPartial(x, y - 8 * uiscale, 0, 0, 192, 8, pic, uiscale);
 			for (int i = 0; i < 4; i++) {
 				sprintf(num, "%3i", cl.stats[STAT_SHELLS + i]);
 				int cx = x + 8 + 48 * i * uiscale;
-				int cy = y - 24 * uiscale;
+				int cy = y - 8 * uiscale;
 				if (num[0] != ' ')
 					Draw_CharacterScaled(cx+ 0*uiscale, cy, 18+num[0]-'0', uiscale);
 				if (num[1] != ' ')
@@ -535,11 +535,11 @@ void Sbar_DrawInventory()
 			}
 	}
 	else { // items
-		int x = vid.width - SBAR2_MARGIN_X - 20*uiscale;
-		int y = vid.height - SBAR2_MARGIN_Y - 68*uiscale;
+		int x = vid.width - SBAR2_MARGIN_X - 12*uiscale;
+		int y = vid.height - SBAR2_MARGIN_Y - 40*uiscale;
 		if (hudstyle == HUD_MODERN_SIDEAMMO || hudstyle == HUD_QUAKEWORLD) {
-			x = (int)(vid.width - SBAR2_MARGIN_X - 16*uiscale + 0.5f);
-			y = (int)(vid.height - SBAR2_MARGIN_Y - 68*uiscale - 20*uiscale + 0.5f);
+			x = vid.width - SBAR2_MARGIN_X - 16*uiscale;
+			y = vid.height - SBAR2_MARGIN_Y - 68*uiscale - 20*uiscale;
 		}
 		if (hipnotic) // hipnotic keys
 			for (int i = 0; i < 2; i++)
@@ -549,8 +549,8 @@ void Sbar_DrawInventory()
 				}
 		for (int i = 0; i < 6; i++) {
 			if (i == 2) {
-				x = (int)(0 + SBAR2_MARGIN_X + 4 + 0.5f);
-				y = (int)(vid.height - SBAR2_MARGIN_Y - 66 + 0.5f);
+				x = SBAR2_MARGIN_X - 4;
+				y = vid.height - SBAR2_MARGIN_Y - 40;
 				if (cl.items & IT_INVULNERABILITY || cl.stats[STAT_ARMOR] > 0)
 					y -= 24*uiscale; // armor row is visible, move starting position above it
 			}
@@ -622,6 +622,12 @@ void Sbar_DrawFrags()
 void Sbar_DrawFace()
 {
 	int f, anim;
+	int x = 112; // classic, qw
+	int y = 0;
+	if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
+		x = 8;
+		y = -8;
+	}
 	// PGM 01/19/97 - team color drawing
 	// PGM 03/02/97 - fixed so color swatch only appears in CTF modes
 	if (rogue && (cl.maxclients != 1) && (teamplay.value > 3) &&
@@ -634,7 +640,7 @@ void Sbar_DrawFace()
 		bottom = Sbar_ColorForMap(bottom);
 		int xofs = cl.gametype == GAME_DEATHMATCH ? 113 :
 			((vid.width - 320) >> 1) + 113;
-		Sbar_DrawPic(112, 0, rsb_teambord);
+		Sbar_DrawPic(x, y, rsb_teambord);
 		Draw_Fill(xofs, vid.height - SBAR_HEIGHT + 3, 22, 9, top);
 		Draw_Fill(xofs, vid.height - SBAR_HEIGHT + 12, 22, 9, bottom);
 		f = s->frags; // draw number
@@ -656,19 +662,19 @@ void Sbar_DrawFace()
 	// PGM 01/19/97 - team color drawing
 	if ((cl.items & (IT_INVISIBILITY | IT_INVULNERABILITY))
 			== (IT_INVISIBILITY | IT_INVULNERABILITY)) {
-		Sbar_DrawPic(112, 0, sb_face_invis_invuln);
+		Sbar_DrawPic(x, y, sb_face_invis_invuln);
 		return;
 	}
 	if (cl.items & IT_QUAD) {
-		Sbar_DrawPic(112, 0, sb_face_quad);
+		Sbar_DrawPic(x, y, sb_face_quad);
 		return;
 	}
 	if (cl.items & IT_INVISIBILITY) {
-		Sbar_DrawPic(112, 0, sb_face_invis);
+		Sbar_DrawPic(x, y, sb_face_invis);
 		return;
 	}
 	if (cl.items & IT_INVULNERABILITY) {
-		Sbar_DrawPic(112, 0, sb_face_invuln);
+		Sbar_DrawPic(x, y, sb_face_invuln);
 		return;
 	}
 	if (cl.stats[STAT_HEALTH] >= 100)
@@ -680,7 +686,7 @@ void Sbar_DrawFace()
 		sb_updates = 0; // make sure the anim gets drawn over
 	} else
 		anim = 0;
-	Sbar_DrawPic(112, 0, sb_faces[f][anim]);
+	Sbar_DrawPic(x, y, sb_faces[f][anim]);
 }
 
 void Sbar_Draw()
@@ -705,6 +711,8 @@ void Sbar_Draw()
 	} else if (scr_hudstyle.value || sb_lines) {
 		if (!scr_hudstyle.value)
 			Sbar_DrawPic(0, 0, sb_sbar);
+		int x = 209; // classic, qw
+		int y = 3; // TODO misson pack stuff
 		//MED 01/04/97 moved keys here so they would not be overwritten
 		if (hipnotic) { // keys (hipnotic only)
 			if (cl.items & IT_KEY1)
@@ -712,60 +720,83 @@ void Sbar_Draw()
 			if (cl.items & IT_KEY2)
 				Sbar_DrawPic(209, 12, sb_items[1]);
 		}
+		x = 0; // classic, qw
+		y = 0;
+		if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
+			x = 8;
+			y = -32;
+		}
 		if (cl.items & IT_INVULNERABILITY) { // armor
-			Sbar_DrawNum(24, 0, 666, 3, 1);
-			Sbar_DrawPic(0, 0, draw_disc);
+			Sbar_DrawNum(24 + x, y, 666, 3, 1);
+			Sbar_DrawPic(x, y, draw_disc);
 		} else {
 			if (rogue) {
-				Sbar_DrawNum(24, 0, cl.stats[STAT_ARMOR], 3,
+				Sbar_DrawNum(24 + x, y, cl.stats[STAT_ARMOR], 3,
 						cl.stats[STAT_ARMOR] <= 25);
 				if (cl.items & RIT_ARMOR3)
-					Sbar_DrawPic(0, 0, sb_armor[2]);
+					Sbar_DrawPic(x, y, sb_armor[2]);
 				else if (cl.items & RIT_ARMOR2)
-					Sbar_DrawPic(0, 0, sb_armor[1]);
+					Sbar_DrawPic(x, y, sb_armor[1]);
 				else if (cl.items & RIT_ARMOR1)
-					Sbar_DrawPic(0, 0, sb_armor[0]);
+					Sbar_DrawPic(x, y, sb_armor[0]);
 			} else {
-				Sbar_DrawNum(24, 0, cl.stats[STAT_ARMOR], 3,
+				Sbar_DrawNum(24 + x, y, cl.stats[STAT_ARMOR], 3,
 						cl.stats[STAT_ARMOR] <= 25);
 				if (cl.items & IT_ARMOR3)
-					Sbar_DrawPic(0, 0, sb_armor[2]);
+					Sbar_DrawPic(x, y, sb_armor[2]);
 				else if (cl.items & IT_ARMOR2)
-					Sbar_DrawPic(0, 0, sb_armor[1]);
+					Sbar_DrawPic(x, y, sb_armor[1]);
 				else if (cl.items & IT_ARMOR1)
-					Sbar_DrawPic(0, 0, sb_armor[0]);
+					Sbar_DrawPic(x, y, sb_armor[0]);
 			}
 		}
+		x = 136; // classic, qw
+		y = 0;
+		if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
+			x = 30;
+			y = -8;
+		}
 		Sbar_DrawFace(); // face
-		Sbar_DrawNum(136, 0, cl.stats[STAT_HEALTH], 3, // health
+		Sbar_DrawNum(x, y, cl.stats[STAT_HEALTH], 3, // health
 				cl.stats[STAT_HEALTH] <= 25);
+		x = 224; // classic, qw
+		y = vid.height - 32*uiscale;
+		if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
+			x = vid.width - 32*uiscale;
+			y = vid.height - 32*uiscale;
+		}
 		if (rogue) { // ammo icon
 			if (cl.items & RIT_SHELLS)
-				Sbar_DrawTransPic(224, 0, sb_ammo[0]);
+				Draw_TransPicScaled(x, y, sb_ammo[0], uiscale);
 			else if (cl.items & RIT_NAILS)
-				Sbar_DrawTransPic(224, 0, sb_ammo[1]);
+				Draw_TransPicScaled(x, y, sb_ammo[1], uiscale);
 			else if (cl.items & RIT_ROCKETS)
-				Sbar_DrawTransPic(224, 0, sb_ammo[2]);
+				Draw_TransPicScaled(x, y, sb_ammo[2], uiscale);
 			else if (cl.items & RIT_CELLS)
-				Sbar_DrawTransPic(224, 0, sb_ammo[3]);
+				Draw_TransPicScaled(x, y, sb_ammo[3], uiscale);
 			else if (cl.items & RIT_LAVA_NAILS)
-				Sbar_DrawTransPic(224, 0, rsb_ammo[0]);
+				Draw_TransPicScaled(x, y, rsb_ammo[0], uiscale);
 			else if (cl.items & RIT_PLASMA_AMMO)
-				Sbar_DrawTransPic(224, 0, rsb_ammo[1]);
+				Draw_TransPicScaled(x, y, rsb_ammo[1], uiscale);
 			else if (cl.items & RIT_MULTI_ROCKETS)
-				Sbar_DrawTransPic(224, 0, rsb_ammo[2]);
+				Draw_TransPicScaled(x, y, rsb_ammo[2], uiscale);
 		} else {
 			if (cl.items & IT_SHELLS)
-				Sbar_DrawTransPic(224, 0, sb_ammo[0]);
+				Draw_TransPicScaled(x, y, sb_ammo[0], uiscale);
 			else if (cl.items & IT_NAILS)
-				Sbar_DrawTransPic(224, 0, sb_ammo[1]);
+				Draw_TransPicScaled(x, y, sb_ammo[1], uiscale);
 			else if (cl.items & IT_ROCKETS)
-				Sbar_DrawTransPic(224, 0, sb_ammo[2]);
+				Draw_TransPicScaled(x, y, sb_ammo[2], uiscale);
 			else if (cl.items & IT_CELLS)
-				Sbar_DrawTransPic(224, 0, sb_ammo[3]);
+				Draw_TransPicScaled(x, y, sb_ammo[3], uiscale);
 		}
-		Sbar_DrawNum(248, 0, cl.stats[STAT_AMMO], 3,
-				cl.stats[STAT_AMMO] <= 10);
+		x = 248; // classic, qw
+		y = 0;
+		if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
+			x = 248 - 32;
+			y = -8;
+		}
+		Sbar_DrawNum(x, y, cl.stats[STAT_AMMO], 3, cl.stats[STAT_AMMO] <= 10);
 	}
 	if (vid.width > 320 && cl.gametype == GAME_DEATHMATCH)
 		Sbar_MiniDeathmatchOverlay();

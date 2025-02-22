@@ -73,7 +73,7 @@ void Draw_CharacterScaled(int x, int y, int num, int scale)
 	num &= 255;
 	if (y <= -8)
 		return; // totally off screen
-	if (y >= (signed int)(vid.height - 8 * scale))
+	if (y > (signed int)(vid.height - 8 * scale))
 		return; // don't draw past the bottom of the screen
 	int row = num >> 4;
 	int col = num & 15;
