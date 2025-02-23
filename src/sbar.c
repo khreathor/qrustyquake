@@ -190,9 +190,8 @@ void Sbar_DrawTransPic(int x, int y, qpic_t *pic)
 		Draw_TransPicScaled(x * uiscale, y * uiscale + (vid.height
 					- SBAR_HEIGHT * uiscale), pic, uiscale);
 	else
-		Draw_TransPicScaled(x * uiscale + ((vid.width - 320 * uiscale)
-					>> 1), y * uiscale + (vid.height -
-					SBAR_HEIGHT * uiscale), pic, uiscale);
+		Draw_TransPicScaled(x*uiscale+((vid.width-320*uiscale)/2),
+			y*uiscale+(vid.height-SBAR_HEIGHT*uiscale),pic,uiscale);
 }
 
 void Sbar_DrawCharacter(int x, int y, int num)
@@ -201,9 +200,8 @@ void Sbar_DrawCharacter(int x, int y, int num)
 		Draw_CharacterScaled(x * uiscale + 4, y * uiscale + (vid.height
 					- SBAR_HEIGHT * uiscale), num, uiscale);
 	else
-		Draw_CharacterScaled(x * uiscale + ((vid.width - 320 * uiscale)
-					>> 1) + 4, y * uiscale + (vid.height - 
-					SBAR_HEIGHT * uiscale), num, uiscale);
+		Draw_CharacterScaled(x*uiscale+((vid.width-320*uiscale)/2)+4,
+			y*uiscale+(vid.height-SBAR_HEIGHT*uiscale),num,uiscale);
 }
 
 void Sbar_DrawString(int x, int y, char *str)
@@ -246,14 +244,14 @@ void Sbar_DrawNum(int x, int y, int num, int digits, int color)
 	if (l > digits)
 		ptr += (l - digits);
 	if (l < digits)
-		x += (digits - l) * 24;
+		x += (digits - l) * 24 * uiscale;
 	while (*ptr) {
 		if (*ptr == '-')
 			frame = STAT_MINUS;
 		else
 			frame = *ptr - '0';
-		Sbar_DrawTransPic(x, y, sb_nums[color][frame]);
-		x += 24;
+		Draw_TransPicScaled(x, y, sb_nums[color][frame], uiscale);
+		x += 24 * uiscale;
 		ptr++;
 	}
 }
@@ -440,8 +438,8 @@ void Sbar_DrawInventory()
 		}
 	}
 	char num[6];
-	int SBAR2_MARGIN_X = 16;
-	int SBAR2_MARGIN_Y = 10;
+	int SBAR2_MARGIN_X = 16 * uiscale;
+	int SBAR2_MARGIN_Y = 10 * uiscale;
 	if (!scr_hudstyle.value) { // ammo counts
 		for (int i = 0; i < 4; i++) {
 			sprintf(num, "%3i", cl.stats[STAT_SHELLS + i]);
@@ -549,8 +547,8 @@ void Sbar_DrawInventory()
 				}
 		for (int i = 0; i < 6; i++) {
 			if (i == 2) {
-				x = SBAR2_MARGIN_X - 4;
-				y = vid.height - SBAR2_MARGIN_Y - 40;
+				x = SBAR2_MARGIN_X - 4 * uiscale;
+				y = vid.height - SBAR2_MARGIN_Y - 40 * uiscale;
 				if (cl.items & IT_INVULNERABILITY || cl.stats[STAT_ARMOR] > 0)
 					y -= 24*uiscale; // armor row is visible, move starting position above it
 			}
@@ -625,8 +623,8 @@ void Sbar_DrawFace()
 	int x = 112; // classic, qw
 	int y = 0;
 	if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
-		x = 8;
-		y = -8;
+		x = 8 * uiscale;
+		y = vid.height - 32 * uiscale;
 	}
 	// PGM 01/19/97 - team color drawing
 	// PGM 03/02/97 - fixed so color swatch only appears in CTF modes
@@ -662,19 +660,19 @@ void Sbar_DrawFace()
 	// PGM 01/19/97 - team color drawing
 	if ((cl.items & (IT_INVISIBILITY | IT_INVULNERABILITY))
 			== (IT_INVISIBILITY | IT_INVULNERABILITY)) {
-		Sbar_DrawPic(x, y, sb_face_invis_invuln);
+		Draw_PicScaled(x, y, sb_face_invis_invuln, uiscale);
 		return;
 	}
 	if (cl.items & IT_QUAD) {
-		Sbar_DrawPic(x, y, sb_face_quad);
+		Draw_PicScaled(x, y, sb_face_quad, uiscale);
 		return;
 	}
 	if (cl.items & IT_INVISIBILITY) {
-		Sbar_DrawPic(x, y, sb_face_invis);
+		Draw_PicScaled(x, y, sb_face_invis, uiscale);
 		return;
 	}
 	if (cl.items & IT_INVULNERABILITY) {
-		Sbar_DrawPic(x, y, sb_face_invuln);
+		Draw_PicScaled(x, y, sb_face_invuln, uiscale);
 		return;
 	}
 	if (cl.stats[STAT_HEALTH] >= 100)
@@ -686,7 +684,7 @@ void Sbar_DrawFace()
 		sb_updates = 0; // make sure the anim gets drawn over
 	} else
 		anim = 0;
-	Sbar_DrawPic(x, y, sb_faces[f][anim]);
+	Draw_PicScaled(x, y, sb_faces[f][anim], uiscale);
 }
 
 void Sbar_Draw()
@@ -710,57 +708,57 @@ void Sbar_Draw()
 		sb_updates = 0;
 	} else if (scr_hudstyle.value || sb_lines) {
 		if (!scr_hudstyle.value)
-			Sbar_DrawPic(0, 0, sb_sbar);
+			Draw_PicScaled(vid.width/2-160*(uiscale), vid.height-SBAR_HEIGHT*uiscale, sb_sbar, uiscale);
 		int x = 209; // classic, qw
 		int y = 3; // TODO misson pack stuff
 		//MED 01/04/97 moved keys here so they would not be overwritten
 		if (hipnotic) { // keys (hipnotic only)
 			if (cl.items & IT_KEY1)
-				Sbar_DrawPic(209, 3, sb_items[0]);
+				Draw_PicScaled(209, 3, sb_items[0], uiscale);
 			if (cl.items & IT_KEY2)
-				Sbar_DrawPic(209, 12, sb_items[1]);
+				Draw_PicScaled(209, 12, sb_items[1], uiscale);
 		}
-		x = 0; // classic, qw
-		y = 0;
+		x = vid.width/2-160*(uiscale); // classic, qw
+		y = vid.height - 24*uiscale;
 		if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
-			x = 8;
-			y = -32;
+			x = 8 * uiscale;
+			y = vid.height - 56 * uiscale;
 		}
 		if (cl.items & IT_INVULNERABILITY) { // armor
-			Sbar_DrawNum(24 + x, y, 666, 3, 1);
-			Sbar_DrawPic(x, y, draw_disc);
+			Sbar_DrawNum(24*uiscale + x, y, 666, 3, 1);
+			Draw_PicScaled(x, y, draw_disc, uiscale);
 		} else {
 			if (rogue) {
-				Sbar_DrawNum(24 + x, y, cl.stats[STAT_ARMOR], 3,
+				Sbar_DrawNum(24*uiscale + x, y, cl.stats[STAT_ARMOR], 3,
 						cl.stats[STAT_ARMOR] <= 25);
 				if (cl.items & RIT_ARMOR3)
-					Sbar_DrawPic(x, y, sb_armor[2]);
+					Draw_PicScaled(x, y, sb_armor[2], uiscale);
 				else if (cl.items & RIT_ARMOR2)
-					Sbar_DrawPic(x, y, sb_armor[1]);
+					Draw_PicScaled(x, y, sb_armor[1], uiscale);
 				else if (cl.items & RIT_ARMOR1)
-					Sbar_DrawPic(x, y, sb_armor[0]);
+					Draw_PicScaled(x, y, sb_armor[0], uiscale);
 			} else {
-				Sbar_DrawNum(24 + x, y, cl.stats[STAT_ARMOR], 3,
+				Sbar_DrawNum(24*uiscale + x, y, cl.stats[STAT_ARMOR], 3,
 						cl.stats[STAT_ARMOR] <= 25);
 				if (cl.items & IT_ARMOR3)
-					Sbar_DrawPic(x, y, sb_armor[2]);
+					Draw_PicScaled(x, y, sb_armor[2], uiscale);
 				else if (cl.items & IT_ARMOR2)
-					Sbar_DrawPic(x, y, sb_armor[1]);
+					Draw_PicScaled(x, y, sb_armor[1], uiscale);
 				else if (cl.items & IT_ARMOR1)
-					Sbar_DrawPic(x, y, sb_armor[0]);
+					Draw_PicScaled(x, y, sb_armor[0], uiscale);
 			}
 		}
-		x = 136; // classic, qw
-		y = 0;
+		x = vid.width/2-160*(uiscale) + 136*uiscale; // classic, qw
+		y = vid.height - 24*uiscale;
 		if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
-			x = 30;
-			y = -8;
+			x = 32*uiscale;
+			y = vid.height - 32*uiscale;
 		}
 		Sbar_DrawFace(); // face
 		Sbar_DrawNum(x, y, cl.stats[STAT_HEALTH], 3, // health
 				cl.stats[STAT_HEALTH] <= 25);
-		x = 224; // classic, qw
-		y = vid.height - 32*uiscale;
+		x = vid.width/2-160*(uiscale) + 224*uiscale; // classic, qw
+		y = vid.height - 24*uiscale;
 		if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
 			x = vid.width - 32*uiscale;
 			y = vid.height - 32*uiscale;
@@ -790,11 +788,11 @@ void Sbar_Draw()
 			else if (cl.items & IT_CELLS)
 				Draw_TransPicScaled(x, y, sb_ammo[3], uiscale);
 		}
-		x = 248; // classic, qw
-		y = 0;
+		x = vid.width/2-160*(uiscale) + 248*uiscale; // classic, qw
+		y = vid.height - 24*uiscale;
 		if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
-			x = 248 - 32;
-			y = -8;
+			x = vid.width - 108 * uiscale;
+			y = vid.height - 32 * uiscale;
 		}
 		Sbar_DrawNum(x, y, cl.stats[STAT_AMMO], 3, cl.stats[STAT_AMMO] <= 10);
 	}
