@@ -455,8 +455,8 @@ void Sbar_DrawInventory()
 		qpic_t *pic = Sbar_InventoryBarPic();
 		if (hudstyle == HUD_MODERN_SIDEAMMO || hudstyle == HUD_QUAKEWORLD) { // right side, 2x2
 			int ITEM_WIDTH = 50 * uiscale;
-			int x = (int)(vid.width - SBAR2_MARGIN_X - ITEM_WIDTH * 2 + 0.5f);
-			int y = (int)(vid.height - SBAR2_MARGIN_Y - 60*uiscale + 0.5f);
+			int x = vid.width - SBAR2_MARGIN_X - ITEM_WIDTH * 2 + 12 * uiscale;
+			int y = vid.height - SBAR2_MARGIN_Y - 60*uiscale;
 			Draw_PicScaledPartial(x, y + 24 * uiscale, 0, 0, 96, 8, pic, uiscale);
 			Draw_PicScaledPartial(x - 96 * uiscale, y + 25 * uiscale - 10 * uiscale, 96, 8, 192, 16, pic, uiscale);
 			for (int i = 0; i < 4; i++) {
@@ -532,13 +532,65 @@ void Sbar_DrawInventory()
 					sb_updates = 0;
 			}
 	}
-	else { // items
+	else if (hudstyle == HUD_MODERN_SIDEAMMO || hudstyle == HUD_QUAKEWORLD) { // items
+		int x = vid.width - SBAR2_MARGIN_X - 8*uiscale;
+		int y = vid.height - SBAR2_MARGIN_Y - 65*uiscale;
+		if (hipnotic) // hipnotic keys
+			for (int i = 0; i < 2; i++)
+				if (cl.items & (IT_KEY1 << i)) {
+					Draw_PicScaled(x, y + 6, sb_items[i], uiscale);
+					x -= sb_items[i]->width;
+				}
+		for (int i = 0; i < 2; i++) { // keys
+			if (cl.items & (1<<(17+i))) { //MED 01/04/97 changed keys
+				float time = cl.item_gettime[17+i];
+				if (!hipnotic || (i > 1)) {
+					Draw_PicScaled(x, y, sb_items[i], uiscale);
+					x -= 16*uiscale;
+				}
+				if (time && time > cl.time - 2)
+					sb_updates = 0;
+			}
+		}
+		for (int i = 2; i < 6; i++) { //items
+			if (i == 2) {
+				x = SBAR2_MARGIN_X - 4 * uiscale;
+				y = vid.height - SBAR2_MARGIN_Y - 40 * uiscale;
+				if (cl.items & IT_INVULNERABILITY || cl.stats[STAT_ARMOR] > 0)
+					y -= 24*uiscale; // armor row is visible, move starting position above it
+			}
+			if (cl.items & (1<<(17+i))) { //MED 01/04/97 changed keys
+				float time = cl.item_gettime[17+i];
+				if (!hipnotic || (i > 1)) {
+					Draw_PicScaled(x, y, sb_items[i], uiscale);
+					y -= 16*uiscale;
+				}
+				if (time && time > cl.time - 2)
+					sb_updates = 0;
+			}
+		}
+		if (hipnotic) // hipnotic items
+			for (int i = 0; i < 2; i++)
+				if (cl.items & (1<<(24+i))) {
+					float time = cl.item_gettime[24+i];
+					Draw_PicScaled(x, y, hsb_items[i], uiscale);
+					y -= 16*uiscale;
+					if (time && time > cl.time - 2)
+						sb_updates = 0;
+				}
+		if (rogue) // new rogue items
+			for (int i = 0; i < 2; i++)
+				if (cl.items & (1<<(29+i))) {
+					float time = cl.item_gettime[29+i];
+					Draw_PicScaled(x, y, rsb_items[i], uiscale);
+					y -= 16*uiscale;
+					if (time && time > cl.time - 2)
+						sb_updates = 0;
+				}
+	}
+	else {
 		int x = vid.width - SBAR2_MARGIN_X - 12*uiscale;
 		int y = vid.height - SBAR2_MARGIN_Y - 40*uiscale;
-		if (hudstyle == HUD_MODERN_SIDEAMMO || hudstyle == HUD_QUAKEWORLD) {
-			x = vid.width - SBAR2_MARGIN_X - 16*uiscale;
-			y = vid.height - SBAR2_MARGIN_Y - 68*uiscale - 20*uiscale;
-		}
 		if (hipnotic) // hipnotic keys
 			for (int i = 0; i < 2; i++)
 				if (cl.items & (IT_KEY1 << i)) {
@@ -729,8 +781,9 @@ void Sbar_Draw()
 			Draw_PicScaled(x, y, draw_disc, uiscale);
 		} else {
 			if (rogue) {
-				Sbar_DrawNum(24*uiscale + x, y, cl.stats[STAT_ARMOR], 3,
-						cl.stats[STAT_ARMOR] <= 25);
+				if (!scr_hudstyle.value || cl.stats[STAT_ARMOR])
+					Sbar_DrawNum(24*uiscale + x, y, cl.stats[STAT_ARMOR], 3,
+							cl.stats[STAT_ARMOR] <= 25);
 				if (cl.items & RIT_ARMOR3)
 					Draw_PicScaled(x, y, sb_armor[2], uiscale);
 				else if (cl.items & RIT_ARMOR2)
@@ -738,8 +791,9 @@ void Sbar_Draw()
 				else if (cl.items & RIT_ARMOR1)
 					Draw_PicScaled(x, y, sb_armor[0], uiscale);
 			} else {
-				Sbar_DrawNum(24*uiscale + x, y, cl.stats[STAT_ARMOR], 3,
-						cl.stats[STAT_ARMOR] <= 25);
+				if (!scr_hudstyle.value || cl.stats[STAT_ARMOR])
+					Sbar_DrawNum(24*uiscale + x, y, cl.stats[STAT_ARMOR], 3,
+							cl.stats[STAT_ARMOR] <= 25);
 				if (cl.items & IT_ARMOR3)
 					Draw_PicScaled(x, y, sb_armor[2], uiscale);
 				else if (cl.items & IT_ARMOR2)
