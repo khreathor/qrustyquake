@@ -370,8 +370,7 @@ void Sbar_DrawInventory()
 				if (cl.stats[STAT_ACTIVEWEAPON]==(RIT_LAVA_NAILGUN<<i))
 					Sbar_DrawPic((i + 2) * 24, -16, rsb_weapons[i]);
 	}
-	else if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2)
-	{
+	else {
 		int ROW_HEIGHT = 16 * uiscale;
 		int x = vid.width;
 		int y = vid.height - ROW_HEIGHT * 6;
@@ -453,7 +452,7 @@ void Sbar_DrawInventory()
 	}
 	else {
 		qpic_t *pic = Sbar_InventoryBarPic();
-		if (hudstyle == HUD_MODERN_SIDEAMMO || hudstyle == HUD_QUAKEWORLD) { // right side, 2x2
+		if (hudstyle == HUD_MODERN_SIDEAMMO) { // right side, 2x2
 			int ITEM_WIDTH = 50 * uiscale;
 			int x = vid.width - SBAR2_MARGIN_X - ITEM_WIDTH * 2 + 12 * uiscale;
 			int y = vid.height - SBAR2_MARGIN_Y - 60*uiscale;
@@ -471,7 +470,7 @@ void Sbar_DrawInventory()
 					Draw_CharacterScaled(cx+16*uiscale, cy, 18+num[2]-'0', uiscale);
 			}
 		}
-		else { // bottom center, 4x1
+		else if (hudstyle == HUD_MODERN_CENTERAMMO) { // bottom center, 4x1
 			int x = (int)(vid.width * 0.5f + 0.5f) - 96 * uiscale;
 			int y = vid.height;
 			Draw_PicScaledPartial(x, y - 8 * uiscale, 0, 0, 192, 8, pic, uiscale);
@@ -486,10 +485,34 @@ void Sbar_DrawInventory()
 				if (num[2] != ' ')
 					Draw_CharacterScaled(cx+16*uiscale, cy, 18+num[2]-'0', uiscale);
 			}
+		} 
+		else { // right side, 1x4
+			int ITEM_WIDTH = 50 * uiscale;
+			int x = vid.width - 48*uiscale;
+			int y = vid.height - SBAR2_MARGIN_Y - 68*uiscale;
+			for (int i = 0; i < 4; i++)
+				Draw_PicScaledPartial(x - 48 * uiscale * i,
+						y + 9 * uiscale * i,
+						0 + i * 48,
+						0,
+						48 + i * 48,
+						8,
+						pic, uiscale);
+			for (int i = 0; i < 4; i++) {
+				sprintf(num, "%3i", cl.stats[STAT_SHELLS + i]);
+				int cx = x + 8 * uiscale;
+				int cy = y + i * 9 * uiscale;
+				if (num[0] != ' ')
+					Draw_CharacterScaled(cx+ 0*uiscale, cy, 18+num[0]-'0', uiscale);
+				if (num[1] != ' ')
+					Draw_CharacterScaled(cx+ 8*uiscale, cy, 18+num[1]-'0', uiscale);
+				if (num[2] != ' ')
+					Draw_CharacterScaled(cx+16*uiscale, cy, 18+num[2]-'0', uiscale);
+			}
 		}
 	}
 	int flashon = 0;
-	if (!scr_hudstyle.value) { // items
+	if (!scr_hudstyle.value || scr_hudstyle.value == 3) { // items
 		for (int i = 0; i < 6; i++)
 			if (cl.items & (1 << (17 + i))) {
 				float time = cl.item_gettime[17 + i];
@@ -672,8 +695,8 @@ void Sbar_DrawFrags()
 void Sbar_DrawFace()
 {
 	int f, anim;
-	int x = 112; // classic, qw
-	int y = 0;
+	int x = vid.width/2 - 48*uiscale; // classic, qw
+	int y = vid.height - 24 * uiscale;
 	if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
 		x = 8 * uiscale;
 		y = vid.height - 32 * uiscale;
