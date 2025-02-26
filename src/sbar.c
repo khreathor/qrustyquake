@@ -256,6 +256,18 @@ void Sbar_DrawNum(int x, int y, int num, int digits, int color)
 	}
 }
 
+void Sbar_DrawNumSmall(int x, int y, int num)
+{
+	char buf[6];
+	sprintf(buf, "%3i", num);
+	if (buf[0] != ' ')
+		Draw_CharacterScaled(x, y, 18+buf[0]-'0', uiscale);
+	if (buf[1] != ' ')
+		Draw_CharacterScaled(x+8*uiscale, y, 18+buf[1]-'0', uiscale);
+	if (buf[2] != ' ')
+		Draw_CharacterScaled(x+16*uiscale, y, 18+buf[2]-'0', uiscale);
+}
+
 void Sbar_SortFrags()
 {
 	scoreboardlines = 0; // sort by frags
@@ -306,24 +318,67 @@ void Sbar_DrawScoreboard()
 		Sbar_DeathmatchOverlay();
 }
 
-qpic_t *Sbar_InventoryBarPic()
-{
-    if (rogue)
-        return rsb_invbar[cl.stats[STAT_ACTIVEWEAPON] < RIT_LAVA_NAILGUN];
-    return sb_ibar;
-}
-
 void Sbar_DrawInventory()
 {
-	if (scr_hudstyle.value) { /* skip the background*/ }
-	else if (rogue) {
-		if (cl.stats[STAT_ACTIVEWEAPON] >= RIT_LAVA_NAILGUN)
-			Sbar_DrawPic(0, -24, rsb_invbar[0]);
-		else
-			Sbar_DrawPic(0, -24, rsb_invbar[1]);
-	} else
-		Sbar_DrawPic(0, -24, sb_ibar);
-	if (!scr_hudstyle.value) {
+	int x, y;
+	qpic_t *pic = rogue ?
+		rsb_invbar[cl.stats[STAT_ACTIVEWEAPON] < RIT_LAVA_NAILGUN] :
+		sb_ibar;
+	switch ((int)scr_hudstyle.value) { // inventroty and ammo count bg
+	default:
+	case 0: // classic
+		Sbar_DrawPic(0, -24, pic);
+		break;
+	case 1: // bottom center, 4x1
+		x = vid.width / 2 - 96*uiscale;
+		y = vid.height - 8*uiscale;
+		Draw_PicScaledPartial(x, y, 0, 0, 192, 8, pic, uiscale);
+		break;
+	case 2: // right side, 2x2
+		x = vid.width - 104*uiscale;
+		y = vid.height - 55*uiscale;
+		Draw_PicScaledPartial(x, y + 9*uiscale, 0,0,96,8, pic, uiscale);
+		Draw_PicScaledPartial(x - 96*uiscale,y,96,8,192,16,pic,uiscale);
+		break;
+	case 3: // right side, 1x4
+		x = vid.width - 48*uiscale;
+		y = vid.height - 78*uiscale;
+		for (int i = 0; i < 4; i++)
+			Draw_PicScaledPartial(x - 48*uiscale*i, y + 9*uiscale*i,
+					i*48, 0, (i+1)*48, 8, pic, uiscale);
+		break;
+	}
+	int npos[4][2]; // ammo count num
+	switch ((int)scr_hudstyle.value) {
+	default:
+	case 0: // classic
+		for (int i = 0; i < 4; i++) {
+			npos[i][0] = vid.width / 2 - 152*uiscale + i*48*uiscale;
+			npos[i][1] = vid.height - 48*uiscale;
+		}
+		break;
+	case 1: // bottom center, 4x1
+		for (int i = 0; i < 4; i++) {
+			npos[i][0] = vid.width / 2 - 88*uiscale + i*48*uiscale;
+			npos[i][1] = vid.height - 8 * uiscale;
+		}
+		break;
+	case 2: // right side, 2x2
+		for (int i = 0; i < 4; i++) {
+			npos[i][0] = vid.width - 96*uiscale + 48*uiscale*(i&1);
+			npos[i][1] = vid.height - 46*uiscale - 9*uiscale*(i>>1);
+		}
+		break;
+	case 3: // right side, 1x4
+		for (int i = 0; i < 4; i++) {
+			npos[i][0] = vid.width - 48*uiscale + 8*uiscale;
+			npos[i][1] = vid.height - 78*uiscale + i * 9*uiscale;
+		}
+		break;
+	}
+	for (int i = 0; i < 4; i++)
+		Sbar_DrawNumSmall(npos[i][0], npos[i][1], cl.stats[6 + i]);
+	if (!scr_hudstyle.value) { // TODO cleanup
 		for (int i = 0; i < 7; i++) { // weapons
 			if (cl.items & (IT_SHOTGUN << i)) {
 				float time = cl.item_gettime[i];
@@ -436,82 +491,9 @@ void Sbar_DrawInventory()
 			}
 		}
 	}
-	char num[6];
+	int flashon = 0;
 	int SBAR2_MARGIN_X = 16 * uiscale;
 	int SBAR2_MARGIN_Y = 10 * uiscale;
-	if (!scr_hudstyle.value) { // ammo counts
-		for (int i = 0; i < 4; i++) {
-			sprintf(num, "%3i", cl.stats[STAT_SHELLS + i]);
-			if (num[0] != ' ')
-				Sbar_DrawCharacter((6*i+1)*8-2,-24,18+num[0]-'0');
-			if (num[1] != ' ')
-				Sbar_DrawCharacter((6*i+2)*8-2,-24,18+num[1]-'0');
-			if (num[2] != ' ')
-				Sbar_DrawCharacter((6*i+3)*8-2,-24,18+num[2]-'0');
-		}
-	}
-	else {
-		qpic_t *pic = Sbar_InventoryBarPic();
-		if (hudstyle == HUD_MODERN_SIDEAMMO) { // right side, 2x2
-			int ITEM_WIDTH = 50 * uiscale;
-			int x = vid.width - SBAR2_MARGIN_X - ITEM_WIDTH * 2 + 12 * uiscale;
-			int y = vid.height - SBAR2_MARGIN_Y - 60*uiscale;
-			Draw_PicScaledPartial(x, y + 24 * uiscale, 0, 0, 96, 8, pic, uiscale);
-			Draw_PicScaledPartial(x - 96 * uiscale, y + 25 * uiscale - 10 * uiscale, 96, 8, 192, 16, pic, uiscale);
-			for (int i = 0; i < 4; i++) {
-				sprintf(num, "%3i", cl.stats[STAT_SHELLS + i]);
-				int cx = x + 8 * uiscale + ITEM_WIDTH * (i&1);
-				int cy = y - 9 * uiscale * (i>>1) + 24*uiscale;
-				if (num[0] != ' ')
-					Draw_CharacterScaled(cx+ 0*uiscale, cy, 18+num[0]-'0', uiscale);
-				if (num[1] != ' ')
-					Draw_CharacterScaled(cx+ 8*uiscale, cy, 18+num[1]-'0', uiscale);
-				if (num[2] != ' ')
-					Draw_CharacterScaled(cx+16*uiscale, cy, 18+num[2]-'0', uiscale);
-			}
-		}
-		else if (hudstyle == HUD_MODERN_CENTERAMMO) { // bottom center, 4x1
-			int x = (int)(vid.width * 0.5f + 0.5f) - 96 * uiscale;
-			int y = vid.height;
-			Draw_PicScaledPartial(x, y - 8 * uiscale, 0, 0, 192, 8, pic, uiscale);
-			for (int i = 0; i < 4; i++) {
-				sprintf(num, "%3i", cl.stats[STAT_SHELLS + i]);
-				int cx = x + 8 + 48 * i * uiscale;
-				int cy = y - 8 * uiscale;
-				if (num[0] != ' ')
-					Draw_CharacterScaled(cx+ 0*uiscale, cy, 18+num[0]-'0', uiscale);
-				if (num[1] != ' ')
-					Draw_CharacterScaled(cx+ 8*uiscale, cy, 18+num[1]-'0', uiscale);
-				if (num[2] != ' ')
-					Draw_CharacterScaled(cx+16*uiscale, cy, 18+num[2]-'0', uiscale);
-			}
-		} 
-		else { // right side, 1x4
-			int ITEM_WIDTH = 50 * uiscale;
-			int x = vid.width - 48*uiscale;
-			int y = vid.height - SBAR2_MARGIN_Y - 68*uiscale;
-			for (int i = 0; i < 4; i++)
-				Draw_PicScaledPartial(x - 48 * uiscale * i,
-						y + 9 * uiscale * i,
-						0 + i * 48,
-						0,
-						48 + i * 48,
-						8,
-						pic, uiscale);
-			for (int i = 0; i < 4; i++) {
-				sprintf(num, "%3i", cl.stats[STAT_SHELLS + i]);
-				int cx = x + 8 * uiscale;
-				int cy = y + i * 9 * uiscale;
-				if (num[0] != ' ')
-					Draw_CharacterScaled(cx+ 0*uiscale, cy, 18+num[0]-'0', uiscale);
-				if (num[1] != ' ')
-					Draw_CharacterScaled(cx+ 8*uiscale, cy, 18+num[1]-'0', uiscale);
-				if (num[2] != ' ')
-					Draw_CharacterScaled(cx+16*uiscale, cy, 18+num[2]-'0', uiscale);
-			}
-		}
-	}
-	int flashon = 0;
 	if (!scr_hudstyle.value || scr_hudstyle.value == 3) { // items
 		for (int i = 0; i < 6; i++)
 			if (cl.items & (1 << (17 + i))) {
