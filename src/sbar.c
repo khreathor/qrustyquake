@@ -324,7 +324,8 @@ void Sbar_DrawInventory()
 	qpic_t *pic = rogue ?
 		rsb_invbar[cl.stats[STAT_ACTIVEWEAPON] < RIT_LAVA_NAILGUN] :
 		sb_ibar;
-	switch ((int)scr_hudstyle.value) { // inventroty and ammo count bg
+	int ammostyle=hipnotic&&scr_hudstyle.value==3?2:scr_hudstyle.value;
+	switch (ammostyle) { // inventroty and ammo count bg
 	default:
 	case 0: // classic
 		Sbar_DrawPic(0, -24, pic);
@@ -335,8 +336,8 @@ void Sbar_DrawInventory()
 		Draw_PicScaledPartial(x, y, 0, 0, 192, 8, pic, uiscale);
 		break;
 	case 2: // right side, 2x2
-		x = vid.width - 104*uiscale;
-		y = vid.height - 55*uiscale;
+		x = vid.width - (scr_hudstyle.value==3 ? 96 : 104)*uiscale;
+		y = vid.height - (scr_hudstyle.value==3 ? 48 : 55)*uiscale;
 		Draw_PicScaledPartial(x, y + 9*uiscale, 0,0,96,8, pic, uiscale);
 		Draw_PicScaledPartial(x - 96*uiscale,y,96,8,192,16,pic,uiscale);
 		break;
@@ -349,7 +350,7 @@ void Sbar_DrawInventory()
 		break;
 	}
 	int npos[4][2]; // ammo count num
-	switch ((int)scr_hudstyle.value) {
+	switch (ammostyle) {
 	default:
 	case 0: // classic
 		for (int i = 0; i < 4; i++) {
@@ -365,8 +366,8 @@ void Sbar_DrawInventory()
 		break;
 	case 2: // right side, 2x2
 		for (int i = 0; i < 4; i++) {
-			npos[i][0] = vid.width - 96*uiscale + 48*uiscale*(i&1);
-			npos[i][1] = vid.height - 46*uiscale - 9*uiscale*(i>>1);
+			npos[i][0] = vid.width - (scr_hudstyle.value==3 ? 88 : 96)*uiscale + 48*uiscale*(i&1);
+			npos[i][1] = vid.height - (scr_hudstyle.value==3 ? 39 : 46)*uiscale - 9*uiscale*(i>>1);
 		}
 		break;
 	case 3: // right side, 1x4
@@ -378,118 +379,72 @@ void Sbar_DrawInventory()
 	}
 	for (int i = 0; i < 4; i++)
 		Sbar_DrawNumSmall(npos[i][0], npos[i][1], cl.stats[6 + i]);
-	if (!scr_hudstyle.value) { // TODO cleanup
-		for (int i = 0; i < 7; i++) { // weapons
-			if (cl.items & (IT_SHOTGUN << i)) {
-				float time = cl.item_gettime[i];
-				int flashon = (int)((cl.time - time) * 10);
-				if (flashon >= 10)
-					flashon = cl.stats[STAT_ACTIVEWEAPON]==
-						(IT_SHOTGUN<<i);
-				else
-					flashon = (flashon % 5) + 2;
-				Sbar_DrawPic(i * 24, -16, sb_weapons[flashon][i]);
-				if (flashon > 1)
-					sb_updates = 0; // force update to remove flash
-			}
+	int wpos[9][2]; // weapons
+	if (!scr_hudstyle.value) { // classic
+		for (int i = 0; i < 9; i++) {
+			wpos[i][0] = vid.width / 2 - 160*uiscale + i*24*uiscale;	
+			wpos[i][1] = vid.height - 40*uiscale;
 		}
-		int grenadeflashing = 0;
-		for (int i = 0; hipnotic && i < 4; i++) { //MED01/04/97 hipnotic weapons
-			if (!(cl.items & (1 << hipweapons[i])))
-				continue;
-			float time = cl.item_gettime[hipweapons[i]];
-			int flashon = (int)((cl.time - time) * 10);
-			flashon =  flashon >= 10 ?
-				(cl.stats[STAT_ACTIVEWEAPON] == (1 << hipweapons[i])) :
-				(flashon % 5) + 2;
-			if (i == 2) { // check grenade launcher
-				if (cl.items & HIT_PROXIMITY_GUN && flashon) {
-					grenadeflashing = 1;
-					Sbar_DrawPic(96, -16, hsb_weapons[flashon][2]);
-				}
-			} else if (i == 3) {
-				if (cl.items & (IT_SHOTGUN << 4)) {
-					if (flashon && !grenadeflashing)
-						Sbar_DrawPic(96, -16, hsb_weapons[flashon][3]);
-					else if (!grenadeflashing)
-						Sbar_DrawPic(96, -16, hsb_weapons[0][3]);
-				} else
-					Sbar_DrawPic(96, -16, hsb_weapons [flashon][4]);
-			} else
-				Sbar_DrawPic(176+(i*24), -16, hsb_weapons[flashon][i]);
+		wpos[7][0] += 8*uiscale;
+		wpos[8][0] += 8*uiscale;
+	}
+	else { // side
+		for (int i = 0; i < 9; i++) {
+			wpos[i][0] = vid.width - 18*uiscale;	
+			wpos[i][1] = vid.height + hipnotic*24*uiscale -16*uiscale*(6+i);
+		}
+	}
+	for (int i = 0; i < 7; i++) {
+		if (hipnotic && i == IT_GRENADE_LAUNCHER)
+			continue;
+		if (cl.items & (1<<i)) {
+			int active = (cl.stats[STAT_ACTIVEWEAPON] == (1<<i));
+			float time = cl.item_gettime[i];
+			int flashon = (int)((cl.time - time)*10);
+			if (flashon >= 10)
+				flashon = active;
+			else
+				flashon = (flashon%5) + 2;
+			if (rogue && i >= 2 && cl.stats[STAT_ACTIVEWEAPON] == (RIT_LAVA_NAILGUN << (i - 2))) {
+				pic = rsb_weapons[i - 2]; // powered up weapon
+				active = 1;
+			}
+			else
+				pic = sb_weapons[flashon][i];
+			active = scr_hudstyle.value ? active * 6 * uiscale : 0;
+			Draw_PicScaled(wpos[i][0] - active, wpos[i][1], pic, uiscale);
 			if (flashon > 1)
 				sb_updates = 0; // force update to remove flash
 		}
-		if (rogue && cl.stats[STAT_ACTIVEWEAPON] >= RIT_LAVA_NAILGUN)
-			for (int i = 0; i < 5; i++) // check for powered up weapon.
-				if (cl.stats[STAT_ACTIVEWEAPON]==(RIT_LAVA_NAILGUN<<i))
-					Sbar_DrawPic((i + 2) * 24, -16, rsb_weapons[i]);
 	}
-	else {
-		int ROW_HEIGHT = 16 * uiscale;
-		int x = vid.width;
-		int y = vid.height - ROW_HEIGHT * 6;
-		if (hipnotic)
-			y += 12*uiscale; // move down a bit to accomodate the extra weapons
-		for (int i = 0; i < 7; i++) {
-			if (hipnotic && i == IT_GRENADE_LAUNCHER)
-				continue;
-			if (cl.items & (IT_SHOTGUN<<i)) {
-				qboolean active = (cl.stats[STAT_ACTIVEWEAPON] == (IT_SHOTGUN<<i));
-				float time = cl.item_gettime[i];
-				int flashon = (int)((cl.time - time)*10);
-				if (flashon >= 10)
-					flashon = active;
-				else
-					flashon = (flashon%5) + 2;
-				qpic_t *pic;
-				if (rogue && i >= 2 && cl.stats[STAT_ACTIVEWEAPON] == (RIT_LAVA_NAILGUN << (i - 2))) {
-					pic = rsb_weapons[i - 2]; // powered up weapon
-					active = true;
-				}
-				else
-					pic = sb_weapons[flashon][i];
-				Draw_PicScaled(x - (active ? 24 : 18) * uiscale, y - ROW_HEIGHT * i, pic, uiscale);
-				if (flashon > 1)
-					sb_updates = 0; // force update to remove flash
+	int grenadeflashing = 0;
+	for (int i = 0; hipnotic && i < 4; i++) {
+		if (!(cl.items & (1 << hipweapons[i])))
+			continue;
+		float time = cl.item_gettime[hipweapons[i]];
+		int flashon = (int)((cl.time - time) * 10);
+		int active = (cl.stats[STAT_ACTIVEWEAPON] == 1<<hipweapons[i]);
+		active = scr_hudstyle.value ? active * 6 * uiscale : 0;
+		flashon = flashon >= 10 ?
+			(cl.stats[STAT_ACTIVEWEAPON] == (1 << hipweapons[i])) :
+			(flashon % 5) + 2;
+		if (i == 2) { // check grenade launcher
+			if (cl.items & HIT_PROXIMITY_GUN && flashon) {
+				grenadeflashing = 1;
+				Draw_PicScaled(wpos[4][0]-active, wpos[4][1], hsb_weapons[flashon][2], uiscale);
 			}
-		}
-		if (hipnotic) { // hipnotic weapons
-			int grenadeflashing = 0;
-			for (int i = 0; i < 4; i++) {
-				if (cl.items & (1<<hipweapons[i])) {
-					qboolean active = (cl.stats[STAT_ACTIVEWEAPON] == (1<<hipweapons[i]));
-					float time = cl.item_gettime[hipweapons[i]];
-					int flashon = (int)((cl.time - time)*10);
-					if (flashon >= 10)
-						flashon = active;
-					else
-						flashon = (flashon%5) + 2;
-					if (i == 2) { // check grenade launcher
-						if (cl.items & HIT_PROXIMITY_GUN) {
-							if (flashon) {
-								grenadeflashing = 1;
-								Sbar_DrawPic (x - (active ? 24 : 18), y - ROW_HEIGHT * 4, hsb_weapons[flashon][2]);
-							}
-						}
-					}
-					else if (i == 3) {
-						if (cl.items & (IT_SHOTGUN<<4)) {
-							if (flashon && !grenadeflashing)
-								Sbar_DrawPic (x - (active ? 24 : 18), y - ROW_HEIGHT * 4, hsb_weapons[flashon][3]);
-							else if (!grenadeflashing)
-								Sbar_DrawPic (x - (active ? 24 : 18), y - ROW_HEIGHT * 4, hsb_weapons[0][3]);
-						}
-						else
-							Sbar_DrawPic (x - (active ? 24 : 18), y - ROW_HEIGHT * 4, hsb_weapons[flashon][4]);
-					}
-					else
-						Sbar_DrawPic (x - (active ? 24 : 18), y - ROW_HEIGHT * (i + 7), hsb_weapons[flashon][i]);
-					if (flashon > 1)
-						sb_updates = 0; // force update to remove flash
-				}
-			}
-		}
+		} else if (i == 3) {
+			if (cl.items & (1 << 4)) {
+				if (flashon && !grenadeflashing)
+					Draw_PicScaled(wpos[4][0]-active, wpos[4][1], hsb_weapons[flashon][3], uiscale);
+				else if (!grenadeflashing)
+					Draw_PicScaled(wpos[4][0]-active, wpos[4][1], hsb_weapons[0][3], uiscale);
+			} else
+				Draw_PicScaled(wpos[4][0]-active, wpos[4][1], hsb_weapons [flashon][4], uiscale);
+		} else
+			Draw_PicScaled(wpos[7+i][0]-active, wpos[7+i][1], hsb_weapons[flashon][i], uiscale);
+		if (flashon > 1)
+			sb_updates = 0; // force update to remove flash
 	}
 	int flashon = 0;
 	int SBAR2_MARGIN_X = 16 * uiscale;
