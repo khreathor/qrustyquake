@@ -38,6 +38,11 @@ int scoreboardtop[MAX_SCOREBOARD];
 int scoreboardbottom[MAX_SCOREBOARD];
 int scoreboardcount[MAX_SCOREBOARD];
 int scoreboardlines;
+int npos[4][2]; // ammo count num
+int wpos[9][2]; // weapons
+int kpos[2][2]; // keys
+int iposx[8]; // classic items
+int iposy;
 
 void Sbar_MiniDeathmatchOverlay();
 void Sbar_DeathmatchOverlay();
@@ -318,8 +323,92 @@ void Sbar_DrawScoreboard()
 		Sbar_DeathmatchOverlay();
 }
 
-void Sbar_DrawInventory()
+void Sbar_ItemsClassic()
 {
+	for (int i = 0; i < 8; i++)
+		iposx[i] = vid.width / 2 + 32*uiscale + i*16*uiscale;
+	int iposy = vid.height - 40*uiscale;
+	int flashon = 0;
+	for (int i = 0; i < 6; i++)
+		if (cl.items & (1 << (17 + i))) {
+			float time = cl.item_gettime[17 + i];
+			if (time && time > cl.time - 2 && flashon) //flash frame
+				sb_updates = 0;
+			else if (!hipnotic || (i > 1))
+				Draw_PicScaled(iposx[i],iposy,sb_items[i],uiscale);
+			if (time && time > cl.time - 2)
+				sb_updates = 0;
+		}
+	for (int i = 0; hipnotic && i < 2; i++)
+		if (cl.items & (1 << (24 + i))) {
+			float time = cl.item_gettime[24 + i];
+			if (time && time > cl.time - 2 && flashon) //flash frame
+				sb_updates = 0;
+			else
+				Draw_PicScaled(iposx[i+6],iposy,hsb_items[i],uiscale);
+			if (time && time > cl.time - 2)
+				sb_updates = 0;
+		}
+	for (int i = 0; rogue && i < 2; i++)
+		if (cl.items & (1 << (29 + i))) {
+			float time = cl.item_gettime[29 + i];
+			if (time && time > cl.time - 2 && flashon) //flash frame
+				sb_updates = 0;
+			else
+				Draw_PicScaled(iposx[i+6],iposy,rsb_items[i],uiscale);
+			if (time && time > cl.time - 2)
+				sb_updates = 0;
+		}
+	/*TODOfor (int i = 0; !rogue && i < 4; i++) // sigils
+		if (cl.items & (1 << (28 + i))) {
+			float time = cl.item_gettime[28 + i];
+			if (time && time > cl.time - 2 && flashon) //flash frame
+				sb_updates = 0;
+			else
+				Sbar_DrawPic(320-32+i*8, -16, sb_sigil[i]);
+			if (time && time > cl.time - 2)
+				sb_updates = 0;
+		}*/
+}
+
+void Sbar_ItemsModern()
+{
+	int x = 16 * uiscale;
+	int y = vid.height - 48 * uiscale;
+	if (cl.items & IT_INVULNERABILITY || cl.stats[STAT_ARMOR] > 0)
+		y -= 24*uiscale; // armor is visible, start above it
+	for (int i = 2; i < 6; i++)
+		if (cl.items & (1<<(17+i))) {
+			float time = cl.item_gettime[17+i];
+			if (!hipnotic || (i > 1)) {
+				Draw_PicScaled(x, y, sb_items[i], uiscale);
+				y -= 16*uiscale;
+			}
+			if (time && time > cl.time - 2)
+				sb_updates = 0;
+		}
+	if (hipnotic)
+		for (int i = 0; i < 2; i++)
+			if (cl.items & (1<<(24+i))) {
+				float time = cl.item_gettime[24+i];
+				Draw_PicScaled(x, y, hsb_items[i], uiscale);
+				y -= 16*uiscale;
+				if (time && time > cl.time - 2)
+					sb_updates = 0;
+			}
+	if (rogue)
+		for (int i = 0; i < 2; i++)
+			if (cl.items & (1<<(29+i))) {
+				float time = cl.item_gettime[29+i];
+				Draw_PicScaled(x, y, rsb_items[i], uiscale);
+				y -= 16*uiscale;
+				if (time && time > cl.time - 2)
+					sb_updates = 0;
+			}
+}
+
+void Sbar_DrawInventory() // TODO move the position calculations to a separate
+{ // function and only do them whenever they change
 	int x, y;
 	qpic_t *pic = rogue ?
 		rsb_invbar[cl.stats[STAT_ACTIVEWEAPON] < RIT_LAVA_NAILGUN] :
@@ -349,7 +438,6 @@ void Sbar_DrawInventory()
 					i*48, 0, (i+1)*48, 8, pic, uiscale);
 		break;
 	}
-	int npos[4][2]; // ammo count num
 	switch (ammostyle) {
 	default:
 	case 0: // classic
@@ -379,7 +467,6 @@ void Sbar_DrawInventory()
 	}
 	for (int i = 0; i < 4; i++)
 		Sbar_DrawNumSmall(npos[i][0], npos[i][1], cl.stats[6 + i]);
-	int wpos[9][2]; // weapons
 	if (!scr_hudstyle.value) { // classic
 		for (int i = 0; i < 9; i++) {
 			wpos[i][0] = vid.width / 2 - 160*uiscale + i*24*uiscale;	
@@ -391,7 +478,7 @@ void Sbar_DrawInventory()
 	else { // side
 		for (int i = 0; i < 9; i++) {
 			wpos[i][0] = vid.width - 18*uiscale;	
-			wpos[i][1] = vid.height + hipnotic*24*uiscale -16*uiscale*(6+i);
+			wpos[i][1] = vid.height- 16*uiscale*(6+i) + hipnotic*24*uiscale;
 		}
 	}
 	for (int i = 0; i < 7; i++) {
@@ -446,152 +533,58 @@ void Sbar_DrawInventory()
 		if (flashon > 1)
 			sb_updates = 0; // force update to remove flash
 	}
-	int flashon = 0;
-	int SBAR2_MARGIN_X = 16 * uiscale;
-	int SBAR2_MARGIN_Y = 10 * uiscale;
-	if (!scr_hudstyle.value || scr_hudstyle.value == 3) { // items
-		for (int i = 0; i < 6; i++)
-			if (cl.items & (1 << (17 + i))) {
-				float time = cl.item_gettime[17 + i];
-				if (time && time > cl.time - 2 && flashon) //flash frame
-					sb_updates = 0;
-				else //MED 01/04/97 changed keys
-					if (!hipnotic || (i > 1))
-						Sbar_DrawPic(192+i*16,-16,sb_items[i]);
-				if (time && time > cl.time - 2)
-					sb_updates = 0;
-			}
-		for (int i = 0; hipnotic && i < 2; i++) //MED 01/04/97 added hipnotic items
-			if (cl.items & (1 << (24 + i))) {
-				float time = cl.item_gettime[24 + i];
-				if (time && time > cl.time - 2 && flashon) //flash frame
-					sb_updates = 0;
-				else
-					Sbar_DrawPic(288+i*16,-16,hsb_items[i]);
-				if (time && time > cl.time - 2)
-					sb_updates = 0;
-			}
-		for (int i = 0; rogue && i < 2; i++) // new rogue items
-			if (cl.items & (1 << (29 + i))) {
-				float time = cl.item_gettime[29 + i];
-				if (time && time > cl.time - 2 && flashon) //flash frame
-					sb_updates = 0;
-				else
-					Sbar_DrawPic(288 + i * 16, -16, rsb_items[i]);
-				if (time && time > cl.time - 2)
-					sb_updates = 0;
-			}
-		for (int i = 0; !rogue && i < 4; i++) // sigils
-			if (cl.items & (1 << (28 + i))) {
-				float time = cl.item_gettime[28 + i];
-				if (time && time > cl.time - 2 && flashon) //flash frame
-					sb_updates = 0;
-				else
-					Sbar_DrawPic(320-32+i*8, -16, sb_sigil[i]);
-				if (time && time > cl.time - 2)
-					sb_updates = 0;
-			}
+	switch ((int)scr_hudstyle.value + 0x10*hipnotic) {
+	default:
+	case 0:
+	case 3:
+		for (int i = 0; i < 2; i++) { // classic, qw
+			kpos[i][0] = vid.width / 2 + 32*uiscale + i*16*uiscale;
+			kpos[i][1] = vid.height - 40*uiscale;
+		}
+		break;
+	case 1:
+		for (int i = 0; i < 2; i++) { // side, vertical
+			kpos[i][0] = vid.width - 28*uiscale;
+			kpos[i][1] = vid.height - 52*uiscale - i*16*uiscale;
+		}
+		break;
+	case 2:
+		for (int i = 0; i < 2; i++) { // side, horizontal
+			kpos[i][0] = vid.width - 24*uiscale - i*16*uiscale;
+			kpos[i][1] = vid.height - 75*uiscale;
+		}
+		break;
+	case 0x10: // hipnotic
+	case 0x13:
+		for (int i = 0; i < 2; i++) { // classic, qw
+			kpos[i][0] = vid.width / 2 + 48*uiscale;
+			kpos[i][1] = vid.height - 21*uiscale + i*8*uiscale;
+		}
+		break;
+	case 0x11:
+		for (int i = 0; i < 2; i++) { // side, vertical
+			kpos[i][0] = vid.width - 28*uiscale;
+			kpos[i][1] = vid.height - 44*uiscale - i*8*uiscale;
+		}
+		break;
+	case 0x12:
+		for (int i = 0; i < 2; i++) { // side, horizontal
+			kpos[i][0] = vid.width - 40*uiscale - i*16*uiscale;
+			kpos[i][1] = vid.height - 68*uiscale;
+		}
+		break;
 	}
-	else if (hudstyle == HUD_MODERN_SIDEAMMO || hudstyle == HUD_QUAKEWORLD) { // items
-		int x = vid.width - SBAR2_MARGIN_X - 8*uiscale;
-		int y = vid.height - SBAR2_MARGIN_Y - 65*uiscale;
-		if (hipnotic) // hipnotic keys
-			for (int i = 0; i < 2; i++)
-				if (cl.items & (IT_KEY1 << i)) {
-					Draw_PicScaled(x, y + 6, sb_items[i], uiscale);
-					x -= sb_items[i]->width;
-				}
-		for (int i = 0; i < 2; i++) { // keys
-			if (cl.items & (1<<(17+i))) { //MED 01/04/97 changed keys
-				float time = cl.item_gettime[17+i];
-				if (!hipnotic || (i > 1)) {
-					Draw_PicScaled(x, y, sb_items[i], uiscale);
-					x -= 16*uiscale;
-				}
-				if (time && time > cl.time - 2)
-					sb_updates = 0;
-			}
+	for (int i = 0; i < 2; i++) {
+		if (cl.items & (1<<(17+i))) {
+			float time = cl.item_gettime[17+i];
+			Draw_PicScaled(kpos[i][0], kpos[i][1], sb_items[i], uiscale);
+			if (time && time > cl.time - 2)
+				sb_updates = 0;
 		}
-		for (int i = 2; i < 6; i++) { //items
-			if (i == 2) {
-				x = SBAR2_MARGIN_X - 4 * uiscale;
-				y = vid.height - SBAR2_MARGIN_Y - 40 * uiscale;
-				if (cl.items & IT_INVULNERABILITY || cl.stats[STAT_ARMOR] > 0)
-					y -= 24*uiscale; // armor row is visible, move starting position above it
-			}
-			if (cl.items & (1<<(17+i))) { //MED 01/04/97 changed keys
-				float time = cl.item_gettime[17+i];
-				if (!hipnotic || (i > 1)) {
-					Draw_PicScaled(x, y, sb_items[i], uiscale);
-					y -= 16*uiscale;
-				}
-				if (time && time > cl.time - 2)
-					sb_updates = 0;
-			}
-		}
-		if (hipnotic) // hipnotic items
-			for (int i = 0; i < 2; i++)
-				if (cl.items & (1<<(24+i))) {
-					float time = cl.item_gettime[24+i];
-					Draw_PicScaled(x, y, hsb_items[i], uiscale);
-					y -= 16*uiscale;
-					if (time && time > cl.time - 2)
-						sb_updates = 0;
-				}
-		if (rogue) // new rogue items
-			for (int i = 0; i < 2; i++)
-				if (cl.items & (1<<(29+i))) {
-					float time = cl.item_gettime[29+i];
-					Draw_PicScaled(x, y, rsb_items[i], uiscale);
-					y -= 16*uiscale;
-					if (time && time > cl.time - 2)
-						sb_updates = 0;
-				}
 	}
-	else {
-		int x = vid.width - SBAR2_MARGIN_X - 12*uiscale;
-		int y = vid.height - SBAR2_MARGIN_Y - 40*uiscale;
-		if (hipnotic) // hipnotic keys
-			for (int i = 0; i < 2; i++)
-				if (cl.items & (IT_KEY1 << i)) {
-					Draw_PicScaled(x, y + 6, sb_items[i], uiscale);
-					y -= sb_items[i]->height;
-				}
-		for (int i = 0; i < 6; i++) {
-			if (i == 2) {
-				x = SBAR2_MARGIN_X - 4 * uiscale;
-				y = vid.height - SBAR2_MARGIN_Y - 40 * uiscale;
-				if (cl.items & IT_INVULNERABILITY || cl.stats[STAT_ARMOR] > 0)
-					y -= 24*uiscale; // armor row is visible, move starting position above it
-			}
-			if (cl.items & (1<<(17+i))) { //MED 01/04/97 changed keys
-				float time = cl.item_gettime[17+i];
-				if (!hipnotic || (i > 1)) {
-					Draw_PicScaled(x, y, sb_items[i], uiscale);
-					y -= 16*uiscale;
-				}
-				if (time && time > cl.time - 2)
-					sb_updates = 0;
-			}
-		}
-		if (hipnotic) // hipnotic items
-			for (int i = 0; i < 2; i++)
-				if (cl.items & (1<<(24+i))) {
-					float time = cl.item_gettime[24+i];
-					Draw_PicScaled(x, y, hsb_items[i], uiscale);
-					y -= 16*uiscale;
-					if (time && time > cl.time - 2)
-						sb_updates = 0;
-				}
-		if (rogue) // new rogue items
-			for (int i = 0; i < 2; i++)
-				if (cl.items & (1<<(29+i))) {
-					float time = cl.item_gettime[29+i];
-					Draw_PicScaled(x, y, rsb_items[i], uiscale);
-					y -= 16*uiscale;
-					if (time && time > cl.time - 2)
-						sb_updates = 0;
-				}
+	switch ((int)scr_hudstyle.value) {
+	default: case 0: case 3: Sbar_ItemsClassic(); break;
+	         case 1: case 2: Sbar_ItemsModern();  break;
 	}
 }
 
@@ -710,7 +703,6 @@ void Sbar_Draw()
 	if (sb_lines && vid.width > 320)
 		Draw_TileClear(0, vid.height - sb_lines, vid.width, sb_lines);
 	if (scr_hudstyle.value || sb_lines > 24) {
-		Sbar_DrawInventory();
 		if (cl.maxclients != 1)
 			Sbar_DrawFrags();
 	}
@@ -721,17 +713,8 @@ void Sbar_Draw()
 	} else if (scr_hudstyle.value || sb_lines) {
 		if (!scr_hudstyle.value)
 			Draw_PicScaled(vid.width/2-160*(uiscale), vid.height-SBAR_HEIGHT*uiscale, sb_sbar, uiscale);
-		int x = 209; // classic, qw
-		int y = 3; // TODO misson pack stuff
-		//MED 01/04/97 moved keys here so they would not be overwritten
-		if (hipnotic) { // keys (hipnotic only)
-			if (cl.items & IT_KEY1)
-				Draw_PicScaled(209, 3, sb_items[0], uiscale);
-			if (cl.items & IT_KEY2)
-				Draw_PicScaled(209, 12, sb_items[1], uiscale);
-		}
-		x = vid.width/2-160*(uiscale); // classic, qw
-		y = vid.height - 24*uiscale;
+		int x = vid.width/2-160*(uiscale); // classic, qw
+		int y = vid.height - 24*uiscale;
 		if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
 			x = 8 * uiscale;
 			y = vid.height - 56 * uiscale;
@@ -809,6 +792,7 @@ void Sbar_Draw()
 			y = vid.height - 32 * uiscale;
 		}
 		Sbar_DrawNum(x, y, cl.stats[STAT_AMMO], 3, cl.stats[STAT_AMMO] <= 10);
+		Sbar_DrawInventory();
 	}
 	if (vid.width > 320 && cl.gametype == GAME_DEATHMATCH)
 		Sbar_MiniDeathmatchOverlay();
