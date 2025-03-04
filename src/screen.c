@@ -122,6 +122,7 @@ static void SCR_CalcRefdef() // Must be called whenever vid changes
 { // Internal use only
 	scr_fullupdate = 0; // force a background redraw
 	vid.recalc_refdef = 0;
+	Sbar_CalcPos();
 	Sbar_Changed(); // force the status bar to redraw
 	if (scr_viewsize.value < 30) // bound viewsize
 		Cvar_Set("viewsize", "30");
