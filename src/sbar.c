@@ -189,16 +189,6 @@ void Sbar_DrawPic(int x, int y, qpic_t *pic)
 			pic, uiscale);
 }
 
-void Sbar_DrawTransPic(int x, int y, qpic_t *pic)
-{
-	if (cl.gametype == GAME_DEATHMATCH)
-		Draw_TransPicScaled(x * uiscale, y * uiscale + (vid.height
-					- SBAR_HEIGHT * uiscale), pic, uiscale);
-	else
-		Draw_TransPicScaled(x*uiscale+((vid.width-320*uiscale)/2),
-			y*uiscale+(vid.height-SBAR_HEIGHT*uiscale),pic,uiscale);
-}
-
 void Sbar_DrawCharacter(int x, int y, int num)
 { // Draws one solid graphics character
 	if (cl.gametype == GAME_DEATHMATCH)
@@ -348,7 +338,7 @@ void Sbar_CalcPos()
 		for (int i = 0; i < 4; i++) {
 			npos[i][0] = vid.width - (scr_hudstyle.value==3?88:96)
 				*uiscale + 48*uiscale*(i&1);
-			npos[i][1] = vid.height - (scr_hudstyle.value==3?39:46)
+			npos[i][1] = vid.height - (scr_hudstyle.value==3?48:46)
 				*uiscale - 9*uiscale*(i>>1);
 		}
 		break;
@@ -416,7 +406,7 @@ void Sbar_CalcPos()
 
 void Sbar_ItemsClassic()
 {
-	for (int i = 0; i < 6; i++)
+	for (int i = 2; i < 6; i++)
 		if (cl.items & (1 << (17 + i))) 
 			Draw_PicScaled(iposx[i],iposy,sb_items[i],uiscale);
 	for (int i = 0; hipnotic && i < 2; i++)
@@ -473,7 +463,7 @@ void Sbar_DrawInventoryBg()
 		break;
 	case 2: // right side, 2x2
 		x = vid.width - (scr_hudstyle.value==3 ? 96 : 104)*uiscale;
-		y = vid.height - (scr_hudstyle.value==3 ? 48 : 55)*uiscale;
+		y = vid.height - (scr_hudstyle.value==3 ? 57 : 55)*uiscale;
 		Draw_PicScaledPartial(x, y + 9*uiscale, 0,0,96,8, pic, uiscale);
 		Draw_PicScaledPartial(x - 96*uiscale,y,96,8,192,16,pic,uiscale);
 		break;
@@ -487,67 +477,73 @@ void Sbar_DrawInventoryBg()
 	}
 }
 
+static inline int Sbar_Flash(float time, int active)
+{
+	int flash = (int)(time * 10);
+	return flash >= 10 ? active : (flash % 5) + 2;
+}
+
 void Sbar_DrawWeapons()
 {
 	for (int i = 0; i < 7; i++) {
-		if (hipnotic && i == IT_GRENADE_LAUNCHER)
+		if ((hipnotic && i==IT_GRENADE_LAUNCHER) || !(cl.items&(1<<i)))
 			continue;
-		if (cl.items & (1<<i)) {
-			int active = (cl.stats[STAT_ACTIVEWEAPON] == (1<<i));
-			float time = cl.item_gettime[i];
-			int flashon = (int)((cl.time - time)*10);
-			if (flashon >= 10)
-				flashon = active;
-			else
-				flashon = (flashon%5) + 2;
-			qpic_t *pic = sb_weapons[flashon][i];
-			if (rogue && i >= 2 && cl.stats[STAT_ACTIVEWEAPON] == (RIT_LAVA_NAILGUN << (i - 2))) {
-				pic = rsb_weapons[i - 2]; // powered up weapon
-				active = 1;
-			}
-			active = scr_hudstyle.value ? active * 6 * uiscale : 0;
-			Draw_PicScaled(wpos[i][0] - active, wpos[i][1], pic, uiscale);
-			if (flashon > 1)
-				sb_updates = 0; // force update to remove flash
+		int active = (cl.stats[STAT_ACTIVEWEAPON] == (1 << i));
+		int flashon = Sbar_Flash(cl.time - cl.item_gettime[i], active);
+		qpic_t *pic = sb_weapons[flashon][i];
+		// Check for rogue's powered up weapon condition.
+		if (rogue && i >= 2 && cl.stats[STAT_ACTIVEWEAPON] ==
+				(RIT_LAVA_NAILGUN << (i - 2))) {
+			pic = rsb_weapons[i - 2]; // powered up weapon
+			active = 1;
 		}
+		active = scr_hudstyle.value ? active * 6 * uiscale : 0;
+		Draw_PicScaled(wpos[i][0] - active, wpos[i][1], pic, uiscale);
+		if (flashon > 1)
+			sb_updates = 0; // force update to remove flash
 	}
 	int grenadeflashing = 0;
 	for (int i = 0; hipnotic && i < 4; i++) {
 		if (!(cl.items & (1 << hipweapons[i])))
 			continue;
-		float time = cl.item_gettime[hipweapons[i]];
-		int flashon = (int)((cl.time - time) * 10);
-		int active = (cl.stats[STAT_ACTIVEWEAPON] == 1<<hipweapons[i]);
+		int active = (cl.stats[STAT_ACTIVEWEAPON]==(1<<hipweapons[i]));
+		int flashon = Sbar_Flash(cl.time-cl.item_gettime[hipweapons[i]],
+			active);
 		active = scr_hudstyle.value ? active * 6 * uiscale : 0;
-		flashon = flashon >= 10 ?
-			(cl.stats[STAT_ACTIVEWEAPON] == (1 << hipweapons[i])) :
-			(flashon % 5) + 2;
-		if (i == 2) { // check grenade launcher
+		int x = wpos[4][0] - active;
+		int y = wpos[4][1];
+		qpic_t *pic = NULL;
+		if (i == 2) { 
 			if (cl.items & HIT_PROXIMITY_GUN && flashon) {
 				grenadeflashing = 1;
-				Draw_PicScaled(wpos[4][0]-active, wpos[4][1], hsb_weapons[flashon][2], uiscale);
+				pic = hsb_weapons[flashon][2];
 			}
 		} else if (i == 3) {
 			if (cl.items & (1 << 4)) {
 				if (flashon && !grenadeflashing)
-					Draw_PicScaled(wpos[4][0]-active, wpos[4][1], hsb_weapons[flashon][3], uiscale);
+					pic = hsb_weapons[flashon][3];
 				else if (!grenadeflashing)
-					Draw_PicScaled(wpos[4][0]-active, wpos[4][1], hsb_weapons[0][3], uiscale);
+					pic = hsb_weapons[0][3];
 			} else
-				Draw_PicScaled(wpos[4][0]-active, wpos[4][1], hsb_weapons [flashon][4], uiscale);
-		} else
-			Draw_PicScaled(wpos[7+i][0]-active, wpos[7+i][1], hsb_weapons[flashon][i], uiscale);
+				pic = hsb_weapons[flashon][4];
+		} else {
+			x = wpos[7 + i][0] - active;
+			y = wpos[7 + i][1];
+			pic = hsb_weapons[flashon][i];
+		}
+		if (pic)
+			Draw_PicScaled(x, y, pic, uiscale);
 		if (flashon > 1)
-			sb_updates = 0; // force update to remove flash
+			sb_updates = 0;
 	}
 }
 
 void Sbar_DrawInventory()
 {
+	Sbar_DrawWeapons();
 	Sbar_DrawInventoryBg();
 	for (int i = 0; i < 4; i++) // ammo counters
 		Sbar_DrawNumSmall(npos[i][0], npos[i][1], cl.stats[6 + i]);
-	Sbar_DrawWeapons();
 	for (int i = 0; i < 2; i++) { // keys
 		if (!(cl.items & (1<<(17+i))))
 			continue;
@@ -595,17 +591,21 @@ void Sbar_DrawFrags()
 
 void Sbar_DrawFace()
 {
-	int f, anim;
-	int x = vid.width/2 - 48*uiscale; // classic, qw
-	int y = vid.height - 24 * uiscale;
+	int x = vid.width / 2 - 24*uiscale; // classic, qw
+	int y = vid.height - 24*uiscale;
 	if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
-		x = 8 * uiscale;
-		y = vid.height - 32 * uiscale;
+		x = 32*uiscale;
+		y = vid.height - 32*uiscale;
 	}
-	// PGM 01/19/97 - team color drawing
-	// PGM 03/02/97 - fixed so color swatch only appears in CTF modes
+	Sbar_DrawNum(x, y, cl.stats[STAT_HEALTH], 3, cl.stats[STAT_HEALTH]<=25);
+	x = vid.width / 2 - 48*uiscale; // classic, qw
+	y = vid.height - 24*uiscale;
+	if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
+		x = 8*uiscale;
+		y = vid.height - 32*uiscale;
+	}
 	if (rogue && (cl.maxclients != 1) && (teamplay.value > 3) &&
-			(teamplay.value < 7)) {
+			(teamplay.value < 7)) { // team color drawing
 		char num[12];
 		scoreboard_t *s = &cl.scores[cl.viewentity - 1];
 		int top = s->colors & 0xf0; // draw background
@@ -617,8 +617,8 @@ void Sbar_DrawFace()
 		Sbar_DrawPic(x, y, rsb_teambord);
 		Draw_Fill(xofs, vid.height - SBAR_HEIGHT + 3, 22, 9, top);
 		Draw_Fill(xofs, vid.height - SBAR_HEIGHT + 12, 22, 9, bottom);
-		f = s->frags; // draw number
-		sprintf(num, "%3i", f);
+		int fr = s->frags; // draw number
+		sprintf(num, "%3i", fr);
 		if (top == 8) {
 			if (num[0] != ' ')
 				Sbar_DrawCharacter(109, 3, 18 + num[0] - '0');
@@ -651,16 +651,91 @@ void Sbar_DrawFace()
 		Draw_PicScaled(x, y, sb_face_invuln, uiscale);
 		return;
 	}
-	if (cl.stats[STAT_HEALTH] >= 100)
-		f = 4;
-	else
-		f = cl.stats[STAT_HEALTH] / 20;
+	int f = cl.stats[STAT_HEALTH] >= 100 ? 4 : cl.stats[STAT_HEALTH] / 20;
+	int anim = 0;
 	if (cl.time <= cl.faceanimtime) {
 		anim = 1;
 		sb_updates = 0; // make sure the anim gets drawn over
-	} else
-		anim = 0;
+	}
 	Draw_PicScaled(x, y, sb_faces[f][anim], uiscale);
+}
+
+void Sbar_DrawArmor()
+{
+	int x = vid.width / 2 - 160*uiscale; // classic, qw
+	int y = vid.height - 24*uiscale;
+	if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
+		x = 8 * uiscale;
+		y = vid.height - 56 * uiscale;
+	}
+	if (cl.items & IT_INVULNERABILITY) { // armor
+		Sbar_DrawNum(24*uiscale + x, y, 666, 3, 1);
+		Draw_PicScaled(x, y, draw_disc, uiscale);
+		return;
+	}
+	if (rogue) {
+		if (!scr_hudstyle.value || cl.stats[STAT_ARMOR])
+			Sbar_DrawNum(24*uiscale + x, y, cl.stats[STAT_ARMOR], 3,
+					cl.stats[STAT_ARMOR] <= 25);
+		if (cl.items & RIT_ARMOR3)
+			Draw_PicScaled(x, y, sb_armor[2], uiscale);
+		else if (cl.items & RIT_ARMOR2)
+			Draw_PicScaled(x, y, sb_armor[1], uiscale);
+		else if (cl.items & RIT_ARMOR1)
+			Draw_PicScaled(x, y, sb_armor[0], uiscale);
+	} else {
+		if (!scr_hudstyle.value || cl.stats[STAT_ARMOR])
+			Sbar_DrawNum(24*uiscale + x, y, cl.stats[STAT_ARMOR], 3,
+					cl.stats[STAT_ARMOR] <= 25);
+		if (cl.items & IT_ARMOR3)
+			Draw_PicScaled(x, y, sb_armor[2], uiscale);
+		else if (cl.items & IT_ARMOR2)
+			Draw_PicScaled(x, y, sb_armor[1], uiscale);
+		else if (cl.items & IT_ARMOR1)
+			Draw_PicScaled(x, y, sb_armor[0], uiscale);
+	}
+}
+
+void Sbar_DrawAmmo()
+{
+	int x = vid.width / 2 + 64*uiscale; // classic, qw
+	int y = vid.height - 24*uiscale;
+	if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
+		x = vid.width - 32*uiscale;
+		y = vid.height - 32*uiscale;
+	}
+	if (rogue) { // ammo icon
+		if (cl.items & RIT_SHELLS)
+			Draw_TransPicScaled(x, y, sb_ammo[0], uiscale);
+		else if (cl.items & RIT_NAILS)
+			Draw_TransPicScaled(x, y, sb_ammo[1], uiscale);
+		else if (cl.items & RIT_ROCKETS)
+			Draw_TransPicScaled(x, y, sb_ammo[2], uiscale);
+		else if (cl.items & RIT_CELLS)
+			Draw_TransPicScaled(x, y, sb_ammo[3], uiscale);
+		else if (cl.items & RIT_LAVA_NAILS)
+			Draw_TransPicScaled(x, y, rsb_ammo[0], uiscale);
+		else if (cl.items & RIT_PLASMA_AMMO)
+			Draw_TransPicScaled(x, y, rsb_ammo[1], uiscale);
+		else if (cl.items & RIT_MULTI_ROCKETS)
+			Draw_TransPicScaled(x, y, rsb_ammo[2], uiscale);
+	} else {
+		if (cl.items & IT_SHELLS)
+			Draw_TransPicScaled(x, y, sb_ammo[0], uiscale);
+		else if (cl.items & IT_NAILS)
+			Draw_TransPicScaled(x, y, sb_ammo[1], uiscale);
+		else if (cl.items & IT_ROCKETS)
+			Draw_TransPicScaled(x, y, sb_ammo[2], uiscale);
+		else if (cl.items & IT_CELLS)
+			Draw_TransPicScaled(x, y, sb_ammo[3], uiscale);
+	}
+	x = vid.width / 2 + 88*uiscale; // classic, qw
+	y = vid.height - 24*uiscale;
+	if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
+		x = vid.width - 108*uiscale;
+		y = vid.height - 32*uiscale;
+	}
+	Sbar_DrawNum(x, y, cl.stats[STAT_AMMO], 3, cl.stats[STAT_AMMO] <= 10);
 }
 
 void Sbar_Draw()
@@ -669,104 +744,29 @@ void Sbar_Draw()
 		return; // console is full screen
 	if (sb_updates >= vid.numpages && !scr_hudstyle.value)
 		return;
-	scr_copyeverything = 1;
-	sb_updates++;
 	if (sb_lines && vid.width > 320)
 		Draw_TileClear(0, vid.height - sb_lines, vid.width, sb_lines);
 	if (scr_hudstyle.value || sb_lines > 24) {
 		if (cl.maxclients != 1)
 			Sbar_DrawFrags();
 	}
+	if (vid.width > 320 && cl.gametype == GAME_DEATHMATCH)
+		Sbar_MiniDeathmatchOverlay();
 	if (sb_showscores || cl.stats[STAT_HEALTH] <= 0) {
 		Sbar_DrawPic(0, 0, sb_scorebar);
 		Sbar_DrawScoreboard();
 		sb_updates = 0;
-	} else if (scr_hudstyle.value || sb_lines) {
-		if (!scr_hudstyle.value)
-			Draw_PicScaled(vid.width/2-160*(uiscale), vid.height-SBAR_HEIGHT*uiscale, sb_sbar, uiscale);
-		int x = vid.width/2-160*(uiscale); // classic, qw
-		int y = vid.height - 24*uiscale;
-		if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
-			x = 8 * uiscale;
-			y = vid.height - 56 * uiscale;
-		}
-		if (cl.items & IT_INVULNERABILITY) { // armor
-			Sbar_DrawNum(24*uiscale + x, y, 666, 3, 1);
-			Draw_PicScaled(x, y, draw_disc, uiscale);
-		} else {
-			if (rogue) {
-				if (!scr_hudstyle.value || cl.stats[STAT_ARMOR])
-					Sbar_DrawNum(24*uiscale + x, y, cl.stats[STAT_ARMOR], 3,
-							cl.stats[STAT_ARMOR] <= 25);
-				if (cl.items & RIT_ARMOR3)
-					Draw_PicScaled(x, y, sb_armor[2], uiscale);
-				else if (cl.items & RIT_ARMOR2)
-					Draw_PicScaled(x, y, sb_armor[1], uiscale);
-				else if (cl.items & RIT_ARMOR1)
-					Draw_PicScaled(x, y, sb_armor[0], uiscale);
-			} else {
-				if (!scr_hudstyle.value || cl.stats[STAT_ARMOR])
-					Sbar_DrawNum(24*uiscale + x, y, cl.stats[STAT_ARMOR], 3,
-							cl.stats[STAT_ARMOR] <= 25);
-				if (cl.items & IT_ARMOR3)
-					Draw_PicScaled(x, y, sb_armor[2], uiscale);
-				else if (cl.items & IT_ARMOR2)
-					Draw_PicScaled(x, y, sb_armor[1], uiscale);
-				else if (cl.items & IT_ARMOR1)
-					Draw_PicScaled(x, y, sb_armor[0], uiscale);
-			}
-		}
-		x = vid.width/2-160*(uiscale) + 136*uiscale; // classic, qw
-		y = vid.height - 24*uiscale;
-		if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
-			x = 32*uiscale;
-			y = vid.height - 32*uiscale;
-		}
-		Sbar_DrawFace(); // face
-		Sbar_DrawNum(x, y, cl.stats[STAT_HEALTH], 3, // health
-				cl.stats[STAT_HEALTH] <= 25);
-		x = vid.width/2-160*(uiscale) + 224*uiscale; // classic, qw
-		y = vid.height - 24*uiscale;
-		if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
-			x = vid.width - 32*uiscale;
-			y = vid.height - 32*uiscale;
-		}
-		if (rogue) { // ammo icon
-			if (cl.items & RIT_SHELLS)
-				Draw_TransPicScaled(x, y, sb_ammo[0], uiscale);
-			else if (cl.items & RIT_NAILS)
-				Draw_TransPicScaled(x, y, sb_ammo[1], uiscale);
-			else if (cl.items & RIT_ROCKETS)
-				Draw_TransPicScaled(x, y, sb_ammo[2], uiscale);
-			else if (cl.items & RIT_CELLS)
-				Draw_TransPicScaled(x, y, sb_ammo[3], uiscale);
-			else if (cl.items & RIT_LAVA_NAILS)
-				Draw_TransPicScaled(x, y, rsb_ammo[0], uiscale);
-			else if (cl.items & RIT_PLASMA_AMMO)
-				Draw_TransPicScaled(x, y, rsb_ammo[1], uiscale);
-			else if (cl.items & RIT_MULTI_ROCKETS)
-				Draw_TransPicScaled(x, y, rsb_ammo[2], uiscale);
-		} else {
-			if (cl.items & IT_SHELLS)
-				Draw_TransPicScaled(x, y, sb_ammo[0], uiscale);
-			else if (cl.items & IT_NAILS)
-				Draw_TransPicScaled(x, y, sb_ammo[1], uiscale);
-			else if (cl.items & IT_ROCKETS)
-				Draw_TransPicScaled(x, y, sb_ammo[2], uiscale);
-			else if (cl.items & IT_CELLS)
-				Draw_TransPicScaled(x, y, sb_ammo[3], uiscale);
-		}
-		x = vid.width/2-160*(uiscale) + 248*uiscale; // classic, qw
-		y = vid.height - 24*uiscale;
-		if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
-			x = vid.width - 108 * uiscale;
-			y = vid.height - 32 * uiscale;
-		}
-		Sbar_DrawNum(x,y,cl.stats[STAT_AMMO],3,cl.stats[STAT_AMMO]<=10);
-		Sbar_DrawInventory();
-	}
-	if (vid.width > 320 && cl.gametype == GAME_DEATHMATCH)
-		Sbar_MiniDeathmatchOverlay();
+		return;
+	} 
+	if (!(scr_hudstyle.value || sb_lines))
+		return;
+	if (!scr_hudstyle.value)
+		Draw_PicScaled(vid.width / 2 - 160*(uiscale),
+			vid.height-SBAR_HEIGHT*uiscale, sb_sbar, uiscale);
+	Sbar_DrawArmor();
+	Sbar_DrawFace();
+	Sbar_DrawAmmo();
+	Sbar_DrawInventory();
 }
 
 void Sbar_IntermissionNumber(int x, int y, int num, int digits, int color)
@@ -789,7 +789,6 @@ void Sbar_IntermissionNumber(int x, int y, int num, int digits, int color)
 void Sbar_DeathmatchOverlay()
 {
 	char num[12];
-	scr_copyeverything = 1;
 	scr_fullupdate = 0;
 	qpic_t *pic = Draw_CachePic("gfx/ranking.lmp");
 	M_DrawPic((320 - pic->width) / 2, 8, pic);
@@ -826,7 +825,6 @@ void Sbar_MiniDeathmatchOverlay()
 	char num[12];
 	if (vid.width < 512 || !sb_lines || uiscale > 1)
 		return;
-	scr_copyeverything = 1;
 	scr_fullupdate = 0;
 	Sbar_SortFrags(); // scores
 	unsigned int y = vid.height - sb_lines; // draw the text
@@ -873,7 +871,6 @@ void Sbar_MiniDeathmatchOverlay()
 
 void Sbar_IntermissionOverlay()
 {
-	scr_copyeverything = 1;
 	scr_fullupdate = 0;
 	if (cl.gametype == GAME_DEATHMATCH) {
 		Sbar_DeathmatchOverlay();
@@ -900,7 +897,6 @@ void Sbar_IntermissionOverlay()
 
 void Sbar_FinaleOverlay()
 {
-	scr_copyeverything = 1;
 	qpic_t *pic = Draw_CachePic("gfx/finale.lmp");
 	Draw_TransPicScaled((vid.width - (pic->width) * uiscale) / 2,
 			16 * uiscale, pic, uiscale);

@@ -2351,7 +2351,6 @@ void M_Draw()
 	if (m_state == m_none || key_dest != key_menu)
 		return;
 	if (!m_recursiveDraw) {
-		scr_copyeverything = 1;
 		if (scr_con_current) {
 			Draw_ConsoleBackground(vid.height);
 		} else

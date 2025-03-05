@@ -319,7 +319,6 @@ void Con_DrawNotify()
 			continue;
 		char *text = con_text + (i % con_totallines) * con_linewidth;
 		clearnotify = 0;
-		scr_copytop = 1;
 		for (x = 0; x < con_linewidth; x++)
 			Draw_CharacterScaled(((x + 1) << 3) * uiscale,
 					     v * uiscale, text[x], uiscale);
@@ -327,7 +326,6 @@ void Con_DrawNotify()
 	}
 	if (key_dest == key_message) {
 		clearnotify = 0;
-		scr_copytop = 1;
 		x = 0;
 		Draw_StringScaled(8 * uiscale, v * uiscale, "say: ", uiscale);
 		while (chat_buffer[x]) {

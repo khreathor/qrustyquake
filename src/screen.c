@@ -26,8 +26,6 @@ float scr_centertime_off;
 int scr_center_lines;
 int scr_erase_lines;
 unsigned int scr_erase_center;
-int scr_copytop; // only the refresh window will be updated
-int scr_copyeverything; // unless these variables are flagged 
 float scr_con_current;
 float scr_conlines; // lines of console to display
 float oldscreensize, oldfov;
@@ -68,7 +66,6 @@ void SCR_EraseCenterString()
 	int y = 48;
 	if (scr_center_lines <= 4)
 		y = vid.height * 0.35;
-	scr_copytop = 1;
 	Draw_TileClear(0, y, vid.width, 8 * scr_erase_lines);
 }
 
@@ -101,7 +98,6 @@ void SCR_DrawCenterString()
 
 void SCR_CheckDrawCenterString()
 {
-	scr_copytop = 1;
 	if (scr_center_lines > scr_erase_lines)
 		scr_erase_lines = scr_center_lines;
 	scr_centertime_off -= host_frametime;
@@ -298,12 +294,10 @@ void SCR_SetUpToDrawConsole()
 			scr_con_current = scr_conlines;
 	}
 	if (clearconsole++ < vid.numpages) {
-		scr_copytop = 1;
 		Draw_TileClear(0, (int)scr_con_current, vid.width,
 			       vid.height - (int)scr_con_current);
 		Sbar_Changed();
 	} else if (clearnotify++ < vid.numpages) {
-		scr_copytop = 1;
 		Draw_TileClear(0, 0, vid.width, con_notifylines);
 	} else
 		con_notifylines = 0;
@@ -312,7 +306,6 @@ void SCR_SetUpToDrawConsole()
 void SCR_DrawConsole()
 {
 	if (scr_con_current) {
-		scr_copyeverything = 1;
 		Con_DrawConsole(scr_con_current, true);
 		clearconsole = 0;
 	} else
@@ -475,8 +468,6 @@ void SCR_UpdateScreen() // This is called every frame,
 	static float oldlcd_x;
 	if (scr_skipupdate || block_drawing)
 		return;
-	scr_copytop = 0;
-	scr_copyeverything = 0;
 	if (scr_disabled_for_loading) {
 		if (realtime - scr_disabled_time > 60) {
 			scr_disabled_for_loading = false;
@@ -507,7 +498,6 @@ void SCR_UpdateScreen() // This is called every frame,
 	}
 	// do 3D refresh drawing, and then update the screen
 	if (scr_fullupdate++ < vid.numpages) { // clear the entire screen
-		scr_copyeverything = 1;
 		Draw_TileClear(0, 0, vid.width, vid.height);
 		Sbar_Changed();
 	}
@@ -518,7 +508,6 @@ void SCR_UpdateScreen() // This is called every frame,
 		Sbar_Draw();
 		Draw_FadeScreen();
 		SCR_DrawNotifyString();
-		scr_copyeverything = true;
 	} else if (scr_drawloading) {
 		SCR_DrawLoading();
 		Sbar_Draw();
