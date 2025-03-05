@@ -338,8 +338,7 @@ void Sbar_CalcPos()
 		for (int i = 0; i < 4; i++) {
 			npos[i][0] = vid.width - (scr_hudstyle.value==3?88:96)
 				*uiscale + 48*uiscale*(i&1);
-			npos[i][1] = vid.height - (scr_hudstyle.value==3?48:46)
-				*uiscale - 9*uiscale*(i>>1);
+			npos[i][1] = vid.height - 47*uiscale - 9*uiscale*(i>>1);
 		}
 		break;
 	case 3: // right side, 1x4
@@ -463,7 +462,7 @@ void Sbar_DrawInventoryBg()
 		break;
 	case 2: // right side, 2x2
 		x = vid.width - (scr_hudstyle.value==3 ? 96 : 104)*uiscale;
-		y = vid.height - (scr_hudstyle.value==3 ? 57 : 55)*uiscale;
+		y = vid.height - 56*uiscale;
 		Draw_PicScaledPartial(x, y + 9*uiscale, 0,0,96,8, pic, uiscale);
 		Draw_PicScaledPartial(x - 96*uiscale,y,96,8,192,16,pic,uiscale);
 		break;
@@ -540,8 +539,8 @@ void Sbar_DrawWeapons()
 
 void Sbar_DrawInventory()
 {
-	Sbar_DrawWeapons();
 	Sbar_DrawInventoryBg();
+	Sbar_DrawWeapons();
 	for (int i = 0; i < 4; i++) // ammo counters
 		Sbar_DrawNumSmall(npos[i][0], npos[i][1], cl.stats[6 + i]);
 	for (int i = 0; i < 2; i++) { // keys
