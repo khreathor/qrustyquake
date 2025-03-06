@@ -303,8 +303,7 @@ void Draw_Fill(int x, int y, int w, int h, int c)
 { // Fills a box of pixels with a single color
 	byte *dest = vid.buffer + y * vid.rowbytes + x;
 	for (int v = 0; v < h; v++, dest += vid.rowbytes)
-		for (int u = 0; u < w; u++)
-			dest[u] = c;
+		memset(dest, c, w); // Fast horizontal fill
 }
 
 void Draw_FadeScreen()
