@@ -242,9 +242,9 @@ void VID_Init(unsigned char *palette)
 	vid_initialized = true;
 	vid_modenum = VID_DetermineMode();
 	if (vid_modenum < 0)
-		Con_Printf("WARNING: non-standard video mode");
+		Con_Printf("WARNING: non-standard video mode\n");
 	else
-		Con_Printf("Detected video mode %d", vid_modenum);
+		Con_Printf("Detected video mode %d\n", vid_modenum);
 }
 
 void VID_Shutdown()
