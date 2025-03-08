@@ -45,6 +45,7 @@ int wpos[9][2]; // weapons
 int kpos[2][2]; // keys
 int iposx[12]; // classic items
 int iposy;
+cvar_t scr_sidescore = { "scr_sidescore", "1", true, false, 0, NULL };
 
 void Sbar_DeathmatchOverlay();
 void M_DrawPic(int x, int y, qpic_t * pic);
@@ -172,6 +173,7 @@ void Sbar_Init()
 		rsb_ammo[1] = Draw_PicFromWad("r_ammomulti");
 		rsb_ammo[2] = Draw_PicFromWad("r_ammoplasma");
 	}
+	Cvar_RegisterVariable(&scr_sidescore);
 }
 
 int Sbar_itoa(int num, char *buf)
@@ -257,13 +259,6 @@ void Sbar_SoloScoreboard()
 	sprintf(str, "Time :%3i:%i%i", minutes, tens, units);
 	Draw_StringScaled(WW/2+24*SCL, HH-20*SCL, str, SCL);
 	Draw_StringScaled(WW/2+24*SCL, HH-12*SCL, cl.levelname, SCL);
-}
-
-void Sbar_DrawScoreboard()
-{
-	Sbar_SoloScoreboard();
-	if (cl.gametype == GAME_DEATHMATCH)
-		Sbar_DeathmatchOverlay();
 }
 
 void Sbar_CalcPos()
@@ -507,30 +502,6 @@ void Sbar_DrawInventory()
 	}
 }
 
-void Sbar_DrawFrags()
-{
-	Sbar_SortFrags();
-	int l = scoreboardlines <= 4 ? scoreboardlines : 4;
-	int x = WW/2 + 32*SCL;
-	int y = HH - 47*SCL;
-	for (int i = 0; i < l; i++) {
-		int k = fragsort[i];
-		scoreboard_t *s = &cl.scores[k];
-		if (!s->name[0])
-			continue;
-		int top = Sbar_ColorForMap(s->colors & 0xf0);
-		int bottom = Sbar_ColorForMap((s->colors & 15) << 4);
-		Draw_Fill(x + i*30*SCL, y      , 30*SCL, 4*SCL, top);
-		Draw_Fill(x + i*30*SCL, y+4*SCL, 30*SCL, 3*SCL, bottom);
-		Sbar_DrawNumSmall(x+i*30*SCL+3*SCL, y-1*SCL, s->frags, 0);
-		if (k == cl.viewentity - 1) {
-			Draw_CharacterScaled(x+i*30*SCL- 2*SCL,y-1*SCL,16,SCL);
-			Draw_CharacterScaled(x+i*30*SCL+23*SCL,y-1*SCL,17,SCL);
-		}
-		x += 4;
-	}
-}
-
 void Sbar_DrawFace()
 {
 	int x = WW / 2 - 24*SCL; // classic, qw
@@ -680,29 +651,54 @@ void Sbar_DrawAmmo()
 	Sbar_DrawNum(x, y, cl.stats[STAT_AMMO], 3, cl.stats[STAT_AMMO] <= 10);
 }
 
+static inline void Sbar_PlayerScoreBox(int x, int y, scoreboard_t *s, int k)
+{
+	int top = s->colors & 0xf0;
+	int bottom = (s->colors & 15) << 4;
+	top = Sbar_ColorForMap(top);
+	bottom = Sbar_ColorForMap(bottom);
+	Draw_Fill(x, y, 30*SCL, 4*SCL, top);
+	Draw_Fill(x, y+4*SCL, 30*SCL, 3*SCL, bottom);
+	Sbar_DrawNumSmall(x+3*SCL, y-1*SCL, s->frags, 0);
+	if (k == cl.viewentity - 1) {
+		Draw_CharacterScaled(x-2*SCL,y-1*SCL,16,SCL);
+		Draw_CharacterScaled(x+23*SCL,y-1*SCL,17,SCL);
+	}
+}
+
 void Sbar_DeathmatchOverlay()
 {
-	scr_fullupdate = 0;
-	qpic_t *pic = Draw_CachePic("gfx/ranking.lmp");
-	M_DrawPic((320 - pic->width) / 2, 8, pic);
-	Sbar_SortFrags(); // scores
-	int l = scoreboardlines; // draw the text
-	int x = WW/2-80*SCL;
-	int y = 40*SCL;
-	for (int i = 0; i < l; i++) {
+	Sbar_SortFrags();
+	int x = !scr_hudstyle.value ? WW/2 + 168*SCL : 4*SCL;
+	int y = !scr_hudstyle.value ? HH - 48*SCL : 40*SCL;
+	if (sb_showscores) {
+		qpic_t *pic = Draw_CachePic("gfx/ranking.lmp");
+		M_DrawPic((320 - pic->width) / 2, 8, pic);
+		x = WW/2-80*SCL;
+		y = 40*SCL;
+	}
+	for (int i = 0; i < scoreboardlines; i++) {
 		int k = fragsort[i];
 		scoreboard_t *s = &cl.scores[k];
 		if (!s->name[0])
 			continue;
-		int top = s->colors & 0xf0; // draw background
-		int bottom = (s->colors & 15) << 4;
-		top = Sbar_ColorForMap(top);
-		bottom = Sbar_ColorForMap(bottom);
-		Draw_Fill(x, y, 40*SCL, 4*SCL, top);
-		Draw_Fill(x, y+4*SCL, 40*SCL, 4*SCL, bottom);
-		Sbar_DrawNumSmall(x+8*SCL, y, s->frags, 0);
-		Draw_StringScaled(x+64*SCL, y, s->name, SCL);
+		Sbar_PlayerScoreBox(x, y, s, k);
+		Draw_StringScaled(x+40*SCL, y-1*SCL, s->name, SCL);
 		y += 10*SCL;
+	}
+}
+
+void Sbar_DrawFrags()
+{
+	Sbar_SortFrags();
+	int x = WW/2 + 33*SCL;
+	for (int i = 0; i < (scoreboardlines<=4?scoreboardlines:4); i++) {
+		int k = fragsort[i];
+		scoreboard_t *s = &cl.scores[k];
+		if (!s->name[0])
+			continue;
+		Sbar_PlayerScoreBox(x, HH - 47*SCL, s, k);
+		x += 32*SCL;
 	}
 }
 
@@ -743,21 +739,24 @@ void Sbar_Draw()
 	if (scr_con_current == HH || !(scr_hudstyle.value || sb_lines)
 		|| (sb_updates >= vid.numpages && !scr_hudstyle.value))
 		return;
-	if (sb_lines && WW > 320)
-		Draw_TileClear(0, HH - sb_lines, WW, sb_lines);
+	if (sb_lines && WW/SCL > 320)
+		Draw_TileClear(0, HH - sb_lines/SCL, WW, sb_lines/SCL);
 	if (!scr_hudstyle.value)
 		Draw_PicScaled(WW / 2 - 160*(SCL), HH-24*SCL, sb_sbar, SCL);
+	if (cl.gametype==GAME_DEATHMATCH&&(sb_showscores||scr_sidescore.value))
+		Sbar_DeathmatchOverlay();
 	if (sb_showscores || cl.stats[STAT_HEALTH] <= 0) {
 		Draw_PicScaled(WW/2-160*SCL, HH-24*SCL, sb_scorebar, SCL);
-		Sbar_DrawScoreboard();
+		Sbar_SoloScoreboard();
 		sb_updates = 0;
 	} else {
 		Sbar_DrawArmor();
 		Sbar_DrawFace();
 		Sbar_DrawAmmo();
 	}
-	Sbar_DrawInventory();
-	if ((scr_hudstyle.value || sb_lines > 24) && cl.maxclients != 1)
+	if (sb_lines/SCL > 24 || scr_hudstyle.value)
+		Sbar_DrawInventory();
+	if (sb_lines/SCL > 24 && cl.maxclients != 1)
 		Sbar_DrawFrags();
 }
 
