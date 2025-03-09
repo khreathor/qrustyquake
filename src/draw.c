@@ -111,7 +111,9 @@ void Draw_StringScaled(int x, int y, char *str, int scale)
 void Draw_PicScaled(int x, int y, qpic_t *pic, int scale)
 {
 	byte *dest = vid.buffer + y * vid.rowbytes + x;
-	int maxwidth = pic->width * scale;
+	int maxwidth = pic->width;
+	if (x + pic->width * scale > vid.width)
+		maxwidth -= (x + pic->width * scale - vid.width) / scale;
 	int rowinc = vid.rowbytes;
 	if (y + pic->height * scale > vid.height)
 		return;
@@ -121,13 +123,10 @@ void Draw_PicScaled(int x, int y, qpic_t *pic, int scale)
 		byte *source = pic->data + v * pic->width;
 		for (int k = 0; k < scale; k++) {
 			byte *dest_row = dest + k * rowinc;
-			for (unsigned int i = 0; i < pic->width; i++) {
+			for (unsigned int i = 0; i < maxwidth; i++) {
 				byte pixel = source[i];
-				for (int j = 0; j < scale; j++) {
-					if (x + j < vid.width) {
-						dest_row[(i*scale) + j] = pixel;
-					}
-				}
+				for (int j = 0; j < scale; j++)
+					dest_row[(i*scale) + j] = pixel;
 			}
 		}
 		dest += rowinc * scale;
