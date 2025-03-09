@@ -47,26 +47,16 @@ int iposx[12]; // classic items
 int iposy;
 cvar_t scr_sidescore = { "scr_sidescore", "1", true, false, 0, NULL };
 
-void Sbar_DeathmatchOverlay();
 void M_DrawPic(int x, int y, qpic_t * pic);
 
-inline static int Sbar_ColorForMap(int m) { return m < 128 ? m + 8 : m + 8; }
-
+inline static int Sbar_ColorForMap(int m)
+{ return m < 128 ? m + 8 : m + 8; }
 inline static void Sbar_ShowScores() // Tab key down
-{
-	if (sb_showscores)
-		return;
-	sb_showscores = true;
-	sb_updates = 0;
-}
-
+{ if (sb_showscores) return; sb_showscores = true; sb_updates = 0; }
 inline static void Sbar_DontShowScores() // Tab key up
-{
-	sb_showscores = false;
-	sb_updates = 0;
-}
-
-void Sbar_Changed() { sb_updates = 0; } // update next frame
+{ sb_showscores = false; sb_updates = 0; }
+void Sbar_Changed() // update next frame
+{ sb_updates = 0; }
 
 void Sbar_Init()
 {
@@ -517,36 +507,17 @@ void Sbar_DrawFace()
 		x = 8*SCL;
 		y = HH - 32*SCL;
 	}
-	if (rogue && (cl.maxclients != 1) && (teamplay.value > 3) &&
-			(teamplay.value < 7)) {/*TODO // team color drawing
-		char num[12];
+	if (rogue && cl.maxclients!=1 && teamplay.value>3 && teamplay.value<7
+			&& (!scr_hudstyle.value || scr_hudstyle.value == 3)) {
 		scoreboard_t *s = &cl.scores[cl.viewentity - 1];
-		int top = s->colors & 0xf0; // draw background
-		int bottom = (s->colors & 15) << 4;
-		top = Sbar_ColorForMap(top);
-		bottom = Sbar_ColorForMap(bottom);
-		int xofs = cl.gametype == GAME_DEATHMATCH ? 113 :
-			((WW - 320) >> 1) + 113;
-		Sbar_DrawPic(x, y, rsb_teambord);
-		Draw_Fill(xofs, HH - 24 + 3, 22, 9, top);
-		Draw_Fill(xofs, HH - 24 + 12, 22, 9, bottom);
-		int fr = s->frags; // draw number
-		sprintf(num, "%3i", fr);
-		if (top == 8) {
-			if (num[0] != ' ')
-				Sbar_DrawCharacter(109, 3, 18 + num[0] - '0');
-			if (num[1] != ' ')
-				Sbar_DrawCharacter(116, 3, 18 + num[1] - '0');
-			if (num[2] != ' ')
-				Sbar_DrawCharacter(123, 3, 18 + num[2] - '0');
-		} else {
-			Sbar_DrawCharacter(109, 3, num[0]);
-			Sbar_DrawCharacter(116, 3, num[1]);
-			Sbar_DrawCharacter(123, 3, num[2]);
-		}*/
+		int top = Sbar_ColorForMap(s->colors & 0xf0);
+		int bottom = Sbar_ColorForMap((s->colors & 0x0f) << 4);
+		Draw_PicScaled(x, y, rsb_teambord, SCL);
+		Draw_Fill(WW/2 - 47*SCL, HH - 21*SCL, 22*SCL, 9*SCL, top);
+		Draw_Fill(WW/2 - 47*SCL, HH - 12*SCL, 22*SCL, 9*SCL, bottom);
+		Sbar_DrawNumSmall(WW/2-49*SCL, HH-21*SCL, s->frags, top==8);
 		return;
 	}
-	// PGM 01/19/97 - team color drawing
 	if ((cl.items & (IT_INVISIBILITY | IT_INVULNERABILITY))
 			== (IT_INVISIBILITY | IT_INVULNERABILITY)) {
 		Draw_PicScaled(x, y, sb_face_invis_invuln, SCL);
@@ -653,10 +624,8 @@ void Sbar_DrawAmmo()
 
 static inline void Sbar_PlayerScoreBox(int x, int y, scoreboard_t *s, int k)
 {
-	int top = s->colors & 0xf0;
-	int bottom = (s->colors & 15) << 4;
-	top = Sbar_ColorForMap(top);
-	bottom = Sbar_ColorForMap(bottom);
+	int top = Sbar_ColorForMap(s->colors & 0xf0);
+	int bottom = Sbar_ColorForMap((s->colors & 0x0f) << 4);
 	Draw_Fill(x, y, 30*SCL, 4*SCL, top);
 	Draw_Fill(x, y+4*SCL, 30*SCL, 3*SCL, bottom);
 	Sbar_DrawNumSmall(x+3*SCL, y-1*SCL, s->frags, 0);
@@ -673,8 +642,8 @@ void Sbar_DeathmatchOverlay()
 	int y = !scr_hudstyle.value ? HH - 48*SCL : 40*SCL;
 	if (sb_showscores) {
 		qpic_t *pic = Draw_CachePic("gfx/ranking.lmp");
-		M_DrawPic((320 - pic->width) / 2, 8, pic);
-		x = WW/2-80*SCL;
+		Draw_PicScaled((WW-pic->width*SCL)/2, 8*SCL, pic, SCL);
+		x = WW/2 - 80*SCL;
 		y = 40*SCL;
 	}
 	for (int i = 0; i < scoreboardlines; i++) {
@@ -742,7 +711,7 @@ void Sbar_Draw()
 	if (sb_lines && WW/SCL > 320)
 		Draw_TileClear(0, HH - sb_lines/SCL, WW, sb_lines/SCL);
 	if (!scr_hudstyle.value)
-		Draw_PicScaled(WW / 2 - 160*(SCL), HH-24*SCL, sb_sbar, SCL);
+		Draw_PicScaled(WW/2 - 160*(SCL), HH-24*SCL, sb_sbar, SCL);
 	if (cl.gametype==GAME_DEATHMATCH&&(sb_showscores||scr_sidescore.value))
 		Sbar_DeathmatchOverlay();
 	if (sb_showscores || cl.stats[STAT_HEALTH] <= 0) {
