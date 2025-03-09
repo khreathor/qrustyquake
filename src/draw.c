@@ -110,85 +110,94 @@ void Draw_StringScaled(int x, int y, char *str, int scale)
 
 void Draw_PicScaled(int x, int y, qpic_t *pic, int scale)
 {
-	byte *source = pic->data;
 	byte *dest = vid.buffer + y * vid.rowbytes + x;
+	int maxwidth = pic->width * scale;
+	int rowinc = vid.rowbytes;
+	if (y + pic->height * scale > vid.height)
+		return;
 	for (unsigned int v = 0; v < pic->height; v++) {
 		if (v * scale + y >= vid.height)
-			return;
+			break;
+		byte *source = pic->data + v * pic->width;
 		for (int k = 0; k < scale; k++) {
+			byte *dest_row = dest + k * rowinc;
 			for (unsigned int i = 0; i < pic->width; i++) {
-				for (int j = 0; j < scale; j++)
-					if (i * scale + j + x < vid.width)
-						dest[i * scale + j] = source[i];
+				byte pixel = source[i];
+				for (int j = 0; j < scale; j++) {
+					if (x + j < vid.width) {
+						dest_row[(i*scale) + j] = pixel;
+					}
+				}
 			}
-			dest += vid.rowbytes;
 		}
-		source += pic->width;
+		dest += rowinc * scale;
 	}
 }
 
-void Draw_PicScaledPartial(int x, int y, int ox, int oy, int w, int h, qpic_t *pic, int scale)
+void Draw_PicScaledPartial(int x,int y,int l,int t,int w,int h,qpic_t *p,int s)
 {
-	byte *source = pic->data;
-	byte *dest = vid.buffer + y * vid.rowbytes + x;
-	for (unsigned int v = 0; v < pic->height; v++) {
-		if (v * scale + y >= vid.height || v > h)
-			return;
-		if (v < oy)
-			continue;
-		for (int k = 0; k < scale; k++) {
-			for (unsigned int i = 0; i < pic->width; i++) {
-				if (i < ox || i >= w)
-					continue;
-				for (int j = 0; j < scale; j++)
-					if (i * scale + j + x < vid.width)
-						dest[i * scale + j] = source[i];
-			}
-			dest += vid.rowbytes;
-		}
-		source += pic->width;
-	}
+        byte *source = p->data;
+        byte *dest = vid.buffer + y * vid.rowbytes + x;
+        for (unsigned int v = 0; v < p->height; v++) {
+                if (v * s + y >= vid.height || v > h)
+                        return;
+                if (v < t)
+                        continue;
+                for (int k = 0; k < s; k++) {
+                        for (unsigned int i = 0; i < p->width; i++) {
+                                if (i < l || i >= w)
+                                        continue;
+                                for (int j = 0; j < s; j++)
+                                        if (i * s + j + x < vid.width)
+                                                dest[i * s + j] = source[i];
+                        }
+                        dest += vid.rowbytes;
+                }
+                source += p->width;
+        }	
 }
 
 void Draw_TransPicScaled(int x, int y, qpic_t *pic, int scale)
 {
 	byte *source = pic->data;
 	byte *dest = vid.buffer + y * vid.rowbytes + x;
-	byte tbyte;
 	for (unsigned int v = 0; v < pic->height; v++) {
 		if (v * scale + y >= vid.height)
 			return;
 		for (int k = 0; k < scale; k++) {
-			for (unsigned int u = 0; u < pic->width; u++)
-				if ((tbyte = source[u]) != TRANSPARENT_COLOR)
-					for (int i = 0; i < scale; i++)
-						if (u * scale + i + x < vid.width)
-							dest[u * scale + i] = tbyte;
-
+			for (unsigned int u = 0; u < pic->width; u++){
+				byte tbyte = source[u];
+				if (tbyte == TRANSPARENT_COLOR)
+					continue;
+				for (int i = 0; i < scale; i++)
+					if (u * scale + i + x < vid.width)
+						dest[u * scale + i] = tbyte;
+			}
 			dest += vid.rowbytes;
 		}
 		source += pic->width;
 	}
 }
 
-void Draw_TransPicTranslateScaled(int x, int y, qpic_t *pic, byte *translation,
-				  int scale)
+void Draw_TransPicTranslateScaled(int x, int y, qpic_t *p, byte *tl, int scale)
 {
-	byte *source = pic->data;
+	byte *source = p->data;
 	byte *dest = vid.buffer + y * vid.rowbytes + x;
-	byte tbyte;
-	for (unsigned int v = 0; v < pic->height; v++) {
+	for (unsigned int v = 0; v < p->height; v++) {
 		if (v * scale + y >= vid.height)
 			return;
 		for (int k = 0; k < scale; k++) {
-			for (unsigned int u = 0; u < pic->width; u++)
-				if ((tbyte = source[u]) != TRANSPARENT_COLOR)
-					for (int i = 0; i < scale; i++)
-						if (u * scale + i + x < vid.width)
-							dest[u * scale + i] = translation[tbyte];
+			for (unsigned int u = 0; u < p->width; u++) {
+				byte tbyte = source[u];
+				if (tbyte == TRANSPARENT_COLOR)
+					continue;
+				for (int i = 0; i < scale; i++)
+					if (u * scale + i + x < vid.width)
+						dest[u * scale + i] = tl[tbyte];
+			}
 			dest += vid.rowbytes;
 		}
-		source += pic->width;
+		source += p->width;
 	}
 }
 
@@ -291,11 +300,11 @@ void Draw_TileClear(int x, int y, int w, int h) // This repeats a 64*64
 			R_DrawRect(&vr, r_rectdesc.rowbytes, psrc, 0);
 			vr.x += vr.width;
 			width -= vr.width;
-			tileoffsetx = 0; // only the left tile can be left-clipped
+			tileoffsetx = 0; // only left tile can be left-clipped
 		}
 		vr.y += vr.height;
 		height -= vr.height;
-		tileoffsety = 0; // only the top tile can be top-clipped
+		tileoffsety = 0; // only top tile can be top-clipped
 	}
 }
 
