@@ -1377,60 +1377,69 @@ void M_New_Draw()
 	M_Print(xoffset, 64, "         Y Mouse Speed");
 	sprintf(temp, "%0.1f\n", sensitivityyscale.value);
 	M_Print(xoffset + 204, 64, temp);
-	M_Print(xoffset, 72, "       Cutout Textures");
-	if (r_twopass.value == 0)
-		M_Print(xoffset + 204, 72, "Off (smart)");
-	else if (r_twopass.value == 1)
-		M_Print(xoffset + 204, 72, "On (smart)");
-	else if (r_twopass.value == 2)
-		M_Print(xoffset + 204, 72, "Force Off");
+	M_Print(xoffset, 72, "             HUD Style");
+	if (scr_hudstyle.value == 0)
+		M_Print(xoffset + 204, 72, "Classic");
+	else if (scr_hudstyle.value == 1)
+		M_Print(xoffset + 204, 72, "Modern 1");
+	else if (scr_hudstyle.value == 2)
+		M_Print(xoffset + 204, 72, "Modern 2");
 	else
-		M_Print(xoffset + 204, 72, "Force On");
-	M_Print(xoffset, 80, "          Liquid Alpha");
+		M_Print(xoffset + 204, 72, "QW");
+	M_Print(xoffset, 80, "       Cutout Textures");
+	if (r_twopass.value == 0)
+		M_Print(xoffset + 204, 80, "Off (smart)");
+	else if (r_twopass.value == 1)
+		M_Print(xoffset + 204, 80, "On (smart)");
+	else if (r_twopass.value == 2)
+		M_Print(xoffset + 204, 80, "Force Off");
+	else
+		M_Print(xoffset + 204, 80, "Force On");
+	M_Print(xoffset, 88, "          Liquid Alpha");
 	sprintf(temp, "%0.1f\n", r_wateralpha.value);
-	M_Print(xoffset + 204, 80, temp);
-	M_Print(xoffset, 88, "             FPS Limit");
-	sprintf(temp, "%d\n", (int)host_maxfps.value);
 	M_Print(xoffset + 204, 88, temp);
+	M_Print(xoffset, 96, "             FPS Limit");
+	sprintf(temp, "%d\n", (int)host_maxfps.value);
+	M_Print(xoffset + 204, 96, temp);
 	if (new_cursor == 7 && (int)host_maxfps.value > 72) {
 		M_DrawTextBox(52, 150, 30, 1);
 		M_Print(64, 158, "Values above    break physics");
 		M_PrintWhite(64, 158, "             72");
 	}
-	M_Print(xoffset, 96, "           Window Mode");
+	M_Print(xoffset, 104, "           Window Mode");
 	if (newwinmode == 0)
-		M_Print(xoffset + 204, 96, "Windowed");
+		M_Print(xoffset + 204, 104, "Windowed");
 	else if (newwinmode == 1)
-		M_Print(xoffset + 204, 96, "Fullscreen");
+		M_Print(xoffset + 204, 104, "Fullscreen");
 	else
-		M_Print(xoffset + 204, 96, "Desktop");
-	M_Print(xoffset, 108, "          Custom Width");
-	M_DrawTextBox(xoffset + 196, 100, 8, 1);
-	M_Print(xoffset + 204, 108, customwidthstr);
-	if (new_cursor == 9) {
-		M_DrawCursorLine(xoffset+204 + 8 * strlen(customwidthstr), 108);
-		sprintf(temp, "%d", MAXWIDTH);
-		M_DrawTextBox(xoffset + 68, 150, 16 + strlen(temp), 1);
-		M_Print(xoffset + 80, 158, "320 <= Width <=");
-		M_Print(xoffset + 208, 158, temp);
-	}
-	M_Print(xoffset, 124, "         Custom Height");
-	M_DrawTextBox(xoffset + 196, 116, 8, 1);
-	M_Print(xoffset + 204, 124, customheightstr);
+		M_Print(xoffset + 204, 104, "Desktop");
+	M_Print(xoffset, 116, "          Custom Width");
+	M_DrawTextBox(xoffset + 196, 108, 8, 1);
+	M_Print(xoffset + 204, 116, customwidthstr);
 	if (new_cursor == 10) {
-		M_DrawCursorLine(xoffset+204+8 * strlen(customheightstr), 124);
-		sprintf(temp, "%d", MAXHEIGHT);
-		M_DrawTextBox(xoffset + 68, 150, 17 + strlen(temp), 1);
-		M_Print(xoffset + 80, 158, "200 <= Height <=");
-		M_Print(xoffset + 216, 158, temp);
+		M_DrawCursorLine(xoffset+204 + 8 * strlen(customwidthstr), 116);
+		sprintf(temp, "%d", MAXWIDTH);
+		M_DrawTextBox(xoffset + 68, 158, 16 + strlen(temp), 1);
+		M_Print(xoffset + 80, 166, "320 <= Width <=");
+		M_Print(xoffset + 208, 166, temp);
 	}
-	M_Print(xoffset + 204, 136, "Set Mode");
-	if (new_cursor == 9)
-		M_DrawCursor(xoffset + 192, 108);
-	else if (new_cursor == 10)
-		M_DrawCursor(xoffset + 192, 124);
+	M_Print(xoffset, 132, "         Custom Height");
+	M_DrawTextBox(xoffset + 196, 124, 8, 1);
+	M_Print(xoffset + 204, 132, customheightstr);
+	if (new_cursor == 11) {
+		M_DrawCursorLine(xoffset+204+8 * strlen(customheightstr), 132);
+		sprintf(temp, "%d", MAXHEIGHT);
+		M_DrawTextBox(xoffset + 68, 158, 17 + strlen(temp), 1);
+		M_Print(xoffset + 80, 166, "200 <= Height <=");
+		M_Print(xoffset + 216, 166, temp);
+	}
+	M_Print(xoffset + 204, 144, "Set Mode");
+	if (new_cursor == 10)
+		M_DrawCursor(xoffset + 192, 116);
 	else if (new_cursor == 11)
-		M_DrawCursor(xoffset + 192, 136);
+		M_DrawCursor(xoffset + 192, 132);
+	else if (new_cursor == 12)
+		M_DrawCursor(xoffset + 192, 144);
 	else
 		M_DrawCursor(xoffset + 192, 32 + new_cursor * 8);
 }
@@ -1457,15 +1466,20 @@ void M_New_Key(int k)
 			Cvar_SetValue("sensitivityyscale",
 				      sensitivityyscale.value - 0.1);
 		else if (new_cursor == 5) {
+			if (scr_hudstyle.value == 0)
+				Cvar_SetValue("hudstyle", 3);
+			else
+				Cvar_SetValue("hudstyle", scr_hudstyle.value-1);
+		} else if (new_cursor == 6) {
 			if (r_twopass.value == 0)
 				Cvar_SetValue("r_twopass", 3);
 			else
 				Cvar_SetValue("r_twopass", r_twopass.value - 1);
-		} else if (new_cursor == 6 && r_wateralpha.value >= 0.1) {
+		} else if (new_cursor == 7 && r_wateralpha.value >= 0.1) {
 			Cvar_SetValue("r_wateralpha", r_wateralpha.value - 0.1);
 			Cvar_SetValue("r_lavaalpha", r_wateralpha.value);
 			Cvar_SetValue("r_slimealpha", r_wateralpha.value);
-		} else if (new_cursor == 7) {
+		} else if (new_cursor == 8) {
 			int i = 0;
 			for (; i < (int)sizeof(fpslimits) / 4 - 1; ++i)
 				if (fpslimits[i] >= (int)host_maxfps.value)
@@ -1474,7 +1488,7 @@ void M_New_Key(int k)
 			if (i < 0 || i > (int)sizeof(fpslimits) / 4 - 1)
 				i = sizeof(fpslimits) / 4 - 1;
 			Cvar_SetValue("host_maxfps", fpslimits[i]);
-		} else if (new_cursor == 8) {
+		} else if (new_cursor == 9) {
 			if (newwinmode == 0)
 				newwinmode = 2;
 			else
@@ -1484,13 +1498,13 @@ void M_New_Key(int k)
 	case K_UPARROW:
 		S_LocalSound("misc/menu1.wav");
 		if (new_cursor == 0)
-			new_cursor = 11;
+			new_cursor = 12;
 		else
 			new_cursor--;
 		break;
 	case K_DOWNARROW:
 		S_LocalSound("misc/menu1.wav");
-		if (new_cursor == 11)
+		if (new_cursor == 12)
 			new_cursor = 0;
 		else
 			new_cursor++;
@@ -1510,15 +1524,20 @@ void M_New_Key(int k)
 			Cvar_SetValue("sensitivityyscale",
 				      sensitivityyscale.value + 0.1);
 		else if (new_cursor == 5) {
+			if (scr_hudstyle.value == 3)
+				Cvar_SetValue("hudstyle", 0);
+			else
+				Cvar_SetValue("hudstyle", scr_hudstyle.value+1);
+		} else if (new_cursor == 6) {
 			if (r_twopass.value == 3)
 				Cvar_SetValue("r_twopass", 0);
 			else
 				Cvar_SetValue("r_twopass", r_twopass.value + 1);
-		} else if (new_cursor == 6 && r_wateralpha.value < 1.0) {
+		} else if (new_cursor == 7 && r_wateralpha.value < 1.0) {
 			Cvar_SetValue("r_wateralpha", r_wateralpha.value + 0.1);
 			Cvar_SetValue("r_lavaalpha", r_wateralpha.value);
 			Cvar_SetValue("r_slimealpha", r_wateralpha.value);
-		} else if (new_cursor == 7) {
+		} else if (new_cursor == 8) {
 			int i = 0;
 			for (; i < (int)sizeof(fpslimits) / 4 - 1; ++i)
 				if (fpslimits[i] >= (int)host_maxfps.value)
@@ -1527,12 +1546,12 @@ void M_New_Key(int k)
 			if (i < 0 || i > (int)sizeof(fpslimits) / 4 - 1)
 				i = 0;
 			Cvar_SetValue("host_maxfps", fpslimits[i]);
-		} else if (new_cursor == 8) {
+		} else if (new_cursor == 9) {
 			if (newwinmode == 2)
 				newwinmode = 0;
 			else
 				newwinmode++;
-		} else if (new_cursor == 11
+		} else if (new_cursor == 12
 			   && Q_atoi(customwidthstr) >= 320
 			   && Q_atoi(customheightstr) >= 200
 			   && Q_atoi(customwidthstr) <= MAXWIDTH
@@ -1542,21 +1561,21 @@ void M_New_Key(int k)
 				    vid_curpal);
 		break;
 	case K_BACKSPACE:
-		if (new_cursor == 9 && strlen(customwidthstr))
+		if (new_cursor == 10 && strlen(customwidthstr))
 			customwidthstr[strlen(customwidthstr) - 1] = 0;
-		else if (new_cursor == 10 && strlen(customheightstr))
+		else if (new_cursor == 11 && strlen(customheightstr))
 			customheightstr[strlen(customheightstr) - 1] = 0;
 		break;
 	default:
 		if (k < '0' || k > '9')
 			break;
-		if (new_cursor == 9) {
+		if (new_cursor == 10) {
 			int l = strlen(customwidthstr);
 			if (l < 7) {
 				customwidthstr[l + 1] = 0;
 				customwidthstr[l] = k;
 			}
-		} else if (new_cursor == 10) {
+		} else if (new_cursor == 11) {
 			int l = strlen(customheightstr);
 			if (l < 7) {
 				customheightstr[l + 1] = 0;
