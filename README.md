@@ -32,7 +32,7 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
 - Non-square pixels for 320x200 and 640x400 modes
 
-   - Can be forced on other modes with -stretchpixels
+   - aspectr cvar can be used for more granular adjustment
 
 - General feature parity with the original WinQuake
 
@@ -41,6 +41,10 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
    - Video configuration menu (mostly for show, use -width and -heigth)
 
 - Proper UI scaling
+
+- Modern UI layouts (hudstyle 0/1/2/3)
+
+- VGA text blurbs after shutdown
 
 - The default audio rate is 11025 for more muffled WinQuake sound
 
@@ -96,8 +100,6 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
 - Other modern features (optional)
 
-   - Status bar styles
-
    - More modern console
 
    - Client-server separation (mostly for 72< framerates)
@@ -124,7 +126,7 @@ x86_64 unless specified otherwise.
 
 VM is VirtualBox unless specified otherwise.
 
-- Arch Linux [HW] v0.4.1
+- Arch Linux [HW] v0.4.2
 
    - The main platform that this port is developed on. The most likely one to work
 
@@ -138,25 +140,25 @@ VM is VirtualBox unless specified otherwise.
 
    - Seemingly perfect, though the audio sample rate sounds too high
 
-- OpenBSD [VM, HW] v0.4
+- OpenBSD [VM, HW] v0.4.1
 
-   - Seemingly perfect, use the commit with OpenBSD-specific fixes shortly after v0.4
+   - Seemingly perfect
 
 - Ubuntu [HW, MangoPi MQ Pro, RISC-V] v0.3
 
    - Works just fine at a playable framerate (20-30~ FPS)
 
-- Android [HW, Termux, AARCH64] v0.3
+- Android [HW, Termux, AARCH64] v0.4.2
 
    - Ran through X11 with touch controls. *unpleasant*
 
-- Windows [VM, HW] v0.4.1
+- Windows [VM, HW] v0.4.2
 
    - Tested with w10 on hardware and w11 on a VM
 
    - The official binary is cross-compiled, and seems to have broken network
 
-   - Quakespasm breaks exactly the same way, so must be general cross-compilation issue
+   - Quakespasm breaks exactly the same way, so must be a general cross-compilation issue
 
 # Credits
 
@@ -164,7 +166,9 @@ This port started out as a fork of https://github.com/atsb/sdlwinquake
 
 Which was a fork of another fork. It's forks all the way down...
 
-Features some fixes from Quakespasm and other ports. I wasn't the one to implement them, but will try and give credit as I peruse the source further.
+Some code, including VGA text blurbs, has been taken from https://github.com/erysdren/sdl3quake/
+
+Big thanks to Erysdren for contributing quite a lot to the backend.
 
 The Fitzquake protocol implementation, both client and server, sound system, model loading, filesystem functions, cvars and a whole lot more has been pulled directly from Quakespasm.
 
