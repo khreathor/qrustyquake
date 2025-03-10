@@ -184,6 +184,7 @@ typedef struct {
 #include "menu.h"
 #include "crc.h"
 #include "vid.h"
+#include "vgatext.h"
 
 extern double host_time;
 extern SDL_Window *window; // global for checking windowed state in options

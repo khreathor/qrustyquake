@@ -15,6 +15,13 @@ void Sys_Printf(char *fmt, ...)
 void Sys_Quit()
 {
 	Host_Shutdown();
+        Uint16 *screen; // erysdren (it/its)
+        if (registered.value)
+                screen = (Uint16 *)COM_LoadHunkFile("end2.bin", 0);
+        else
+                screen = (Uint16 *)COM_LoadHunkFile("end1.bin", 0);
+        if (screen)
+                vgatext_main(window, screen);
 	exit(0);
 }
 
