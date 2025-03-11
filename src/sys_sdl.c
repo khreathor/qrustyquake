@@ -162,7 +162,7 @@ int main(int c, char **v)
 	if (COM_CheckParm("-heapsize")) {
 		int t = COM_CheckParm("-heapsize") + 1;
 		if (t < c)
-			parms.memsize = Q_atoi(v[t]) * 1024;
+			host_parms.memsize = Q_atoi(v[t]) * 1024;
 	}
 	host_parms.membase = malloc(host_parms.memsize);
 	host_parms.basedir = ".";
