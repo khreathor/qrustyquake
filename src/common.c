@@ -2069,7 +2069,6 @@ static pack_t *COM_LoadPackFile (const char *packfile)
 	int		packhandle;
 	dpackfile_t	info[MAX_FILES_IN_PACK];
 	unsigned short	crc;
-	printf("LOADING %s\n", packfile);
 
 	if (Sys_FileOpenRead (packfile, &packhandle) == -1)
 		return NULL;
@@ -2144,7 +2143,6 @@ static void COM_AddGameDirectory (const char *base, const char *dir)
 	pack_t *pak, *qspak;
 	char pakfile[MAX_OSPATH];
 	qboolean been_here = false;
-	printf("ADDING DIR %s/%s\n", base, dir);
 
 	q_strlcpy (com_gamedir, va("%s/%s", base, dir), sizeof(com_gamedir));
 

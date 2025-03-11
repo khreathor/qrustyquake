@@ -26,7 +26,7 @@ ifeq ($(CC),tcc)
 CFLAGS += -DSDL_DISABLE_IMMINTRIN_H
 endif
 
-DEBUG_FLAGS = -g -O0
+DEBUG_FLAGS = -g -O0 -DDEBUG
 RELEASE_FLAGS = -O3
 
 ifeq ($(BUILD_TYPE), debug)

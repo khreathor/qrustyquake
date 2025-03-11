@@ -33,6 +33,9 @@ void Sys_Error(char *error, ...)
 	vsprintf(string, error, argptr);
 	va_end(argptr);
 	fprintf(stderr, "Error: %s\n", string);
+#ifdef DEBUG
+	__asm__("int3");
+#endif
 	Host_Shutdown();
 	exit(1);
 }
