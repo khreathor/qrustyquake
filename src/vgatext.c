@@ -126,7 +126,7 @@ int vgatext_main(SDL_Window *window, Uint16 *screen)
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
-			if (event.type == SDL_QUIT)// || event.type == SDL_KEYDOWN || event.type == SDL_MOUSEBUTTONDOWN)
+			if (event.type == SDL_QUIT || event.type == SDL_KEYDOWN || event.type == SDL_MOUSEBUTTONDOWN)
 				goto done;
 		}
 

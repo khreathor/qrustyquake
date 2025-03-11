@@ -2069,6 +2069,7 @@ static pack_t *COM_LoadPackFile (const char *packfile)
 	int		packhandle;
 	dpackfile_t	info[MAX_FILES_IN_PACK];
 	unsigned short	crc;
+	printf("LOADING %s\n", packfile);
 
 	if (Sys_FileOpenRead (packfile, &packhandle) == -1)
 		return NULL;
@@ -2143,6 +2144,7 @@ static void COM_AddGameDirectory (const char *base, const char *dir)
 	pack_t *pak, *qspak;
 	char pakfile[MAX_OSPATH];
 	qboolean been_here = false;
+	printf("ADDING DIR %s/%s\n", base, dir);
 
 	q_strlcpy (com_gamedir, va("%s/%s", base, dir), sizeof(com_gamedir));
 
@@ -2162,7 +2164,7 @@ _add_path:
 	// add any pak files in the format pak0.pak pak1.pak, ...
 	for (i = 0; ; i++)
 	{
-		q_snprintf (pakfile, sizeof(pakfile), "%s/pak%i.pak", com_gamedir, i);
+		snprintf (pakfile, sizeof(pakfile), "%s/pak%i.pak", com_gamedir, i);
 		pak = COM_LoadPackFile (pakfile);
 		if (i != 0 || path_id != 1 || fitzmode)
 			qspak = NULL;
@@ -2190,7 +2192,7 @@ _add_path:
 		if (!pak) break;
 	}
 
-	if (!been_here && host_parms.userdir != host_parms.basedir)
+	if (0 && !been_here && host_parms.userdir != host_parms.basedir)
 	{
 		been_here = true;
 		// CyanBun96: this would prepend "(null)" for some reason, breaking stuff
