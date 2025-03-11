@@ -123,8 +123,7 @@ void Fog_ParseWorldspawn () // from Quakespasm
 	old_blue = DEFAULT_GRAY;
 	fade_time = 0.0;
 	fade_done = 0.0;*/
-	const char *data = COM_Parse(data);
-	data = COM_Parse(cl.worldmodel->entities);
+	const char *data = COM_Parse(cl.worldmodel->entities);
 	if (!data || com_token[0] != '{')
 		return; // error
 	while (1) {
