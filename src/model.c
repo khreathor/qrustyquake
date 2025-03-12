@@ -1322,7 +1322,6 @@ static void Mod_CalcSurfaceBounds (msurface_t *s) // -- johnfitz
 
 static void Mod_LoadFaces (lump_t *l, qboolean bsp2)
 {
-	/*
 	dface_t	*ins;
 	dlface_t	*inl;
 	msurface_t 	*out;
@@ -1398,6 +1397,7 @@ static void Mod_LoadFaces (lump_t *l, qboolean bsp2)
 		Mod_CalcSurfaceBounds (out); //johnfitz -- for per-surface frustum culling
 
 	// lighting info
+		/*
 		if (loadmodel->bspversion == BSPVERSION_QUAKE64)
 			lofs /= 2; // Q64 samples are 16bits instead 8 in normal Quake 
 
@@ -1409,6 +1409,8 @@ static void Mod_LoadFaces (lump_t *l, qboolean bsp2)
 #endif
 		else
 			out->samples = loadmodel->lightdata + (lofs * 3); //johnfitz -- lit support via lordhavoc (was "+ i")
+		*/
+                out->samples = loadmodel->lightdata + lofs; // TODO colored lighting
 
 		//johnfitz -- this section rewritten
 		if (!strncasecmp(out->texinfo->texture->name,"sky",3)) // sky surface //also note -- was Q_strncmp, changed to match qbsp
@@ -1462,66 +1464,6 @@ static void Mod_LoadFaces (lump_t *l, qboolean bsp2)
 		}
 		//johnfitz
 	}
-TODO colored lighting*/
-	dface_t *in = (void *)(mod_base + l->fileofs);
-        if (l->filelen % sizeof(*in))
-                Sys_Error("MOD_LoadFaces: funny lump size in %s",
-                                loadmodel->name);
-        int count = l->filelen / sizeof(*in);
-        msurface_t *out = Hunk_AllocName(count * sizeof(*out), loadname);
-        loadmodel->surfaces = out;
-        loadmodel->numsurfaces = count;
-        int hascutouts = 0;
-        for (int surfnum = 0; surfnum < count; surfnum++, in++, out++) {
-                out->firstedge = LittleLong(in->firstedge);
-                out->numedges = LittleShort(in->numedges);
-                out->flags = 0;
-                int planenum = LittleShort(in->planenum);
-                int side = LittleShort(in->side);
-                if (side)
-                        out->flags |= SURF_PLANEBACK;
-                out->plane = loadmodel->planes + planenum;
-                out->texinfo = loadmodel->texinfo + LittleShort(in->texinfo);
-                CalcSurfaceExtents(out);
-                // lighting info
-                int i = 0;
-                for (; i < MAXLIGHTMAPS; i++)
-                        out->styles[i] = in->styles[i];
-                i = LittleLong(in->lightofs);
-                out->samples = i == -1 ? NULL : loadmodel->lightdata + i;
-                // set the drawing flags flag
-                if (!Q_strncmp(out->texinfo->texture->name, "sky", 3)) // sky
-                {
-                        out->flags |= (SURF_DRAWSKY | SURF_DRAWTILED);
-                        continue;
-                }
-                if (!Q_strncmp(out->texinfo->texture->name, "{", 1)) // cutout
-                {
-                        out->flags |= (SURF_DRAWCUTOUT);
-                        hascutouts = 1;
-                        continue;
-                }
-                if (out->texinfo->texture->name[0] == '*') { // warp surface
-                        out->flags |= (SURF_DRAWTURB | SURF_DRAWTILED);
-                        for (i = 0; i < 2; i++) {
-                                out->extents[i] = 16384;
-                                out->texturemins[i] = -8192;
-                        }
-                        if (!Q_strncmp(out->texinfo->texture->name, "*lava", 5))
-                                out->flags |= (SURF_DRAWLAVA);
-                        else if (!Q_strncmp(out->texinfo->texture->name, "*slime", 6))
-                                out->flags |= (SURF_DRAWSLIME);
-                        else if (!Q_strncmp(out->texinfo->texture->name, "*tele", 5))
-                                out->flags |= (SURF_DRAWTELE);
-                        else
-                                out->flags |= SURF_DRAWWATER;
-                        continue;
-                }
-        }
-        if (!hascutouts && (int)r_twopass.value != 3)
-                Cvar_SetValue("r_twopass", 0);
-        else if (hascutouts && (int)r_twopass.value != 2)
-                Cvar_SetValue("r_twopass", 1);
 }
 
 static void Mod_SetParent (mnode_t *node, mnode_t *parent)
