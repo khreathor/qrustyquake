@@ -201,7 +201,6 @@ void *Z_Malloc (int size)
 
 	Z_CheckHeap ();	// DEBUG
 	buf = Z_TagMalloc (size, 1);
-	if (size > 100) printf("size: %d\n", size);
 	if (!buf)
 		Sys_Error ("Z_Malloc: failed on allocation of %i bytes",size);
 	Q_memset (buf, 0, size);
