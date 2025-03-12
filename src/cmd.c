@@ -33,7 +33,7 @@ void Cmd_Wait_f()
 
 void Cbuf_Init() // Command Buffer
 {
-	SZ_Alloc(&cmd_text, 8192); // space for commands and script files
+	SZ_Alloc(&cmd_text, 1<<18); // space for commands and script files
 }
 
 void Cbuf_AddText(char *text)
