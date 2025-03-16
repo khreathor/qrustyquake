@@ -14,11 +14,8 @@
 #define BACKFACE_EPSILON 0.01
 #define DIST_NOT_SET 98765
 #define NEAR_CLIP 0.01
-#define MAXBVERTINDEXES 1000 // new clipped vertices when clipping bmodels to
-	// the world BSP
-#define MAX_BTOFPOLYS 5000 // FIXME: tune this
-#define MAXALIASVERTS 2000 // TODO: tune this
 #define ALIAS_Z_CLIP_PLANE 5
+#define MAX_BTOFPOLYS 5000 // FIXME: tune this
 #define AMP 8*0x10000 // turbulence stuff
 #define AMP2 3
 #define SPEED 20

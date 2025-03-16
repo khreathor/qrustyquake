@@ -197,7 +197,7 @@ static void FindNextChunk (const char *name)
 		if (iff_chunk_len < 0 || iff_chunk_len > iff_end - data_p)
 		{
 			data_p = NULL;
-			printf("bad \"%s\" chunk length (%d)\n", name, iff_chunk_len);
+			//printf("bad \"%s\" chunk length (%d)\n", name, iff_chunk_len);
 			return;
 		}
 		last_chunk = data_p + ((iff_chunk_len + 1) & ~1);

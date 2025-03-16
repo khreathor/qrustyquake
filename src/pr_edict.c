@@ -1328,7 +1328,7 @@ int NUM_FOR_EDICT(edict_t *e)
 static void PR_AllocStringSlots (void)
 {
 	pr_maxknownstrings += PR_STRING_ALLOCSLOTS;
-	printf("PR_AllocStringSlots: realloc'ing for %d slots\n", pr_maxknownstrings);
+	// printf("PR_AllocStringSlots: realloc'ing for %d slots\n", pr_maxknownstrings);
 	pr_knownstrings = (const char **) Z_Realloc ((void *)pr_knownstrings, pr_maxknownstrings * sizeof(char *));
 }
 

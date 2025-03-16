@@ -165,12 +165,11 @@ void Mod_ClearAll ()
 {
 	int i = 0;
 	model_t *mod = mod_known;
-	for (; i<mod_numknown ; i++, mod++) {
-		if (mod->type != mod_alias) {
-			mod->needload = true;
-	//		TexMgr_FreeTexturesForOwner (mod); //johnfitz
-		}
-	}
+	for (; i < mod_numknown; i++, mod++) {
+                mod->needload = NL_UNREFERENCED;
+                if (mod->type == mod_sprite)
+                        mod->cache.data = NULL;
+        }
 }
 
 void Mod_ResetAll ()
@@ -210,7 +209,7 @@ static model_t *Mod_FindName (const char *name)
 void Mod_TouchModel (const char *name)
 {
 	model_t	*mod = Mod_FindName (name);
-	if (!mod->needload && mod->type == mod_alias)
+	if (!mod->needload == NL_PRESENT && mod->type == mod_alias)
 		Cache_Check (&mod->cache);
 }
 
@@ -218,14 +217,14 @@ void Mod_TouchModel (const char *name)
 static model_t *Mod_LoadModel (model_t *mod, qboolean crash)
 { // Loads a model into the cache
 	byte stackbuf[1024]; // avoid dirtying the cache heap
-	if (!mod->needload) {
-		if (mod->type == mod_alias) {
-			if (Cache_Check (&mod->cache))
-				return mod;
+	if (mod->type == mod_alias) {
+		if (Cache_Check (&mod->cache)) {
+			mod->needload = NL_PRESENT;
+			return mod;
 		}
-		else
-			return mod;		// not cached at all
 	}
+	else if (mod->needload == NL_PRESENT)
+			return mod;
 	// because the world is so huge, load it one piece at a time
 	byte *buf = COM_LoadStackFile (mod->name, stackbuf, sizeof(stackbuf), &mod->path_id);
 	if (!buf) {
@@ -1123,13 +1122,13 @@ static void Mod_LoadEntities (lump_t *l)
 	COM_StripExtension(basemapname, basemapname, sizeof(basemapname));
 
 	snprintf(entfilename, sizeof(entfilename), "%s@%04x.ent", basemapname, crc);
-	printf("trying to load %s\n", entfilename);
+	//printf("trying to load %s\n", entfilename);
 	ents = (char *) COM_LoadHunkFile (entfilename, &path_id);
 
 	if (!ents)
 	{
 		snprintf(entfilename, sizeof(entfilename), "%s.ent", basemapname);
-		printf("trying to load %s\n", entfilename);
+		//printf("trying to load %s\n", entfilename);
 		ents = (char *) COM_LoadHunkFile (entfilename, &path_id);
 	}
 
@@ -2096,20 +2095,26 @@ visdone:
 }
 
 void *Mod_LoadAliasFrame(void *pin, int *pframeindex, int numv,
-                trivertx_t *pbboxmin, trivertx_t *pbboxmax,
-                aliashdr_t *pheader, char *name)
+                trivertx_t *pbboxmin, trivertx_t *pbboxmax, aliashdr_t *pheader,
+		char *name, maliasframedesc_t *frame, int recursed)
 {
         daliasframe_t *pdaliasframe = (daliasframe_t *) pin;
-        strcpy(name, pdaliasframe->name);
+        strlcpy(name, pdaliasframe->name, 16);
+	if (!recursed) {
+                frame->firstpose = posenum;
+                frame->numposes = 1;
+        }
         for (int i = 0; i < 3; i++) {
                 // these are byte values, so we don't have to worry about
                 // endianness
-                pbboxmin->v[i] = pdaliasframe->bboxmin.v[i];
-                pbboxmax->v[i] = pdaliasframe->bboxmax.v[i];
+		frame->bboxmin.v[i] = pdaliasframe->bboxmin.v[i];
+                frame->bboxmax.v[i] = pdaliasframe->bboxmax.v[i];
         }
         trivertx_t *pinframe = (trivertx_t *) (pdaliasframe + 1);
         trivertx_t *pframe = Hunk_AllocName(numv * sizeof(*pframe), loadname);
         *pframeindex = (byte *) pframe - (byte *) pheader;
+	poseverts[posenum] = pinframe;
+	posenum++;
         for (int j = 0; j < numv; j++) {
                 // these are all byte values, so no need to deal with endianness
                 pframe[j].lightnormalindex = pinframe[j].lightnormalindex;
@@ -2123,19 +2128,21 @@ void *Mod_LoadAliasFrame(void *pin, int *pframeindex, int numv,
 
 void *Mod_LoadAliasGroup(void *pin, int *pframeindex, int numv,
                 trivertx_t *pbboxmin, trivertx_t *pbboxmax,
-                aliashdr_t *pheader, char *name)
+                aliashdr_t *pheader, char *name, maliasframedesc_t *frame)
 {
         daliasgroup_t *pingroup = (daliasgroup_t *) pin;
         int numframes = LittleLong(pingroup->numframes);
+	frame->firstpose = posenum;
         maliasgroup_t *paliasgroup = Hunk_AllocName(sizeof(maliasgroup_t) + (numframes - 1) * sizeof(paliasgroup->frames[0]), loadname);
-        paliasgroup->numframes = numframes;
+        paliasgroup->numframes = frame->numposes = numframes;
         for (int i = 0; i < 3; i++) {
                 // these are byte values, so we don't have to worry about endianness
-                pbboxmin->v[i] = pingroup->bboxmin.v[i];
-                pbboxmax->v[i] = pingroup->bboxmax.v[i];
+		frame->bboxmin.v[i] = pingroup->bboxmin.v[i];
+                frame->bboxmax.v[i] = pingroup->bboxmax.v[i];
         }
         *pframeindex = (byte *) paliasgroup - (byte *) pheader;
         daliasinterval_t *pin_intervals = (daliasinterval_t *) (pingroup + 1);
+	frame->interval = LittleFloat(pin_intervals->interval);
         float *poutintervals = Hunk_AllocName(numframes*sizeof(float),loadname);
         paliasgroup->intervals = (byte *) poutintervals - (byte *) pheader;
         for (int i = 0; i < numframes; i++) {
@@ -2148,8 +2155,8 @@ void *Mod_LoadAliasGroup(void *pin, int *pframeindex, int numv,
         void *ptemp = (void *)pin_intervals;
         for (int i = 0; i < numframes; i++)
                 ptemp = Mod_LoadAliasFrame(ptemp, &paliasgroup->frames[i].frame,
-				numv, &paliasgroup->frames[i].bboxmin,
-                                &paliasgroup->frames[i].bboxmax, pheader, name);
+			numv, &paliasgroup->frames[i].bboxmin,
+			&paliasgroup->frames[i].bboxmax, pheader, name,frame,1);
         return ptemp;
 }
 
@@ -2334,20 +2341,19 @@ TODO
 static void Mod_CalcAliasBounds (aliashdr_t *a) // johnfitz -- calculate bounds
 { // of alias model for nonrotated, yawrotated, and fullrotated cases
 	for (int i = 0; i < 3; i++) { //clear out all data
-		loadmodel->mins[i] = loadmodel->ymins[i] = loadmodel->rmins[i] = FLT_MAX;
-		loadmodel->maxs[i] = loadmodel->ymaxs[i] = loadmodel->rmaxs[i] = -FLT_MAX;
+		loadmodel->mins[i] = loadmodel->ymins[i] = loadmodel->rmins[i] = 999999;
+		loadmodel->maxs[i] = loadmodel->ymaxs[i] = loadmodel->rmaxs[i] = -999999;
 	}
 	float radius = 0;
 	float yawradius = 0;
 	for (int i = 0; i < a->numposes; i++) //process verts
-		for (int j = 0; j < a->numverts; j++)
-		{
+		for (int j = 0; j < a->numverts; j++) {
 			vec3_t v;
-			for (int k = 0; k < 3;k++)
-				v[k] = poseverts[i][j].v[k] * pheader->scale[k] + pheader->scale_origin[k];
-			for (int k = 0; k < 3;k++) {
-				loadmodel->mins[k] = q_min(loadmodel->mins[k], v[k]);
-				loadmodel->maxs[k] = q_max(loadmodel->maxs[k], v[k]);
+			for (int k = 0; k < 3; k++)
+				v[k] = poseverts[i][j].v[k]*pheader->scale[k]+pheader->scale_origin[k];
+			for (int k = 0; k < 3; k++) {
+				loadmodel->mins[k] = fmin(loadmodel->mins[k], v[k]);
+				loadmodel->maxs[k] = fmax(loadmodel->maxs[k], v[k]);
 			}
 			float dist = v[0] * v[0] + v[1] * v[1];
 			if (yawradius < dist)
@@ -2356,16 +2362,6 @@ static void Mod_CalcAliasBounds (aliashdr_t *a) // johnfitz -- calculate bounds
 			if (radius < dist)
 				radius = dist;
 		}
-	//rbounds will be used when entity has nonzero pitch or roll
-	radius = sqrt(radius);
-	loadmodel->rmins[0] = loadmodel->rmins[1] = loadmodel->rmins[2] = -radius;
-	loadmodel->rmaxs[0] = loadmodel->rmaxs[1] = loadmodel->rmaxs[2] = radius;
-	//ybounds will be used when entity has nonzero yaw
-	yawradius = sqrt(yawradius);
-	loadmodel->ymins[0] = loadmodel->ymins[1] = -yawradius;
-	loadmodel->ymaxs[0] = loadmodel->ymaxs[1] = yawradius;
-	loadmodel->ymins[2] = loadmodel->mins[2];
-	loadmodel->ymaxs[2] = loadmodel->maxs[2];
 }
 
 static qboolean nameInList(const char *list, const char *name)
@@ -2408,17 +2404,12 @@ void Mod_SetExtraFlags (model_t *mod)
 void *Mod_LoadAliasSkin(void *pin, int *pskinindex, int skinsize,
 		aliashdr_t *pheader)
 {
-	byte *pskin = Hunk_AllocName(skinsize * r_pixbytes, loadname);
-	byte *pinskin = (byte *) pin;
-	*pskinindex = (byte *) pskin - (byte *) pheader;
-	if (r_pixbytes == 1)
-		Q_memcpy(pskin, pinskin, skinsize);
-	else
-		Sys_Error ("Mod_LoadAliasSkin: driver set invalid r_pixbytes: %d\n",
-			 r_pixbytes);
-	pinskin += skinsize;
-	return ((void *)pinskin);
-
+        byte *pskin = Hunk_AllocName (skinsize, loadname);
+        byte *pinskin = (byte *)pin;
+        *pskinindex = (byte *)pskin - (byte *)pheader;
+        memcpy (pskin, pinskin, skinsize);
+        pinskin += skinsize;
+        return ((void *)pinskin);
 }
 
 void *Mod_LoadAliasSkinGroup(void *pin, int *pskinindex, int skinsize,
@@ -2428,7 +2419,7 @@ void *Mod_LoadAliasSkinGroup(void *pin, int *pskinindex, int skinsize,
         int numskins = LittleLong(pinskingroup->numskins);
         maliasskingroup_t *paliasskingroup =
                 Hunk_AllocName(sizeof(maliasskingroup_t) + (numskins - 1) *
-                                sizeof(paliasskingroup->skindescs[0]),loadname);
+			sizeof(paliasskingroup->skindescs[0]), loadname);
         paliasskingroup->numskins = numskins;
         *pskinindex = (byte *) paliasskingroup - (byte *) pheader;
         daliasskininterval_t *pinskinintervals =
@@ -2446,150 +2437,238 @@ void *Mod_LoadAliasSkinGroup(void *pin, int *pskinindex, int skinsize,
         void *ptemp = (void *)pinskinintervals;
         for (int i = 0; i < numskins; i++) {
                 ptemp = Mod_LoadAliasSkin(ptemp,
-                                &paliasskingroup->skindescs[i].skin,
-                                skinsize, pheader);
+			&paliasskingroup->skindescs[i].skin, skinsize, pheader);
         }
         return ptemp;
 }
 
-void Mod_LoadAliasModel(model_t *mod, void *buffer)
+void Mod_LoadAliasModel (model_t *mod, void *buffer)
 {
-        int start = Hunk_LowMark();
-        mdl_t *pinmodel = (mdl_t *) buffer;
-        int version = LittleLong(pinmodel->version);
+        int                                     i, numskins;
+        mdl_t                           *pmodel, *pinmodel;
+        stvert_t                        *pstverts, *pinstverts;
+        mtriangle_t                     *ptri;
+        dtriangle_t                     *pintriangles;
+        int                                     version, numframes;
+        int                                     size;
+        daliasframetype_t       *pframetype;
+        daliasskintype_t        *pskintype;
+        maliasskindesc_t        *pskindesc;
+        int                                     skinsize;
+        int                                     start, end, total;
+
+        start = Hunk_LowMark ();
+
+        pinmodel = (mdl_t *)buffer;
+        mod_base = (byte *)buffer; //johnfitz
+
+        version = LittleLong (pinmodel->version);
         if (version != ALIAS_VERSION)
-                Sys_Error("%s has wrong version number (%i should be %i)",
-                                mod->name, version, ALIAS_VERSION);
-        // allocate space for a working header, plus all the data except the
-        // frames, skin and group info
-        aliashdr_t *pheader;
-        int size = sizeof(aliashdr_t) + (LittleLong(pinmodel->numframes) - 1) *
-                sizeof(pheader->frames[0]) + sizeof(mdl_t) +
-                LittleLong(pinmodel->numverts) * sizeof(stvert_t) +
-                LittleLong(pinmodel->numtris) * sizeof(mtriangle_t);
-        pheader = Hunk_AllocName(size, loadname);
-        mdl_t *pmodel = (mdl_t *) ((byte *) & pheader[1] +
-                        (LittleLong(pinmodel->numframes) - 1) *
-                        sizeof(pheader->frames[0]));
-        mod->flags = LittleLong(pinmodel->flags);
-        // endian-adjust and copy the data, starting with the alias model header
-        pmodel->boundingradius = LittleFloat(pinmodel->boundingradius);
-        pmodel->numskins = LittleLong(pinmodel->numskins);
-        pmodel->skinwidth = LittleLong(pinmodel->skinwidth);
-        pmodel->skinheight = LittleLong(pinmodel->skinheight);
-        if (pmodel->skinheight > MAX_LBM_HEIGHT)
-                Sys_Error("model %s has a skin taller than %d", mod->name,
-                                MAX_LBM_HEIGHT);
-        pmodel->numverts = LittleLong(pinmodel->numverts);
-        if (pmodel->numverts <= 0)
-                Sys_Error("model %s has no vertices", mod->name);
-        if (pmodel->numverts > MAXALIASVERTS)
-                Sys_Error("model %s has too many vertices", mod->name);
-        pmodel->numtris = LittleLong(pinmodel->numtris);
-        if (pmodel->numtris <= 0)
-                Sys_Error("model %s has no triangles", mod->name);
-        pmodel->numframes = LittleLong(pinmodel->numframes);
-        pmodel->size = LittleFloat(pinmodel->size) * ALIAS_BASE_SIZE_RATIO;
-        mod->synctype = LittleLong(pinmodel->synctype);
-        mod->numframes = pmodel->numframes;
-        for (int i = 0; i < 3; i++) {
-                pmodel->scale[i] = LittleFloat(pinmodel->scale[i]);
-                pmodel->scale_origin[i]=LittleFloat(pinmodel->scale_origin[i]);
-                pmodel->eyeposition[i] = LittleFloat(pinmodel->eyeposition[i]);
+                Host_Error ("Mod_LoadAliasModel: %s has wrong version number (%d should be %d)",
+                        mod->name, version, ALIAS_VERSION);
+
+//
+// allocate space for a working header, plus all the data except the frames,
+// skin and group info
+//
+        size =  sizeof (aliashdr_t) +
+                 (LittleLong (pinmodel->numframes) - 1) * sizeof (pheader->frames[0])
+                        + sizeof (mdl_t) + LittleLong (pinmodel->numverts)
+                                * sizeof (stvert_t)
+                        + LittleLong (pinmodel->numtris) * sizeof (mtriangle_t)
+                                ;
+        pheader = (aliashdr_t *)Hunk_AllocName (size, loadname);
+        pmodel = (mdl_t *) ((byte *)&pheader[1] + (LittleLong (pinmodel->numframes) - 1) * sizeof (pheader->frames[0]));
+
+	pheader->flags = mod->flags = LittleLong(pinmodel->flags);
+//
+// endian-adjust and copy the data, starting with the alias model header
+//
+        pmodel->boundingradius =
+                pheader->boundingradius = LittleFloat (pinmodel->boundingradius);
+        pmodel->numskins =
+                pheader->numskins = LittleLong (pinmodel->numskins);
+        pmodel->skinwidth =
+                pheader->skinwidth = LittleLong (pinmodel->skinwidth);
+        pmodel->skinheight =
+                pheader->skinheight = LittleLong (pinmodel->skinheight);
+
+        if (pheader->skinheight > MAX_LBM_HEIGHT)
+                Host_Error ("Mod_LoadAliasModel: model %s has a skin taller than %d", mod->name,
+                        MAX_LBM_HEIGHT);
+
+        pmodel->numverts =
+                pheader->numverts = LittleLong (pinmodel->numverts);
+
+        if (pheader->numverts <= 0)
+                Host_Error ("Mod_LoadAliasModel: model %s has no vertices", mod->name);
+
+        if (pheader->numverts > MAXALIASVERTS)
+                Host_Error ("Mod_LoadAliasModel: model %s has too many vertices (%d, max = %d)", mod->name, pheader->numverts, MAXALIASVERTS);     //WINQUAKE
+
+        if (pheader->numtris > MAXALIASTRIS) // Baker: This technically does not apply to WinQuake only GLQuake ... but for consistency ...
+                Host_Error ("Mod_LoadAliasModel: model %s has too many triangles (%d, max = %d)", mod->name, pheader->numtris, MAXALIASTRIS);  //Spike -- added this check, because I'm segfaulting out.
+
+	if (pmodel->numverts > MAXALIASVERTS)
+		Host_Error ("Mod_LoadAliasModel: model %s has too many vertexes (%d, max = %d)", mod->name, pmodel->numverts, MAXALIASVERTS);
+
+        pmodel->numtris =
+                pheader->numtris = LittleLong (pinmodel->numtris);
+
+        if (pheader->numtris <= 0)
+                Host_Error ("Mod_LoadAliasModel: model %s has no triangles", mod->name);
+
+        if (pheader->numtris > MAXALIASTRIS)
+        {       //Spike -- added this check, because I'm segfaulting out.
+                Host_Error ("model %s has too many triangles (%d > %d)", mod->name, pheader->numtris, MAXALIASTRIS);
         }
-        int numskins = pmodel->numskins;
-        int numframes = pmodel->numframes;
-        if (pmodel->skinwidth & 0x03)
-                Sys_Error("Mod_LoadAliasModel: skinwidth not multiple of 4");
-        pheader->model = (byte *) pmodel - (byte *) pheader;
-        // load the skins
-        int skinsize = pmodel->skinheight * pmodel->skinwidth;
-        if (numskins < 1)
-                Sys_Error("Mod_LoadAliasModel: Invalid # of skins: %d\n",
-                                numskins);
-        daliasskintype_t *pskintype = (daliasskintype_t *) & pinmodel[1];
-        maliasskindesc_t *pskindesc = Hunk_AllocName(numskins*sizeof(maliasskindesc_t),loadname);
-        pheader->skindesc = (byte *) pskindesc - (byte *) pheader;
-        for (int i = 0; i < numskins; i++) {
-                aliasskintype_t skintype;
-                skintype = LittleLong(pskintype->type);
-                pskindesc[i].type = skintype;
-                if (skintype == ALIAS_SKIN_SINGLE) {
-                        pskintype = (daliasskintype_t *)
-                                Mod_LoadAliasSkin(pskintype + 1,
-                                                &pskindesc[i].skin,
-                                                skinsize, pheader);
-                } else {
-                        pskintype = (daliasskintype_t *)
-                                Mod_LoadAliasSkinGroup(pskintype + 1,
-                                                &pskindesc[i].skin,
-                                                skinsize, pheader);
-                }
-        }
-        // set base s and t vertices
-        stvert_t *pstverts = (stvert_t *) & pmodel[1];
-        stvert_t *pinstverts = (stvert_t *) pskintype;
-        pheader->stverts = (byte *) pstverts - (byte *) pheader;
-        for (int i = 0; i < pmodel->numverts; i++) {
-                pstverts[i].onseam = LittleLong(pinstverts[i].onseam);
-                // put s and t in 16.16 format
-                pstverts[i].s = LittleLong(pinstverts[i].s) << 16;
-                pstverts[i].t = LittleLong(pinstverts[i].t) << 16;
-        }
-        // set up the triangles
-        mtriangle_t *ptri = (mtriangle_t *) & pstverts[pmodel->numverts];
-        dtriangle_t *pintriangles = (dtriangle_t *) & pinstverts[pmodel->numverts];
-        pheader->triangles = (byte *) ptri - (byte *) pheader;
-        for (int i = 0; i < pmodel->numtris; i++) {
-                int j;
-                ptri[i].facesfront = LittleLong(pintriangles[i].facesfront);
-                for (j = 0; j < 3; j++) {
-                        ptri[i].vertindex[j] =
-                                LittleLong(pintriangles[i].vertindex[j]);
-                }
-        }
-        // load the frames
+
+
+        pmodel->numframes =
+                pheader->numframes = LittleLong (pinmodel->numframes);
+
+        numframes = pheader->numframes;
         if (numframes < 1)
-                Sys_Error("Mod_LoadAliasModel: Invalid # of frames: %d\n",
-                                numframes);
-        daliasframetype_t *pframetype = (daliasframetype_t *) &
-                pintriangles[pmodel->numtris];
-        for (int i = 0; i < numframes; i++) {
-                aliasframetype_t frametype;
-                frametype = LittleLong(pframetype->type);
-                pheader->frames[i].type = frametype;
-                if (frametype == ALIAS_SINGLE) {
-                        pframetype = (daliasframetype_t *)
-                                Mod_LoadAliasFrame(pframetype + 1,
-                                                &pheader->frames[i].frame,
-                                                pmodel->numverts,
-                                                &pheader->frames[i].bboxmin,
-                                                &pheader->frames[i].bboxmax,
-                                                pheader,
-                                                pheader->frames[i].name);
-                } else {
-                        pframetype = (daliasframetype_t *)
-                                Mod_LoadAliasGroup(pframetype + 1,
-                                                &pheader->frames[i].frame,
-                                                pmodel->numverts,
-                                                &pheader->frames[i].bboxmin,
-                                                &pheader->frames[i].bboxmax,
-                                                pheader,
-                                                pheader->frames[i].name);
+                Host_Error ("Mod_LoadAliasModel: Invalid # of frames: %d", numframes);
+
+        pmodel->size =
+                pheader->size = LittleFloat (pinmodel->size) * ALIAS_BASE_SIZE_RATIO;
+        mod->synctype = (synctype_t)LittleLong (pinmodel->synctype);
+        mod->numframes = pheader->numframes;
+
+        for (i=0 ; i<3 ; i++)
+        {
+                pmodel->scale[i] =
+                        pheader->scale[i] = LittleFloat (pinmodel->scale[i]);
+                pmodel->scale_origin[i] =
+                        pheader->scale_origin[i] = LittleFloat (pinmodel->scale_origin[i]);
+                pmodel->eyeposition[i] =
+                        pheader->eyeposition[i] = LittleFloat (pinmodel->eyeposition[i]);
+        }
+
+        numskins = pmodel->numskins;
+
+        if (pmodel->skinwidth & 0x03)
+                Host_Error ("Mod_LoadAliasModel: skinwidth not multiple of 4");
+
+        pheader->model = (byte *)pmodel - (byte *)pheader;
+
+//
+// load the skins
+//
+        skinsize = pmodel->skinheight * pmodel->skinwidth;
+
+        if (numskins < 1)
+                Host_Error ("Mod_LoadAliasModel: Invalid # of skins: %d", numskins);
+
+        pskintype = (daliasskintype_t *)&pinmodel[1];
+        pskindesc = Hunk_AllocName (numskins * sizeof (maliasskindesc_t), loadname);
+
+        pheader->skindesc = (byte *)pskindesc - (byte *)pheader;
+
+        for (i=0 ; i<numskins ; i++)
+        {
+                aliasskintype_t skintype;
+
+                skintype = LittleLong (pskintype->type);
+                pskindesc[i].type = skintype;
+
+                if (skintype == ALIAS_SKIN_SINGLE)
+                {
+                        pskintype = (daliasskintype_t *) Mod_LoadAliasSkin (pskintype + 1,
+                                                &pskindesc[i].skin, skinsize, pheader);
+                }
+                else
+                {
+                        pskintype = (daliasskintype_t *) Mod_LoadAliasSkinGroup (pskintype + 1,
+                                                                                        &pskindesc[i].skin, skinsize, pheader);
                 }
         }
+
+//
+// load base s and t vertices
+//
+
+// set base s and t vertices
+        pstverts = (stvert_t *)&pmodel[1];
+        pinstverts = (stvert_t *)pskintype;
+
+        pheader->stverts = (byte *)pstverts - (byte *)pheader;
+
+        for (i=0 ; i<pheader->numverts ; i++)
+        {
+                pstverts[i].onseam = LittleLong (pinstverts[i].onseam);
+        // put s and t in 16.16 format
+                pstverts[i].s = LittleLong (pinstverts[i].s) << 16;
+                pstverts[i].t = LittleLong (pinstverts[i].t) << 16;
+        }
+
+//
+// load triangle lists
+//
+
+// set up the triangles
+        ptri = (mtriangle_t *)&pstverts[pmodel->numverts];
+        pintriangles = (dtriangle_t *)&pinstverts[pmodel->numverts];
+
+        pheader->triangles = (byte *)ptri - (byte *)pheader;
+
+        for (i=0 ; i<pheader->numtris ; i++)
+        {
+                int             j;
+                ptri[i].facesfront = LittleLong (pintriangles[i].facesfront);
+
+                for (j=0 ; j<3 ; j++)
+                {
+                        ptri[i].vertindex[j] =
+                                LittleLong (pintriangles[i].vertindex[j]);
+                }
+        }
+
+//
+// load the frames
+//
+        posenum = 0;
+        pframetype = (daliasframetype_t *)&pintriangles[pmodel->numtris];
+
+        for (i=0 ; i<numframes ; i++)
+        {
+                aliasframetype_t        frametype;
+                frametype = (aliasframetype_t)LittleLong (pframetype->type);
+                pheader->frames[i].type = frametype;
+
+                if (frametype == ALIAS_SINGLE)
+                        pframetype = (daliasframetype_t *) Mod_LoadAliasFrame (pframetype + 1, &pheader->frames[i].frame, pmodel->numverts, &pheader->frames[i].bboxmin, &pheader->frames[i].bboxmax, pheader, pheader->frames[i].name, &pheader->frames[i],0);
+                else
+                        pframetype = (daliasframetype_t *) Mod_LoadAliasGroup (pframetype + 1, &pheader->frames[i].frame, pmodel->numverts, &pheader->frames[i].bboxmin, &pheader->frames[i].bboxmax, pheader, pheader->frames[i].name, &pheader->frames[i]);
+        }
+
+        pheader->numposes = posenum; // Baker: Watch this and compare vs. Mark V
+
         mod->type = mod_alias;
-        // FIXME: do this right
+
+        Mod_SetExtraFlags (mod); //johnfitz
+
+        Mod_CalcAliasBounds (pheader); //johnfitz
+
+#if 0 // Baker: That skeleton map shows this flaw, doesn't it?
+// FIXME: do this right
         mod->mins[0] = mod->mins[1] = mod->mins[2] = -16;
         mod->maxs[0] = mod->maxs[1] = mod->maxs[2] = 16;
-        // move the complete, relocatable alias model to the cache
-        int end = Hunk_LowMark();
-        int total = end - start;
-        Cache_Alloc(&mod->cache, total, loadname);
+#endif
+
+//
+// move the complete, relocatable alias model to the cache
+//
+        end = Hunk_LowMark ();
+        total = end - start;
+
+        Cache_Alloc (&mod->cache, total, loadname);
         if (!mod->cache.data)
                 return;
-        memcpy(mod->cache.data, pheader, total);
-        Hunk_FreeToLowMark(start);
+        memcpy (mod->cache.data, pheader, total);
+
+        Hunk_FreeToLowMark (start);
 }
 
 void *Mod_LoadSpriteFrame(void *pin, mspriteframe_t **ppframe)

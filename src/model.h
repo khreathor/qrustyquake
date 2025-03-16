@@ -402,9 +402,9 @@ typedef struct {
 	maliasframedesc_t	frames[1];	// variable sized
 } aliashdr_t;
 
-#define	MAXALIASVERTS	2000 //johnfitz -- was 1024
-#define	MAXALIASFRAMES	1024 //spike -- was 256
-#define	MAXALIASTRIS	4096 //ericw -- was 2048
+#define	MAXALIASVERTS 3984 //Baker: 1024 is GLQuake original limit. 2000 is WinQuake original limit. Baker 2000->3984
+#define	MAXALIASFRAMES 1024 //spike -- was 256
+#define	MAXALIASTRIS 4096 //ericw -- was 2048
 extern	aliashdr_t	*pheader;
 extern	stvert_t	stverts[MAXALIASVERTS];
 extern	mtriangle_t	triangles[MAXALIASTRIS];
