@@ -47,8 +47,6 @@ int iposx[12]; // classic items
 int iposy;
 cvar_t scr_sidescore = { "scr_sidescore", "1", true, false, 0, NULL };
 
-void M_DrawPic(int x, int y, qpic_t * pic);
-
 inline static int Sbar_ColorForMap(int m)
 { return m < 128 ? m + 8 : m + 8; }
 inline static void Sbar_ShowScores() // Tab key down
