@@ -273,7 +273,7 @@ void CL_Disconnect (void);
 void CL_Disconnect_f (void);
 void CL_NextDemo (void);
 
-#define			MAX_VISEDICTS	1024
+#define MAX_VISEDICTS 8192 // CyanBun96: this should NOT be this big. fix the underlying issue.
 extern	int				cl_numvisedicts;
 extern	entity_t		*cl_visedicts[MAX_VISEDICTS];
 
