@@ -624,7 +624,6 @@ qboolean SV_VisibleToClient (edict_t *client, edict_t *test, model_t *worldmodel
 /*
 =============
 SV_WriteEntitiesToClient
-
 =============
 */
 void SV_WriteEntitiesToClient (edict_t	*clent, sizebuf_t *msg)
@@ -666,9 +665,8 @@ void SV_WriteEntitiesToClient (edict_t	*clent, sizebuf_t *msg)
 			// for us to say whether it's in the PVS, so don't try to vis cull it.
 			// this commonly happens with rotators, because they often have huge bboxes
 			// spanning the entire map, or really tall lifts, etc.
-			// CyanBun96: doesn't work in WinQuake. FIXME
-			/*if (i == ent->num_leafs && ent->num_leafs < MAX_ENT_LEAFS)
-				continue;		// not visible*/
+			if (i == ent->num_leafs && ent->num_leafs < MAX_ENT_LEAFS)
+				continue; // not visible
 		}
 
 		// johnfitz -- max size for protocol 15 is 18 bytes, not 16 as originally
