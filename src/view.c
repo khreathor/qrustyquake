@@ -14,8 +14,6 @@ vec3_t forward, right, up;
 extern int in_forward, in_forward2, in_back;
 extern vrect_t scr_vrect;
 
-cvar_t lcd_x = { "lcd_x", "0", false, false, 0, NULL };
-cvar_t lcd_yaw = { "lcd_yaw", "0", false, false, 0, NULL };
 cvar_t scr_ofsx = { "scr_ofsx", "0", false, false, 0, NULL };
 cvar_t scr_ofsy = { "scr_ofsy", "0", false, false, 0, NULL };
 cvar_t scr_ofsz = { "scr_ofsz", "0", false, false, 0, NULL };
@@ -567,27 +565,7 @@ void V_RenderView() // The player's clipping box goes from (-16 -16 -24) to (16
 			V_CalcRefdef();
 	}
 	R_PushDlights();
-	if (lcd_x.value) {
-		int i; // render two interleaved views
-		vid.rowbytes <<= 1;
-		vid.aspect *= 0.5;
-		r_refdef.viewangles[YAW] -= lcd_yaw.value;
-		for (i = 0; i < 3; i++)
-			r_refdef.vieworg[i] -= right[i] * lcd_x.value;
-		R_RenderView();
-		vid.buffer += vid.rowbytes >> 1;
-		R_PushDlights();
-		r_refdef.viewangles[YAW] += lcd_yaw.value * 2;
-		for (i = 0; i < 3; i++)
-			r_refdef.vieworg[i] += 2 * right[i] * lcd_x.value;
-		R_RenderView();
-		vid.buffer -= vid.rowbytes >> 1;
-		r_refdef.vrect.height <<= 1;
-		vid.rowbytes >>= 1;
-		vid.aspect *= 2;
-	} else {
-		R_RenderView();
-	}
+	R_RenderView();
 	if (crosshair.value)
 		Draw_CharacterScaled(scr_vrect.x + scr_vrect.width / 2 -
 			(uiscale << 2) + cl_crossx.value, scr_vrect.y +
@@ -599,8 +577,6 @@ void V_Init()
 	Cmd_AddCommand("v_cshift", V_cshift_f);
 	Cmd_AddCommand("bf", V_BonusFlash_f);
 	Cmd_AddCommand("centerview", V_StartPitchDrift);
-	Cvar_RegisterVariable(&lcd_x);
-	Cvar_RegisterVariable(&lcd_yaw);
 	Cvar_RegisterVariable(&v_centermove);
 	Cvar_RegisterVariable(&v_centerspeed);
 	Cvar_RegisterVariable(&v_iyaw_cycle);

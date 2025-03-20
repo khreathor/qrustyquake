@@ -465,7 +465,6 @@ int SCR_ModalMessage(char *text) // Displays a text string in the center
 void SCR_UpdateScreen() // This is called every frame,
 { // and can also be called explicitly to flush text to the screen.
 	static float oldscr_viewsize;
-	static float oldlcd_x;
 	if (scr_skipupdate || block_drawing)
 		return;
 	if (scr_disabled_for_loading) {
@@ -483,10 +482,6 @@ void SCR_UpdateScreen() // This is called every frame,
 	}
 	if (oldfov != scr_fov.value) { // check for vid changes
 		oldfov = scr_fov.value;
-		vid.recalc_refdef = true;
-	}
-	if (oldlcd_x != lcd_x.value) {
-		oldlcd_x = lcd_x.value;
 		vid.recalc_refdef = true;
 	}
 	if (oldscreensize != scr_viewsize.value) {
