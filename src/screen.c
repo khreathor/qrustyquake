@@ -30,6 +30,7 @@ float scr_con_current;
 float scr_conlines; // lines of console to display
 float oldscreensize, oldfov;
 hudstyle_t hudstyle;
+extern int fog_initialized;
 
 cvar_t scr_viewsize = { "viewsize", "100", true, false, 0, NULL };
 cvar_t scr_fov = { "fov", "90", false, false, 0, NULL };
@@ -116,6 +117,7 @@ float CalcFov(float fov_x, float width, float height)
 
 static void SCR_CalcRefdef() // Must be called whenever vid changes
 { // Internal use only
+	fog_initialized = 0;
 	scr_fullupdate = 0; // force a background redraw
 	vid.recalc_refdef = 0;
 	Sbar_CalcPos();
@@ -492,10 +494,8 @@ void SCR_UpdateScreen() // This is called every frame,
 		SCR_CalcRefdef();
 	}
 	// do 3D refresh drawing, and then update the screen
-	if (scr_fullupdate++ < vid.numpages) { // clear the entire screen
-		Draw_TileClear(0, 0, vid.width, vid.height);
-		Sbar_Changed();
-	}
+	Draw_TileClear(0, 0, vid.width, vid.height); // clear the entire screen
+	Sbar_Changed();
 	SCR_SetUpToDrawConsole();
 	SCR_EraseCenterString();
 	V_RenderView(); // stay mapped in for linear writes all the time

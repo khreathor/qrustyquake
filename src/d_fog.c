@@ -4,6 +4,7 @@
 #define FOG_LUT_LEVELS 32
 
 float *randarr; // used for noise bias
+int randarr_size = 0;
 int fog_initialized = 0;
 static unsigned int lfsr = 0x1337; // non-zero seed
 float fog_density;
@@ -108,6 +109,8 @@ void Fog_FogCommand_f () // yanked from Quakespasm, mostly
 	fog_green = g;
 	fog_blue = b;
 	fog_pal_index = rgbtoi(r*255.0f, g*255.0f, b*255.0f);
+	vid.recalc_refdef = 1;
+	fog_initialized = 0;
 }
 
 void Fog_ParseWorldspawn () // from Quakespasm
@@ -197,9 +200,12 @@ void build_color_mix_lut()
 void R_InitFog()
 {
 	fog_pal_index = rgbtoi(fog_red*255.0f, fog_green*255.0f, fog_blue*255.0f);
-	if (!randarr) {
-		randarr = malloc(vid.width * vid.height * sizeof(float)); // TODO not optimal, use the zone
-		for (int i = 0; i < vid.width * vid.height; ++i) // fog bias array
+	if (randarr_size < scr_vrect.height * scr_vrect.width) {
+		randarr_size = scr_vrect.height * scr_vrect.width;
+		if (randarr)
+			free(randarr);
+		randarr = malloc(scr_vrect.width * scr_vrect.height * sizeof(float)); // TODO not optimal, use the zone
+		for (int i = 0; i < scr_vrect.width * scr_vrect.height; ++i) // fog bias array
 			randarr[i] = (lfsr_random() & 0xFFFF) / 65535.0f; // LFSR random number normalized to [0,1]
 	}
 	if (!fog_lut_built)
@@ -221,10 +227,12 @@ void R_DrawFog() {
 		R_InitFog();
 	sb_updates = 0; // draw sbar over fog
 	int style = r_fogstyle.value;
-	for (int y = 0; y < vid.height; ++y) {
-	for (int x = 0; x < vid.width; ++x) {
+	int j = 0;
+        for (int y = scr_vrect.y; y < scr_vrect.y + scr_vrect.height; ++y) {
+        for (int x = scr_vrect.x; x < scr_vrect.x + scr_vrect.width; ++x) {
 		int i = x + y * vid.width;
-		int bias = randarr[vid.width*vid.height - i] * 10;
+		int bias = randarr[scr_vrect.width*scr_vrect.height - j] * 10;
+		++j;
 		float fog_factor = compute_fog(d_pzbuffer[i] + bias);
 		switch (style) {
 			case 0: // noisy

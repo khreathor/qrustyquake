@@ -1447,7 +1447,7 @@ static void Mod_LoadFaces (lump_t *l, qboolean bsp2)
 		}
 		else if (out->texinfo->texture->name[0] == '{') // ericw -- fence textures
 		{
-			out->flags |= SURF_DRAWFENCE;
+			out->flags |= SURF_DRAWCUTOUT;
 		}
 		else if (out->texinfo->flags & TEX_MISSING) // texture is missing from bsp
 		{

@@ -326,7 +326,6 @@ void R_ViewChanged(vrect_t *pvrect, int lineadj, float aspect)
 	r_resfudge = r_aliastransadj.value * res_scale;
 	r_fov_greater_than_90 = !(scr_fov.value <= 90.0);
 	D_ViewChanged();
-	fog_initialized = 0;
 }
 
 void R_MarkLeaves()
