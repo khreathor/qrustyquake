@@ -2099,7 +2099,7 @@ void *Mod_LoadAliasFrame(void *pin, int *pframeindex, int numv,
 		char *name, maliasframedesc_t *frame, int recursed)
 {
         daliasframe_t *pdaliasframe = (daliasframe_t *) pin;
-        strlcpy(name, pdaliasframe->name, 16);
+        q_strlcpy(name, pdaliasframe->name, 16);
 	if (!recursed) {
                 frame->firstpose = posenum;
                 frame->numposes = 1;

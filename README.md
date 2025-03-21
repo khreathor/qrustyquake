@@ -62,7 +62,7 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
    - Underdark Overbright and Honey have been tested and are 100% playable (with minor visual bugs)
 
-   - BSP2 and other modern features coming soon, ish.
+   - BSP2 and other modern features are being actively worked on, expect bugs and crashes on bigger maps
 
 - Software imitations of modern rendering features
 
@@ -100,6 +100,8 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
 - Other modern features (optional)
 
+   - Modern skyboxes
+
    - More modern console
 
    - Client-server separation (mostly for 72< framerates)
@@ -126,7 +128,7 @@ x86_64 unless specified otherwise.
 
 VM is VirtualBox unless specified otherwise.
 
-- Arch Linux [HW] v0.4.2
+- Arch Linux [HW] v0.4.3
 
    - The main platform that this port is developed on. The most likely one to work
 
@@ -152,7 +154,7 @@ VM is VirtualBox unless specified otherwise.
 
    - Ran through X11 with touch controls. *unpleasant*
 
-- Windows [VM, HW] v0.4.2
+- Windows [VM, HW] v0.4.3
 
    - Tested with w10 on hardware and w11 on a VM
 
