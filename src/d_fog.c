@@ -214,7 +214,7 @@ void R_InitFog()
 }
 
 float compute_fog(int z) {
-	const int fog_scale = 32;
+	const int fog_scale = 18;
 	z = fog_scale > z ? fog_scale : z; // prevent distant objects from getting no fog
 	z /= fog_scale;
 	return expf(-(1.0f-fog_density) * (1.0f-fog_density) * (float)(z * z));
