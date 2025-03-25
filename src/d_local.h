@@ -31,7 +31,6 @@ typedef struct sspan_s
 	int u, v, count;
 } sspan_t;
 
-extern cvar_t d_subdiv16;
 extern float scale_for_mip;
 extern qboolean d_roverwrapped;
 extern surfcache_t *sc_rover;
@@ -61,12 +60,10 @@ extern cvar_t r_twopass;
 extern cvar_t fog;
 
 void D_DrawSpans8(espan_t *pspans);
-void D_DrawSpans16(espan_t *pspans);
 void D_DrawZSpans(espan_t *pspans);
 void Turbulent8(espan_t *pspan, float opacity);
 void D_SpriteDrawSpans(sspan_t *pspan);
 void D_DrawSkyScans8(espan_t *pspan);
-void D_DrawSkyScans16(espan_t *pspan);
 void R_ShowSubDiv();
 extern void(*prealspandrawer)();
 surfcache_t *D_CacheSurface(msurface_t *surface, int miplevel);

@@ -7,7 +7,6 @@
 
 #define NUM_MIPS	4
 
-cvar_t d_subdiv16 = { "d_subdiv16", "1", false, false, 0, NULL };
 cvar_t d_mipcap = { "d_mipcap", "0", false, false, 0, NULL };
 cvar_t d_mipscale = { "d_mipscale", "1", false, false, 0, NULL };
 surfcache_t *d_initial_rover;
@@ -20,7 +19,6 @@ void (*d_drawspans)(espan_t * pspan);
 
 void D_Init()
 {
-	Cvar_RegisterVariable(&d_subdiv16);
 	Cvar_RegisterVariable(&d_mipcap);
 	Cvar_RegisterVariable(&d_mipscale);
 	r_recursiveaffinetriangles = true;
