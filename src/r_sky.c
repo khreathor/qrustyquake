@@ -1,4 +1,8 @@
-// Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
+// Copyright (C) 1996-1997 Id Software, Inc.
+// Copyright (C) 2002-2009 John Fitzgibbons and others
+// Copyright (C) 2007-2008 Kristian Duske
+// Copyright (C) 2010-2014 QuakeSpasm developers
+// GPLv3 See LICENSE for details.
 
 #include "quakedef.h"
 #include "r_local.h"
@@ -16,6 +20,76 @@ byte newsky[128 * 256];
 // newsky and topsky both pack in here, 128 bytes of newsky on the left of each
 // scan, 128 bytes of topsky on the right, because the low-level drawers need
 // 256-byte scan widths
+static char skybox_name[1024]; //name of current skybox, or "" if no skybox
+static const char *suf[6] = {"rt", "bk", "lf", "ft", "up", "dn"};
+static texture_t *skybox_textures[6];
+
+byte *Image_LoadImage (const char *name, int *width, int *height);
+
+void Sky_LoadSkyBox (const char *name)
+{
+	int i, mark, width, height;
+	char filename[MAX_OSPATH];
+	byte *data;
+	qboolean nonefound = true;
+	if (strcmp(skybox_name, name) == 0)
+		return; // no change
+	for (i=0; i<6; i++) { // purge old textures
+		//if (skybox_textures[i] && skybox_textures[i] != notexture)
+		//	TexMgr_FreeTexture (skybox_textures[i]);
+		skybox_textures[i] = NULL;
+	}
+	if (name[0] == 0) { // turn off skybox if sky is set to ""
+		skybox_name[0] = 0;
+		return;
+	}
+	for (i=0; i<6; i++) { // load textures
+		mark = Hunk_LowMark ();
+		q_snprintf (filename, sizeof(filename), "gfx/env/%s%s", name, suf[i]);
+		data = Image_LoadImage (filename, &width, &height);
+		if (data) {
+		//	skybox_textures[i] = TexMgr_LoadImage (cl.worldmodel, filename, width, height, SRC_RGBA, data, filename, 0, TEXPREF_NONE);
+			nonefound = false;
+		}
+		else {
+			Con_Printf ("Couldn't load %s\n", filename);
+			//skybox_textures[i] = notexture;
+		}
+		Hunk_FreeToLowMark (mark);
+	}
+	if (nonefound) {// go back to scrolling sky if skybox is totally missing
+		for (i=0; i<6; i++) {
+			//if (skybox_textures[i] && skybox_textures[i] != notexture)
+			//	TexMgr_FreeTexture (skybox_textures[i]);
+			skybox_textures[i] = NULL;
+		}
+		skybox_name[0] = 0;
+		return;
+	}
+	q_strlcpy(skybox_name, name, sizeof(skybox_name));
+}
+
+void Sky_SkyCommand_f()
+{
+	switch (Cmd_Argc()) {
+		case 1:
+			Con_Printf("\"sky\" is \"%s\"\n", skybox_name);
+			break;
+		case 2:
+			Sky_LoadSkyBox(Cmd_Argv(1));
+			break;
+		default:
+			Con_Printf("usage: sky <skyname>\n");
+	}
+}
+
+void Sky_Init()
+{
+	Cmd_AddCommand ("sky",Sky_SkyCommand_f);
+        skybox_name[0] = 0;
+        for (int i = 0; i < 6; i++)
+                skybox_textures[i] = NULL;
+}
 
 void R_InitSky(texture_t *mt)
 { // A sky texture is 256*128, with the right side being a masked overlay

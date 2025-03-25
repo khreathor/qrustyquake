@@ -111,6 +111,7 @@ extern void Fog_ParseWorldspawn();
 void CreatePassages();
 void SetVisibilityByPassages();
 void R_MarkLeaves();
+void Sky_Init();
 
 void R_InitTextures()
 { // create a simple checkerboard texture for the default
@@ -180,6 +181,7 @@ void R_Init()
 	r_refdef.yOrigin = YCENTERING;
 	R_InitParticles();
 	D_Init();
+	Sky_Init();
 }
 
 void R_NewMap()

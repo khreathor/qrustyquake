@@ -54,6 +54,8 @@ char *svc_strings[] = {
 
 static const char *suf[6] = {"rt", "bk", "lf", "ft", "up", "dn"};
 
+void Sky_LoadSkyBox (const char *name);
+
 void V_RestoreAngles (void)
 {
         entity_t *ent = &cl_entities[cl.viewentity];
@@ -85,65 +87,6 @@ void R_TranslatePlayerSkin (int playernum)
                 if (playertextures[playernum])
                         TexMgr_ReloadImage (playertextures[playernum], top, bottom);
         }*/
-}
-
-void Sky_LoadSkyBox (const char *name)
-{/* TODO
-        int             i, mark, width, height;
-        char    filename[MAX_OSPATH];
-        byte    *data;
-        qboolean nonefound = true;
-
-        if (strcmp(skybox_name, name) == 0)
-                return; //no change
-
-        //purge old textures
-        for (i=0; i<6; i++)
-        {
-                if (skybox_textures[i] && skybox_textures[i] != notexture)
-                        TexMgr_FreeTexture (skybox_textures[i]);
-                skybox_textures[i] = NULL;
-        }
-
-        //turn off skybox if sky is set to ""
-        if (name[0] == 0)
-        {
-                skybox_name[0] = 0;
-                return;
-        }
-
-        //load textures
-        for (i=0; i<6; i++)
-        {
-                mark = Hunk_LowMark ();
-                q_snprintf (filename, sizeof(filename), "gfx/env/%s%s", name, suf[i]);
-                data = Image_LoadImage (filename, &width, &height);
-                if (data)
-                {
-                        skybox_textures[i] = TexMgr_LoadImage (cl.worldmodel, filename, width, height, SRC_RGBA, data, filename, 0, TEXPREF_NONE);
-                        nonefound = false;
-                }
-                else
-                {
-                        Con_Printf ("Couldn't load %s\n", filename);
-                        skybox_textures[i] = notexture;
-                }
-                Hunk_FreeToLowMark (mark);
-        }
-
-        if (nonefound) // go back to scrolling sky if skybox is totally missing
-        {
-                for (i=0; i<6; i++)
-                {
-                        if (skybox_textures[i] && skybox_textures[i] != notexture)
-                                TexMgr_FreeTexture (skybox_textures[i]);
-                        skybox_textures[i] = NULL;
-                }
-                skybox_name[0] = 0;
-                return;
-        }
-
-        q_strlcpy(skybox_name, name, sizeof(skybox_name));*/
 }
 
 void Fog_ParseServerMessage (void)
