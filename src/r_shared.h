@@ -92,6 +92,7 @@ extern float xscaleinv, yscaleinv;
 extern float xscaleshrink, yscaleshrink;
 extern int d_lightstylevalue[256]; // 8.8 frac of base light value
 extern int r_skymade;
+extern char skybox_name[1024];
 extern int ubasestep, errorterm, erroradjustup, erroradjustdown;
 // surfaces are generated in back to front order by the bsp, so if a surf
 // pointer is greater than another one, it should be drawn in front

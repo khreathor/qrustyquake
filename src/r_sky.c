@@ -8,6 +8,12 @@
 #include "r_local.h"
 #include "d_local.h"
 
+typedef struct cubemap_s
+{
+	int width, height;
+	char *data;
+} cubemap_t;
+
 int iskyspeed = 8;
 int iskyspeed2 = 2;
 float skyspeed, skyspeed2;
@@ -20,9 +26,9 @@ byte newsky[128 * 256];
 // newsky and topsky both pack in here, 128 bytes of newsky on the left of each
 // scan, 128 bytes of topsky on the right, because the low-level drawers need
 // 256-byte scan widths
-static char skybox_name[1024]; //name of current skybox, or "" if no skybox
+char skybox_name[1024]; // name of current skybox, or "" if no skybox
 static const char *suf[6] = {"rt", "bk", "lf", "ft", "up", "dn"};
-static texture_t *skybox_textures[6];
+cubemap_t skybox_textures[6];
 
 byte *Image_LoadImage (const char *name, int *width, int *height);
 
@@ -32,12 +38,12 @@ void Sky_LoadSkyBox (const char *name)
 	char filename[MAX_OSPATH];
 	byte *data;
 	qboolean nonefound = true;
-	if (strcmp(skybox_name, name) == 0)
+	if (strcmp(skybox_name, name) == 0) //TODO
 		return; // no change
 	for (i=0; i<6; i++) { // purge old textures
-		//if (skybox_textures[i] && skybox_textures[i] != notexture)
-		//	TexMgr_FreeTexture (skybox_textures[i]);
-		skybox_textures[i] = NULL;
+		//TODOif (skybox_textures[i])
+			//TODOTexMgr_FreeTexture (skybox_textures[i]);
+		skybox_textures[i].data = NULL;
 	}
 	if (name[0] == 0) { // turn off skybox if sky is set to ""
 		skybox_name[0] = 0;
@@ -46,27 +52,29 @@ void Sky_LoadSkyBox (const char *name)
 	for (i=0; i<6; i++) { // load textures
 		mark = Hunk_LowMark ();
 		q_snprintf (filename, sizeof(filename), "gfx/env/%s%s", name, suf[i]);
-		data = Image_LoadImage (filename, &width, &height);
+		data = Image_LoadImage (filename, &skybox_textures[i].width, &skybox_textures[i].height);
 		if (data) {
-		//	skybox_textures[i] = TexMgr_LoadImage (cl.worldmodel, filename, width, height, SRC_RGBA, data, filename, 0, TEXPREF_NONE);
+			skybox_textures[i].data = data;
 			nonefound = false;
+			__asm__("int3");
 		}
 		else {
 			Con_Printf ("Couldn't load %s\n", filename);
-			//skybox_textures[i] = notexture;
+			//TODOskybox_textures[i] = notexture;
 		}
 		Hunk_FreeToLowMark (mark);
 	}
 	if (nonefound) {// go back to scrolling sky if skybox is totally missing
 		for (i=0; i<6; i++) {
-			//if (skybox_textures[i] && skybox_textures[i] != notexture)
-			//	TexMgr_FreeTexture (skybox_textures[i]);
-			skybox_textures[i] = NULL;
+			//TODOif (skybox_textures[i] && skybox_textures[i] != notexture)
+			//TODO	TexMgr_FreeTexture (skybox_textures[i]);
+			skybox_textures[i].data = NULL;
 		}
 		skybox_name[0] = 0;
 		return;
 	}
 	q_strlcpy(skybox_name, name, sizeof(skybox_name));
+	r_skysource = skybox_textures[0].data; //placeholder
 }
 
 void Sky_SkyCommand_f()
@@ -88,7 +96,7 @@ void Sky_Init()
 	Cmd_AddCommand ("sky",Sky_SkyCommand_f);
         skybox_name[0] = 0;
         for (int i = 0; i < 6; i++)
-                skybox_textures[i] = NULL;
+                skybox_textures[i].data = NULL;
 }
 
 void R_InitSky(texture_t *mt)

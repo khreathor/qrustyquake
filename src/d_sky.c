@@ -1,7 +1,5 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
 
-// d_sky.c
-
 #include "quakedef.h"
 #include "r_local.h"
 #include "d_local.h"
@@ -61,9 +59,14 @@ void D_DrawSkyScans8(espan_t *pspan)
 				}
 			}
 			do {
-				*pdest++ =
-				    r_skysource[((t & R_SKY_TMASK) >> 8) +
-						((s & R_SKY_SMASK) >> 16)];
+				if(skybox_name[0]) { //placeholder
+					*pdest++ = r_skysource[(s*512+t)%512];
+				}
+				else {
+					*pdest++ =
+					    r_skysource[((t & R_SKY_TMASK) >> 8) +
+							((s & R_SKY_SMASK) >> 16)];
+				}
 				s += sstep;
 				t += tstep;
 			} while (--spancount > 0);
