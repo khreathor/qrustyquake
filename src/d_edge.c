@@ -122,10 +122,13 @@ void D_DrawSurfaces()
 			d_zistepu = s->d_zistepu;
 			d_zistepv = s->d_zistepv;
 			d_ziorigin = s->d_ziorigin;
-			if (s->flags & SURF_DRAWSKY) {
+			if (s->flags & SURF_DRAWSKY && !skybox_name[0]) {
 				if (!r_skymade)
 					R_MakeSky();
 				D_DrawSkyScans8(s->spans);
+				D_DrawZSpans(s->spans);
+			} else if (s->flags & SURF_DRAWSKY && skybox_name[0]) {
+				D_DrawSkyCubemap(s->spans);
 				D_DrawZSpans(s->spans);
 			} else if (s->flags & SURF_DRAWBACKGROUND) {
 				// set up a gradient for the background surface that places it

@@ -11,7 +11,7 @@
 typedef struct cubemap_s
 {
 	int width, height;
-	char *data;
+	unsigned char *data;
 } cubemap_t;
 
 int iskyspeed = 8;
@@ -31,6 +31,7 @@ static const char *suf[6] = {"rt", "bk", "lf", "ft", "up", "dn"};
 cubemap_t skybox_textures[6];
 
 byte *Image_LoadImage (const char *name, int *width, int *height);
+unsigned char rgbtoi(unsigned char r, unsigned char g, unsigned char b);
 
 void Sky_LoadSkyBox (const char *name)
 {
@@ -54,9 +55,14 @@ void Sky_LoadSkyBox (const char *name)
 		q_snprintf (filename, sizeof(filename), "gfx/env/%s%s", name, suf[i]);
 		data = Image_LoadImage (filename, &skybox_textures[i].width, &skybox_textures[i].height);
 		if (data) {
-			skybox_textures[i].data = data;
 			nonefound = false;
-			__asm__("int3");
+			int ww = skybox_textures[i].width;
+			int hh = skybox_textures[i].height;
+			skybox_textures[i].data = malloc(ww*hh); //TODO proper memory management
+			unsigned char *pdest = skybox_textures[i].data;
+			unsigned char *psrc = data;
+			for (int j = 0; j < ww*hh; j++, psrc+=4)
+				pdest[j] = rgbtoi(psrc[0], psrc[1], psrc[2]);
 		}
 		else {
 			Con_Printf ("Couldn't load %s\n", filename);

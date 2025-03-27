@@ -63,6 +63,7 @@ void D_DrawSpans8(espan_t *pspans);
 void D_DrawZSpans(espan_t *pspans);
 void Turbulent8(espan_t *pspan, float opacity);
 void D_SpriteDrawSpans(sspan_t *pspan);
+void D_DrawSkyCubemap(espan_t *pspan);
 void D_DrawSkyScans8(espan_t *pspan);
 void R_ShowSubDiv();
 extern void(*prealspandrawer)();
