@@ -8,11 +8,10 @@
 #include "r_local.h"
 #include "d_local.h"
 
-typedef struct cubemap_s
-{
-	int width, height;
-	unsigned char *data;
-} cubemap_t;
+#define SKYBOX_SIDES_COUNT_6 6
+
+byte *Image_LoadImage (const char *name, int *width, int *height);
+unsigned char rgbtoi(unsigned char r, unsigned char g, unsigned char b);
 
 int iskyspeed = 8;
 int iskyspeed2 = 2;
@@ -27,144 +26,303 @@ byte newsky[128 * 256];
 // scan, 128 bytes of topsky on the right, because the low-level drawers need
 // 256-byte scan widths
 char skybox_name[1024]; // name of current skybox, or "" if no skybox
-static const char *suf[6] = {"rt", "bk", "lf", "ft", "up", "dn"};
-cubemap_t skybox_textures[6];
 
-msurface_t *r_skyfaces;
-mplane_t r_skyplanes[6];
-mtexinfo_t r_skytexinfo[6];
-mvertex_t *r_skyverts;
-medge_t *r_skyedges;
-int *r_skysurfedges;
+// Manoel Kasimier - skyboxes - begin
+// Code taken from the ToChriS engine - Author: Vic
+int                             r_skyframe;
+msurface_t              *r_skyfaces;
+mplane_t                r_skyplanes[SKYBOX_SIDES_COUNT_6]; // Manoel Kasimier - edited
+mtexinfo_t              r_skytexinfo[SKYBOX_SIDES_COUNT_6];
+byte         r_skypixels[SKYBOX_SIDES_COUNT_6][SKYBOX_MAX_SIZE*SKYBOX_MAX_SIZE]; // Manoel Kasimier - edited
+mvertex_t               *r_skyverts;
+medge_t                 *r_skyedges;
+int                             *r_skysurfedges;
 
+// I just copied this data from a box map...
 int skybox_planes[12] = {2,-128, 0,-128, 2,128, 1,128, 0,128, 1,-128};
-int box_edges[24]={1,2, 2,3, 3,4, 4,1, 1,5, 5,6, 6,2, 7,8, 8,6, 5,7, 8,3, 7,4};
-int box_faces[6] = {0,0,2,2,2,0};
-int box_surfedges[24] = { 1,2,3,4, -1,5,6,7, 8,9,-6,10,
-			-2,-7,-9,11, 12,-3,-11,-8, -12,-10,-5,-4};
-vec3_t box_vecs[6][2] = { { {0,-1,0}, {-1,0,0} }, { {0,1,0}, {0,0,-1} },
-			{ {0,-1,0}, {1,0,0} }, { {1,0,0}, {0,0,-1} },
-			{ {0,-1,0}, {0,0,-1} }, { {-1,0,0}, {0,0,-1} } };
-float box_verts[8][3] = { {-1,-1,-1}, {-1,1,-1}, {1,1,-1}, {1,-1,-1},
-			 {-1,-1,1}, {-1,1,1}, {1,-1,1}, {1,1,1} };
 
-byte *Image_LoadImage (const char *name, int *width, int *height);
-unsigned char rgbtoi(unsigned char r, unsigned char g, unsigned char b);
+int box_surfedges[24] = { 1,2,3,4,  -1,5,6,7,  8,9,-6,10,  -2,-7,-9,11,
+  12,-3,-11,-8,  -12,-10,-5,-4};
+int box_edges[24] = { 1,2, 2,3, 3,4, 4,1, 1,5, 5,6, 6,2, 7,8, 8,6, 5,7, 8,3, 7,4};
+
+int     box_faces[6] = {0,0,2,2,2,0};
+
+vec3_t  box_vecs[SKYBOX_SIDES_COUNT_6][2] = {
+        {       {0,-1,0}, {-1,0,0} }, { {0,1,0}, {0,0,-1} },
+        {       {0,-1,0}, {1,0,0} }, { {1,0,0}, {0,0,-1} },
+        { {0,-1,0}, {0,0,-1} }, { {-1,0,0}, {0,0,-1} }
+};
+
+// Manoel Kasimier - hi-res skyboxes - begin
+vec3_t  box_bigvecs[SKYBOX_SIDES_COUNT_6][2] = {
+        {       {0,-2,0}, {-2,0,0} }, { {0,2,0}, {0,0,-2} },
+        {       {0,-2,0}, {2,0,0} }, { {2,0,0}, {0,0,-2} },
+        { {0,-2,0}, {0,0,-2} }, { {-2,0,0}, {0,0,-2} }
+};
+vec3_t  box_bigbigvecs[6][2] = {
+        {       {0,-4,0}, {-4,0,0} }, { {0,4,0}, {0,0,-4} },
+        {       {0,-4,0}, {4,0,0} }, { {4,0,0}, {0,0,-4} },
+        { {0,-4,0}, {0,0,-4} }, { {-4,0,0}, {0,0,-4} }
+}; // Manoel Kasimier - hi-res skyboxes - end
+float   box_verts[8][3] = { {-1,-1,-1}, {-1,1,-1}, {1,1,-1}, {1,-1,-1},
+				{-1,-1,1}, {-1,1,1}, {1,-1,1}, {1,1,1} };
+// Manoel Kasimier - skyboxes - end
+
+// TODO: clean up these routines
+
+byte    *skyunderlay, *skyoverlay; // Manoel Kasimier - smooth sky
+byte    bottomalpha[128*131]; // Manoel Kasimier - translucent sky
+
+// Manoel Kasimier - skyboxes - begin
+// Code taken from the ToChriS engine - Author: Vic (vic@quakesrc.org) (http://hkitchen.quakesrc.org/)
+extern  mtexinfo_t              r_skytexinfo[SKYBOX_SIDES_COUNT_6];
+//extern        cbool           r_drawskybox;
+byte                                    r_skypixels[SKYBOX_SIDES_COUNT_6][SKYBOX_MAX_SIZE*SKYBOX_MAX_SIZE]; // Manoel Kasimier - edited
+texture_t                               r_skytextures[SKYBOX_SIDES_COUNT_6];
+char                                    last_skybox_name[1024];
+
+void Sky_LoadTexture (texture_t *mt)
+{
+        // Baker: Warn.
+        if (mt->width != 256 || mt->height != 128) // Leave this.
+                Con_Printf ("Standard sky texture %s expected to be 256 x 128 but is %d by %d ", mt->name, mt->width, mt->height);
+
+        skyoverlay = (byte *)mt + mt->offsets[0]; // Manoel Kasimier - smooth sky
+        skyunderlay = skyoverlay+128; // Manoel Kasimier - smooth sky
+}
+
+int R_LoadSkybox (const char *name);
 
 void Sky_LoadSkyBox (const char *name)
 {
-	int i, mark, width, height;
-	char filename[MAX_OSPATH];
-	byte *data;
-	qboolean nonefound = true;
-	if (strcmp(skybox_name, name) == 0) //TODO
-		return; // no change
-	for (i=0; i<6; i++) { // purge old textures
-		//TODOif (skybox_textures[i])
-			//TODOTexMgr_FreeTexture (skybox_textures[i]);
-		skybox_textures[i].data = NULL;
-	}
-	if (name[0] == 0) { // turn off skybox if sky is set to ""
+        if (strcmp (skybox_name, name) == 0)
+                return; //no change
+
+        // turn off skybox if sky is set to ""
+        if (name[0] == 0)
+        {
 		skybox_name[0] = 0;
 		return;
-	}
-	for (i=0; i<6; i++) { // load textures
-		mark = Hunk_LowMark ();
-		q_snprintf (filename, sizeof(filename), "gfx/env/%s%s", name, suf[i]);
-		data = Image_LoadImage (filename, &skybox_textures[i].width, &skybox_textures[i].height);
-		if (data) {
-			nonefound = false;
-			int ww = skybox_textures[i].width;
-			int hh = skybox_textures[i].height;
-			skybox_textures[i].data = malloc(ww*hh); //TODO proper memory management
-			unsigned char *pdest = skybox_textures[i].data;
-			unsigned char *psrc = data;
-			for (int j = 0; j < ww*hh; j++, psrc+=4)
-				pdest[j] = rgbtoi(psrc[0], psrc[1], psrc[2]);
-		}
-		else {
-			Con_Printf ("Couldn't load %s\n", filename);
-			//TODOskybox_textures[i] = notexture;
-		}
-		Hunk_FreeToLowMark (mark);
-	}
-	if (nonefound) {// go back to scrolling sky if skybox is totally missing
-		for (i=0; i<6; i++) {
-			//TODOif (skybox_textures[i] && skybox_textures[i] != notexture)
-			//TODO	TexMgr_FreeTexture (skybox_textures[i]);
-			skybox_textures[i].data = NULL;
-		}
-		skybox_name[0] = 0;
-		return;
-	}
-	q_strlcpy(skybox_name, name, sizeof(skybox_name));
-	r_skysource = skybox_textures[0].data; //placeholder
+        }
+
+        // Baker: If name matches, we already have the pixels loaded and we don't
+        // actually need to reload
+        if (strcmp (name, last_skybox_name))
+        {
+                if (cl.worldmodel && !R_LoadSkybox (name))
+                {
+                        skybox_name[0] = 0;
+                        return;
+                }
+        }
+
+        q_strlcpy(skybox_name, name, sizeof(skybox_name));
+        q_strlcpy(last_skybox_name, skybox_name, sizeof(last_skybox_name));
 }
 
-void R_InitSkyBox()
+int R_LoadSkybox (const char *name)
 {
-	extern model_t *loadmodel;
-	r_skyfaces = loadmodel->surfaces + loadmodel->numsurfaces;
-	loadmodel->numsurfaces += 6;
-	r_skyverts = loadmodel->vertexes + loadmodel->numvertexes;
-	loadmodel->numvertexes += 8;
-	r_skyedges = loadmodel->edges + loadmodel->numedges;
-	loadmodel->numedges += 12;
-	r_skysurfedges = loadmodel->surfedges + loadmodel->numsurfedges;
-	loadmodel->numsurfedges += 24;
-	if (loadmodel->numsurfaces > MAX_MAP_FACES
-			|| loadmodel->numvertexes > MAX_MAP_VERTS
-			|| loadmodel->numedges > MAX_MAP_EDGES)
-		Sys_Error ("InitSkyBox: map overflow");
-	memset (r_skyfaces, 0, 6*sizeof(*r_skyfaces));
-	for (int i=0 ; i<6 ; i++) {
-		r_skyplanes[i].normal[skybox_planes[i*2]] = 1;
-		r_skyplanes[i].dist = skybox_planes[i*2+1];
-		VectorCopy (box_vecs[i][0], r_skytexinfo[i].vecs[0]);
-		VectorCopy (box_vecs[i][1], r_skytexinfo[i].vecs[1]);
-		r_skyfaces[i].plane = &r_skyplanes[i];
-		r_skyfaces[i].numedges = 4;
-		r_skyfaces[i].flags = box_faces[i] | SURF_DRAWSKY;
-		r_skyfaces[i].firstedge = loadmodel->numsurfedges-24+i*4;
-		r_skyfaces[i].texinfo = &r_skytexinfo[i];
-		r_skyfaces[i].texturemins[0] = -128;
-		r_skyfaces[i].texturemins[1] = -128;
-		r_skyfaces[i].extents[0] = 256;
-		r_skyfaces[i].extents[1] = 256;
-	}
-	for (int i=0 ; i<24 ; i++)
-		if (box_surfedges[i] > 0)
-			r_skysurfedges[i] = loadmodel->numedges-13 + box_surfedges[i];
-		else
-			r_skysurfedges[i] = - (loadmodel->numedges-13 + -box_surfedges[i]);
+        int             i;
+        char    pathname[1024];
+        byte    *pic;
+        char    *suf[SKYBOX_SIDES_COUNT_6] = {"rt", "bk", "lf", "ft", "up", "dn"};
+        int             r_skysideimage[SKYBOX_SIDES_COUNT_6] = {5, 2, 4, 1, 0, 3};
+        int             width, height;
+        int             mark;
 
-	for(int i=0 ; i<12 ; i++) {
-		r_skyedges[i].v[0] = loadmodel->numvertexes-9+box_edges[i*2+0];
-		r_skyedges[i].v[1] = loadmodel->numvertexes-9+box_edges[i*2+1];
-		r_skyedges[i].cachededgeoffset = 0;
-	}
+        if (!name || !name[0])
+        {
+                skybox_name[0] = 0;
+                return false;
+        }
+
+        // the same skybox we are using now
+        if (!strcmp (name, skybox_name))
+                return true;
+
+        q_strlcpy (skybox_name, name, sizeof(skybox_name));
+
+        mark = Hunk_LowMark ();
+
+        for (i = 0 ; i < SKYBOX_SIDES_COUNT_6 ; i++)
+        {
+                q_snprintf (pathname, sizeof(pathname), "gfx/env/%s%s", name, suf[r_skysideimage[i]]);
+                pic = Image_LoadImage (pathname, &width, &height);
+		unsigned char *pdest = pic;
+		unsigned char *psrc = pic; // palettize in place
+		for (int j = 0; j < width*height; j++, psrc+=4)
+			pdest[j] = rgbtoi(psrc[0], psrc[1], psrc[2]);
+
+                if (!pic)
+                {
+                        Con_Printf ("Couldn't load %s", pathname);
+                        return false;
+                }
+                // Manoel Kasimier - hi-res skyboxes - begin
+                switch (width)
+                {
+                case 1024:      // falls through
+                case 512:       // falls through
+                case 256:
+                        // We're good!
+                        break;
+                default:
+                        // We aren't good
+                        Con_Printf ("skybox width (%d) for %s must be 256, 512, 1024", width, pathname);
+                        Hunk_FreeToLowMark (mark);
+                        return false;
+                }
+
+                switch (height)
+                {
+                case 1024:      // falls through
+                case 512:       // falls through
+                case 256:
+                        // We're good!
+                        break;
+                default:
+                        Con_Printf ("skybox height (%d) for %s must be 256, 512, 1024", height, pathname);
+                        Hunk_FreeToLowMark (mark);
+                        return false;
+                }
+                // Manoel Kasimier - hi-res skyboxes - end
+
+                r_skytexinfo[i].texture = &r_skytextures[i];
+                r_skytexinfo[i].texture->width = width; // Manoel Kasimier - hi-res skyboxes - edited
+                r_skytexinfo[i].texture->height = height; // Manoel Kasimier - hi-res skyboxes - edited
+                r_skytexinfo[i].texture->offsets[0] = i;
+
+                // Manoel Kasimier - hi-res skyboxes - begin
+                {
+                        extern vec3_t box_vecs[SKYBOX_SIDES_COUNT_6][2];
+                        extern vec3_t box_bigvecs[SKYBOX_SIDES_COUNT_6][2];
+                        extern vec3_t box_bigbigvecs[SKYBOX_SIDES_COUNT_6][2];
+                        extern msurface_t *r_skyfaces;
+
+                        switch (width)
+                        {
+                        case 1024:      VectorCopy (box_bigbigvecs[i][0], r_skytexinfo[i].vecs[0]); break;
+                        case 512:       VectorCopy (box_bigvecs[i][0], r_skytexinfo[i].vecs[0]); break;
+                        default:        VectorCopy (box_vecs[i][0], r_skytexinfo[i].vecs[0]); break;
+                        }
+
+                        switch (height)
+                        {
+                        case 1024:      VectorCopy (box_bigbigvecs[i][1], r_skytexinfo[i].vecs[1]); break;
+                        case 512:       VectorCopy (box_bigvecs[i][1], r_skytexinfo[i].vecs[1]); break;
+                        default:        VectorCopy (box_vecs[i][1], r_skytexinfo[i].vecs[1]); break;
+                        }
+
+                        // This is if one is already loaded and the size changed
+                        if (r_skyfaces)
+                        {
+                                r_skyfaces[i].texturemins[0] = -(width/2);
+                                r_skyfaces[i].texturemins[1] = -(height/2);
+                                r_skyfaces[i].extents[0] = width;
+                                r_skyfaces[i].extents[1] = height;
+                        }
+                        else Con_DPrintf ("Warning: No surface to load yet for WinQuake skybox");
+
+                }
+                // Manoel Kasimier - hi-res skyboxes - end
+                memset (&r_skypixels[i], 0, SKYBOX_MAX_SIZE * SKYBOX_MAX_SIZE); // Baker: Nuke it
+                memcpy (r_skypixels[i], pic, width*height); // Manoel Kasimier - hi-res skyboxes - edited
+                Hunk_FreeToLowMark (mark);
+        }
+        Hunk_FreeToLowMark (mark);
+        return true;
 }
 
-void R_EmitSkyBox()
+// Manoel Kasimier - skyboxes - begin
+void R_InitSkyBox ()
 {
-	for (int i = 0; i < 8; i++) // set the eight fake vertexes
-		for (int j = 0; j < 3; j++)
+        model_t *loadmodel = cl.worldmodel; // Manoel Kasimier - edited
+        r_skyfaces = loadmodel->surfaces + loadmodel->numsurfaces;
+        loadmodel->numsurfaces += 6;
+        r_skyverts = loadmodel->vertexes + loadmodel->numvertexes;
+        loadmodel->numvertexes += 8;
+        r_skyedges = loadmodel->edges + loadmodel->numedges;
+        loadmodel->numedges += 12;
+        r_skysurfedges = loadmodel->surfedges + loadmodel->numsurfedges;
+        loadmodel->numsurfedges += 24;
+        memset (r_skyfaces, 0, SKYBOX_SIDES_COUNT_6 * sizeof(*r_skyfaces));
+        for (int i = 0; i < SKYBOX_SIDES_COUNT_6; i++) {
+                r_skyplanes[i].normal[skybox_planes[i*2]] = 1;
+                r_skyplanes[i].dist = skybox_planes[i*2+1];
+                r_skyfaces[i].plane = &r_skyplanes[i];
+                r_skyfaces[i].numedges = 4;
+                r_skyfaces[i].flags = box_faces[i] | SURF_DRAWSKYBOX;
+                r_skyfaces[i].firstedge = loadmodel->numsurfedges-24+i*4;
+                r_skyfaces[i].texinfo = &r_skytexinfo[i];
+                // Manoel Kasimier - hi-res skyboxes - begin
+		int width, height;
+		if (r_skytexinfo[i].texture) {
+			width = r_skytexinfo[i].texture->width;
+			height = r_skytexinfo[i].texture->height;
+		}
+		else width = height = 256;
+		switch (width)
+		{
+		case 1024:      VectorCopy (box_bigbigvecs[i][0], r_skytexinfo[i].vecs[0]); break;
+		case 512:       VectorCopy (box_bigvecs[i][0], r_skytexinfo[i].vecs[0]); break;
+		default:        VectorCopy (box_vecs[i][0], r_skytexinfo[i].vecs[0]); break;
+		}
+
+		switch (height) {
+		case 1024:      VectorCopy (box_bigbigvecs[i][1], r_skytexinfo[i].vecs[1]); break;
+		case 512:       VectorCopy (box_bigvecs[i][1], r_skytexinfo[i].vecs[1]); break;
+		default:        VectorCopy (box_vecs[i][1], r_skytexinfo[i].vecs[1]); break;
+		}
+		r_skyfaces[i].texturemins[0] = -(width/2);
+		r_skyfaces[i].texturemins[1] = -(height/2);
+		r_skyfaces[i].extents[0] = width;
+		r_skyfaces[i].extents[1] = height;
+                // Manoel Kasimier - hi-res skyboxes - end
+        }
+        for(int i = 0; i < 24; i++)
+                if (box_surfedges[i] > 0)
+                        r_skysurfedges[i] = loadmodel->numedges-13 + box_surfedges[i];
+                else
+                        r_skysurfedges[i] = - (loadmodel->numedges-13 + -box_surfedges[i]);
+        for(int i = 0; i < 12; i++) {
+                r_skyedges[i].v[0] = loadmodel->numvertexes-9+box_edges[i*2+0];
+                r_skyedges[i].v[1] = loadmodel->numvertexes-9+box_edges[i*2+1];
+                r_skyedges[i].cachededgeoffset = 0;
+        }
+}
+
+void R_EmitSkyBox ()
+{
+	int             i, j;
+	int             oldkey;
+	if (insubmodel)
+		return;         // submodels should never have skies
+//FIXME	if (r_skyframe == r_framecount)
+//FIXME		return;         // already set this frame
+	r_skyframe = r_framecount;
+	// set the eight fake vertexes
+	for (i = 0 ; i < 8 ; i++)
+		for (j = 0 ; j < 3 ; j++)
 			r_skyverts[i].position[j] = r_origin[j] + box_verts[i][j]*128;
-	for (int i = 0; i < 6; i++) // set the six fake planes
+	// set the six fake planes
+	for (i = 0 ; i < SKYBOX_SIDES_COUNT_6 ; i++)
 		if (skybox_planes[i*2+1] > 0)
 			r_skyplanes[i].dist = r_origin[skybox_planes[i*2]]+128;
 		else
 			r_skyplanes[i].dist = r_origin[skybox_planes[i*2]]-128;
-	for (int i = 0; i < 6; i++) { // fix texture offseets
+	// fix texture offsets
+	for (i = 0 ; i < SKYBOX_SIDES_COUNT_6; i++) {
 		r_skytexinfo[i].vecs[0][3] = -DotProduct (r_origin, r_skytexinfo[i].vecs[0]);
 		r_skytexinfo[i].vecs[1][3] = -DotProduct (r_origin, r_skytexinfo[i].vecs[1]);
 	}
-	int oldkey = r_currentkey; // emit the six faces
+	// emit the six faces
+	oldkey = r_currentkey;
 	r_currentkey = 0x7ffffff0;
-	for (int i = 0; i < 6; i++)
+	for (i = 0; i < SKYBOX_SIDES_COUNT_6; i++) {
 		R_RenderFace (r_skyfaces + i, 15);
-	r_currentkey = oldkey; // bsp sorting order
-}
+	}
+	r_currentkey = oldkey;          // bsp sorting order
+} // Manoel Kasimier - skyboxes - end
 
 void Sky_SkyCommand_f()
 {
@@ -184,8 +342,6 @@ void Sky_Init()
 {
 	Cmd_AddCommand ("sky",Sky_SkyCommand_f);
         skybox_name[0] = 0;
-        for (int i = 0; i < 6; i++)
-                skybox_textures[i].data = NULL;
 }
 
 void R_InitSky(texture_t *mt)
@@ -252,14 +408,13 @@ void R_GenSkyTile(void *pdest)
 	}
 }
 
-void R_SetSkyFrame()
+void R_SetSkyFrame ()
 {
-	skyspeed = iskyspeed;
-	skyspeed2 = iskyspeed2;
-	int g = GreatestCommonDivisor(iskyspeed, iskyspeed2);
-	int s1 = iskyspeed / g;
-	int s2 = iskyspeed2 / g;
-	float temp = SKYSIZE * s1 * s2;
-	skytime = cl.time - ((int)(cl.time / temp) * temp);
-	r_skymade = 0;
+        skyspeed = iskyspeed;
+        skyspeed2 = iskyspeed2;
+        int g = GreatestCommonDivisor (iskyspeed, iskyspeed2);
+        int s1 = iskyspeed / g;
+        int s2 = iskyspeed2 / g;
+        float temp = SKYSIZE * s1 * s2;
+        skytime = cl.time - ((int)(cl.time / temp) * temp);
 }

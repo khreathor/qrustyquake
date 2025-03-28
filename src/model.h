@@ -23,6 +23,7 @@
 #define SURF_DRAWSLIME          0x800
 #define SURF_DRAWTELE           0x1000
 #define SURF_DRAWWATER          0x2000
+#define SURF_DRAWSKYBOX         0x80000 // Manoel Kasimier - skyboxes
 #define SURF_WINQUAKE_DRAWTRANSLUCENT (SURF_DRAWLAVA | SURF_DRAWSLIME | SURF_DRAWWATER | SURF_DRAWTELE)
 #define EF_ROCKET 1 // leave a trail
 #define EF_GRENADE 2 // leave a trail

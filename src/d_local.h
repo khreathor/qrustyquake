@@ -10,6 +10,7 @@
 #define R_SKY_SMASK 0x007F0000
 #define R_SKY_TMASK 0x007F0000
 #define DS_SPAN_LIST_END -128
+#define SKYBOX_MAX_SIZE 1024
 #define SURFCACHE_SIZE_AT_320X200 3000*1024 // CyanBun96: was 600*1024
 
 typedef struct surfcache_s

@@ -107,6 +107,7 @@ extern int fog_initialized;
 extern void R_DrawFog();
 extern void Fog_FogCommand_f();
 extern void Fog_ParseWorldspawn();
+extern void R_InitSkyBox(); // Manoel Kasimier - skyboxes 
 
 void CreatePassages();
 void SetVisibilityByPassages();
@@ -186,6 +187,7 @@ void R_Init()
 
 void R_NewMap()
 {
+	R_InitSkyBox(); // Manoel Kasimier - skyboxes 
 	// clear out efrags in case the level hasn't been reloaded
 	// FIXME: is this one short?
 	for (int i = 0; i < cl.worldmodel->numleafs; i++)

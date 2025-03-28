@@ -35,6 +35,8 @@ qboolean r_lastvertvalid;
 static qboolean makeleftedge, makerightedge;
 float winquake_surface_liquid_alpha;
 
+extern void R_EmitSkyBox();
+
 void R_EmitEdge(mvertex_t *pv0, mvertex_t *pv1)
 {
 	vec3_t local, transformed;
@@ -225,6 +227,16 @@ void R_EmitCachedEdge()
 
 void R_RenderFace(msurface_t *fa, int clipflags)
 {
+	// Manoel Kasimier - skyboxes - begin
+	// Code taken from the ToChriS engine - Author: Vic
+	// sky surfaces encountered in the world will cause the
+	// environment box surfaces to be emited
+	if ((fa->flags & SURF_DRAWSKY) && skybox_name[0])
+	{
+		R_EmitSkyBox();
+		return;
+	}
+	// Manoel Kasimier - skyboxes - end
 	if (fa->flags & SURF_WINQUAKE_DRAWTRANSLUCENT)
 	{
 		if (fa->flags & SURF_DRAWLAVA) winquake_surface_liquid_alpha = r_lavaalpha.value;

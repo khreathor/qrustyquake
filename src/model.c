@@ -1060,8 +1060,7 @@ static void Mod_LoadEdges (lump_t *l, int bsp2)
                 if (l->filelen % sizeof(*in))
                         Sys_Error ("MOD_LoadEdges: funny lump size in %s",loadmodel->name);
                 int count = l->filelen / sizeof(*in);
-                medge_t *out = (medge_t *) Hunk_AllocName
-			((count + 1) * sizeof(*out), loadname);
+                medge_t *out = (medge_t *) Hunk_AllocName ((count + 13) * sizeof(*out), loadname);
                 loadmodel->edges = out;
                 loadmodel->numedges = count;
                 for (int i = 0; i < count; i++, in++, out++) {
@@ -1075,7 +1074,7 @@ static void Mod_LoadEdges (lump_t *l, int bsp2)
                         Sys_Error ("MOD_LoadEdges: funny lump size in %s",loadmodel->name);
                 int count = l->filelen / sizeof(*in);
                 medge_t *out = (medge_t *) Hunk_AllocName
-			((count + 1) * sizeof(*out), loadname);
+			((count + 13) * sizeof(*out), loadname);
                 loadmodel->edges = out;
                 loadmodel->numedges = count;
                 for (int i = 0; i<count; i++, in++, out++) {
@@ -1091,7 +1090,9 @@ static void Mod_LoadVertexes (lump_t *l)
 	if (l->filelen % sizeof(*in))
 		Sys_Error ("MOD_LoadVertexes: funny lump size in %s",loadmodel->name);
 	int count = l->filelen / sizeof(*in);
-	mvertex_t *out=(mvertex_t *)Hunk_AllocName(count*sizeof(*out),loadname);
+	// Manoel Kasimier - skyboxes - extra for skybox 
+	// Code taken from the ToChriS engine - Author: Vic
+	mvertex_t *out = (mvertex_t*)Hunk_AllocName((count+8)*sizeof(*out),loadname);
 	loadmodel->vertexes = out;
 	loadmodel->numvertexes = count;
 	for (int i = 0; i < count; i++, in++, out++) {
@@ -1166,7 +1167,7 @@ static void Mod_LoadTexinfo(lump_t *l)
                 Sys_Error("MOD_LoadTexinfo: funny lump size in %s",
                                 loadmodel->name);
         int count = l->filelen / sizeof(*in);
-        mtexinfo_t *out = Hunk_AllocName(count * sizeof(*out), loadname);
+        mtexinfo_t *out = Hunk_AllocName((count+6) * sizeof(*out), loadname);
         loadmodel->texinfo = out;
         loadmodel->numtexinfo = count;
         for (int i = 0; i < count; i++, in++, out++) {
@@ -1343,7 +1344,7 @@ static void Mod_LoadFaces (lump_t *l, qboolean bsp2)
 			Sys_Error ("MOD_LoadBmodel: funny lump size in %s",loadmodel->name);
 		count = l->filelen / sizeof(*ins);
 	}
-	out = (msurface_t *)Hunk_AllocName ( count*sizeof(*out), loadname);
+	out = (msurface_t *)Hunk_AllocName ( (count+6)*sizeof(*out), loadname);
 
 	//johnfitz -- warn mappers about exceeding old limits
 	if (count > 32767 && !bsp2)
@@ -1836,7 +1837,7 @@ static void Mod_LoadSurfedges (lump_t *l)
 	if (l->filelen % sizeof(*in))
 		Sys_Error ("MOD_LoadSurfedges: funny lump size in %s",loadmodel->name);
 	int count = l->filelen / sizeof(*in);
-	int *out = (int *) Hunk_AllocName ( count*sizeof(*out), loadname);
+	int *out = (int *) Hunk_AllocName ( (count+24)*sizeof(*out), loadname);
 	loadmodel->surfedges = out;
 	loadmodel->numsurfedges = count;
 	for (int i = 0; i < count; i++)
@@ -1850,7 +1851,7 @@ static void Mod_LoadPlanes (lump_t *l)
 	if (l->filelen % sizeof(*in))
 		Sys_Error ("MOD_LoadPlanes: funny lump size in %s",loadmodel->name);
 	int count = l->filelen / sizeof(*in);
-	mplane_t *out = (mplane_t *) Hunk_AllocName ( count*2*sizeof(*out), loadname);
+	mplane_t *out = (mplane_t *) Hunk_AllocName ( (count+6)*2*sizeof(*out), loadname);
 	loadmodel->planes = out;
 	loadmodel->numplanes = count;
 	for (int i = 0; i < count; i++, in++, out++) {

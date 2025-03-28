@@ -25,6 +25,8 @@ static int numbverts, numbedges;
 static mvertex_t *pfrontenter, *pfrontexit;
 static qboolean makeclippededge;
 
+extern void R_EmitSkyBox(); // Manoel Kasimier - skyboxes
+
 void R_EntityRotate(vec3_t vec)
 {
 	vec3_t tvec;

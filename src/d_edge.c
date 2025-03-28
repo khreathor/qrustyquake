@@ -123,25 +123,24 @@ void D_DrawSurfaces()
 		d_zistepu = s->d_zistepu;
 		d_zistepv = s->d_zistepv;
 		d_ziorigin = s->d_ziorigin;
-		if (s->flags & SURF_DRAWSKY && !skybox_name[0]) {
+		if (s->flags & SURF_DRAWSKY) {
 			if (!r_skymade)
 				R_MakeSky();
 			D_DrawSkyScans8(s->spans);
 			D_DrawZSpans(s->spans);
-		} else if (s->flags & SURF_DRAWSKY && skybox_name[0]) {
-			msurface_t *pface = s->data; // TODO this whole thing
-			miplevel = 0; // cubemap rendering, yanked from Q2
-			if (!pface->texinfo->texture)
-				return;
-			cacheblock = (pixel_t *)
-				((byte *) pface->texinfo->texture +
-				pface->texinfo->texture->offsets[0]);
-			cachewidth = 64;
+		} else if (s->flags & SURF_DRAWSKYBOX) {
+			// Manoel Kasimier - hi-res skyboxes - edited
+			extern byte r_skypixels[6][SKYBOX_MAX_SIZE*SKYBOX_MAX_SIZE];
+			msurface_t *pface = s->data;
+			miplevel = 0;
+			cacheblock = (byte *)(r_skypixels[pface->texinfo->texture->offsets[0]]);
+			// Manoel Kasimier - hi-res skyboxes - edited
+			cachewidth = pface->texinfo->texture->width;
 			d_zistepu = s->d_zistepu;
 			d_zistepv = s->d_zistepv;
 			d_ziorigin = s->d_ziorigin;
 			D_CalcGradients (pface);
-			D_DrawSpans8 (s->spans);
+			(*d_drawspans) (s->spans);
 			// set up a gradient for the background surface that places it
 			// effectively at infinity distance from the viewpoint
 			d_zistepu = 0;
