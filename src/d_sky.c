@@ -24,31 +24,6 @@ void D_Sky_uv_To_st(int u, int v, fixed16_t *s, fixed16_t *t)
 	*t = (int)((temp + 6 * (SKYSIZE / 2 - 1) * end[1]) * 0x10000);
 }
 
-void D_DrawSkyCubemap(espan_t *pspan)
-{
-	int i = 0;
-        for (espan_t *span = pspan; span; span = span->pnext) {
-                byte *pdest = (byte *) d_viewbuffer + screenwidth * span->v;
-                int u = span->u;
-                int u2 = span->u + span->count - 1;
-		int pix = r_skysource[(i++)%(512*512)];
-                ((byte *) pdest)[u] = pix;
-                if (u2 - u < 8)
-                        for (u++; u <= u2; u++)
-                                ((byte *) pdest)[u] = pix;
-                else {
-                        for (u++; u & 3; u++)
-                                ((byte *) pdest)[u] = pix;
-                        u2 -= 1;
-                        for (; u <= u2; u += 1)
-                                *(int *)((byte *) pdest + u) = pix;
-                        u2 += 1;
-                        for (; u <= u2; u++)
-                                ((byte *) pdest)[u] = pix;
-                }
-        }
-}
-
 void D_DrawSkyScans8(espan_t *pspan)
 {
 	do {
