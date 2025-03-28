@@ -30,7 +30,7 @@ mtriangle_t triangles[MAXALIASTRIS];
 trivertx_t *poseverts[MAXALIASFRAMES];
 static int posenum;
 
-static model_t*	loadmodel;
+model_t*	loadmodel;
 static char	loadname[32];	// for hunk tags
 static byte	*mod_base;
 
