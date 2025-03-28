@@ -244,17 +244,12 @@ void R_InitSkyBox ()
 	}
 }
 
-static int set = 0; //FIXME why does this only work on the second try?
 void R_EmitSkyBox ()
 {
 	if (insubmodel)
 		return; // submodels should never have skies
 	if (r_skyframe == r_framecount) {
-		if (set == 1) {
-			set = 0;
-			return; // already set this frame
-		}
-		set++;
+		return; // already set this frame
 	}
 	r_skyframe = r_framecount;
 	for (int i = 0 ; i < 8 ; i++) // set the eight fake vertexes

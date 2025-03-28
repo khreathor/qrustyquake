@@ -150,6 +150,8 @@ void D_DrawSurfaces()
 		} else if (s->flags & SURF_DRAWBACKGROUND) {
 			// set up a gradient for the background surface that places it
 			// effectively at infinity distance from the viewpoint
+			if (skybox_name[0])
+				continue;
 			d_zistepu = 0;
 			d_zistepv = 0;
 			d_ziorigin = -0.9;
