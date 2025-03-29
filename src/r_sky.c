@@ -278,6 +278,41 @@ void R_EmitSkyBox ()
 	r_currentkey = oldkey; // bsp sorting order
 } // Manoel Kasimier - skyboxes - end
 
+void Sky_NewMap()
+{ // read worldspawn (this is so ugly, and shouldn't it be done on the server?)
+	char key[128], value[4096];
+	//TODOskyfog = r_skyfog.value;
+	const char *data = cl.worldmodel->entities;
+	data = COM_Parse(data);
+	if (!data || com_token[0] != '{') // should never happen
+		return; // error
+	while (1) {
+		data = COM_Parse(data);
+		if (!data)
+			return; // error
+		if (com_token[0] == '}')
+			break; // end of worldspawn
+		if (com_token[0] == '_')
+			q_strlcpy(key, com_token + 1, sizeof(key));
+		else
+			q_strlcpy(key, com_token, sizeof(key));
+		while (key[0] && key[strlen(key)-1] == ' ') // remove trailing spaces
+			key[strlen(key)-1] = 0;
+		data = COM_ParseEx(data, CPE_ALLOWTRUNC);
+		if (!data)
+			return; // error
+		q_strlcpy(value, com_token, sizeof(value));
+		if (!strcmp("sky", key))
+			Sky_LoadSkyBox(value);
+		//if (!strcmp("skyfog", key))
+		//        skyfog = atof(value); // also accept non-standard keys
+		else if (!strcmp("skyname", key)) // half-life
+			Sky_LoadSkyBox(value);
+		else if (!strcmp("qlsky", key)) // quake lives
+			Sky_LoadSkyBox(value);
+	}
+}
+
 void Sky_SkyCommand_f()
 {
 	switch (Cmd_Argc()) {

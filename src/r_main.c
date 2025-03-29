@@ -108,6 +108,7 @@ extern void R_DrawFog();
 extern void Fog_FogCommand_f();
 extern void Fog_ParseWorldspawn();
 extern void R_InitSkyBox(); // Manoel Kasimier - skyboxes 
+extern void Sky_NewMap();
 
 void CreatePassages();
 void SetVisibilityByPassages();
@@ -217,6 +218,7 @@ void R_NewMap()
 		: Hunk_AllocName(r_numallocatededges * sizeof(edge_t), "edges");
 	r_dowarpold = false;
 	r_viewchanged = false;
+	Sky_NewMap();
 	Fog_ParseWorldspawn();
 }
 
