@@ -9,7 +9,8 @@
 #include "d_local.h"
 
 byte *Image_LoadImage (const char *name, int *width, int *height);
-unsigned char rgbtoi(unsigned char r, unsigned char g, unsigned char b);
+extern unsigned char rgbtoi(unsigned char r, unsigned char g, unsigned char b);
+extern unsigned int lfsr_random();
 
 int iskyspeed = 8;
 int iskyspeed2 = 2;
@@ -126,10 +127,16 @@ int R_LoadSkybox (const char *name)
 		q_snprintf (pathname, sizeof(pathname), "gfx/env/%s%s", name, suf[r_skysideimage[i]]);
 		int width, height;
 		byte *pic = Image_LoadImage (pathname, &width, &height);
-		unsigned char *pdest = pic;
-		unsigned char *psrc = pic; // palettize in place
-		for (int j = 0; j < width*height; j++, psrc+=4)
-			pdest[j] = rgbtoi(psrc[0], psrc[1], psrc[2]);
+		unsigned char *pdest = pic; // CyanBun96: palettize in place
+		unsigned char *psrc = pic; // with some noise dithering
+		for (int j = 0; j < width*height; j++, psrc+=4) {
+			int r = psrc[0] + (lfsr_random() % 16) - 7;
+			int g = psrc[1] + (lfsr_random() % 16) - 7;
+			int b = psrc[2] + (lfsr_random() % 16) - 7;
+			pdest[j] = rgbtoi(CLAMP(0,r,255),
+					  CLAMP(0,g,255),
+					  CLAMP(0,b,255));
+		}
 		if (!pic) {
 			Con_Printf ("Couldn't load %s", pathname);
 			return false;
