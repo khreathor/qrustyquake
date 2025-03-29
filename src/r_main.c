@@ -3,7 +3,7 @@
 #include "quakedef.h"
 #include "r_local.h"
 
-#define	 VIEWMODNAME_LENGTH 256
+#define	VIEWMODNAME_LENGTH 256
 
 byte r_foundtranswater, r_wateralphapass; // Manoel Kasimier - translucent water
 int r_pass; // CyanBun96: 1 - cutout textures 0 - everything else

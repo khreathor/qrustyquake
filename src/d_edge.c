@@ -140,7 +140,7 @@ void D_DrawSurfaces()
 			d_zistepv = s->d_zistepv;
 			d_ziorigin = s->d_ziorigin;
 			D_CalcGradients (pface);
-			(*d_drawspans) (s->spans);
+			D_DrawSkyboxScans8(s->spans);
 			// set up a gradient for the background surface that places it
 			// effectively at infinity distance from the viewpoint
 			d_zistepu = 0;

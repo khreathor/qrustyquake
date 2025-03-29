@@ -8,7 +8,9 @@
 #include "r_local.h"
 #include "d_local.h"
 
-byte *Image_LoadImage (const char *name, int *width, int *height);
+cvar_t r_skyfog = {"r_skyfog", "0.5", 0, 0, 0, 0};
+
+extern byte *Image_LoadImage (const char *name, int *width, int *height);
 extern unsigned char rgbtoi(unsigned char r, unsigned char g, unsigned char b);
 extern unsigned int lfsr_random();
 
@@ -281,7 +283,6 @@ void R_EmitSkyBox ()
 void Sky_NewMap()
 { // read worldspawn (this is so ugly, and shouldn't it be done on the server?)
 	char key[128], value[4096];
-	//TODOskyfog = r_skyfog.value;
 	const char *data = cl.worldmodel->entities;
 	data = COM_Parse(data);
 	if (!data || com_token[0] != '{') // should never happen
@@ -304,8 +305,8 @@ void Sky_NewMap()
 		q_strlcpy(value, com_token, sizeof(value));
 		if (!strcmp("sky", key))
 			Sky_LoadSkyBox(value);
-		//if (!strcmp("skyfog", key))
-		//        skyfog = atof(value); // also accept non-standard keys
+		if (!strcmp("skyfog", key))
+		        Cvar_SetValue("r_skyfog", atof(value)); // also accept non-standard keys
 		else if (!strcmp("skyname", key)) // half-life
 			Sky_LoadSkyBox(value);
 		else if (!strcmp("qlsky", key)) // quake lives
@@ -329,7 +330,8 @@ void Sky_SkyCommand_f()
 
 void Sky_Init()
 {
-	Cmd_AddCommand ("sky",Sky_SkyCommand_f);
+	Cmd_AddCommand ("sky", Sky_SkyCommand_f);
+	Cvar_RegisterVariable (&r_skyfog);
         skybox_name[0] = 0;
 }
 

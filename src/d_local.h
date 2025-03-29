@@ -12,6 +12,7 @@
 #define DS_SPAN_LIST_END -128
 #define SKYBOX_MAX_SIZE 1024
 #define SURFCACHE_SIZE_AT_320X200 3000*1024 // CyanBun96: was 600*1024
+#define FOG_LUT_LEVELS 32
 
 typedef struct surfcache_s
 {
@@ -59,13 +60,15 @@ extern cvar_t r_lavaalpha;
 extern cvar_t r_telealpha;
 extern cvar_t r_twopass;
 extern cvar_t fog;
+extern unsigned char color_mix_lut[256][256][FOG_LUT_LEVELS];
+extern unsigned char fog_pal_index;
 
 void D_DrawSpans8(espan_t *pspans);
 void D_DrawZSpans(espan_t *pspans);
 void Turbulent8(espan_t *pspan, float opacity);
 void D_SpriteDrawSpans(sspan_t *pspan);
-void D_DrawSkyCubemap(espan_t *pspan);
 void D_DrawSkyScans8(espan_t *pspan);
+void D_DrawSkyboxScans8(espan_t *pspans);
 void R_ShowSubDiv();
 extern void(*prealspandrawer)();
 surfcache_t *D_CacheSurface(msurface_t *surface, int miplevel);

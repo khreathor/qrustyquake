@@ -1,8 +1,6 @@
 #include "quakedef.h"
 #include "d_local.h"
 
-#define FOG_LUT_LEVELS 32
-
 float *randarr; // used for noise bias
 int randarr_size = 0;
 int fog_initialized = 0;

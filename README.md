@@ -150,6 +150,10 @@ VM is VirtualBox unless specified otherwise.
 
    - Works just fine at a playable framerate (20-30~ FPS)
 
+- HaikuOS [QEMU] v0.4.3
+
+   - Not tested on real hardware yet, TODO
+
 - Android [HW, Termux, AARCH64] v0.4.2
 
    - Ran through X11 with touch controls. *unpleasant*
