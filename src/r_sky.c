@@ -7,6 +7,11 @@
 #include "quakedef.h"
 #include "r_local.h"
 #include "d_local.h"
+#include <x86intrin.h>
+
+#define RGB_LUT_SIZE 512  // 8×8×8 color space
+unsigned char rgb_lut[RGB_LUT_SIZE];
+int rgb_lut_built = 0;
 
 cvar_t r_skyfog = {"r_skyfog", "0.5", 0, 0, 0, 0};
 
@@ -112,6 +117,24 @@ void Sky_LoadSkyBox (const char *name)
 	q_strlcpy(last_skybox_name, skybox_name, sizeof(last_skybox_name));
 }
 
+void R_BuildRGBLUT() {
+	for (int r = 0; r < 256; r += 32) {
+		for (int g = 0; g < 256; g += 32) {
+			for (int b = 0; b < 256; b += 32) {
+				int i = ((r/32) << 6) | ((g/32) << 3) | (b/32);
+				rgb_lut[i] = rgbtoi(r, g, b);
+			}
+		}
+	}
+	rgb_lut_built = 1;
+}
+
+unsigned char fast_rgbtoi(unsigned char r, unsigned char g, unsigned char b)
+{
+    int i = ((r / 32) << 6) | ((g / 32) << 3) | (b / 32);
+    return rgb_lut[i];
+}
+
 int R_LoadSkybox (const char *name)
 {
 	if (!name || !name[0]) {
@@ -131,13 +154,15 @@ int R_LoadSkybox (const char *name)
 		byte *pic = Image_LoadImage (pathname, &width, &height);
 		unsigned char *pdest = pic; // CyanBun96: palettize in place
 		unsigned char *psrc = pic; // with some noise dithering
+		if (!rgb_lut_built)
+			R_BuildRGBLUT();
 		for (int j = 0; j < width*height; j++, psrc+=4) {
 			int r = psrc[0] + (lfsr_random() % 16) - 7;
 			int g = psrc[1] + (lfsr_random() % 16) - 7;
 			int b = psrc[2] + (lfsr_random() % 16) - 7;
-			pdest[j] = rgbtoi(CLAMP(0,r,255),
-					  CLAMP(0,g,255),
-					  CLAMP(0,b,255));
+			pdest[j] = fast_rgbtoi(CLAMP(0,r,255),
+						CLAMP(0,g,255),
+						CLAMP(0,b,255));
 		}
 		if (!pic) {
 			Con_Printf ("Couldn't load %s", pathname);

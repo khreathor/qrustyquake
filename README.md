@@ -64,9 +64,13 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
    - BSP2 and other modern features are being actively worked on, expect bugs and crashes on bigger maps
 
+   - Foggy Bogbottom is playable with minor visual glitches, other Arcane Dimensions maps load but are untested
+
 - Software imitations of modern rendering features
 
    - Translucent liquids on supported maps (r_{water,slime,lava,tele}alpha 0-1)
+
+   - Cubemapped skyboxes ("sky filename_", "r_skyfog [0.0-1.0]"), only .tga format for now
 
    - Cutout textures (transparency)
 
@@ -100,7 +104,7 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
 - Other modern features (optional)
 
-   - Modern skyboxes
+   - Colored lighting, .lit file support
 
    - More modern console
 
@@ -128,7 +132,7 @@ x86_64 unless specified otherwise.
 
 VM is VirtualBox unless specified otherwise.
 
-- Arch Linux [HW] v0.4.3
+- Arch Linux [HW] v0.4.4
 
    - The main platform that this port is developed on. The most likely one to work
 
@@ -158,7 +162,7 @@ VM is VirtualBox unless specified otherwise.
 
    - Ran through X11 with touch controls. *unpleasant*
 
-- Windows [VM, HW] v0.4.3
+- Windows [VM, HW] v0.4.4
 
    - Tested with w10 on hardware and w11 on a VM
 
@@ -174,10 +178,12 @@ Which was a fork of another fork. It's forks all the way down...
 
 Some code, including VGA text blurbs, has been taken from https://github.com/erysdren/sdl3quake/
 
-Big thanks to Erysdren for contributing quite a lot to the backend.
+Big thanks to Erysdren for contributing quite a lot to the backend and makefiles to make compilation on exotic systems possible.
 
 The Fitzquake protocol implementation, both client and server, sound system, model loading, filesystem functions, cvars and a whole lot more has been pulled directly from Quakespasm.
 
 A lot of code is adapted from Ironwail. Most of the netcode is a direct copy, other chunks are adapted with minor changes.
+
+TGA image loading taken from MarkV, lots of software rendering code taken from there too. Most of it comes from ToChriS engine by Vic.
 
 --CyanBun96 <3

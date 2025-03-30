@@ -19,28 +19,22 @@ int fog_lut_built = 0;
 
 unsigned char rgbtoi(unsigned char r, unsigned char g, unsigned char b)
 { // todo? lab color or really anything more accurate
-	unsigned char besti = 0;
-	int bestdist = 9999999;
-	unsigned char *p = vid_curpal;
-	for (int i = 0; i < 256; ++i) {
-		int pr = p[0];
-		int pg = p[1];
-		int pb = p[2];
-		int dr = r - pr;
-		int dg = g - pg;
-		int db = b - pb;
-		int dist = (dr < 0 ? -dr : dr) +
-			(dg < 0 ? -dg : dg) +
-			(db < 0 ? -db : db);
-		if (dist < bestdist) {
-			bestdist = dist;
-			besti = (unsigned char)i;
-			if (dist == 0)
-				break; // found an exact match, return early
-		}
-		p += 3;
-	}
-	return besti;
+    unsigned char besti = 0;
+    int bestdist = 0x7fffffff;
+    unsigned char *p = vid_curpal;
+    for (int i = 0; i < 256; ++i, p += 3) {
+        int dr = r - p[0];
+        int dg = g - p[1];
+        int db = b - p[2];
+        int dist = dr * dr + dg * dg + db * db; // squared euclidean distance
+        if (dist < bestdist) {
+            bestdist = dist;
+            besti = (unsigned char)i;
+            if (dist == 0) // exact match, return early
+                return besti;
+        }
+    }
+    return besti;
 }
 
 void Fog_FogCommand_f () // yanked from Quakespasm, mostly
