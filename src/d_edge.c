@@ -109,7 +109,9 @@ void D_DrawSurfaces()
 		r_drawnpolycount++;
 		// Baker: Need to determine what kind of liquid we are
 		if (s->flags & SURF_WINQUAKE_DRAWTRANSLUCENT) {
-			if (s->flags & SURF_DRAWLAVA)
+			if (s->entity)
+				winquake_surface_liquid_alpha = (float)s->entity->alpha / 255;
+			else if (s->flags & SURF_DRAWLAVA)
 				winquake_surface_liquid_alpha = r_lavaalpha.value;
 			else if (s->flags & SURF_DRAWSLIME)
 				winquake_surface_liquid_alpha = r_slimealpha.value;
@@ -159,7 +161,7 @@ void D_DrawSurfaces()
 				D_DrawSolidSurface(s, (int)r_clearcolor.value & 0xFF);
 			else D_DrawSolidSurface(s, 0xFF);
 			D_DrawZSpans(s->spans);
-		} else if (s->flags & SURF_DRAWTURB) {
+		} else if (s->flags & SURF_DRAWTURB || (s->entity && s->entity->alpha)) {
 			msurface_t *pface = s->data;
 			miplevel = 0;
 			cacheblock = (pixel_t *)
@@ -182,7 +184,9 @@ void D_DrawSurfaces()
 			D_CalcGradients(pface);
 			float opacity = 1;
 			if ((int)r_twopass.value&1) {
-				if (s->flags & SURF_DRAWLAVA) opacity = 
+				if (s->entity)
+					opacity = (float)s->entity->alpha / 255;
+				else if (s->flags & SURF_DRAWLAVA) opacity = 
 					r_lavaalpha.value;
 				else if (s->flags & SURF_DRAWSLIME) opacity =
 					r_slimealpha.value;
