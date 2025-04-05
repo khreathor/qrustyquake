@@ -14,6 +14,7 @@ short *pz; // Manoel Kasimier - translucent water
 int izi, izistep;
 
 extern cvar_t r_skyfog;
+extern cvar_t r_alphastyle;
 
 void D_DrawTurbulent8Span();
 
@@ -58,8 +59,28 @@ void D_DrawTurbulent8Span()
 	} while (--r_turb_spancount > 0);
 }
 
+extern int fog_lut_built;
+extern void build_color_mix_lut();
 void D_DrawTurbulent8SpanAlpha (float opacity)
 {
+	if (r_alphastyle.value == 0) {
+		if (!fog_lut_built)
+			build_color_mix_lut();
+		do {
+			if (*pz <= (izi >> 16)) {
+				int s=((r_turb_s+r_turb_turb[(r_turb_t>>16)&(CYCLE-1)])>>16)&63;
+				int t=((r_turb_t+r_turb_turb[(r_turb_s>>16)&(CYCLE-1)])>>16)&63;
+				*r_turb_pdest = color_mix_lut[*(r_turb_pbase + (t << 6) + s)]
+					[*r_turb_pdest][(int)(opacity*FOG_LUT_LEVELS)];
+			}
+			r_turb_pdest++;
+			izi += izistep;
+			pz++;
+			r_turb_s += r_turb_sstep;
+			r_turb_t += r_turb_tstep;
+		} while (--r_turb_spancount > 0);
+		return;
+	}
 	int odd = ((long)r_turb_pdest/vid.width)&1;
 	int pattern = 0;
 	if (opacity >= 0.83f) pattern = 6;
