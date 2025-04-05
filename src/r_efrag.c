@@ -3,6 +3,8 @@
 #include "quakedef.h"
 #include "r_local.h"
 
+#define EXTRA_EFRAGS    128
+
 mnode_t *r_pefragtopnode;
 efrag_t **lastlink;
 vec3_t r_emins, r_emaxs;
@@ -31,6 +33,29 @@ void R_RemoveEfrags(entity_t *ent)
 	ent->efrag = NULL;
 }
 
+static efrag_t *R_GetEfrag () // based on RMQEngine
+{
+        // we could just Hunk_Alloc a single efrag_t and return it, but since
+        // the struct is so small (2 pointers) allocate groups of them
+        // to avoid wasting too much space on the hunk allocation headers.
+        if (cl.free_efrags) {
+                efrag_t *ef = cl.free_efrags;
+                cl.free_efrags = ef->leafnext;
+                ef->leafnext = NULL;
+                cl.num_efrags++;
+                return ef;
+        }
+        else {
+                cl.free_efrags = (efrag_t *) Hunk_AllocName (EXTRA_EFRAGS * sizeof (efrag_t), "efrags");
+		int i = 0;
+                for (; i < EXTRA_EFRAGS - 1; i++)
+                        cl.free_efrags[i].leafnext = &cl.free_efrags[i + 1];
+                cl.free_efrags[i].leafnext = NULL;
+                // call recursively to get a newly allocated free efrag
+                return R_GetEfrag ();
+        }
+}
+
 void R_SplitEntityOnNode(mnode_t *node)
 {
 	if (node->contents == CONTENTS_SOLID)
@@ -38,19 +63,10 @@ void R_SplitEntityOnNode(mnode_t *node)
 	if (node->contents < 0) { // add an efrag if the node is a leaf
 		if (!r_pefragtopnode)
 			r_pefragtopnode = node;
-		mleaf_t *leaf = (mleaf_t *) node;
-		efrag_t *ef = cl.free_efrags; // grab an efrag off the free list
-		if (!ef) {
-			Con_Printf("Too many efrags!\n");
-			return;	// no free fragments...
-		}
-		cl.free_efrags = cl.free_efrags->entnext;
+		mleaf_t *leaf = (mleaf_t *)node;
+		efrag_t *ef = R_GetEfrag(); // grab an efrag off the free list
 		ef->entity = r_addent;
-		*lastlink = ef; // add the entity link
-		lastlink = &ef->entnext;
-		ef->entnext = NULL;
-		ef->leaf = leaf; // set the leaf links
-		ef->leafnext = leaf->efrags;
+		ef->leafnext = leaf->efrags; // set the leaf links
 		leaf->efrags = ef;
 		return;
 	}
