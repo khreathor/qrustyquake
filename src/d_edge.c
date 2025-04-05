@@ -109,9 +109,7 @@ void D_DrawSurfaces()
 		r_drawnpolycount++;
 		// Baker: Need to determine what kind of liquid we are
 		if (s->flags & SURF_WINQUAKE_DRAWTRANSLUCENT) {
-			if (s->entity)
-				winquake_surface_liquid_alpha = (float)s->entity->alpha / 255;
-			else if (s->flags & SURF_DRAWLAVA)
+			if (s->flags & SURF_DRAWLAVA)
 				winquake_surface_liquid_alpha = r_lavaalpha.value;
 			else if (s->flags & SURF_DRAWSLIME)
 				winquake_surface_liquid_alpha = r_slimealpha.value;
@@ -119,6 +117,8 @@ void D_DrawSurfaces()
 				winquake_surface_liquid_alpha = r_wateralpha.value;
 			else if (s->flags & SURF_DRAWTELE)
 				winquake_surface_liquid_alpha = r_telealpha.value;
+			else if (s->entity && s->entity->alpha)
+				winquake_surface_liquid_alpha = (float)s->entity->alpha / 255;
 		} else winquake_surface_liquid_alpha = 1;
 		if (r_wateralphapass && winquake_surface_liquid_alpha == 1)
 			continue; // Manoel Kasimier - translucent water
@@ -184,7 +184,7 @@ void D_DrawSurfaces()
 			D_CalcGradients(pface);
 			float opacity = 1;
 			if ((int)r_twopass.value&1) {
-				if (s->entity)
+				if (s->entity && s->entity->alpha)
 					opacity = (float)s->entity->alpha / 255;
 				else if (s->flags & SURF_DRAWLAVA) opacity = 
 					r_lavaalpha.value;
