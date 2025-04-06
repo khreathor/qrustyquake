@@ -105,6 +105,8 @@ cvar_t  r_noshadow_list = {"r_noshadow_list", "progs/flame2.mdl,progs/flame.mdl,
 extern cvar_t scr_fov;
 extern float fog_density;
 extern int fog_initialized;
+extern float cur_ent_alpha;
+
 extern void R_DrawFog();
 extern void Fog_FogCommand_f();
 extern void Fog_ParseWorldspawn();
@@ -401,6 +403,8 @@ void R_DrawEntitiesOnList()
 				    lighting.shadelight > 192)
 					lighting.shadelight =
 					    192 - lighting.ambientlight;
+				cur_ent_alpha = currententity->alpha ?
+					(float)currententity->alpha/255 : 1;
 				R_AliasDrawModel(&lighting);
 			}
 			break;
