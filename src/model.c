@@ -1354,6 +1354,7 @@ static void Mod_LoadFaces (lump_t *l, qboolean bsp2)
 	loadmodel->surfaces = out;
 	loadmodel->numsurfaces = count;
 
+	int foundcutouts = 0;
 	for (surfnum=0 ; surfnum<count ; surfnum++, out++)
 	{
 		if (bsp2)
@@ -1449,6 +1450,7 @@ static void Mod_LoadFaces (lump_t *l, qboolean bsp2)
 		else if (out->texinfo->texture->name[0] == '{') // ericw -- fence textures
 		{
 			out->flags |= SURF_DRAWCUTOUT;
+			foundcutouts = 1;
 		}
 		else if (out->texinfo->flags & TEX_MISSING) // texture is missing from bsp
 		{
@@ -1464,6 +1466,13 @@ static void Mod_LoadFaces (lump_t *l, qboolean bsp2)
 		}
 		//johnfitz
 	}
+	if (r_twopass.value < 2 && !strcmp (loadmodel->name, sv.modelname)) {
+		if (foundcutouts)
+			Cvar_SetValue("r_twopass", 1);
+		else
+			Cvar_SetValue("r_twopass", 0);
+	}
+
 }
 
 static void Mod_SetParent (mnode_t *node, mnode_t *parent)
