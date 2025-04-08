@@ -239,8 +239,8 @@ extern	cvar_t	m_forward;
 extern	cvar_t	m_side;
 
 
-#define	MAX_TEMP_ENTITIES	256			// lightning bolts, etc
-#define	MAX_STATIC_ENTITIES	512			// torches, etc
+#define	MAX_TEMP_ENTITIES 1024 // lightning bolts, etc
+#define	MAX_STATIC_ENTITIES 2048 // torches, etc
 
 extern	client_state_t	cl;
 

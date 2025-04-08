@@ -59,7 +59,7 @@
 #define MAX_EDICTS 32000 // FIXME: ouch! ouch! ouch!
 #define MIN_EDICTS 256 // johnfitz -- lowest allowed value for max_edicts cvar
 #define MAX_LIGHTSTYLES 64
-#define MAX_MODELS 2048 // these are sent over the net as bytes
+#define MAX_MODELS 32768 // these are sent over the net as bytes
 #define MAX_SOUNDS 2048 // so they cannot be blindly increased
 #define SAVEGAME_COMMENT_LENGTH 39
 #define MAX_STYLESTRING 64
