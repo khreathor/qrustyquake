@@ -1401,7 +1401,7 @@ void M_New_Draw()
 	M_Print(xoffset, 104, "             FPS Limit");
 	sprintf(temp, "%d\n", (int)host_maxfps.value);
 	M_Print(xoffset + 204, 104, temp);
-	if (new_cursor == 8 && (int)host_maxfps.value > 72) {
+	if (new_cursor == 9 && (int)host_maxfps.value > 72) {
 		M_DrawTextBox(52, 158, 30, 1);
 		M_Print(64, 166, "Values above    break physics");
 		M_PrintWhite(64, 166, "             72");
