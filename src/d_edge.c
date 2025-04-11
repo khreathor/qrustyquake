@@ -190,7 +190,7 @@ void D_DrawSurfaces()
 			float opacity = 1;
 			if ((int)r_twopass.value&1) {
 				if (s->entity && s->entity->alpha)
-					opacity = (float)s->entity->alpha / 255;
+					opacity = 1-(float)s->entity->alpha/255;
 				else if (s->flags & SURF_DRAWLAVA) opacity = 
 					r_lavaalpha.value;
 				else if (s->flags & SURF_DRAWSLIME) opacity =
