@@ -506,6 +506,13 @@ void R_DrawBEntitiesOnList()
 		currententity = cl_visedicts[i];
 		switch (currententity->model->type) {
 		case mod_brush:
+			if (!r_wateralphapass && currententity->alpha) {
+				r_foundtranswater = 1;
+				continue;
+			}
+			if (r_wateralphapass)
+				cur_ent_alpha = currententity->alpha ?
+					(float)currententity->alpha/255 : 1;
 			clmodel = currententity->model;
 			// see if the bounding box lets us trivially reject
 			// also sets trivial accept status
@@ -574,6 +581,7 @@ void R_DrawBEntitiesOnList()
 		}
 	}
 	insubmodel = false;
+	cur_ent_alpha = 1;
 }
 
 void R_EdgeDrawing()
@@ -597,7 +605,7 @@ void R_EdgeDrawing()
 	if (r_dspeeds.value) rw_time1 = Sys_FloatTime();
 	R_RenderWorld();
 	if (r_dspeeds.value) db_time1 = rw_time2 = Sys_FloatTime();
-	if (r_pass || !((int)r_twopass.value&1)) R_DrawBEntitiesOnList();
+	if (r_wateralphapass || r_pass || !((int)r_twopass.value&1)) R_DrawBEntitiesOnList();
 	if (r_dspeeds.value) se_time2 = db_time2 = Sys_FloatTime();
 	R_ScanEdges();
 }

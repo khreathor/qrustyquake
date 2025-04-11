@@ -34,6 +34,7 @@ int r_ceilv1;
 qboolean r_lastvertvalid;
 static qboolean makeleftedge, makerightedge;
 float winquake_surface_liquid_alpha;
+extern float cur_ent_alpha;
 
 extern void R_EmitSkyBox();
 
@@ -243,7 +244,9 @@ void R_RenderFace(msurface_t *fa, int clipflags)
 		else if (fa->flags & SURF_DRAWSLIME) winquake_surface_liquid_alpha = r_slimealpha.value;
 		else if (fa->flags & SURF_DRAWWATER) winquake_surface_liquid_alpha = r_wateralpha.value;
 		else if (fa->flags & SURF_DRAWTELE) winquake_surface_liquid_alpha = r_telealpha.value;
-	} else winquake_surface_liquid_alpha = 1;
+	} else if (cur_ent_alpha < 1)
+		winquake_surface_liquid_alpha = cur_ent_alpha;
+	else winquake_surface_liquid_alpha = 1;
         // Baker: Fully transparent = invisible = don't render
         if (!winquake_surface_liquid_alpha)
                 return;

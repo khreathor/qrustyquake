@@ -9,6 +9,7 @@ float scale_for_mip;
 int ubasestep, errorterm, erroradjustup, erroradjustdown;
 int vstartscan;
 vec3_t transformed_modelorg;
+extern float cur_ent_alpha;
 
 // FIXME: should go away
 extern void R_RotateBmodel();
@@ -117,9 +118,9 @@ void D_DrawSurfaces()
 				winquake_surface_liquid_alpha = r_wateralpha.value;
 			else if (s->flags & SURF_DRAWTELE)
 				winquake_surface_liquid_alpha = r_telealpha.value;
-			else if (s->entity && s->entity->alpha)
-				winquake_surface_liquid_alpha = (float)s->entity->alpha / 255;
-		} else winquake_surface_liquid_alpha = 1;
+		} else if (s->entity && s->entity->alpha)
+			winquake_surface_liquid_alpha = (float)s->entity->alpha / 255;
+		else winquake_surface_liquid_alpha = 1;
 		if (r_wateralphapass && winquake_surface_liquid_alpha == 1)
 			continue; // Manoel Kasimier - translucent water
 		d_zistepu = s->d_zistepu;
