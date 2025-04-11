@@ -412,6 +412,7 @@ void R_DrawEntitiesOnList()
 			break;
 		}
 	}
+	cur_ent_alpha = 1;
 }
 
 void R_DrawViewModel()

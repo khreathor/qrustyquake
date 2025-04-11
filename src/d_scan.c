@@ -438,17 +438,19 @@ void D_DrawTransSpans8(espan_t *pspan, float opacity)
 	float sdivz8stepu = d_sdivzstepu * 8;
 	float tdivz8stepu = d_tdivzstepu * 8;
 	float zi8stepu = d_zistepu * 8;
+	izistep = (int)(d_zistepu * 0x8000 * 0x10000);
 	do {
 		unsigned char *pdest = (unsigned char *)((byte *) d_viewbuffer +
 				      (screenwidth * pspan->v) + pspan->u);
-		int count = pspan->count;
 		pz = d_pzbuffer + (d_zwidth * pspan->v) + pspan->u;
+		int count = pspan->count;
 		float du = (float)pspan->u; // calculate the initial s/z, t/z,
 		float dv = (float)pspan->v; // 1/z, s, and t and clamp
 		float sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
 		float tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
 		float zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
 		float z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
+		izi = (int)(zi * 0x8000 * 0x10000);
 		fixed16_t s = (int)(sdivz * z) + sadjust;
 		if (s > bbextents)
 			s = bbextents;
@@ -520,11 +522,15 @@ void D_DrawTransSpans8(espan_t *pspan, float opacity)
 			if (!fog_lut_built)
 				build_color_mix_lut();
 			do {
-				unsigned char pix = *(pbase + (s >> 16) +
-					(t >> 16) * cachewidth);
-				pix = color_mix_lut[pix][*pdest][foglut];
-					*pdest = pix;
+				if (*pz <= (izi >> 16)) {
+					unsigned char pix = *(pbase + (s >> 16) +
+						(t >> 16) * cachewidth);
+					pix = color_mix_lut[pix][*pdest][foglut];
+						*pdest = pix;
+				}
 				pdest++;
+				izi += izistep;
+				pz++;
 				s += sstep;
 				t += tstep;
 			} while (--spancount > 0);
