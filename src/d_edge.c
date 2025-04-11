@@ -239,8 +239,7 @@ void D_DrawSurfaces()
 			cacheblock = (pixel_t *) pcurrentcache->data;
 			cachewidth = pcurrentcache->width;
 			D_CalcGradients(pface);
-			float opacity = 1;
-			opacity = (float)s->entity->alpha / 255;
+			float opacity = 1 - (float)s->entity->alpha / 255;
 			D_DrawTransSpans8(s->spans, opacity);
 			if (s->insubmodel) {
 				// restore the old drawing state
