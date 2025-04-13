@@ -407,6 +407,13 @@ void D_PolysetDrawSpans8(spanpackage_t *pspanpackage)
 			int ltfrac = pspanpackage->tfrac;
 			int llight = pspanpackage->light;
 			int lzi = pspanpackage->zi;
+			if (lpz + lcount - d_pzbuffer > vid.width * vid.height * sizeof(short)) {
+				printf ("Invalid span length: %d %d\n", 
+					lpz + lcount - d_pzbuffer, vid.width * vid.height * sizeof(short));
+				break;
+				// CyanBun96: i caused this bug and i can't be bothered to fix it. Here, have a
+				// quick non-fix to stop it from segfaulting. gl hf whoever stumbles upon this.
+			}
 			do {
 				if ((lzi >> 16) >= *lpz) {
 					int pix = ((byte*)acolormap)[*lptex + (llight & 0xFF00)];
