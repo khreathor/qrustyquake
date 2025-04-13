@@ -632,7 +632,7 @@ void R_RenderView() // r_refdef must be set before the first call
 		R_EdgeDrawing();
 	}
 	R_DrawEntitiesOnList();
-	if (r_foundtranswater) {
+	if (r_foundtranswater && (r_twopass.value + r_entalpha.value)) {
 		r_wateralphapass = true;
 		R_EdgeDrawing ();
 	}

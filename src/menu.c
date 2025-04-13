@@ -1475,6 +1475,7 @@ void M_New_Key(int k)
 				Cvar_SetValue("r_twopass", 3);
 			else
 				Cvar_SetValue("r_twopass", r_twopass.value - 1);
+			Cvar_SetValue("r_entalpha", (int)r_twopass.value & 1);
 		} else if (new_cursor == 7)
 			Cvar_SetValue("r_alphastyle", !r_alphastyle.value);
 		else if (new_cursor == 8 && r_wateralpha.value >= 0.1) {
@@ -1535,6 +1536,7 @@ void M_New_Key(int k)
 				Cvar_SetValue("r_twopass", 0);
 			else
 				Cvar_SetValue("r_twopass", r_twopass.value + 1);
+			Cvar_SetValue("r_entalpha", (int)r_twopass.value & 1);
 		} else if (new_cursor == 7)
 			Cvar_SetValue("r_alphastyle", !r_alphastyle.value);
 		else if (new_cursor == 8 && r_wateralpha.value < 1.0) {
