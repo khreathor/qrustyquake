@@ -244,7 +244,7 @@ void R_RenderFace(msurface_t *fa, int clipflags)
 		else if (fa->flags & SURF_DRAWSLIME) winquake_surface_liquid_alpha = r_slimealpha.value;
 		else if (fa->flags & SURF_DRAWWATER) winquake_surface_liquid_alpha = r_wateralpha.value;
 		else if (fa->flags & SURF_DRAWTELE) winquake_surface_liquid_alpha = r_telealpha.value;
-	} else if (cur_ent_alpha < 1)
+	} else if (cur_ent_alpha < 1 && r_entalpha.value == 1)
 		winquake_surface_liquid_alpha = cur_ent_alpha;
 	else winquake_surface_liquid_alpha = 1;
         // Baker: Fully transparent = invisible = don't render

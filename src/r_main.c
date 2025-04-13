@@ -96,6 +96,7 @@ cvar_t r_twopass = { "r_twopass", "1", true, false, 0, NULL }; // CyanBun96
 cvar_t r_fogstyle = { "r_fogstyle", "3", true, false, 0, NULL }; // CyanBun96
 cvar_t r_nofog = { "r_nofog", "0", true, false, 0, NULL }; // CyanBun96
 cvar_t r_alphastyle = { "r_alphastyle", "0", true, false, 0, NULL }; // CyanBun96
+cvar_t r_entalpha = { "r_entalpha", "1", true, false, 0, NULL }; // CyanBun96
 
 // johnfitz -- new cvars TODO actually implement these, they're currently placeholders
 cvar_t  r_nolerp_list = {"r_nolerp_list", "progs/flame.mdl,progs/flame2.mdl,progs/braztall.mdl,pro gs/brazshrt.mdl,progs/longtrch.mdl,progs/flame_pyre.mdl,progs/v_saw.mdl,progs/v_xfist.mdl,progs/h2 stuff/newfire.mdl", false, false, 0, NULL};
@@ -175,6 +176,7 @@ void R_Init()
 	Cvar_RegisterVariable(&r_fogstyle);
 	Cvar_RegisterVariable(&r_nofog);
 	Cvar_RegisterVariable(&r_alphastyle);
+	Cvar_RegisterVariable(&r_entalpha);
 	Cvar_SetValue("r_maxedges", (float)NUMSTACKEDGES);
 	Cvar_SetValue("r_maxsurfs", (float)NUMSTACKSURFACES);
 	view_clipplanes[0].leftedge = true;
@@ -403,7 +405,7 @@ void R_DrawEntitiesOnList()
 				    lighting.shadelight > 192)
 					lighting.shadelight =
 					    192 - lighting.ambientlight;
-				cur_ent_alpha = currententity->alpha ?
+				cur_ent_alpha = currententity->alpha && r_entalpha.value == 1 ?
 					(float)currententity->alpha/255 : 1;
 				R_AliasDrawModel(&lighting);
 			}
@@ -506,13 +508,17 @@ void R_DrawBEntitiesOnList()
 		currententity = cl_visedicts[i];
 		switch (currententity->model->type) {
 		case mod_brush:
-			if (!r_wateralphapass && currententity->alpha) {
-				r_foundtranswater = 1;
-				continue;
+			if (r_entalpha.value == 1) {
+				if (!r_wateralphapass && currententity->alpha) {
+					r_foundtranswater = 1;
+					continue;
+				}
+				if (r_wateralphapass)
+					cur_ent_alpha = currententity->alpha ?
+						(float)currententity->alpha/255 : 1;
 			}
-			if (r_wateralphapass)
-				cur_ent_alpha = currententity->alpha ?
-					(float)currententity->alpha/255 : 1;
+			else
+				cur_ent_alpha = 1;
 			clmodel = currententity->model;
 			// see if the bounding box lets us trivially reject
 			// also sets trivial accept status

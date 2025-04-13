@@ -60,6 +60,7 @@ extern cvar_t r_lavaalpha;
 extern cvar_t r_telealpha;
 extern cvar_t r_twopass;
 extern cvar_t fog;
+extern cvar_t r_entalpha;
 extern unsigned char color_mix_lut[256][256][FOG_LUT_LEVELS];
 extern unsigned char fog_pal_index;
 

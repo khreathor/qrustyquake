@@ -118,14 +118,14 @@ void D_DrawSurfaces()
 				winquake_surface_liquid_alpha = r_wateralpha.value;
 			else if (s->flags & SURF_DRAWTELE)
 				winquake_surface_liquid_alpha = r_telealpha.value;
-		} else if (s->entity > 100000 && s->entity->alpha)
+		} else if (s->entity > 100000 && s->entity->alpha && r_entalpha.value == 1)
 			winquake_surface_liquid_alpha = (float)s->entity->alpha / 255;
 		// CyanBun96: some entities are assigned an invalid address like
 		// 35, which leads to segfaults on any further checks while
 		// still passing s->entity != NULL check. Must be a symptom of
 		// some bigger issue that I can't be bothered to diagnose ATM.
 		else winquake_surface_liquid_alpha = 1;
-		if (r_wateralphapass && winquake_surface_liquid_alpha == 1)
+		if (r_wateralphapass && winquake_surface_liquid_alpha == 1 && r_entalpha.value == 1)
 			continue; // Manoel Kasimier - translucent water
 		d_zistepu = s->d_zistepu;
 		d_zistepv = s->d_zistepv;
@@ -189,7 +189,7 @@ void D_DrawSurfaces()
 			D_CalcGradients(pface);
 			float opacity = 1;
 			if ((int)r_twopass.value&1) {
-				if (s->entity && s->entity->alpha)
+				if (s->entity && s->entity->alpha && r_entalpha.value == 1)
 					opacity = 1-(float)s->entity->alpha/255;
 				else if (s->flags & SURF_DRAWLAVA) opacity = 
 					r_lavaalpha.value;
@@ -216,7 +216,7 @@ void D_DrawSurfaces()
 				VectorCopy(base_modelorg, modelorg);
 				R_TransformFrustum();
 			}
-		} else if (s->entity > 100000 && s->entity->alpha) {
+		} else if (s->entity > 100000 && s->entity->alpha && r_entalpha.value == 1) {
 			if (s->insubmodel) {
 				// FIXME: we don't want to do all this for every polygon!
 				// TODO: store once at start of frame
