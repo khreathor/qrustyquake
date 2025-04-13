@@ -698,7 +698,7 @@ void Sbar_IntermissionOverlay()
 void Sbar_FinaleOverlay()
 {
 	qpic_t *pic = Draw_CachePic("gfx/finale.lmp");
-	Draw_TransPicScaled(WW - pic->width*SCL/2, 16*SCL, pic, SCL);
+	Draw_TransPicScaled(WW/2 - pic->width/2*SCL, 16*SCL, pic, SCL);
 }
 
 void Sbar_Draw()
