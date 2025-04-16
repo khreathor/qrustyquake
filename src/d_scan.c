@@ -505,21 +505,37 @@ void D_DrawTransSpans8(espan_t *pspan, float opacity)
 				}
 			}
 			int foglut = opacity*FOG_LUT_LEVELS;
-			if (!fog_lut_built)
-				build_color_mix_lut();
-			do {
-				if (*pz <= (izi >> 16)) {
-					unsigned char pix = *(pbase + (s >> 16) +
-						(t >> 16) * cachewidth);
-					pix = color_mix_lut[pix][*pdest][foglut];
+			if (r_alphastyle.value == 0) {
+				if (!fog_lut_built)
+					build_color_mix_lut();
+				do {
+					if (*pz <= (izi >> 16)) {
+						unsigned char pix = *(pbase + (s >> 16) +
+							(t >> 16) * cachewidth);
+						pix = color_mix_lut[pix][*pdest][foglut];
 						*pdest = pix;
-				}
-				pdest++;
-				izi += izistep;
-				pz++;
-				s += sstep;
-				t += tstep;
-			} while (--spancount > 0);
+					}
+					pdest++;
+					izi += izistep;
+					pz++;
+					s += sstep;
+					t += tstep;
+				} while (--spancount > 0);
+			}
+			else {
+				do {
+					if (*pz <= (izi >> 16) && D_Dither(pdest)) {
+						unsigned char pix = *(pbase + (s >> 16) +
+							(t >> 16) * cachewidth);
+						*pdest = pix;
+					}
+					pdest++;
+					izi += izistep;
+					pz++;
+					s += sstep;
+					t += tstep;
+				} while (--spancount > 0);
+			}
 			s = snext;
 			t = tnext;
 		} while (count > 0);
