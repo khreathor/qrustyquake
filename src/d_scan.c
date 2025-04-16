@@ -27,13 +27,13 @@ int D_Dither(byte *pos)
 	unsigned long x = d % vid.width;
 	unsigned long y = d / vid.width;
 	switch (dither_pat) {
-		case 6: return !(d % 6); // 1/6
-		case 5: return (y&1) && ((y&3) == 3 ? (x&1) : !(x&1)); // 1/4
-		case 4: return !(d % 3); // 1/3
+		case 0: return !(d % 6); // 1/6
+		case 1: return (y&1) && ((y&3) == 3 ? (x&1) : !(x&1)); // 1/4
+		case 2: return !(d % 3); // 1/3
 		case 3: return (x + y) & 1; // 1/2
-		case 2: return d % 3; // 2/3
-		case 1: return !((y&1) && ((y&3) == 3 ? (x&1) : !(x&1))); // 3/4
-		default: case 0: return d % 6; // 5/6
+		case 4: return d % 3; // 2/3
+		case 5: return !((y&1) && ((y&3) == 3 ? (x&1) : !(x&1))); // 3/4
+		default: case 6: return d % 6; // 5/6
 	}
 }
 
