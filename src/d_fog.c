@@ -17,24 +17,81 @@ extern unsigned int sb_updates; // if >= vid.numpages, no update needed
 unsigned char color_mix_lut[256][256][FOG_LUT_LEVELS];
 int fog_lut_built = 0;
 
+typedef struct {
+	double L, a, b;
+} Lab;
+
+void rgb_to_lab(unsigned char R, unsigned char G, unsigned char B, Lab *lab) {
+	double r = R / 255.0;
+	double g = G / 255.0;
+	double b = B / 255.0;
+	// Gamma correction (sRGB to linear RGB)
+	r = (r > 0.04045) ? pow((r + 0.055) / 1.055, 2.4) : r / 12.92;
+	g = (g > 0.04045) ? pow((g + 0.055) / 1.055, 2.4) : g / 12.92;
+	b = (b > 0.04045) ? pow((b + 0.055) / 1.055, 2.4) : b / 12.92;
+	// Convert linear RGB to XYZ (using the D65 illuminant)
+	double X = r * 0.4124 + g * 0.3576 + b * 0.1805;
+	double Y = r * 0.2126 + g * 0.7152 + b * 0.0722;
+	double Z = r * 0.0193 + g * 0.1192 + b * 0.9505;
+	// Normalize for D65 white point
+	X /= 0.95047;
+	Y /= 1.00000;
+	Z /= 1.08883;
+	const double epsilon = 0.008856; // Cube of delta
+	const double kappa = 903.3; // 29^3/3^3
+	double f(double t) {
+		return (t>epsilon)?pow(t,1.0/3.0):((kappa*t+16.0)/116.0);
+	}
+	double fx = f(X);
+	double fy = f(Y);
+	double fz = f(Z);
+	lab->L = 116.0 * fy - 16.0;
+	lab->a = 500.0 * (fx - fy);
+	lab->b = 200.0 * (fy - fz);
+}
+
+unsigned char rgbtoi_lab(unsigned char r, unsigned char g, unsigned char b) {
+	Lab lab;
+	rgb_to_lab(r, g, b, &lab);
+	unsigned char besti = 0;
+	double bestdist = 1e12;
+	unsigned char *p = vid_curpal;
+	for (int i = 0; i < 256; ++i, p += 3) {
+		Lab lab2;
+		rgb_to_lab(p[0], p[1], p[2], &lab2);
+		double dL = lab.L - lab2.L; // Euclidean distance in Lab space
+		double da = lab.a - lab2.a;
+		double db = lab.b - lab2.b;
+		double dist = dL * dL + da * da + db * db;
+		if (dist < bestdist) {
+			bestdist = dist;
+			besti = (unsigned char)i;
+			// Exact match, early return
+			if (dist == 0.0)
+				return besti;
+		}
+	}
+	return besti;
+}
+
 unsigned char rgbtoi(unsigned char r, unsigned char g, unsigned char b)
-{ // todo? lab color or really anything more accurate
-    unsigned char besti = 0;
-    int bestdist = 0x7fffffff;
-    unsigned char *p = vid_curpal;
-    for (int i = 0; i < 256; ++i, p += 3) {
-        int dr = r - p[0];
-        int dg = g - p[1];
-        int db = b - p[2];
-        int dist = dr * dr + dg * dg + db * db; // squared euclidean distance
-        if (dist < bestdist) {
-            bestdist = dist;
-            besti = (unsigned char)i;
-            if (dist == 0) // exact match, return early
-                return besti;
-        }
-    }
-    return besti;
+{
+	unsigned char besti = 0;
+	int bestdist = 0x7fffffff;
+	unsigned char *p = vid_curpal;
+	for (int i = 0; i < 256; ++i, p += 3) {
+		int dr = r - p[0]; // squared euclidean distance
+		int dg = g - p[1];
+		int db = b - p[2];
+		int dist = dr * dr + dg * dg + db * db;
+		if (dist < bestdist) {
+			bestdist = dist;
+			besti = (unsigned char)i;
+			if (dist == 0) // exact match, return early
+				return besti;
+		}
+	}
+	return besti;
 }
 
 void Fog_FogCommand_f () // yanked from Quakespasm, mostly
@@ -113,11 +170,11 @@ void Fog_ParseWorldspawn () // from Quakespasm
 	fog_green = 0;
 	fog_blue = 0;
 	/*TODOold_density = DEFAULT_DENSITY;
-	old_red = DEFAULT_GRAY;
-	old_green = DEFAULT_GRAY;
-	old_blue = DEFAULT_GRAY;
-	fade_time = 0.0;
-	fade_done = 0.0;*/
+	  old_red = DEFAULT_GRAY;
+	  old_green = DEFAULT_GRAY;
+	  old_blue = DEFAULT_GRAY;
+	  fade_time = 0.0;
+	  fade_done = 0.0;*/
 	const char *data = COM_Parse(cl.worldmodel->entities);
 	if (!data || com_token[0] != '{')
 		return; // error
@@ -167,26 +224,26 @@ int dither(int x, int y, float f) {
 
 void build_color_mix_lut()
 {
-    for (int c1 = 0; c1 < 256; c1++) {
-        for (int c2 = 0; c2 < 256; c2++) {
-            unsigned char r1 = vid_curpal[c1*3+0];
-            unsigned char g1 = vid_curpal[c1*3+1];
-            unsigned char b1 = vid_curpal[c1*3+2];
-            unsigned char r2 = vid_curpal[c2*3+0];
-            unsigned char g2 = vid_curpal[c2*3+1];
-            unsigned char b2 = vid_curpal[c2*3+2];
-            for (int level = 0; level < FOG_LUT_LEVELS; level++) {
-                float factor = (float)level / (FOG_LUT_LEVELS-1);
-                // learp each RGB component
-                unsigned char r = (unsigned char)(r1 + factor * (r2 - r1));
-                unsigned char g = (unsigned char)(g1 + factor * (g2 - g1));
-                unsigned char b = (unsigned char)(b1 + factor * (b2 - b1));
-                unsigned char mixed_index = rgbtoi(r, g, b);
-                color_mix_lut[c1][c2][level] = mixed_index;
-            }
-        }
-    }
-    fog_lut_built = 1;
+	for (int c1 = 0; c1 < 256; c1++) {
+		for (int c2 = 0; c2 < 256; c2++) {
+			unsigned char r1 = vid_curpal[c1*3+0];
+			unsigned char g1 = vid_curpal[c1*3+1];
+			unsigned char b1 = vid_curpal[c1*3+2];
+			unsigned char r2 = vid_curpal[c2*3+0];
+			unsigned char g2 = vid_curpal[c2*3+1];
+			unsigned char b2 = vid_curpal[c2*3+2];
+			for (int level = 0; level < FOG_LUT_LEVELS; level++) {
+				float factor = (float)level / (FOG_LUT_LEVELS-1);
+				// learp each RGB component
+				unsigned char r = (unsigned char)(r1 + factor * (r2 - r1));
+				unsigned char g = (unsigned char)(g1 + factor * (g2 - g1));
+				unsigned char b = (unsigned char)(b1 + factor * (b2 - b1));
+				unsigned char mixed_index = rgbtoi(r, g, b);
+				color_mix_lut[c1][c2][level] = mixed_index;
+			}
+		}
+	}
+	fog_lut_built = 1;
 }
 
 void R_InitFog()
