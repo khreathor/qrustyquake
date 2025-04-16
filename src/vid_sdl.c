@@ -294,10 +294,10 @@ void VID_CalcScreenDimensions()
 	float bufAspect;
 	if (aspectr.value == 0) {
 		bufAspect = (float)bufW / bufH;
-		aspectr.value = bufAspect;
 	}
 	else
 		bufAspect = aspectr.value;
+	Cvar_SetValue("aspectr", bufAspect);
 	// Calculate scaled dimensions
 	int destW, destH;
 	if ((float)winW / winH > bufAspect) {
@@ -419,6 +419,8 @@ void VID_SetMode(int modenum, int customw, int customh, int customwinmode,
 	VID_AllocBuffers();
 	vid.recalc_refdef = 1;
 	VID_SetPalette(palette);
+	realwidth.value = vid.width;
+	realheight.value = (int)(vid.width / aspectr.value + 0.5);
 	if (!customw || !customh) {
 		if (modenum <= 2) {
 			SDL_SetWindowFullscreen(window, 0);

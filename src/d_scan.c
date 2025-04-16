@@ -12,6 +12,7 @@ int *r_turb_turb;
 int r_turb_spancount;
 short *pz; // Manoel Kasimier - translucent water
 int izi, izistep;
+int dither_pat = 0;
 
 extern cvar_t r_skyfog;
 extern cvar_t r_alphastyle;
@@ -19,6 +20,22 @@ extern int fog_lut_built;
 extern void build_color_mix_lut();
 
 void D_DrawTurbulent8Span();
+
+int D_Dither(byte *pos)
+{
+	unsigned long d = pos - vid.buffer;
+	unsigned long x = d % vid.width;
+	unsigned long y = d / vid.width;
+	switch (dither_pat) {
+		case 6: return !(d % 6); // 1/6
+		case 5: return (y&1) && ((y&3) == 3 ? (x&1) : !(x&1)); // 1/4
+		case 4: return !(d % 3); // 1/3
+		case 3: return (x + y) & 1; // 1/2
+		case 2: return d % 3; // 2/3
+		case 1: return !((y&1) && ((y&3) == 3 ? (x&1) : !(x&1))); // 3/4
+		default: case 0: return d % 6; // 5/6
+	}
+}
 
 void D_WarpScreen() // this performs a slight compression of the screen at the
 { // same time as the sine warp, to keep the edges from wrapping
@@ -81,50 +98,19 @@ void D_DrawTurbulent8SpanAlpha (float opacity)
 		} while (--r_turb_spancount > 0);
 		return;
 	}
-	int odd = ((long)r_turb_pdest/vid.width)&1;
-	int pattern = 0;
-	if (opacity >= 0.83f) pattern = 6;
-	else if (opacity >= 0.75f) pattern = 5;
-	else if (opacity >= 0.66f) pattern = 4;
-	else if (opacity >= 0.50f) pattern = 3;
-	else if (opacity >= 0.33f) pattern = 2;
-	else if (opacity >= 0.25f) pattern = 1;
+	if (opacity >= 0.83f) dither_pat = 6;
+	else if (opacity >= 0.75f) dither_pat = 5;
+	else if (opacity >= 0.66f) dither_pat = 4;
+	else if (opacity >= 0.50f) dither_pat = 3;
+	else if (opacity >= 0.33f) dither_pat = 2;
+	else if (opacity >= 0.25f) dither_pat = 1;
+	else dither_pat = 0;
 	do {
 		if (*pz <= (izi >> 16)) {
 			int s=((r_turb_s+r_turb_turb[(r_turb_t>>16)&(CYCLE-1)])>>16)&63;
 			int t=((r_turb_t+r_turb_turb[(r_turb_s>>16)&(CYCLE-1)])>>16)&63;
-			switch (pattern) {
-			case 6: // 83%
-				if(!(!((long)r_turb_pdest%3) && odd))
-					*r_turb_pdest = *(r_turb_pbase + (t << 6) + s);
-				break;
-			case 5: // 75%
-				if(!((long)r_turb_pdest&1 && odd))
-					*r_turb_pdest = *(r_turb_pbase + (t << 6) + s);
-				break;
-			case 4: // 66%
-				if(!((long)r_turb_pdest%3 && odd))
-					*r_turb_pdest = *(r_turb_pbase + (t << 6) + s);
-				break;
-			case 3: // 50%
-				if(((long)r_turb_pdest&1 && odd)
-					|| (!((long)r_turb_pdest&1) && !odd))
-					*r_turb_pdest = *(r_turb_pbase + (t << 6) + s);
-				break;
-			case 2: // 33%
-				if(((long)r_turb_pdest%3 && odd))
-					*r_turb_pdest = *(r_turb_pbase + (t << 6) + s);
-				break;
-			case 1: // 25%
-				if((long)r_turb_pdest&1 && odd)
-					*r_turb_pdest = *(r_turb_pbase + (t << 6) + s);
-				break;
-			case 0: // 16%
-			default:
-				if(!((long)r_turb_pdest%3) && odd)
-					*r_turb_pdest = *(r_turb_pbase + (t << 6) + s);
-				break;
-			}
+			if (D_Dither(r_turb_pdest))
+				*r_turb_pdest = *(r_turb_pbase + (t << 6) + s);
 		}
 		r_turb_pdest++;
 		izi += izistep;
@@ -222,7 +208,7 @@ void Turbulent8(espan_t *pspan, float opacity)
 			}
 			r_turb_s = r_turb_s & ((CYCLE << 16) - 1);
 			r_turb_t = r_turb_t & ((CYCLE << 16) - 1);
-			if (r_wateralphapass || opacity < 1)
+			if (r_wateralphapass && opacity < 1)
 				D_DrawTurbulent8SpanAlpha(opacity);
 			else
 				D_DrawTurbulent8Span();
