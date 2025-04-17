@@ -98,13 +98,13 @@ void D_DrawTurbulent8SpanAlpha (float opacity)
 		} while (--r_turb_spancount > 0);
 		return;
 	}
-	if (opacity >= 0.83f) dither_pat = 6;
-	else if (opacity >= 0.75f) dither_pat = 5;
-	else if (opacity >= 0.66f) dither_pat = 4;
+	if (opacity >= 0.83f) dither_pat = 0;
+	else if (opacity >= 0.75f) dither_pat = 1;
+	else if (opacity >= 0.66f) dither_pat = 2;
 	else if (opacity >= 0.50f) dither_pat = 3;
-	else if (opacity >= 0.33f) dither_pat = 2;
-	else if (opacity >= 0.25f) dither_pat = 1;
-	else dither_pat = 0;
+	else if (opacity >= 0.33f) dither_pat = 4;
+	else if (opacity >= 0.25f) dither_pat = 5;
+	else dither_pat = 6;
 	do {
 		if (*pz <= (izi >> 16)) {
 			int s=((r_turb_s+r_turb_turb[(r_turb_t>>16)&(CYCLE-1)])>>16)&63;
