@@ -97,6 +97,7 @@ cvar_t r_fogstyle = { "r_fogstyle", "3", true, false, 0, NULL }; // CyanBun96
 cvar_t r_nofog = { "r_nofog", "0", true, false, 0, NULL }; // CyanBun96
 cvar_t r_alphastyle = { "r_alphastyle", "0", true, false, 0, NULL }; // CyanBun96
 cvar_t r_entalpha = { "r_entalpha", "1", true, false, 0, NULL }; // CyanBun96
+cvar_t r_labmixpal = { "r_labmixpal", "1", true, false, 0, NULL }; // CyanBun96
 
 // johnfitz -- new cvars TODO actually implement these, they're currently placeholders
 cvar_t  r_nolerp_list = {"r_nolerp_list", "progs/flame.mdl,progs/flame2.mdl,progs/braztall.mdl,pro gs/brazshrt.mdl,progs/longtrch.mdl,progs/flame_pyre.mdl,progs/v_saw.mdl,progs/v_xfist.mdl,progs/h2 stuff/newfire.mdl", false, false, 0, NULL};
@@ -113,6 +114,7 @@ extern void Fog_FogCommand_f();
 extern void Fog_ParseWorldspawn();
 extern void R_InitSkyBox(); // Manoel Kasimier - skyboxes 
 extern void Sky_NewMap();
+extern void build_color_mix_lut();
 
 void CreatePassages();
 void SetVisibilityByPassages();
@@ -177,6 +179,8 @@ void R_Init()
 	Cvar_RegisterVariable(&r_nofog);
 	Cvar_RegisterVariable(&r_alphastyle);
 	Cvar_RegisterVariable(&r_entalpha);
+	Cvar_RegisterVariable(&r_labmixpal);
+	Cvar_SetCallback(&r_labmixpal, build_color_mix_lut);
 	Cvar_SetValue("r_maxedges", (float)NUMSTACKEDGES);
 	Cvar_SetValue("r_maxsurfs", (float)NUMSTACKSURFACES);
 	view_clipplanes[0].leftedge = true;
