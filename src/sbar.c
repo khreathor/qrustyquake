@@ -343,16 +343,16 @@ void Sbar_ItemsClassic()
 {
 	for (int i = 2; i < 6; i++)
 		if (cl.items & (1 << (17 + i))) 
-			Draw_PicScaled(iposx[i],iposy,sb_items[i],SCL);
+			Draw_TransPicScaled(iposx[i],iposy,sb_items[i],SCL);
 	for (int i = 0; hipnotic && i < 2; i++)
 		if (cl.items & (1 << (24 + i)))
-			Draw_PicScaled(iposx[i+6],iposy,hsb_items[i],SCL);
+			Draw_TransPicScaled(iposx[i+6],iposy,hsb_items[i],SCL);
 	for (int i = 0; rogue && i < 2; i++)
 		if (cl.items & (1 << (29 + i)))
-			Draw_PicScaled(iposx[i+6],iposy,rsb_items[i],SCL);
+			Draw_TransPicScaled(iposx[i+6],iposy,rsb_items[i],SCL);
 	for (int i = 0; !rogue && i < 4; i++) // sigils
 		if (cl.items & (1 << (28 + i)))
-			Draw_PicScaled(iposx[8+i], iposy, sb_sigil[i], SCL);
+			Draw_TransPicScaled(iposx[8+i], iposy, sb_sigil[i], SCL);
 }
 
 void Sbar_ItemsModern()
@@ -363,17 +363,17 @@ void Sbar_ItemsModern()
 		y -= 24*SCL; // armor is visible, start above it
 	for (int i = 2; i < 6; i++)
 		if ((cl.items & (1<<(17+i))) && (!hipnotic || (i > 1))) {
-			Draw_PicScaled(x, y, sb_items[i], SCL);
+			Draw_TransPicScaled(x, y, sb_items[i], SCL);
 			y -= 16*SCL;
 		}
 	for (int i = 0; hipnotic && i < 2; i++)
 		if (cl.items & (1<<(24+i))) {
-			Draw_PicScaled(x, y, hsb_items[i], SCL);
+			Draw_TransPicScaled(x, y, hsb_items[i], SCL);
 			y -= 16*SCL;
 		}
 	for (int i = 0; rogue && i < 2; i++)
 		if (cl.items & (1<<(29+i))) {
-			Draw_PicScaled(x, y, rsb_items[i], SCL);
+			Draw_TransPicScaled(x, y, rsb_items[i], SCL);
 			y -= 16*SCL;
 		}
 }
@@ -389,7 +389,7 @@ void Sbar_DrawInventoryBg()
 	case 0: // classic
 		x = WW / 2 - 160*SCL;
 		y = HH - 48*SCL;
-		Draw_PicScaled(x, y, pic, SCL);
+		Draw_TransPicScaled(x, y, pic, SCL);
 		break;
 	case 1: // bottom center, 4x1
 		x = WW / 2 - 96*SCL;
@@ -482,7 +482,7 @@ void Sbar_DrawInventory()
 	for (int i = 0; i < 2; i++) { // keys
 		if (!(cl.items & (1<<(17+i))))
 			continue;
-		Draw_PicScaled(kpos[i][0], kpos[i][1], sb_items[i], SCL);
+		Draw_TransPicScaled(kpos[i][0], kpos[i][1], sb_items[i], SCL);
 	}
 	switch ((int)scr_hudstyle.value) {
 	default: case 0: case 3: Sbar_ItemsClassic(); break;
@@ -510,7 +510,7 @@ void Sbar_DrawFace()
 		scoreboard_t *s = &cl.scores[cl.viewentity - 1];
 		int top = Sbar_ColorForMap(s->colors & 0xf0);
 		int bottom = Sbar_ColorForMap((s->colors & 0x0f) << 4);
-		Draw_PicScaled(x, y, rsb_teambord, SCL);
+		Draw_TransPicScaled(x, y, rsb_teambord, SCL);
 		Draw_Fill(WW/2 - 47*SCL, HH - 21*SCL, 22*SCL, 9*SCL, top);
 		Draw_Fill(WW/2 - 47*SCL, HH - 12*SCL, 22*SCL, 9*SCL, bottom);
 		Sbar_DrawNumSmall(WW/2-49*SCL, HH-21*SCL, s->frags, top==8);
@@ -552,7 +552,7 @@ void Sbar_DrawArmor()
 	}
 	if (cl.items & IT_INVULNERABILITY) { // armor
 		Sbar_DrawNum(24*SCL + x, y, 666, 3, 1);
-		Draw_PicScaled(x, y, draw_disc, SCL);
+		Draw_TransPicScaled(x, y, draw_disc, SCL);
 		return;
 	}
 	if (rogue) {
@@ -560,21 +560,21 @@ void Sbar_DrawArmor()
 			Sbar_DrawNum(24*SCL + x, y, cl.stats[STAT_ARMOR], 3,
 					cl.stats[STAT_ARMOR] <= 25);
 		if (cl.items & RIT_ARMOR3)
-			Draw_PicScaled(x, y, sb_armor[2], SCL);
+			Draw_TransPicScaled(x, y, sb_armor[2], SCL);
 		else if (cl.items & RIT_ARMOR2)
-			Draw_PicScaled(x, y, sb_armor[1], SCL);
+			Draw_TransPicScaled(x, y, sb_armor[1], SCL);
 		else if (cl.items & RIT_ARMOR1)
-			Draw_PicScaled(x, y, sb_armor[0], SCL);
+			Draw_TransPicScaled(x, y, sb_armor[0], SCL);
 	} else {
 		if (!scr_hudstyle.value || cl.stats[STAT_ARMOR])
 			Sbar_DrawNum(24*SCL + x, y, cl.stats[STAT_ARMOR], 3,
 					cl.stats[STAT_ARMOR] <= 25);
 		if (cl.items & IT_ARMOR3)
-			Draw_PicScaled(x, y, sb_armor[2], SCL);
+			Draw_TransPicScaled(x, y, sb_armor[2], SCL);
 		else if (cl.items & IT_ARMOR2)
-			Draw_PicScaled(x, y, sb_armor[1], SCL);
+			Draw_TransPicScaled(x, y, sb_armor[1], SCL);
 		else if (cl.items & IT_ARMOR1)
-			Draw_PicScaled(x, y, sb_armor[0], SCL);
+			Draw_TransPicScaled(x, y, sb_armor[0], SCL);
 	}
 }
 
@@ -640,7 +640,7 @@ void Sbar_DeathmatchOverlay()
 	int y = !scr_hudstyle.value ? HH - 48*SCL : 40*SCL;
 	if (sb_showscores) {
 		qpic_t *pic = Draw_CachePic("gfx/ranking.lmp");
-		Draw_PicScaled((WW-pic->width*SCL)/2, 8*SCL, pic, SCL);
+		Draw_TransPicScaled((WW-pic->width*SCL)/2, 8*SCL, pic, SCL);
 		x = WW/2 - 80*SCL;
 		y = 40*SCL;
 	}
@@ -677,7 +677,7 @@ void Sbar_IntermissionOverlay()
 		return;
 	}
 	qpic_t *pic = Draw_CachePic("gfx/complete.lmp"); // plaque is 192px wide
-	Draw_PicScaled(WW/2 - 96*SCL, 24*SCL,pic,SCL);
+	Draw_TransPicScaled(WW/2 - 96*SCL, 24*SCL,pic,SCL);
 	int p = WW/2 - 160*SCL; // padding for scaling
 	pic = Draw_CachePic("gfx/inter.lmp");
 	Draw_TransPicScaled(p, 56*SCL, pic, SCL);
@@ -709,11 +709,11 @@ void Sbar_Draw()
 	if (sb_lines && WW/SCL > 320)
 		Draw_TileClear(0, HH - sb_lines/SCL, WW, sb_lines/SCL);
 	if (!scr_hudstyle.value)
-		Draw_PicScaled(WW/2 - 160*(SCL), HH-24*SCL, sb_sbar, SCL);
+		Draw_TransPicScaled(WW/2 - 160*(SCL), HH-24*SCL, sb_sbar, SCL);
 	if (cl.gametype==GAME_DEATHMATCH&&(sb_showscores||scr_sidescore.value))
 		Sbar_DeathmatchOverlay();
 	if (sb_showscores || cl.stats[STAT_HEALTH] <= 0) {
-		Draw_PicScaled(WW/2-160*SCL, HH-24*SCL, sb_scorebar, SCL);
+		Draw_TransPicScaled(WW/2-160*SCL, HH-24*SCL, sb_scorebar, SCL);
 		Sbar_SoloScoreboard();
 		sb_updates = 0;
 	} else {
