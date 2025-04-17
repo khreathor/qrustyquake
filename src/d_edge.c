@@ -190,14 +190,14 @@ void D_DrawSurfaces()
 			float opacity = 1;
 			if ((int)r_twopass.value&1) {
 				if (s->entity && s->entity->alpha && r_entalpha.value == 1)
-					opacity = 1-(float)s->entity->alpha/255;
-				else if (s->flags & SURF_DRAWLAVA) opacity = 
+					opacity -= (float)s->entity->alpha/255;
+				else if (s->flags & SURF_DRAWLAVA) opacity -= 
 					r_lavaalpha.value;
-				else if (s->flags & SURF_DRAWSLIME) opacity =
+				else if (s->flags & SURF_DRAWSLIME) opacity -=
 					r_slimealpha.value;
-				else if (s->flags & SURF_DRAWWATER) opacity =
+				else if (s->flags & SURF_DRAWWATER) opacity -=
 					r_wateralpha.value;
-				else if (s->flags & SURF_DRAWTELE) opacity =
+				else if (s->flags & SURF_DRAWTELE) opacity -=
 					r_telealpha.value;
 			}
 			Turbulent8(s->spans, opacity);
