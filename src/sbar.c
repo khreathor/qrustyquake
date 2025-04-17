@@ -433,7 +433,7 @@ void Sbar_DrawWeapons()
 			active = 1;
 		}
 		active = scr_hudstyle.value ? active * 6 * SCL : 0;
-		Draw_PicScaled(wpos[i][0] - active, wpos[i][1], pic, SCL);
+		Draw_TransPicScaled(wpos[i][0] - active, wpos[i][1], pic, SCL);
 		if (flashon > 1)
 			sb_updates = 0; // force update to remove flash
 	}
@@ -467,7 +467,7 @@ void Sbar_DrawWeapons()
 			pic = hsb_weapons[flashon][i];
 		}
 		if (pic)
-			Draw_PicScaled(x, y, pic, SCL);
+			Draw_TransPicScaled(x, y, pic, SCL);
 		if (flashon > 1)
 			sb_updates = 0;
 	}
@@ -518,19 +518,19 @@ void Sbar_DrawFace()
 	}
 	if ((cl.items & (IT_INVISIBILITY | IT_INVULNERABILITY))
 			== (IT_INVISIBILITY | IT_INVULNERABILITY)) {
-		Draw_PicScaled(x, y, sb_face_invis_invuln, SCL);
+		Draw_TransPicScaled(x, y, sb_face_invis_invuln, SCL);
 		return;
 	}
 	if (cl.items & IT_QUAD) {
-		Draw_PicScaled(x, y, sb_face_quad, SCL);
+		Draw_TransPicScaled(x, y, sb_face_quad, SCL);
 		return;
 	}
 	if (cl.items & IT_INVISIBILITY) {
-		Draw_PicScaled(x, y, sb_face_invis, SCL);
+		Draw_TransPicScaled(x, y, sb_face_invis, SCL);
 		return;
 	}
 	if (cl.items & IT_INVULNERABILITY) {
-		Draw_PicScaled(x, y, sb_face_invuln, SCL);
+		Draw_TransPicScaled(x, y, sb_face_invuln, SCL);
 		return;
 	}
 	int f = cl.stats[STAT_HEALTH] >= 100 ? 4 : cl.stats[STAT_HEALTH] / 20;
@@ -539,7 +539,7 @@ void Sbar_DrawFace()
 		anim = 1;
 		sb_updates = 0; // make sure the anim gets drawn over
 	}
-	Draw_PicScaled(x, y, sb_faces[f][anim], SCL);
+	Draw_TransPicScaled(x, y, sb_faces[f][anim], SCL);
 }
 
 void Sbar_DrawArmor()
