@@ -53,8 +53,8 @@ cvar_t sensitivityyscale = { "sensitivityyscale", "1.0", 1, 0, 0, 0 };
 cvar_t _windowed_mouse = { "_windowed_mouse", "0", 1, 0, 0, 0 };
 cvar_t newoptions = { "newoptions", "1", 1, 0, 0, 0 };
 cvar_t aspectr = { "aspectr", "0", 1, 0, 0, 0 }; // 0 - auto
-cvar_t realwidth = { "realwidth", "0", 1, 0, 0, 0 }; // 0 - auto
-cvar_t realheight = { "realheight", "0", 1, 0, 0, 0 }; // 0 - auto
+cvar_t realwidth = { "realwidth", "0", 0, 0, 0, 0 }; // 0 - auto
+cvar_t realheight = { "realheight", "0", 0, 0, 0, 0 }; // 0 - auto
 
 void VID_CalcScreenDimensions();
 void VID_AllocBuffers();
@@ -252,6 +252,8 @@ void VID_Init(unsigned char *palette)
 		Con_Printf("WARNING: non-standard video mode\n");
 	else
 		Con_Printf("Detected video mode %d\n", vid_modenum);
+	realwidth.value = 0;
+	VID_CalcScreenDimensions();
 }
 
 void VID_Shutdown()
@@ -419,13 +421,10 @@ void VID_SetMode(int modenum, int customw, int customh, int customwinmode,
 	VID_AllocBuffers();
 	vid.recalc_refdef = 1;
 	VID_SetPalette(palette);
-	realwidth.value = vid.width;
-	realheight.value = (int)(vid.width / aspectr.value + 0.5);
 	if (!customw || !customh) {
 		if (modenum <= 2) {
 			SDL_SetWindowFullscreen(window, 0);
-			SDL_SetWindowSize(window,
-					realwidth.value, realheight.value);
+			SDL_SetWindowSize(window, realwidth.value, realheight.value);
 			SDL_SetWindowPosition(window, SDL_WINDOWPOS_UNDEFINED,
 				SDL_WINDOWPOS_UNDEFINED);
 		} else {
@@ -446,6 +445,7 @@ void VID_SetMode(int modenum, int customw, int customh, int customwinmode,
 				SDL_WINDOW_FULLSCREEN_DESKTOP);
 		}
 	}
+	realwidth.value = 0;
 	VID_CalcScreenDimensions();
 	Cvar_SetValue("vid_mode", (float)vid_modenum);
 }
