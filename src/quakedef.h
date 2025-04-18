@@ -39,7 +39,7 @@
 #include <stdint.h>
 #include <setjmp.h>
 
-#define VERSION 1.09
+#define VERSION 0.45
 #define FITZQUAKE_VERSION 0.85
 #define GAMENAME "id1"
 #define CMDLINE_LENGTH 256

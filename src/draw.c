@@ -215,7 +215,7 @@ void Draw_CharToConback(int num, byte *dest)
 	}
 }
 
-void Draw_CharToConbackScaled(int num, byte *dest, int scale)
+void Draw_CharToConbackScaled(int num, byte *dest, int scale, int width)
 {
 	int row = num >> 4;
 	int col = num & 15;
@@ -225,9 +225,9 @@ void Draw_CharToConbackScaled(int num, byte *dest, int scale)
 		for (int x = 0; x < 8*scale; x++)
 			if (source[x/scale])
 				for (int s = 0; s < scale; s++)
-					dest[x+s*320*scale] = 0x60 + source[x/scale];
+					dest[x+s*width] = 0x60 + source[x/scale];
 		source += 128;
-		dest += 320*scale*scale;
+		dest += width*scale;
 	}
 }
 
@@ -235,15 +235,13 @@ void Draw_ConsoleBackground(int lines)
 {
 	char ver[100];
 	qpic_t *conback = Draw_CachePic("gfx/conback.lmp");
-	// CyanBun96: please only use conback.lmp pics with a width divisible by
-	// 320 or this entire thing will fucking explode probably thanks
 	// hack the version number directly into the pic
 	sprintf(ver, "(QrustyQuake) %4.2f", (float)VERSION);
 	int scale = conback->width / 320;
 	byte *dest = conback->data + conback->width*(conback->height-14*scale)
 		+ conback->width - 11*scale - 8*scale * strlen(ver);
 	for (unsigned long x = 0; x < strlen(ver); x++)
-		Draw_CharToConbackScaled(ver[x], dest + x * 8 * scale, scale);
+		Draw_CharToConbackScaled(ver[x], dest + x * 8 * scale, scale, conback->width);
 	dest = vid.conbuffer; // draw the pic
 	for (int y = 0; y < lines; y++, dest += vid.conrowbytes) {
 		int v = (vid.conheight-lines+y)*conback->height/vid.conheight;
