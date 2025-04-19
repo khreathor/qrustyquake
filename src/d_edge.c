@@ -108,8 +108,14 @@ void D_DrawSurfaces()
 		if (!s->spans)
 			continue;
 		r_drawnpolycount++;
+		// CyanBun96: some entities are assigned an invalid address like
+		// 35, which leads to segfaults on any further checks while
+		// still passing s->entity != NULL check. Must be a symptom of
+		// some bigger issue that I can't be bothered to diagnose ATM.
+		if (s->entity > 100000 && s->entity->alpha && r_entalpha.value == 1)
+			winquake_surface_liquid_alpha = (float)s->entity->alpha / 255;
 		// Baker: Need to determine what kind of liquid we are
-		if (s->flags & SURF_WINQUAKE_DRAWTRANSLUCENT) {
+		else if (s->flags & SURF_WINQUAKE_DRAWTRANSLUCENT) {
 			if (s->flags & SURF_DRAWLAVA)
 				winquake_surface_liquid_alpha = r_lavaalpha.value;
 			else if (s->flags & SURF_DRAWSLIME)
@@ -118,13 +124,8 @@ void D_DrawSurfaces()
 				winquake_surface_liquid_alpha = r_wateralpha.value;
 			else if (s->flags & SURF_DRAWTELE)
 				winquake_surface_liquid_alpha = r_telealpha.value;
-		} else if (s->entity > 100000 && s->entity->alpha && r_entalpha.value == 1)
-			winquake_surface_liquid_alpha = (float)s->entity->alpha / 255;
-		// CyanBun96: some entities are assigned an invalid address like
-		// 35, which leads to segfaults on any further checks while
-		// still passing s->entity != NULL check. Must be a symptom of
-		// some bigger issue that I can't be bothered to diagnose ATM.
-		else winquake_surface_liquid_alpha = 1;
+		} else
+			winquake_surface_liquid_alpha = 1;
 		if (r_wateralphapass && winquake_surface_liquid_alpha == 1 && r_entalpha.value == 1)
 			continue; // Manoel Kasimier - translucent water
 		d_zistepu = s->d_zistepu;
