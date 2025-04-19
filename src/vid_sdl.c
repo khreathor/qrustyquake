@@ -44,6 +44,7 @@ double vid_testendtime;
 unsigned char vid_curpal[256 * 3]; // save for mode changes
 qboolean vid_initialized;
 qboolean palette_changed;
+int VID_highhunkmark;
 viddef_t vid; // global video state
 
 cvar_t vid_mode = { "vid_mode", "0", 0, 0, 0, 0 };
@@ -372,6 +373,13 @@ void VID_AllocBuffers()
 	int chunk = vid.width * vid.height * sizeof(*d_pzbuffer);
 	int cachesize = D_SurfaceCacheForRes(vid.width, vid.height);
 	chunk += cachesize;
+	int mark = Hunk_LowMark();
+	if (d_pzbuffer) {
+		D_FlushCaches();
+		Hunk_FreeToHighMark(VID_highhunkmark);
+		d_pzbuffer = NULL;
+	}
+	VID_highhunkmark = Hunk_HighMark();
 	d_pzbuffer = Hunk_HighAllocName(chunk, "video");
 	if (d_pzbuffer == NULL)
 		Sys_Error("Not enough memory for video mode\n");
