@@ -8,17 +8,24 @@
 drawsurf_t r_drawsurf;
 
 int lightleft, sourcesstep, blocksize, sourcetstep;
+int lightleft_g;
+int lightleft_b;
 int lightdelta, lightdeltastep;
 int lightright, lightleftstep, lightrightstep, blockdivshift;
+int lightright_g, lightleftstep_g, lightrightstep_g;
+int lightright_b, lightleftstep_b, lightrightstep_b;
 unsigned blockdivmask;
 void *prowdestbase;
 unsigned char *pbasesource;
 int surfrowbytes; // used by ASM files
 unsigned *r_lightptr;
+unsigned *r_lightptr_g;
+unsigned *r_lightptr_b;
 int r_stepback;
 int r_lightwidth;
 int r_numhblocks, r_numvblocks;
 unsigned char *r_source, *r_sourcemax;
+extern unsigned char rgbtoi(unsigned char r, unsigned char g, unsigned char b);
 
 void R_DrawSurfaceBlock8_mip0();
 void R_DrawSurfaceBlock8_mip1();
@@ -33,6 +40,8 @@ static void (*surfmiptable[4])() = {
 };
 
 unsigned int blocklights[18 * 18];
+unsigned int blocklights_g[18 * 18];
+unsigned int blocklights_b[18 * 18];
 
 void R_AddDynamicLights()
 {
@@ -84,18 +93,26 @@ void R_BuildLightMap()
 	int size = smax * tmax;
 	byte *lightmap = surf->samples;
 	if (r_fullbright.value || !cl.worldmodel->lightdata) {
-		for (int i = 0; i < size; i++)
+		for (int i = 0; i < size; i++) {
 			blocklights[i] = 0;
+			blocklights_g[i] = 0;
+			blocklights_b[i] = 0;
+		}
 		return;
 	}
-	for (int i = 0; i < size; i++) // clear to ambient
+	for (int i = 0; i < size; i++) { // clear to ambient
 		blocklights[i] = r_refdef.ambientlight << 8;
+		blocklights_g[i] = r_refdef.ambientlight << 8;
+		blocklights_b[i] = r_refdef.ambientlight << 8;
+	}
 	if (lightmap) // add all the lightmaps
-		for (int maps = 0; maps < MAXLIGHTMAPS && surf->styles[maps] != 255;
-		     maps++) {
+		for (int maps = 0; maps < MAXLIGHTMAPS && surf->styles[maps] != 255; maps++) {
 			unsigned int scale = r_drawsurf.lightadj[maps];	// 8.8 fraction         
-			for (int i = 0; i < size; i++)
-				blocklights[i] += lightmap[i] * scale;
+			for (int i = 0; i < size; i++) {
+				blocklights[i] += lightmap[i*3] * scale;
+				blocklights_g[i] += lightmap[i*3+1] * scale;
+				blocklights_b[i] += lightmap[i*3+2] * scale;
+			}
 			lightmap += size; // skip to next lightmap
 		}
 	if (surf->dlightframe == r_framecount) // add all the dynamic lights
@@ -105,6 +122,18 @@ void R_BuildLightMap()
 		if (t < 64)
 			t = 64;
 		blocklights[i] = t;
+	}
+	for (int i = 0; i < size; i++) { // bound, invert, and shift
+		int t = (255 * 256 - (int)blocklights_g[i]) >> (8 - VID_CBITS);
+		if (t < 64)
+			t = 64;
+		blocklights_g[i] = t;
+	}
+	for (int i = 0; i < size; i++) { // bound, invert, and shift
+		int t = (255 * 256 - (int)blocklights_b[i]) >> (8 - VID_CBITS);
+		if (t < 64)
+			t = 64;
+		blocklights_b[i] = t;
 	}
 }
 
@@ -160,6 +189,8 @@ void R_DrawSurface()
 	unsigned char *pcolumndest = r_drawsurf.surfdat;
 	for (int u = 0; u < r_numhblocks; u++) {
 		r_lightptr = blocklights + u;
+		r_lightptr_g = blocklights_g + u;
+		r_lightptr_b = blocklights_b + u;
 		prowdestbase = pcolumndest;
 		pbasesource = basetptr + soffset;
 		(*pblockdrawer) ();
@@ -178,20 +209,53 @@ void R_DrawSurfaceBlock8_mip0()
 	for (int v = 0; v < r_numvblocks; v++) {
 		// FIXME: make these locals?
 		// FIXME: use delta rather than both right and left, like ASM?
-		lightleft = r_lightptr[0];
+		lightleft = r_lightptr[0]; // Red
 		lightright = r_lightptr[1];
 		r_lightptr += r_lightwidth;
 		lightleftstep = (r_lightptr[0] - lightleft) >> 4;
 		lightrightstep = (r_lightptr[1] - lightright) >> 4;
+		lightleft_g = r_lightptr_g[0]; // Green
+		lightright_g = r_lightptr_g[1];
+		r_lightptr_g += r_lightwidth;
+		lightleftstep_g = (r_lightptr_g[0] - lightleft_g) >> 4;
+		lightrightstep_g = (r_lightptr_g[1] - lightright_g) >> 4;
+		lightleft_b = r_lightptr_b[0]; // Blue
+		lightright_b = r_lightptr_b[1];
+		r_lightptr_b += r_lightwidth;
+		lightleftstep_b = (r_lightptr_b[0] - lightleft_b) >> 4;
+		lightrightstep_b = (r_lightptr_b[1] - lightright_b) >> 4;
 		for (int i = 0; i < 16; i++) {
-			int lighttemp = lightleft - lightright;
+			int lighttemp = lightleft - lightright; // Red
 			int lightstep = lighttemp >> 4;
 			int light = lightright;
+			int lighttemp_g = lightleft_g - lightright_g; // Green
+			int lightstep_g = lighttemp_g >> 4;
+			int light_g = lightright_g;
+			int lighttemp_b = lightleft_b - lightright_b; // Blue
+			int lightstep_b = lighttemp_b >> 4;
+			int light_b = lightright_b;
 			for (int b = 15; b >= 0; b--) {
-				unsigned char pix = psource[b];
+				/*unsigned char pix = psource[b];
 				prowdest[b] = ((unsigned char *)vid.colormap)
-						[(light & 0xFF00) + pix];
+						[(light_b & 0xFF00) + pix];
+				light_b += lightstep_b;*/
+				unsigned char tex = psource[b]; // base texture index
+
+				// Look up each color component separately from the colormap
+				unsigned char r = vid_curpal[ ((unsigned char *)vid.colormap)[(light & 0xFF00) + tex] * 3 + 0 ];
+				unsigned char g = vid_curpal[ ((unsigned char *)vid.colormap)[(light_g & 0xFF00) + tex] * 3 + 1 ];
+				unsigned char b_ = vid_curpal[ ((unsigned char *)vid.colormap)[(light_b & 0xFF00) + tex] * 3 + 2 ];
+
+				// Convert the RGB value back into a palette index
+				unsigned char final_index = rgbtoi(r, g, b_);
+
+				// Store into destination
+				prowdest[b] = final_index;
+
+				// Step forward the light for next texel
 				light += lightstep;
+				light_g += lightstep_g;
+				light_b += lightstep_b;
 			}
 			psource += sourcetstep;
 			lightright += lightrightstep;

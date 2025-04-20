@@ -946,7 +946,7 @@ _load_texture:
 	}
 }TODO*/
 
-/*TODO - colored lighting static void Mod_LoadLighting (lump_t *l)
+static void Mod_LoadLighting (lump_t *l)
 { // johnfitz -- replaced with lit support code via lordhavoc
 	int i, mark;
 	byte *in, *out, *data;
@@ -1033,16 +1033,6 @@ _load_texture:
 		*out++ = d;
 		*out++ = d;
 	}
-}*/
-
-void Mod_LoadLighting(lump_t *l)
-{
-        if (!l->filelen) {
-                loadmodel->lightdata = NULL;
-                return;
-        }
-        loadmodel->lightdata = Hunk_AllocName(l->filelen, loadname);
-        memcpy(loadmodel->lightdata, mod_base + l->fileofs, l->filelen);
 }
 
 static void Mod_LoadVisibility (lump_t *l)
@@ -1402,7 +1392,6 @@ static void Mod_LoadFaces (lump_t *l, qboolean bsp2)
 		Mod_CalcSurfaceBounds (out); //johnfitz -- for per-surface frustum culling
 
 	// lighting info
-		/*
 		if (loadmodel->bspversion == BSPVERSION_QUAKE64)
 			lofs /= 2; // Q64 samples are 16bits instead 8 in normal Quake 
 
@@ -1414,8 +1403,7 @@ static void Mod_LoadFaces (lump_t *l, qboolean bsp2)
 #endif
 		else
 			out->samples = loadmodel->lightdata + (lofs * 3); //johnfitz -- lit support via lordhavoc (was "+ i")
-		*/
-                out->samples = loadmodel->lightdata + lofs; // TODO colored lighting
+                //out->samples = loadmodel->lightdata + lofs; // TODO colored lighting
 
 		//johnfitz -- this section rewritten
 		if (!strncasecmp(out->texinfo->texture->name,"sky",3)) // sky surface //also note -- was Q_strncmp, changed to match qbsp
