@@ -38,9 +38,13 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
    - "Use Mouse" option in windowed mode (also _windowed_mouse cvar)
 
-   - Video configuration menu (mostly for show, use -width and -heigth)
+   - Video configuration menu 
+
+      - Mostly for show, use -width and -heigth or the new menu
 
 - Proper UI scaling
+
+   - scr_uiscale 1 for no scaling, scr_uiscale 2 for 200% size etc.
 
 - Modern UI layouts (hudstyle 0/1/2/3)
 
@@ -64,11 +68,21 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
    - BSP2 and other modern features are being actively worked on, expect bugs and crashes on bigger maps
 
-   - Foggy Bogbottom is playable with minor visual glitches, other Arcane Dimensions maps load but are untested
+   - AD's Foggy Bogbottom and The Forgotten Sepulcher are playable with minor visual glitches
+
+   - Other Arcane Dimensions maps load but are untested
 
 - Software imitations of modern rendering features
 
    - Translucent liquids on supported maps (r_{water,slime,lava,tele}alpha 0-1)
+
+   - Translucent entities with the "alpha" tag
+
+   - r_alphastyle cvar and respective menu entry for the translucency rendering variations
+
+      - Mix (default) - emulates the hardware-accelerated translucency by mixing the surface colors
+
+      - Dither - much less memory-hungry option, but with less gradual translusency levels
 
    - Cubemapped skyboxes ("sky filename_", "r_skyfog [0.0-1.0]"), only .tga format for now
 
@@ -110,6 +124,10 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
    - Client-server separation (mostly for 72< framerates)
 
+   - Different FOV modes
+
+   - Independent world and UI scaling
+
 - (definitely not) CD Audio
 
    - Might have been pulled from Quakespasm along with the rest of the sound system, though I have no way or desire to test it.
@@ -132,7 +150,7 @@ x86_64 unless specified otherwise.
 
 VM is VirtualBox unless specified otherwise.
 
-- Arch Linux [HW] v0.4.4
+- Arch Linux [HW] v0.4.5
 
    - The main platform that this port is developed on. The most likely one to work
 
@@ -162,13 +180,13 @@ VM is VirtualBox unless specified otherwise.
 
    - Ran through X11 with touch controls. *unpleasant*
 
-- Windows [VM, HW] v0.4.4
+- Windows [VM, HW] v0.4.5
 
    - Tested with w10 on hardware and w11 on a VM
 
-   - The official binary is cross-compiled, and seems to have broken network
+   - Has more strict surface limits and such, to prevent crashing 
 
-   - Quakespasm breaks exactly the same way, so must be a general cross-compilation issue
+   - Network fails on UDP initialization, but proceeds to work fine?
 
 # Credits
 
