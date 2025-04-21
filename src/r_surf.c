@@ -25,6 +25,10 @@ int r_stepback;
 int r_lightwidth;
 int r_numhblocks, r_numvblocks;
 unsigned char *r_source, *r_sourcemax;
+extern void init_color_conv();
+extern cvar_t r_labmixpal;
+extern cvar_t r_rgblighting;
+extern unsigned char rgbtoi_lab(unsigned char r, unsigned char g, unsigned char b);
 extern unsigned char rgbtoi(unsigned char r, unsigned char g, unsigned char b);
 
 void R_DrawSurfaceBlock(int miplvl);
@@ -223,18 +227,31 @@ void R_DrawSurfaceBlock(int miplvl)
 			int lightstep_b = lighttemp_b >> (4-miplvl);
 			int light_b = lightright_b;
 			for (int b = (1 << (4-miplvl)) - 1; b >= 0; b--) {
-				/*unsigned char pix = psource[b];
-				prowdest[b] = ((unsigned char *)vid.colormap)
-				    [(light & 0xFF00) + pix];
-				light += lightstep;*/
-				unsigned char tex = psource[b];
-				prowdest[b] = rgbtoi(
-					vid_curpal[((unsigned char*)vid.colormap)[(light&0xFF00)+tex]*3+0],
-					vid_curpal[((unsigned char*)vid.colormap)[(light_g&0xFF00)+tex]*3+1],
-					vid_curpal[((unsigned char*)vid.colormap)[(light_b&0xFF00)+tex]*3+2]);
-				light += lightstep;
-				light_g += lightstep_g;
-				light_b += lightstep_b;
+				if (r_rgblighting.value == 0)
+				{
+					unsigned char pix = psource[b];
+					prowdest[b] = ((unsigned char *)vid.colormap)
+					    [(light & 0xFF00) + pix];
+					light += lightstep;
+				}
+				else {
+					unsigned char tex = psource[b];
+					if (r_labmixpal.value == 1) {
+						init_color_conv();
+						prowdest[b] = rgbtoi_lab(
+							vid_curpal[((unsigned char*)vid.colormap)[(light&0xFF00)+tex]*3+0],
+							vid_curpal[((unsigned char*)vid.colormap)[(light_g&0xFF00)+tex]*3+1],
+							vid_curpal[((unsigned char*)vid.colormap)[(light_b&0xFF00)+tex]*3+2]);
+					}
+					else
+						prowdest[b] = rgbtoi(
+							vid_curpal[((unsigned char*)vid.colormap)[(light&0xFF00)+tex]*3+0],
+							vid_curpal[((unsigned char*)vid.colormap)[(light_g&0xFF00)+tex]*3+1],
+							vid_curpal[((unsigned char*)vid.colormap)[(light_b&0xFF00)+tex]*3+2]);
+					light += lightstep;
+					light_g += lightstep_g;
+					light_b += lightstep_b;
+				}
 			}
 			psource += sourcetstep;
 			lightright += lightrightstep;
