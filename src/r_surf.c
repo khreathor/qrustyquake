@@ -27,17 +27,7 @@ int r_numhblocks, r_numvblocks;
 unsigned char *r_source, *r_sourcemax;
 extern unsigned char rgbtoi(unsigned char r, unsigned char g, unsigned char b);
 
-void R_DrawSurfaceBlock8_mip0();
-void R_DrawSurfaceBlock8_mip1();
-void R_DrawSurfaceBlock8_mip2();
-void R_DrawSurfaceBlock8_mip3();
-
-static void (*surfmiptable[4])() = {
-	R_DrawSurfaceBlock8_mip0,
-	R_DrawSurfaceBlock8_mip1,
-	R_DrawSurfaceBlock8_mip2,
-	R_DrawSurfaceBlock8_mip3
-};
+void R_DrawSurfaceBlock(int miplvl);
 
 unsigned int blocklights[18 * 18];
 unsigned int blocklights_g[18 * 18];
@@ -171,7 +161,6 @@ void R_DrawSurface()
 	r_lightwidth = (r_drawsurf.surf->extents[0] >> 4) + 1;
 	r_numhblocks = r_drawsurf.surfwidth >> blockdivshift;
 	r_numvblocks = r_drawsurf.surfheight >> blockdivshift;
-	pblockdrawer = surfmiptable[r_drawsurf.surfmip];
 	// TODO: only needs to be set when there is a display settings change
 	int horzblockstep = blocksize;
 	int smax = mt->width >> r_drawsurf.surfmip;
@@ -193,7 +182,7 @@ void R_DrawSurface()
 		r_lightptr_b = blocklights_b + u;
 		prowdestbase = pcolumndest;
 		pbasesource = basetptr + soffset;
-		(*pblockdrawer) ();
+		R_DrawSurfaceBlock(r_drawsurf.surfmip);
 		soffset = soffset + blocksize;
 		if (soffset >= smax)
 			soffset = 0;
@@ -201,8 +190,7 @@ void R_DrawSurface()
 	}
 }
 
-// CyanBun96: TODO combine these
-void R_DrawSurfaceBlock8_mip0()
+void R_DrawSurfaceBlock(int miplvl)
 {
 	unsigned char *psource = pbasesource;
 	unsigned char *prowdest = prowdestbase;
@@ -212,203 +200,35 @@ void R_DrawSurfaceBlock8_mip0()
 		lightleft = r_lightptr[0]; // Red
 		lightright = r_lightptr[1];
 		r_lightptr += r_lightwidth;
-		lightleftstep = (r_lightptr[0] - lightleft) >> 4;
-		lightrightstep = (r_lightptr[1] - lightright) >> 4;
+		lightleftstep = (r_lightptr[0] - lightleft) >> (4-miplvl);
+		lightrightstep = (r_lightptr[1] - lightright) >> (4-miplvl);
 		lightleft_g = r_lightptr_g[0]; // Green
 		lightright_g = r_lightptr_g[1];
 		r_lightptr_g += r_lightwidth;
-		lightleftstep_g = (r_lightptr_g[0] - lightleft_g) >> 4;
-		lightrightstep_g = (r_lightptr_g[1] - lightright_g) >> 4;
+		lightleftstep_g = (r_lightptr_g[0] - lightleft_g) >> (4-miplvl);
+		lightrightstep_g = (r_lightptr_g[1] - lightright_g) >> (4-miplvl);
 		lightleft_b = r_lightptr_b[0]; // Blue
 		lightright_b = r_lightptr_b[1];
 		r_lightptr_b += r_lightwidth;
-		lightleftstep_b = (r_lightptr_b[0] - lightleft_b) >> 4;
-		lightrightstep_b = (r_lightptr_b[1] - lightright_b) >> 4;
-		for (int i = 0; i < 16; i++) {
+		lightleftstep_b = (r_lightptr_b[0] - lightleft_b) >> (4-miplvl);
+		lightrightstep_b = (r_lightptr_b[1] - lightright_b) >> (4-miplvl);
+		for (int i = 0; i < 1 << (4-miplvl); i++) {
 			int lighttemp = lightleft - lightright; // Red
-			int lightstep = lighttemp >> 4;
+			int lightstep = lighttemp >> (4-miplvl);
 			int light = lightright;
 			int lighttemp_g = lightleft_g - lightright_g; // Green
-			int lightstep_g = lighttemp_g >> 4;
+			int lightstep_g = lighttemp_g >> (4-miplvl);
 			int light_g = lightright_g;
 			int lighttemp_b = lightleft_b - lightright_b; // Blue
-			int lightstep_b = lighttemp_b >> 4;
+			int lightstep_b = lighttemp_b >> (4-miplvl);
 			int light_b = lightright_b;
-			for (int b = 15; b >= 0; b--) {
-				/*unsigned char pix = psource[b];
-				prowdest[b] = ((unsigned char *)vid.colormap)
-						[(light_b & 0xFF00) + pix];
-				light_b += lightstep_b;*/
-				unsigned char tex = psource[b];
-				prowdest[b] = rgbtoi_lab(
-					vid_curpal[((unsigned char*)vid.colormap)[(light&0xFF00)+tex]*3+0],
-					vid_curpal[((unsigned char*)vid.colormap)[(light_g&0xFF00)+tex]*3+1],
-					vid_curpal[((unsigned char*)vid.colormap)[(light_b&0xFF00)+tex]*3+2]);
-				light += lightstep;
-				light_g += lightstep_g;
-				light_b += lightstep_b;
-			}
-			psource += sourcetstep;
-			lightright += lightrightstep;
-			lightleft += lightleftstep;
-			prowdest += surfrowbytes;
-		}
-		if (psource >= r_sourcemax)
-			psource -= r_stepback;
-	}
-}
-
-void R_DrawSurfaceBlock8_mip1()
-{
-	unsigned char *psource = pbasesource;
-	unsigned char *prowdest = prowdestbase;
-	for (int v = 0; v < r_numvblocks; v++) {
-		// FIXME: make these locals?
-		// FIXME: use delta rather than both right and left, like ASM?
-		lightleft = r_lightptr[0]; // Red
-		lightright = r_lightptr[1];
-		r_lightptr += r_lightwidth;
-		lightleftstep = (r_lightptr[0] - lightleft) >> 3;
-		lightrightstep = (r_lightptr[1] - lightright) >> 3;
-		lightleft_g = r_lightptr_g[0]; // Green
-		lightright_g = r_lightptr_g[1];
-		r_lightptr_g += r_lightwidth;
-		lightleftstep_g = (r_lightptr_g[0] - lightleft_g) >> 3;
-		lightrightstep_g = (r_lightptr_g[1] - lightright_g) >> 3;
-		lightleft_b = r_lightptr_b[0]; // Blue
-		lightright_b = r_lightptr_b[1];
-		r_lightptr_b += r_lightwidth;
-		lightleftstep_b = (r_lightptr_b[0] - lightleft_b) >> 3;
-		lightrightstep_b = (r_lightptr_b[1] - lightright_b) >> 3;
-		for (int i = 0; i < 8; i++) {
-			int lighttemp = lightleft - lightright; // Red
-			int lightstep = lighttemp >> 3;
-			int light = lightright;
-			int lighttemp_g = lightleft_g - lightright_g; // Green
-			int lightstep_g = lighttemp_g >> 3;
-			int light_g = lightright_g;
-			int lighttemp_b = lightleft_b - lightright_b; // Blue
-			int lightstep_b = lighttemp_b >> 3;
-			int light_b = lightright_b;
-			for (int b = 7; b >= 0; b--) {
-				/*unsigned char pix = psource[b];
-				prowdest[b] = ((unsigned char *)vid.colormap)
-						[(light & 0xFF00) + pix];
-				light += lightstep;*/
-				unsigned char tex = psource[b];
-				prowdest[b] = rgbtoi_lab(
-					vid_curpal[((unsigned char*)vid.colormap)[(light&0xFF00)+tex]*3+0],
-					vid_curpal[((unsigned char*)vid.colormap)[(light_g&0xFF00)+tex]*3+1],
-					vid_curpal[((unsigned char*)vid.colormap)[(light_b&0xFF00)+tex]*3+2]);
-				light += lightstep;
-				light_g += lightstep_g;
-				light_b += lightstep_b;
-			}
-			psource += sourcetstep;
-			lightright += lightrightstep;
-			lightleft += lightleftstep;
-			prowdest += surfrowbytes;
-		}
-		if (psource >= r_sourcemax)
-			psource -= r_stepback;
-	}
-}
-
-void R_DrawSurfaceBlock8_mip2()
-{
-	unsigned char *psource = pbasesource;
-	unsigned char *prowdest = prowdestbase;
-	for (int v = 0; v < r_numvblocks; v++) {
-		// FIXME: make these locals?
-		// FIXME: use delta rather than both right and left, like ASM?
-		lightleft = r_lightptr[0]; // Red
-		lightright = r_lightptr[1];
-		r_lightptr += r_lightwidth;
-		lightleftstep = (r_lightptr[0] - lightleft) >> 2;
-		lightrightstep = (r_lightptr[1] - lightright) >> 2;
-		lightleft_g = r_lightptr_g[0]; // Green
-		lightright_g = r_lightptr_g[1];
-		r_lightptr_g += r_lightwidth;
-		lightleftstep_g = (r_lightptr_g[0] - lightleft_g) >> 2;
-		lightrightstep_g = (r_lightptr_g[1] - lightright_g) >> 2;
-		lightleft_b = r_lightptr_b[0]; // Blue
-		lightright_b = r_lightptr_b[1];
-		r_lightptr_b += r_lightwidth;
-		lightleftstep_b = (r_lightptr_b[0] - lightleft_b) >> 2;
-		lightrightstep_b = (r_lightptr_b[1] - lightright_b) >> 2;
-		for (int i = 0; i < 4; i++) {
-			int lighttemp = lightleft - lightright; // Red
-			int lightstep = lighttemp >> 2;
-			int light = lightright;
-			int lighttemp_g = lightleft_g - lightright_g; // Green
-			int lightstep_g = lighttemp_g >> 2;
-			int light_g = lightright_g;
-			int lighttemp_b = lightleft_b - lightright_b; // Blue
-			int lightstep_b = lighttemp_b >> 2;
-			int light_b = lightright_b;
-			for (int b = 3; b >= 0; b--) {
-				/*unsigned char pix = psource[b];
-				prowdest[b] = ((unsigned char *)vid.colormap)
-						[(light & 0xFF00) + pix];
-				light += lightstep;*/
-				unsigned char tex = psource[b];
-				prowdest[b] = rgbtoi_lab(
-					vid_curpal[((unsigned char*)vid.colormap)[(light&0xFF00)+tex]*3+0],
-					vid_curpal[((unsigned char*)vid.colormap)[(light_g&0xFF00)+tex]*3+1],
-					vid_curpal[((unsigned char*)vid.colormap)[(light_b&0xFF00)+tex]*3+2]);
-				light += lightstep;
-				light_g += lightstep_g;
-				light_b += lightstep_b;
-			}
-			psource += sourcetstep;
-			lightright += lightrightstep;
-			lightleft += lightleftstep;
-			prowdest += surfrowbytes;
-		}
-		if (psource >= r_sourcemax)
-			psource -= r_stepback;
-	}
-}
-
-void R_DrawSurfaceBlock8_mip3()
-{
-	unsigned char *psource = pbasesource;
-	unsigned char *prowdest = prowdestbase;
-	for (int v = 0; v < r_numvblocks; v++) {
-		// FIXME: make these locals?
-		// FIXME: use delta rather than both right and left, like ASM?
-		lightleft = r_lightptr[0]; // Red
-		lightright = r_lightptr[1];
-		r_lightptr += r_lightwidth;
-		lightleftstep = (r_lightptr[0] - lightleft) >> 1;
-		lightrightstep = (r_lightptr[1] - lightright) >> 1;
-		lightleft_g = r_lightptr_g[0]; // Green
-		lightright_g = r_lightptr_g[1];
-		r_lightptr_g += r_lightwidth;
-		lightleftstep_g = (r_lightptr_g[0] - lightleft_g) >> 1;
-		lightrightstep_g = (r_lightptr_g[1] - lightright_g) >> 1;
-		lightleft_b = r_lightptr_b[0]; // Blue
-		lightright_b = r_lightptr_b[1];
-		r_lightptr_b += r_lightwidth;
-		lightleftstep_b = (r_lightptr_b[0] - lightleft_b) >> 1;
-		lightrightstep_b = (r_lightptr_b[1] - lightright_b) >> 1;
-		for (int i = 0; i < 2; i++) {
-			int lighttemp = lightleft - lightright; // Red
-			int lightstep = lighttemp >> 1;
-			int light = lightright;
-			int lighttemp_g = lightleft_g - lightright_g; // Green
-			int lightstep_g = lighttemp_g >> 1;
-			int light_g = lightright_g;
-			int lighttemp_b = lightleft_b - lightright_b; // Blue
-			int lightstep_b = lighttemp_b >> 1;
-			int light_b = lightright_b;
-			for (int b = 1; b >= 0; b--) {
+			for (int b = (1 << (4-miplvl)) - 1; b >= 0; b--) {
 				/*unsigned char pix = psource[b];
 				prowdest[b] = ((unsigned char *)vid.colormap)
 				    [(light & 0xFF00) + pix];
 				light += lightstep;*/
 				unsigned char tex = psource[b];
-				prowdest[b] = rgbtoi_lab(
+				prowdest[b] = rgbtoi(
 					vid_curpal[((unsigned char*)vid.colormap)[(light&0xFF00)+tex]*3+0],
 					vid_curpal[((unsigned char*)vid.colormap)[(light_g&0xFF00)+tex]*3+1],
 					vid_curpal[((unsigned char*)vid.colormap)[(light_b&0xFF00)+tex]*3+2]);
