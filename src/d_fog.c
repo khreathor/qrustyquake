@@ -2,12 +2,12 @@
 #include "d_local.h"
 #include <x86intrin.h>
 
+#define RANDARR_SIZE 19937 // prime number to reduce unintended patterns
+
 typedef struct {
 	float l, a, b;
 } lab;
 
-float *randarr; // used for noise bias
-int randarr_size = 0;
 int fog_initialized = 0;
 static unsigned int lfsr = 0x1337; // non-zero seed
 float fog_density;
@@ -20,6 +20,7 @@ extern cvar_t r_fogstyle;
 extern cvar_t r_nofog;
 extern cvar_t r_labmixpal;
 extern unsigned int sb_updates; // if >= vid.numpages, no update needed
+float randarr[RANDARR_SIZE];
 unsigned char color_mix_lut[256][256][FOG_LUT_LEVELS];
 int fog_lut_built = 0;
 float gamma_lut[256];
@@ -261,14 +262,8 @@ void build_color_mix_lut()
 void R_InitFog()
 {
 	fog_pal_index = rgbtoi(fog_red*255.0f, fog_green*255.0f, fog_blue*255.0f);
-	if (randarr_size < scr_vrect.height * scr_vrect.width) {
-		randarr_size = scr_vrect.height * scr_vrect.width;
-		if (randarr)
-			free(randarr);
-		randarr = malloc(scr_vrect.width * scr_vrect.height * sizeof(float)); // TODO not optimal, use the zone
-		for (int i = 0; i < scr_vrect.width * scr_vrect.height; ++i) // fog bias array
-			randarr[i] = (lfsr_random() & 0xFFFF) / 65535.0f; // LFSR random number normalized to [0,1]
-	}
+	for (int i = 0; i < RANDARR_SIZE; ++i) // fog bias array
+		randarr[i] = (lfsr_random() & 0xFFFF) / 65535.0f; // LFSR random number normalized to [0,1]
 	if (!fog_lut_built)
 		build_color_mix_lut();
 	fog_initialized = 1;
@@ -292,7 +287,7 @@ void R_DrawFog() {
         for (int y = scr_vrect.y; y < scr_vrect.y + scr_vrect.height; ++y) {
         for (int x = scr_vrect.x; x < scr_vrect.x + scr_vrect.width; ++x) {
 		int i = x + y * vid.width;
-		int bias = randarr[scr_vrect.width*scr_vrect.height - j] * 10;
+		int bias = randarr[(scr_vrect.width*scr_vrect.height - j)%RANDARR_SIZE] * 10;
 		++j;
 		float fog_factor = compute_fog(d_pzbuffer[i] + bias);
 		switch (style) {
@@ -306,7 +301,7 @@ void R_DrawFog() {
 					((unsigned char *)(screen->pixels))[i] = fog_pal_index;
 				break;
 			case 2: // dither + noise
-				fog_factor += (randarr[i] - 0.5f) * 0.2f;
+				fog_factor += (randarr[i%RANDARR_SIZE] - 0.5f) * 0.2f;
 				fog_factor = fog_factor < 0.1f ? 0 : fog_factor;
 				if (dither(x, y, fog_factor))
 					((unsigned char *)(screen->pixels))[i] = fog_pal_index;
