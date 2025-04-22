@@ -7,7 +7,6 @@
 #include "quakedef.h"
 #include "r_local.h"
 #include "d_local.h"
-#include <x86intrin.h>
 
 #define RGB_LUT_SIZE 512  // 8×8×8 color space
 unsigned char rgb_lut[RGB_LUT_SIZE];

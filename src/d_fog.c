@@ -1,6 +1,5 @@
 #include "quakedef.h"
 #include "d_local.h"
-#include <x86intrin.h>
 
 #define RANDARR_SIZE 19937 // prime number to reduce unintended patterns
 
