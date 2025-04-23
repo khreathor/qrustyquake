@@ -62,6 +62,7 @@ void init_color_conv() {
 }
 
 unsigned char rgbtoi_lab(unsigned char R, unsigned char G, unsigned char B) {
+	init_color_conv();
 	lab lab0 = rgb_lin_to_lab(gamma_lut[R], gamma_lut[G], gamma_lut[B]);
 	float bestdist = FLT_MAX;
 	unsigned char besti = 0;
