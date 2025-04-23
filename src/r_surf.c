@@ -102,12 +102,14 @@ void R_BuildLightMap()
 	if (lightmap) // add all the lightmaps
 		for (int maps = 0; maps < MAXLIGHTMAPS && surf->styles[maps] != 255; maps++) {
 			unsigned int scale = r_drawsurf.lightadj[maps];	// 8.8 fraction         
+			unsigned int *bl = blocklights;
+			unsigned int *bl_g = blocklights_g;
+			unsigned int *bl_b = blocklights_b;
 			for (int i = 0; i < size; i++) {
-				blocklights[i] += lightmap[i*3] * scale;
-				blocklights_g[i] += lightmap[i*3+1] * scale;
-				blocklights_b[i] += lightmap[i*3+2] * scale;
+				*bl++ += *lightmap++ * scale;
+				*bl_g++ += *lightmap++ * scale;
+				*bl_b++ += *lightmap++ * scale;
 			}
-			lightmap += size; // skip to next lightmap
 		}
 	if (surf->dlightframe == r_framecount) // add all the dynamic lights
 		R_AddDynamicLights();
