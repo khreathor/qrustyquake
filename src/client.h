@@ -49,6 +49,7 @@ typedef struct
 	float	decay;				// drop this each second
 	float	minlight;			// don't add when contributing less
 	int		key;
+	vec3_t  color;                          //johnfitz -- lit support via lordhavoc
 } dlight_t;
 
 

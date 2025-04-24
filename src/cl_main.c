@@ -169,31 +169,36 @@ void CL_PrintEntities_f()
 	}
 }
 
-dlight_t *CL_AllocDlight(int key)
+dlight_t *CL_AllocDlight (int key)
 {
-	dlight_t *dl;
-	if (key) { // first look for an exact key match
-		dl = cl_dlights;
-		for (int i = 0; i < MAX_DLIGHTS; i++, dl++) {
-			if (dl->key == key) {
-				memset(dl, 0, sizeof(*dl));
-				dl->key = key;
-				return dl;
-			}
-		}
-	}
-	dl = cl_dlights; // then look for anything else
-	for (int i = 0; i < MAX_DLIGHTS; i++, dl++) {
-		if (dl->die < cl.time) {
-			memset(dl, 0, sizeof(*dl));
-			dl->key = key;
-			return dl;
-		}
-	}
-	dl = &cl_dlights[0];
-	memset(dl, 0, sizeof(*dl));
-	dl->key = key;
-	return dl;
+        int i;
+        dlight_t *dl;
+        if (key) { // first look for an exact key match
+                dl = cl_dlights;
+                for (i=0 ; i<MAX_DLIGHTS ; i++, dl++) {
+                        if (dl->key == key) {
+                                memset (dl, 0, sizeof(*dl));
+                                dl->key = key;
+                                dl->color[0] = dl->color[1] = dl->color[2] = 1; //johnfitz -- lit support via lordhavoc
+                                return dl;
+                        }
+                }
+        }
+// then look for anything else
+        dl = cl_dlights;
+        for (i=0 ; i<MAX_DLIGHTS ; i++, dl++) {
+                if (dl->die < cl.time) {
+                        memset (dl, 0, sizeof(*dl));
+                        dl->key = key;
+                        dl->color[0] = dl->color[1] = dl->color[2] = 1; //johnfitz -- lit support via lordhavoc
+                        return dl;
+                }
+        }
+        dl = &cl_dlights[0];
+        memset (dl, 0, sizeof(*dl));
+        dl->key = key;
+        dl->color[0] = dl->color[1] = dl->color[2] = 1; //johnfitz -- lit support via lordhavoc
+        return dl;
 }
 
 void CL_DecayLights()

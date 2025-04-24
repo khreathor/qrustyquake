@@ -42,6 +42,9 @@ unsigned int blocklights_b[18 * 18];
 
 void R_AddDynamicLights()
 {
+	//johnfitz -- lit support via lordhavoc
+	float cred, cgreen, cblue, brightness;
+	//johnfitz
 	msurface_t *surf = r_drawsurf.surf;
 	int smax = (surf->extents[0] >> 4) + 1;
 	int tmax = (surf->extents[1] >> 4) + 1;
@@ -65,6 +68,14 @@ void R_AddDynamicLights()
 		local[1] = DotProduct(impact, tex->vecs[1]) + tex->vecs[1][3];
 		local[0] -= surf->texturemins[0];
 		local[1] -= surf->texturemins[1];
+		//johnfitz -- lit support via lordhavoc
+		unsigned int *bl = blocklights;
+		unsigned int *bl_g = blocklights_g;
+		unsigned int *bl_b = blocklights_b;
+                cred = cl_dlights[lnum].color[0] * 256.0f;
+                cgreen = cl_dlights[lnum].color[1] * 256.0f;
+                cblue = cl_dlights[lnum].color[2] * 256.0f;
+                //johnfitz
 		for (int t = 0; t < tmax; t++) {
 			int td = local[1] - t * 16;
 			if (td < 0)
@@ -74,8 +85,17 @@ void R_AddDynamicLights()
 				if (sd < 0)
 					sd = -sd;
 				dist = sd > td ? sd + td / 2 : td + sd / 2;
-				if (dist < minlight)
-					blocklights[t*smax+s] += (rad-dist)*256;
+				if (dist < minlight) {
+					//johnfitz -- lit support via lordhavoc
+					brightness = rad - dist;
+					bl[0] += (int) (brightness * cred);
+					bl_g[0] += (int) (brightness * cgreen);
+					bl_b[0] += (int) (brightness * cblue);
+				}
+				bl += 1;
+				bl_g += 1;
+				bl_b += 1;
+				//johnfitz
 			}
 		}
 	}
