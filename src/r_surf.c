@@ -260,25 +260,24 @@ void R_DrawSurfaceBlock(int miplvl)
 					light += lightstep;
 				}
 				else {
-					unsigned char tex = psource[b];
 					if (!lit_lut_initialized) {
+						unsigned char (*convfunc)(unsigned char, unsigned char, unsigned char);
+						if (r_labmixpal.value == 1) {
+							init_color_conv();
+							convfunc = rgbtoi_lab;
+						}
+						else
+							convfunc = rgbtoi;
 						lit_lut = malloc(256*256*256);
 						for (int r_ = 0; r_ < 256; ++r_) {
-							printf("Building LUT... %d/255\n", r_);
 						for (int g_ = 0; g_ < 256; ++g_) {
 						for (int b_ = 0; b_ < 256; ++b_) {
 							lit_lut[r_+g_*256+b_*256*256] =
-								rgbtoi(r_, g_, b_);
+								convfunc(r_, g_, b_);
 						} } }
 						lit_lut_initialized = 1;
 					}
-					/*if (r_labmixpal.value == 1) {
-						prowdest[b] = rgbtoi_lab(
-							vid_curpal[((unsigned char*)vid.colormap)[(light&0xFF00)+tex]*3+0],
-							vid_curpal[((unsigned char*)vid.colormap)[(light_g&0xFF00)+tex]*3+1],
-							vid_curpal[((unsigned char*)vid.colormap)[(light_b&0xFF00)+tex]*3+2]);
-					}
-					else*/
+					unsigned char tex = psource[b];
 					unsigned char ir = ((unsigned char*)vid.colormap)[(light   & 0xFF00) + tex];
 					unsigned char ig = ((unsigned char*)vid.colormap)[(light_g & 0xFF00) + tex];
 					unsigned char ib = ((unsigned char*)vid.colormap)[(light_b & 0xFF00) + tex];
