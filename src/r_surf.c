@@ -27,6 +27,7 @@ int r_numhblocks, r_numvblocks;
 unsigned char *r_source, *r_sourcemax;
 unsigned char *lit_lut;
 int lit_lut_initialized = 0;
+int color_lightmap = 0;
 
 extern void init_color_conv();
 extern cvar_t r_labmixpal;
@@ -104,6 +105,7 @@ void R_AddDynamicLights()
 
 void R_BuildLightMap()
 { // Combine and scale multiple lightmaps into the 8.8 format in blocklights
+	color_lightmap = 0;
 	msurface_t *surf = r_drawsurf.surf;
 	int smax = surf->extents[0] / 16 + 1;
 	int tmax = surf->extents[1] / 16 + 1;
@@ -133,6 +135,8 @@ void R_BuildLightMap()
 				*bl_g++ += *lightmap++ * scale;
 				*bl_b++ += *lightmap++ * scale;
 			}
+			if (*bl != *bl_g || *bl != *bl_b)
+				color_lightmap = 1;
 		}
 	if (surf->dlightframe == r_framecount) // add all the dynamic lights
 		R_AddDynamicLights();
@@ -252,12 +256,10 @@ void R_DrawSurfaceBlock(int miplvl)
 			int lightstep_b = lighttemp_b >> (4-miplvl);
 			int light_b = lightright_b;
 			for (int b = (1 << (4-miplvl)) - 1; b >= 0; b--) {
-				if (r_rgblighting.value == 0)
-				{
+				if (!color_lightmap || r_rgblighting.value == 0) {
 					unsigned char pix = psource[b];
 					prowdest[b] = ((unsigned char *)vid.colormap)
 					    [(light & 0xFF00) + pix];
-					light += lightstep;
 				}
 				else {
 					if (!lit_lut_initialized) {
@@ -285,10 +287,10 @@ void R_DrawSurfaceBlock(int miplvl)
 					unsigned char g_ = vid_curpal[ig * 3 + 1];
 					unsigned char b_ = vid_curpal[ib * 3 + 2];
 					prowdest[b] = lit_lut[r_+g_*256+b_*256*256];
-					light += lightstep;
-					light_g += lightstep_g;
-					light_b += lightstep_b;
 				}
+				light += lightstep;
+				light_g += lightstep_g;
+				light_b += lightstep_b;
 			}
 			psource += sourcetstep;
 			lightright += lightrightstep;
