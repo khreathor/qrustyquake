@@ -180,7 +180,6 @@ texture_t *R_TextureAnimation(texture_t *base)
 
 void R_DrawSurface()
 {
-	void (*pblockdrawer)();
 	R_BuildLightMap(); // calculate the lightings
 	surfrowbytes = r_drawsurf.rowbytes;
 	texture_t *mt = r_drawsurf.texture;
@@ -295,6 +294,10 @@ void R_DrawSurfaceBlock(int miplvl)
 			psource += sourcetstep;
 			lightright += lightrightstep;
 			lightleft += lightleftstep;
+			lightright_g += lightrightstep_g;
+			lightleft_g += lightleftstep_g;
+			lightright_b += lightrightstep_b;
+			lightleft_b += lightleftstep_b;
 			prowdest += surfrowbytes;
 		}
 		if (psource >= r_sourcemax)
