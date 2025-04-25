@@ -287,9 +287,9 @@ void R_DrawSurfaceBlock(int miplvl)
 					unsigned char ir = ((unsigned char*)vid.colormap)[(light   & 0xFF00) + tex];
 					unsigned char ig = ((unsigned char*)vid.colormap)[(light_g & 0xFF00) + tex];
 					unsigned char ib = ((unsigned char*)vid.colormap)[(light_b & 0xFF00) + tex];
-					unsigned char r_ = vid_curpal[ir * 3 + 0];
-					unsigned char g_ = vid_curpal[ig * 3 + 1];
-					unsigned char b_ = vid_curpal[ib * 3 + 2];
+					unsigned char r_ = host_basepal[ir * 3 + 0];
+					unsigned char g_ = host_basepal[ig * 3 + 1];
+					unsigned char b_ = host_basepal[ib * 3 + 2];
 					prowdest[b] = lit_lut[
 						QUANT(r_) +
 						QUANT(g_)*LIT_LUT_RES +
