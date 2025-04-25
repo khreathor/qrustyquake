@@ -5,6 +5,9 @@
 #include "quakedef.h"
 #include "r_local.h"
 
+#define LIT_LUT_RES 64
+#define QUANT(x) (((x) * (LIT_LUT_RES - 1)) / 255)
+
 drawsurf_t r_drawsurf;
 
 int lightleft, sourcesstep, blocksize, sourcetstep;
@@ -269,12 +272,14 @@ void R_DrawSurfaceBlock(int miplvl)
 						}
 						else
 							convfunc = rgbtoi;
-						lit_lut = malloc(256*256*256);
-						for (int r_ = 0; r_ < 256; ++r_) {
-						for (int g_ = 0; g_ < 256; ++g_) {
-						for (int b_ = 0; b_ < 256; ++b_) {
-							lit_lut[r_+g_*256+b_*256*256] =
-								convfunc(r_, g_, b_);
+						lit_lut = malloc(LIT_LUT_RES*LIT_LUT_RES*LIT_LUT_RES);
+						for (int r_ = 0; r_ < LIT_LUT_RES; ++r_) {
+						for (int g_ = 0; g_ < LIT_LUT_RES; ++g_) {
+						for (int b_ = 0; b_ < LIT_LUT_RES; ++b_) {
+							int rr = (r_ * 255) / (LIT_LUT_RES - 1);
+							int gg = (g_ * 255) / (LIT_LUT_RES - 1);
+							int bb = (b_ * 255) / (LIT_LUT_RES - 1);
+							lit_lut[r_+g_*LIT_LUT_RES+b_*LIT_LUT_RES*LIT_LUT_RES] = convfunc(rr, gg, bb);
 						} } }
 						lit_lut_initialized = 1;
 					}
@@ -285,7 +290,11 @@ void R_DrawSurfaceBlock(int miplvl)
 					unsigned char r_ = vid_curpal[ir * 3 + 0];
 					unsigned char g_ = vid_curpal[ig * 3 + 1];
 					unsigned char b_ = vid_curpal[ib * 3 + 2];
-					prowdest[b] = lit_lut[r_+g_*256+b_*256*256];
+					prowdest[b] = lit_lut[
+						QUANT(r_) +
+						QUANT(g_)*LIT_LUT_RES +
+						QUANT(b_)*LIT_LUT_RES*LIT_LUT_RES
+					];
 				}
 				light += lightstep;
 				light_g += lightstep_g;
