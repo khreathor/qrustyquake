@@ -39,6 +39,7 @@ extern unsigned char rgbtoi_lab(unsigned char r, unsigned char g, unsigned char 
 extern unsigned char rgbtoi(unsigned char r, unsigned char g, unsigned char b);
 
 void R_DrawSurfaceBlock(int miplvl);
+void R_DrawSurfaceBlockRGB(int miplvl);
 
 unsigned int blocklights[18 * 18];
 unsigned int blocklights_g[18 * 18];
@@ -115,11 +116,9 @@ void R_BuildLightMap()
 	int size = smax * tmax;
 	byte *lightmap = surf->samples;
 	if (r_fullbright.value || !cl.worldmodel->lightdata) {
-		for (int i = 0; i < size; i++) {
-			blocklights[i] = 0;
-			blocklights_g[i] = 0;
-			blocklights_b[i] = 0;
-		}
+		memset(blocklights,     0, size * sizeof(*blocklights));
+		memset(blocklights_g,   0, size * sizeof(*blocklights_g));
+		memset(blocklights_b,   0, size * sizeof(*blocklights_b));
 		return;
 	}
 	for (int i = 0; i < size; i++) { // clear to ambient
@@ -138,7 +137,7 @@ void R_BuildLightMap()
 				*bl_g++ += *lightmap++ * scale;
 				*bl_b++ += *lightmap++ * scale;
 			}
-			if (*bl != *bl_g || *bl != *bl_b)
+			if ((*bl != *bl_g || *bl != *bl_b) && r_rgblighting.value != 0)
 				color_lightmap = 1;
 		}
 	if (surf->dlightframe == r_framecount) // add all the dynamic lights
@@ -149,13 +148,14 @@ void R_BuildLightMap()
 			t = 64;
 		blocklights[i] = t;
 	}
-	for (int i = 0; i < size; i++) { // bound, invert, and shift
+	if (!color_lightmap) return;
+	for (int i = 0; i < size; i++) { // Green
 		int t = (255 * 256 - (int)blocklights_g[i]) >> (8 - VID_CBITS);
 		if (t < 64)
 			t = 64;
 		blocklights_g[i] = t;
 	}
-	for (int i = 0; i < size; i++) { // bound, invert, and shift
+	for (int i = 0; i < size; i++) { // Blue
 		int t = (255 * 256 - (int)blocklights_b[i]) >> (8 - VID_CBITS);
 		if (t < 64)
 			t = 64;
@@ -217,7 +217,8 @@ void R_DrawSurface()
 		r_lightptr_b = blocklights_b + u;
 		prowdestbase = pcolumndest;
 		pbasesource = basetptr + soffset;
-		R_DrawSurfaceBlock(r_drawsurf.surfmip);
+		if (!color_lightmap) R_DrawSurfaceBlock(r_drawsurf.surfmip);
+		else R_DrawSurfaceBlockRGB(r_drawsurf.surfmip);
 		soffset = soffset + blocksize;
 		if (soffset >= smax)
 			soffset = 0;
@@ -225,8 +226,63 @@ void R_DrawSurface()
 	}
 }
 
+void R_BuildLitLUT()
+{
+	unsigned char (*convfunc)(unsigned char, unsigned char, unsigned char);
+	if (r_labmixpal.value == 1) {
+		init_color_conv();
+		convfunc = rgbtoi_lab;
+	}
+	else
+		convfunc = rgbtoi;
+	const int llr = LIT_LUT_RES;
+	lit_lut = malloc(llr*llr*llr);
+	for (int r_ = 0; r_ < llr; ++r_) {
+	for (int g_ = 0; g_ < llr; ++g_) {
+	for (int b_ = 0; b_ < llr; ++b_) {
+		int rr = (r_ * 255) / (llr - 1);
+		int gg = (g_ * 255) / (llr - 1);
+		int bb = (b_ * 255) / (llr - 1);
+		lit_lut[r_+g_*llr+b_*llr*llr] = convfunc(rr, gg, bb);
+	} } }
+	lit_lut_initialized = 1;
+}
+
 void R_DrawSurfaceBlock(int miplvl)
 {
+	unsigned char *psource = pbasesource;
+	unsigned char *prowdest = prowdestbase;
+	for (int v = 0; v < r_numvblocks; v++) {
+		// FIXME: make these locals?
+		// FIXME: use delta rather than both right and left, like ASM?
+		lightleft = r_lightptr[0];
+		lightright = r_lightptr[1];
+		r_lightptr += r_lightwidth;
+		lightleftstep = (r_lightptr[0] - lightleft) >> (4-miplvl);
+		lightrightstep = (r_lightptr[1] - lightright) >> (4-miplvl);
+		for (int i = 0; i < 1 << (4-miplvl); i++) {
+			int lighttemp = lightleft - lightright;
+			int lightstep = lighttemp >> (4-miplvl);
+			int light = lightright;
+			for (int b = (1 << (4-miplvl)) - 1; b >= 0; b--) {
+				unsigned char pix = psource[b];
+				prowdest[b] = ((unsigned char *)vid.colormap)
+				    [(light & 0xFF00) + pix];
+				light += lightstep;
+			}
+			psource += sourcetstep;
+			lightright += lightrightstep;
+			lightleft += lightleftstep;
+			prowdest += surfrowbytes;
+		}
+		if (psource >= r_sourcemax)
+			psource -= r_stepback;
+	}
+}
+
+void R_DrawSurfaceBlockRGB(int miplvl)
+{
+	if (!lit_lut_initialized) R_BuildLitLUT();
 	unsigned char *psource = pbasesource;
 	unsigned char *prowdest = prowdestbase;
 	for (int v = 0; v < r_numvblocks; v++) {
@@ -258,44 +314,16 @@ void R_DrawSurfaceBlock(int miplvl)
 			int lightstep_b = lighttemp_b >> (4-miplvl);
 			int light_b = lightright_b;
 			for (int b = (1 << (4-miplvl)) - 1; b >= 0; b--) {
-				if (!color_lightmap || r_rgblighting.value == 0) {
-					unsigned char pix = psource[b];
-					prowdest[b] = ((unsigned char *)vid.colormap)
-					    [(light & 0xFF00) + pix];
-				}
-				else {
-					if (!lit_lut_initialized) {
-						unsigned char (*convfunc)(unsigned char, unsigned char, unsigned char);
-						if (r_labmixpal.value == 1) {
-							init_color_conv();
-							convfunc = rgbtoi_lab;
-						}
-						else
-							convfunc = rgbtoi;
-						lit_lut = malloc(LIT_LUT_RES*LIT_LUT_RES*LIT_LUT_RES);
-						for (int r_ = 0; r_ < LIT_LUT_RES; ++r_) {
-						for (int g_ = 0; g_ < LIT_LUT_RES; ++g_) {
-						for (int b_ = 0; b_ < LIT_LUT_RES; ++b_) {
-							int rr = (r_ * 255) / (LIT_LUT_RES - 1);
-							int gg = (g_ * 255) / (LIT_LUT_RES - 1);
-							int bb = (b_ * 255) / (LIT_LUT_RES - 1);
-							lit_lut[r_+g_*LIT_LUT_RES+b_*LIT_LUT_RES*LIT_LUT_RES] = convfunc(rr, gg, bb);
-						} } }
-						lit_lut_initialized = 1;
-					}
-					unsigned char tex = psource[b];
-					unsigned char ir = ((unsigned char*)vid.colormap)[(light   & 0xFF00) + tex];
-					unsigned char ig = ((unsigned char*)vid.colormap)[(light_g & 0xFF00) + tex];
-					unsigned char ib = ((unsigned char*)vid.colormap)[(light_b & 0xFF00) + tex];
-					unsigned char r_ = host_basepal[ir * 3 + 0];
-					unsigned char g_ = host_basepal[ig * 3 + 1];
-					unsigned char b_ = host_basepal[ib * 3 + 2];
-					prowdest[b] = lit_lut[
-						QUANT(r_) +
-						QUANT(g_)*LIT_LUT_RES +
-						QUANT(b_)*LIT_LUT_RES*LIT_LUT_RES
-					];
-				}
+				unsigned char tex = psource[b];
+				unsigned char ir = ((unsigned char*)vid.colormap)[(light   & 0xFF00) + tex];
+				unsigned char ig = ((unsigned char*)vid.colormap)[(light_g & 0xFF00) + tex];
+				unsigned char ib = ((unsigned char*)vid.colormap)[(light_b & 0xFF00) + tex];
+				unsigned char r_ = host_basepal[ir * 3 + 0];
+				unsigned char g_ = host_basepal[ig * 3 + 1];
+				unsigned char b_ = host_basepal[ib * 3 + 2];
+				prowdest[b] = lit_lut[ QUANT(r_)
+					+ QUANT(g_)*LIT_LUT_RES
+					+ QUANT(b_)*LIT_LUT_RES*LIT_LUT_RES ];
 				light += lightstep;
 				light_g += lightstep_g;
 				light_b += lightstep_b;
