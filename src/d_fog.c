@@ -14,7 +14,6 @@ static float fog_red; // CyanBun96: we store the actual RGB values in these,
 static float fog_green; // but they get quantized to a single index in the color
 static float fog_blue; // palette before use, stored in fog_pal_index
 unsigned char fog_pal_index;
-extern unsigned char vid_curpal[256 * 3]; // RGB palette
 extern cvar_t r_fogstyle;
 extern cvar_t r_nofog;
 extern cvar_t r_labmixpal;
@@ -54,9 +53,9 @@ void init_color_conv() {
 			powf((v + 0.055f) / 1.055f, 2.4f) : (v / 12.92f);
 	}
 	for (int i = 0, p = 0; i < 256; ++i, p += 3) {
-		float lr = gamma_lut[vid_curpal[p + 0]];
-		float lg = gamma_lut[vid_curpal[p + 1]];
-		float lb = gamma_lut[vid_curpal[p + 2]];
+		float lr = gamma_lut[host_basepal[p + 0]];
+		float lg = gamma_lut[host_basepal[p + 1]];
+		float lb = gamma_lut[host_basepal[p + 2]];
 		lab_palette[i] = rgb_lin_to_lab(lr, lg, lb);
 	}
 }
@@ -83,7 +82,7 @@ unsigned char rgbtoi(unsigned char r, unsigned char g, unsigned char b)
 {
 	unsigned char besti = 0;
 	int bestdist = 0x7fffffff;
-	unsigned char *p = vid_curpal;
+	unsigned char *p = host_basepal;
 	for (int i = 0; i < 256; ++i, p += 3) {
 		int dr = r - p[0]; // squared euclidean distance
 		int dg = g - p[1];
@@ -238,12 +237,12 @@ void build_color_mix_lut()
 		convfunc = rgbtoi;
 	for (int c1 = 0; c1 < 256; c1++) {
 		for (int c2 = 0; c2 < 256; c2++) {
-			unsigned char r1 = vid_curpal[c1*3+0];
-			unsigned char g1 = vid_curpal[c1*3+1];
-			unsigned char b1 = vid_curpal[c1*3+2];
-			unsigned char r2 = vid_curpal[c2*3+0];
-			unsigned char g2 = vid_curpal[c2*3+1];
-			unsigned char b2 = vid_curpal[c2*3+2];
+			unsigned char r1 = host_basepal[c1*3+0];
+			unsigned char g1 = host_basepal[c1*3+1];
+			unsigned char b1 = host_basepal[c1*3+2];
+			unsigned char r2 = host_basepal[c2*3+0];
+			unsigned char g2 = host_basepal[c2*3+1];
+			unsigned char b2 = host_basepal[c2*3+2];
 			for (int level = 0; level < FOG_LUT_LEVELS; level++) {
 				float factor = (float)level / (FOG_LUT_LEVELS-1);
 				// lerp each RGB component
