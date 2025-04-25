@@ -230,7 +230,6 @@ void VID_Init(unsigned char *palette)
 	sprintf(caption, "QrustyQuake - Version %4.2f", VERSION);
 	SDL_SetWindowTitle(window, (const char *)&caption);
 	SDLWindowFlags = SDL_GetWindowFlags(window);
-	VID_SetPalette(palette);
 	VGA_width = vid.conwidth = vid.width;
 	VGA_height = vid.conheight = vid.height;
 	vid.aspect = ((float)vid.height / (float)vid.width) * (320.0 / 240.0);

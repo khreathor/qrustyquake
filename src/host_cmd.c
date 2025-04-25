@@ -721,6 +721,7 @@ static void Host_Spawn_f (void)
         client_t        *client;
         edict_t *ent;
 
+	VID_SetPalette(host_basepal);
         if (cmd_source == src_command)
         {
                 Con_Printf ("spawn is not valid from the console\n");
