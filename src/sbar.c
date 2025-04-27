@@ -260,7 +260,7 @@ void Sbar_CalcPos()
 	default: // ammo counters
 	case 0: // classic
 		for (int i = 0; i < 4; i++) {
-			npos[i][0] = WW / 2 - 152*SCL + i*48*SCL;
+			npos[i][0] = WW / 2 - 150*SCL + i*48*SCL;
 			npos[i][1] = HH - 48*SCL;
 		}
 		break;
