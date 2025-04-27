@@ -5,9 +5,6 @@
 #include "quakedef.h"
 #include "r_local.h"
 
-#define LIT_LUT_RES 64
-#define QUANT(x) (((x) * (LIT_LUT_RES - 1)) / 255)
-
 drawsurf_t r_drawsurf;
 
 int lightleft, sourcesstep, blocksize, sourcetstep;

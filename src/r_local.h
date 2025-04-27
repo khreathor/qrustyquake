@@ -19,6 +19,8 @@
 #define AMP 8*0x10000 // turbulence stuff
 #define AMP2 3
 #define SPEED 20
+#define LIT_LUT_RES 64
+#define QUANT(x) (((x) * (LIT_LUT_RES - 1)) / 255)
 
 typedef struct { // viewmodel lighting
 	int ambientlight;
@@ -142,6 +144,9 @@ extern cvar_t r_wateralpha, r_slimealpha, r_lavaalpha, r_telealpha;
 extern int r_pass;
 extern cvar_t r_twopass;
 extern cvar_t r_entalpha;
+extern unsigned char *lit_lut;
+extern int lit_lut_initialized;
+extern int color_lightmap;
 
 void R_DrawSprite();
 void R_RenderFace(msurface_t *fa, int clipflags);
@@ -194,3 +199,10 @@ void R_EmitEdge(mvertex_t *pv0, mvertex_t *pv1);
 void R_ClipEdge(mvertex_t *pv0, mvertex_t *pv1, clipplane_t *clip);
 void R_SplitEntityOnNode2(mnode_t *node);
 void R_MarkLights(dlight_t *light, int bit, mnode_t *node);
+
+extern cvar_t r_labmixpal;
+extern cvar_t r_rgblighting;
+extern unsigned char rgbtoi_lab(unsigned char r, unsigned char g, unsigned char b);
+extern unsigned char rgbtoi(unsigned char r, unsigned char g, unsigned char b);
+extern void init_color_conv();
+extern void R_BuildLitLUT();

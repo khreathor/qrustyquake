@@ -5,6 +5,7 @@
 
 #include "quakedef.h"
 #include "d_local.h"
+#include "r_local.h"
 
 // TODO: put in span spilling to shrink list size
 #define DPS_MAXSPANS MAXHEIGHT+1 // 1 extra for spanpackage that marks end
@@ -64,6 +65,7 @@ float cur_ent_alpha = 1;
 extern unsigned char color_mix_lut[256][256][FOG_LUT_LEVELS];
 extern int fog_lut_built;
 extern void build_color_mix_lut();
+extern vec3_t lightcolor;
 
 static adivtab_t adivtab[32 * 32] = {
 #include "adivtab.h"
@@ -131,7 +133,20 @@ void D_PolysetDrawFinalVerts(finalvert_t *fv, int numverts)
 			int pix;
 			*zbuf = z;
 			pix = skintable[fv->v[3] >> 16][fv->v[2] >> 16];
-			pix = ((byte *) acolormap)[pix + (fv->v[4] & 0xFF00)];
+			if (!r_rgblighting.value || (lightcolor[0] == lightcolor[1] && lightcolor[0] == lightcolor[2]))
+				pix = ((byte *) acolormap)[pix + (fv->v[4] & 0xFF00)];
+			else {
+				pix = ((byte *) acolormap)[pix];
+				unsigned char tr = vid_curpal[pix * 3 + 0];
+				unsigned char tg = vid_curpal[pix * 3 + 1];
+				unsigned char tb = vid_curpal[pix * 3 + 2];
+				unsigned char rr = (tr * lightcolor[0]) / 255.0f;
+				unsigned char gg = (tg * lightcolor[1]) / 255.0f;
+				unsigned char bb = (tb * lightcolor[2]) / 255.0f;
+				pix = lit_lut[ QUANT(rr)
+					+ QUANT(gg)*LIT_LUT_RES
+					+ QUANT(bb)*LIT_LUT_RES*LIT_LUT_RES ];
+			}
 			if (r_alphastyle.value == 0 && cur_ent_alpha != 1) {
 				int curpix = d_viewbuffer[d_scantable[fv->v[1]] + fv->v[0]];
 				d_viewbuffer[d_scantable[fv->v[1]] + fv->v[0]] =
@@ -275,6 +290,20 @@ split: // split this edge
 	if (z >= *zbuf) {
 		*zbuf = z;
 		int pix = d_pcolormap[skintable[new[3] >> 16][new[2] >> 16]];
+		if (!r_rgblighting.value || (lightcolor[0] == lightcolor[1] && lightcolor[0] == lightcolor[2]))
+			pix = d_pcolormap[skintable[new[3] >> 16][new[2] >> 16]];
+		else {
+			pix = d_pcolormap[skintable[new[3] >> 16][new[2] >> 16]];
+			unsigned char tr = vid_curpal[pix * 3 + 0];
+			unsigned char tg = vid_curpal[pix * 3 + 1];
+			unsigned char tb = vid_curpal[pix * 3 + 2];
+			unsigned char rr = (tr * lightcolor[0]) / 255.0f;
+			unsigned char gg = (tg * lightcolor[1]) / 255.0f;
+			unsigned char bb = (tb * lightcolor[2]) / 255.0f;
+			pix = lit_lut[ QUANT(rr)
+				+ QUANT(gg)*LIT_LUT_RES
+				+ QUANT(bb)*LIT_LUT_RES*LIT_LUT_RES ];
+		}
 		if (r_alphastyle.value == 0 && cur_ent_alpha != 1) {
 			int curpix = d_viewbuffer[d_scantable[new[1]] + new[0]];
 			d_viewbuffer[d_scantable[new[1]] + new[0]] =
@@ -433,7 +462,21 @@ void D_PolysetDrawSpans8(spanpackage_t *pspanpackage)
 			}
 			do {
 				if ((lzi >> 16) >= *lpz) {
-					int pix = ((byte*)acolormap)[*lptex + (llight & 0xFF00)];
+					int pix;
+					if (!r_rgblighting.value || (lightcolor[0] == lightcolor[1] && lightcolor[0] == lightcolor[2]))
+						pix = ((byte*)acolormap)[*lptex + (llight & 0xFF00)];
+					else {
+						pix = ((byte*)acolormap)[*lptex];
+						unsigned char tr = vid_curpal[pix * 3 + 0];
+						unsigned char tg = vid_curpal[pix * 3 + 1];
+						unsigned char tb = vid_curpal[pix * 3 + 2];
+						unsigned char rr = (tr * lightcolor[0]) / 255.0f;
+						unsigned char gg = (tg * lightcolor[1]) / 255.0f;
+						unsigned char bb = (tb * lightcolor[2]) / 255.0f;
+						pix = lit_lut[ QUANT(rr)
+							+ QUANT(gg)*LIT_LUT_RES
+							+ QUANT(bb)*LIT_LUT_RES*LIT_LUT_RES ];
+					}
 					if (r_alphastyle.value == 0 && cur_ent_alpha != 1) {
 						int curpix = *lpdest;
 						*lpdest = color_mix_lut[curpix][pix]
