@@ -134,8 +134,9 @@ void R_BuildLightMap()
 				*bl_g++ += *lightmap++ * scale;
 				*bl_b++ += *lightmap++ * scale;
 			}
-			if (!(bl[-1] == bl_g[-1] && bl[-1] == bl_b[-1])
-				&& r_rgblighting.value != 0)
+			if (r_rgblighting.value != 0 && (
+				lightmap[-3]!=lightmap[-2]||lightmap[-3]==lightmap[-1]||
+				lightmap[-2]!=lightmap[-1]))
 				color_lightmap = 1;
 		}
 	if (surf->dlightframe == r_framecount) // add all the dynamic lights
