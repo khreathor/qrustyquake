@@ -113,9 +113,9 @@ void R_BuildLightMap()
 	int size = smax * tmax;
 	byte *lightmap = surf->samples;
 	if (r_fullbright.value || !cl.worldmodel->lightdata) {
-		memset(blocklights,     0, size * sizeof(*blocklights));
-		memset(blocklights_g,   0, size * sizeof(*blocklights_g));
-		memset(blocklights_b,   0, size * sizeof(*blocklights_b));
+		memset(blocklights,   0, size * sizeof(*blocklights));
+		memset(blocklights_g, 0, size * sizeof(*blocklights_g));
+		memset(blocklights_b, 0, size * sizeof(*blocklights_b));
 		return;
 	}
 	for (int i = 0; i < size; i++) { // clear to ambient
@@ -134,7 +134,8 @@ void R_BuildLightMap()
 				*bl_g++ += *lightmap++ * scale;
 				*bl_b++ += *lightmap++ * scale;
 			}
-			if ((*bl != *bl_g || *bl != *bl_b) && r_rgblighting.value != 0)
+			if (!(bl[-1] == bl_g[-1] && bl[-1] == bl_b[-1])
+				&& r_rgblighting.value != 0)
 				color_lightmap = 1;
 		}
 	if (surf->dlightframe == r_framecount) // add all the dynamic lights
