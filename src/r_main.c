@@ -64,6 +64,7 @@ float r_aliastransition, r_resfudge;
 int d_lightstylevalue[256]; // 8.8 fraction of base light value
 float dp_time1, dp_time2, db_time1, db_time2, rw_time1, rw_time2;
 float se_time1, se_time2, de_time1, de_time2, dv_time1, dv_time2;
+int colored_aliaslight;
 
 cvar_t r_draworder = { "r_draworder", "0", false, false, 0, NULL };
 cvar_t r_speeds = { "r_speeds", "0", false, false, 0, NULL };
@@ -102,7 +103,7 @@ cvar_t r_rgblighting = { "r_rgblighting", "1", true, false, 0, NULL }; // CyanBu
 
 // johnfitz -- new cvars TODO actually implement these, they're currently placeholders
 cvar_t  r_nolerp_list = {"r_nolerp_list", "progs/flame.mdl,progs/flame2.mdl,progs/braztall.mdl,pro gs/brazshrt.mdl,progs/longtrch.mdl,progs/flame_pyre.mdl,progs/v_saw.mdl,progs/v_xfist.mdl,progs/h2 stuff/newfire.mdl", false, false, 0, NULL};
-cvar_t  r_noshadow_list = {"r_noshadow_list", "progs/flame2.mdl,progs/flame.mdl,progs/bolt1.mdl,pr ogs/bolt2.mdl,progs/bolt3.mdl,progs/laser.mdl", false, false, 0, NULL};
+cvar_t  r_noshadow_list = {"r_noshadow_list", "progs/proj_balllava.mdl,progs/flame2.mdl,progs/flame.mdl,progs/bolt1.mdl,pr ogs/bolt2.mdl,progs/bolt3.mdl,progs/laser.mdl", false, false, 0, NULL};
 // johnfitz
 
 extern cvar_t scr_fov;
@@ -413,6 +414,7 @@ void R_DrawEntitiesOnList()
 					    192 - lighting.ambientlight;
 				cur_ent_alpha = currententity->alpha && r_entalpha.value == 1 ?
 					(float)currententity->alpha/255 : 1;
+				colored_aliaslight = !(currententity->model->flags & MOD_NOSHADOW);
 				R_AliasDrawModel(&lighting);
 			}
 			break;
@@ -454,9 +456,8 @@ void R_DrawViewModel()
 		r_viewlighting.ambientlight = 128;
 	if (r_viewlighting.ambientlight + r_viewlighting.shadelight > 192)
 		r_viewlighting.shadelight = 192 - r_viewlighting.ambientlight;
-
 	r_viewlighting.plightvec = lightvec;
-
+	colored_aliaslight = 1;
 	R_AliasDrawModel(&r_viewlighting);
 }
 

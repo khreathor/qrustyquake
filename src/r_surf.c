@@ -27,7 +27,6 @@ int r_numhblocks, r_numvblocks;
 unsigned char *r_source, *r_sourcemax;
 unsigned char *lit_lut;
 int lit_lut_initialized = 0;
-int color_lightmap = 0;
 
 extern void init_color_conv();
 extern cvar_t r_labmixpal;
@@ -106,7 +105,6 @@ void R_AddDynamicLights()
 
 void R_BuildLightMap()
 { // Combine and scale multiple lightmaps into the 8.8 format in blocklights
-	color_lightmap = 0;
 	msurface_t *surf = r_drawsurf.surf;
 	int smax = surf->extents[0] / 16 + 1;
 	int tmax = surf->extents[1] / 16 + 1;
@@ -134,10 +132,6 @@ void R_BuildLightMap()
 				*bl_g++ += *lightmap++ * scale;
 				*bl_b++ += *lightmap++ * scale;
 			}
-			if (r_rgblighting.value != 0 && (
-				lightmap[-3]!=lightmap[-2]||lightmap[-3]==lightmap[-1]||
-				lightmap[-2]!=lightmap[-1]))
-				color_lightmap = 1;
 		}
 	if (surf->dlightframe == r_framecount) // add all the dynamic lights
 		R_AddDynamicLights();
@@ -147,7 +141,6 @@ void R_BuildLightMap()
 			t = 64;
 		blocklights[i] = t;
 	}
-	if (!color_lightmap) return;
 	for (int i = 0; i < size; i++) { // Green
 		int t = (255 * 256 - (int)blocklights_g[i]) >> (8 - VID_CBITS);
 		if (t < 64)
@@ -216,7 +209,7 @@ void R_DrawSurface()
 		r_lightptr_b = blocklights_b + u;
 		prowdestbase = pcolumndest;
 		pbasesource = basetptr + soffset;
-		if (!color_lightmap) R_DrawSurfaceBlock(r_drawsurf.surfmip);
+		if (!r_rgblighting.value) R_DrawSurfaceBlock(r_drawsurf.surfmip);
 		else R_DrawSurfaceBlockRGB(r_drawsurf.surfmip);
 		soffset = soffset + blocksize;
 		if (soffset >= smax)

@@ -66,6 +66,7 @@ extern unsigned char color_mix_lut[256][256][FOG_LUT_LEVELS];
 extern int fog_lut_built;
 extern void build_color_mix_lut();
 extern vec3_t lightcolor;
+extern int colored_aliaslight;
 
 static adivtab_t adivtab[32 * 32] = {
 #include "adivtab.h"
@@ -133,7 +134,7 @@ void D_PolysetDrawFinalVerts(finalvert_t *fv, int numverts)
 			int pix;
 			*zbuf = z;
 			pix = skintable[fv->v[3] >> 16][fv->v[2] >> 16];
-			if (!r_rgblighting.value || (lightcolor[0] == lightcolor[1] && lightcolor[0] == lightcolor[2]))
+			if (!r_rgblighting.value || !colored_aliaslight)
 				pix = ((byte *) acolormap)[pix + (fv->v[4] & 0xFF00)];
 			else {
 				pix = ((byte *) acolormap)[pix];
@@ -290,7 +291,7 @@ split: // split this edge
 	if (z >= *zbuf) {
 		*zbuf = z;
 		int pix = d_pcolormap[skintable[new[3] >> 16][new[2] >> 16]];
-		if (!r_rgblighting.value || (lightcolor[0] == lightcolor[1] && lightcolor[0] == lightcolor[2]))
+		if (!r_rgblighting.value || !colored_aliaslight)
 			pix = d_pcolormap[skintable[new[3] >> 16][new[2] >> 16]];
 		else {
 			pix = d_pcolormap[skintable[new[3] >> 16][new[2] >> 16]];
@@ -463,7 +464,7 @@ void D_PolysetDrawSpans8(spanpackage_t *pspanpackage)
 			do {
 				if ((lzi >> 16) >= *lpz) {
 					int pix;
-					if (!r_rgblighting.value || (lightcolor[0] == lightcolor[1] && lightcolor[0] == lightcolor[2]))
+					if (!r_rgblighting.value || !colored_aliaslight)
 						pix = ((byte*)acolormap)[*lptex + (llight & 0xFF00)];
 					else {
 						pix = ((byte*)acolormap)[*lptex];
