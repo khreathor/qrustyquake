@@ -48,6 +48,8 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
 - Modern UI layouts (hudstyle 0/1/2/3)
 
+   - Transparent UI elements for modern mods
+
 - VGA text blurbs after shutdown
 
 - The default audio rate is 11025 for more muffled WinQuake sound
@@ -72,7 +74,13 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
    - Other Arcane Dimensions maps load but are untested
 
+   - Much more limited on windows, currently, but still higher than vanilla
+
 - Software imitations of modern rendering features
+
+   - Colored lighting, .lit file support
+
+      - r_rgblighting 0,1 to toggle
 
    - Translucent liquids on supported maps (r_{water,slime,lava,tele}alpha 0-1)
 
@@ -96,6 +104,8 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
       - r_fogstyle 0/1/2/3, with 3 being the default and most "modern-looking"
 
+      - r_fogbrightness (0.5 for half brightness, 2 for double), independent of the fog color dictated by the map
+
 # Planned
 
 - Overhaul, modernization and trimming of the source code - removal of dead platforms and platform-specific code in favor of portable, properly formatted and readable code.
@@ -112,13 +122,13 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
    - The long-term goal for this port keeping it as well-maintained as a 1996 game can be.
 
+   - The whole "modernized" rendering system is a mess, akin to layers of makeup on a rotting corpse. I hope someone will rewrite it someday, or I'll have to do it myself.
+
 - Modern mod support
 
-   - Partially implemented, currently being worked on
+   - Mostly implemented, forever being worked on
 
 - Other modern features (optional)
-
-   - Colored lighting, .lit file support
 
    - More modern console
 
@@ -150,7 +160,7 @@ x86_64 unless specified otherwise.
 
 VM is VirtualBox unless specified otherwise.
 
-- Arch Linux [HW] v0.4.5
+- Arch Linux [HW] v0.4.6
 
    - The main platform that this port is developed on. The most likely one to work
 
@@ -176,11 +186,11 @@ VM is VirtualBox unless specified otherwise.
 
    - Not tested on real hardware yet, TODO
 
-- Android [HW, Termux, AARCH64] v0.4.2
+- Android [HW, Termux, AARCH64] v0.4.5
 
    - Ran through X11 with touch controls. *unpleasant*
 
-- Windows [VM, HW] v0.4.5
+- Windows [VM, HW] v0.4.6
 
    - Tested with w10 on hardware and w11 on a VM
 

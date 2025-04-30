@@ -100,6 +100,7 @@ cvar_t r_alphastyle = { "r_alphastyle", "0", true, false, 0, NULL }; // CyanBun9
 cvar_t r_entalpha = { "r_entalpha", "1", true, false, 0, NULL }; // CyanBun96
 cvar_t r_labmixpal = { "r_labmixpal", "1", true, false, 0, NULL }; // CyanBun96
 cvar_t r_rgblighting = { "r_rgblighting", "1", true, false, 0, NULL }; // CyanBun96
+cvar_t r_fogbrightness = { "r_fogbrightness", "1", true, false, 0, NULL }; // CyanBun96
 
 // johnfitz -- new cvars TODO actually implement these, they're currently placeholders
 cvar_t  r_nolerp_list = {"r_nolerp_list", "progs/flame.mdl,progs/flame2.mdl,progs/braztall.mdl,pro gs/brazshrt.mdl,progs/longtrch.mdl,progs/flame_pyre.mdl,progs/v_saw.mdl,progs/v_xfist.mdl,progs/h2 stuff/newfire.mdl", false, false, 0, NULL};
@@ -122,6 +123,7 @@ void CreatePassages();
 void SetVisibilityByPassages();
 void R_MarkLeaves();
 void Sky_Init();
+void Fog_SetPalIndex();
 
 void R_InitTextures()
 { // create a simple checkerboard texture for the default
@@ -183,7 +185,9 @@ void R_Init()
 	Cvar_RegisterVariable(&r_entalpha);
 	Cvar_RegisterVariable(&r_labmixpal);
 	Cvar_RegisterVariable(&r_rgblighting);
+	Cvar_RegisterVariable(&r_fogbrightness);
 	Cvar_SetCallback(&r_labmixpal, build_color_mix_lut);
+	Cvar_SetCallback(&r_fogbrightness, Fog_SetPalIndex);
 	Cvar_SetValue("r_maxedges", (float)NUMSTACKEDGES);
 	Cvar_SetValue("r_maxsurfs", (float)NUMSTACKSURFACES);
 	view_clipplanes[0].leftedge = true;

@@ -17,6 +17,7 @@ unsigned char fog_pal_index;
 extern cvar_t r_fogstyle;
 extern cvar_t r_nofog;
 extern cvar_t r_labmixpal;
+extern cvar_t r_fogbrightness;
 extern unsigned int sb_updates; // if >= vid.numpages, no update needed
 float randarr[RANDARR_SIZE];
 unsigned char color_mix_lut[256][256][FOG_LUT_LEVELS];
@@ -25,13 +26,15 @@ float gamma_lut[256];
 int color_conv_initialized = 0;
 lab lab_palette[256];
 
-static inline float lab_f(float t) { // cube-root if > epsilon, linear otherwise
+static inline float lab_f(float t)
+{ // cube-root if > epsilon, linear otherwise
 	const float epsilon = 0.008856f;
 	const float kappa = 903.3f;
 	return (t > epsilon) ? cbrtf(t) : ((kappa * t + 16.0f) / 116.0f);
 }
 
-static inline lab rgb_lin_to_lab(float r, float g, float b) {
+static inline lab rgb_lin_to_lab(float r, float g, float b)
+{
 	float x = r * 0.4124f + g * 0.3576f + b * 0.1805f;
 	float y = r * 0.2126f + g * 0.7152f + b * 0.0722f;
 	float z = r * 0.0193f + g * 0.1192f + b * 0.9505f;
@@ -44,7 +47,8 @@ static inline lab rgb_lin_to_lab(float r, float g, float b) {
 	return lab;
 }
 
-void init_color_conv() {
+void init_color_conv()
+{
 	if (color_conv_initialized) return;
 	color_conv_initialized = 1;
 	for (int i = 0; i < 256; ++i) {
@@ -60,7 +64,8 @@ void init_color_conv() {
 	}
 }
 
-unsigned char rgbtoi_lab(unsigned char R, unsigned char G, unsigned char B) {
+unsigned char rgbtoi_lab(unsigned char R, unsigned char G, unsigned char B)
+{
 	lab lab0 = rgb_lin_to_lab(gamma_lut[R], gamma_lut[G], gamma_lut[B]);
 	float bestdist = FLT_MAX;
 	unsigned char besti = 0;
@@ -96,6 +101,13 @@ unsigned char rgbtoi(unsigned char r, unsigned char g, unsigned char b)
 		}
 	}
 	return besti;
+}
+
+void Fog_SetPalIndex()
+{
+	fog_pal_index = rgbtoi_lab(fog_red*255.0f*r_fogbrightness.value,
+			fog_green*255.0f*r_fogbrightness.value,
+			fog_blue*255.0f*r_fogbrightness.value);
 }
 
 void Fog_FogCommand_f () // yanked from Quakespasm, mostly
@@ -161,7 +173,7 @@ void Fog_FogCommand_f () // yanked from Quakespasm, mostly
 	fog_red = r;
 	fog_green = g;
 	fog_blue = b;
-	fog_pal_index = rgbtoi_lab(r*255.0f, g*255.0f, b*255.0f);
+	Fog_SetPalIndex();
 	vid.recalc_refdef = 1;
 	fog_initialized = 0;
 }
@@ -200,7 +212,7 @@ void Fog_ParseWorldspawn () // from Quakespasm
 		if (!strcmp("fog", key))
 			sscanf(value, "%f %f %f %f", &fog_density, &fog_red, &fog_green, &fog_blue);
 	}
-	fog_pal_index = rgbtoi_lab(fog_red*255.0f, fog_green*255.0f, fog_blue*255.0f);
+	Fog_SetPalIndex();
 }
 
 unsigned int lfsr_random() {
