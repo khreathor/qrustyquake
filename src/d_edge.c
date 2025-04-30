@@ -112,7 +112,8 @@ void D_DrawSurfaces()
 		// 35, which leads to segfaults on any further checks while
 		// still passing s->entity != NULL check. Must be a symptom of
 		// some bigger issue that I can't be bothered to diagnose ATM.
-		if (s->entity > 100000 && s->entity->alpha && r_entalpha.value == 1)
+		unsigned long is_ent = (unsigned long)s->entity & 0xffff000;
+		if (is_ent && s->entity->alpha && r_entalpha.value == 1)
 			winquake_surface_liquid_alpha = (float)s->entity->alpha / 255;
 		// Baker: Need to determine what kind of liquid we are
 		else if (s->flags & SURF_WINQUAKE_DRAWTRANSLUCENT) {
@@ -217,7 +218,7 @@ void D_DrawSurfaces()
 				VectorCopy(base_modelorg, modelorg);
 				R_TransformFrustum();
 			}
-		} else if (s->entity > 100000 && s->entity->alpha && r_entalpha.value == 1) {
+		} else if (is_ent && s->entity->alpha && r_entalpha.value == 1) {
 			if (s->insubmodel) {
 				// FIXME: we don't want to do all this for every polygon!
 				// TODO: store once at start of frame
