@@ -512,8 +512,10 @@ void D_DrawTransSpans8(espan_t *pspan, float opacity)
 					if (*pz <= (izi >> 16)) {
 						unsigned char pix = *(pbase + (s >> 16) +
 							(t >> 16) * cachewidth);
-						pix = color_mix_lut[pix][*pdest][foglut];
-						*pdest = pix;
+						if (pix != 0xff) {
+							pix = color_mix_lut[pix][*pdest][foglut];
+							*pdest = pix;
+						}
 					}
 					pdest++;
 					izi += izistep;
