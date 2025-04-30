@@ -414,7 +414,8 @@ void R_DrawEntitiesOnList()
 					    192 - lighting.ambientlight;
 				cur_ent_alpha = currententity->alpha && r_entalpha.value == 1 ?
 					(float)currententity->alpha/255 : 1;
-				colored_aliaslight = !(currententity->model->flags & MOD_NOSHADOW);
+				if (colored_aliaslight)
+					colored_aliaslight = !(currententity->model->flags & MOD_NOSHADOW);
 				R_AliasDrawModel(&lighting);
 			}
 			break;
@@ -457,7 +458,6 @@ void R_DrawViewModel()
 	if (r_viewlighting.ambientlight + r_viewlighting.shadelight > 192)
 		r_viewlighting.shadelight = 192 - r_viewlighting.ambientlight;
 	r_viewlighting.plightvec = lightvec;
-	colored_aliaslight = 1;
 	R_AliasDrawModel(&r_viewlighting);
 }
 
