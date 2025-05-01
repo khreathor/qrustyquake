@@ -271,11 +271,11 @@ void build_color_mix_lut()
 
 void R_InitFog()
 {
-	fog_pal_index = rgbtoi(fog_red*255.0f, fog_green*255.0f, fog_blue*255.0f);
 	for (int i = 0; i < RANDARR_SIZE; ++i) // fog bias array
 		randarr[i] = (lfsr_random() & 0xFFFF) / 65535.0f; // LFSR random number normalized to [0,1]
 	if (!fog_lut_built)
 		build_color_mix_lut();
+	Fog_SetPalIndex();
 	fog_initialized = 1;
 }
 
