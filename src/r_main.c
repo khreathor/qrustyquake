@@ -235,6 +235,8 @@ void R_NewMap()
 		: Hunk_AllocName(r_numallocatededges * sizeof(edge_t), "edges");
 	r_dowarpold = false;
 	r_viewchanged = false;
+	skybox_name[0] = 0;
+	r_skymade = 0;
 	Sky_NewMap();
 	Fog_ParseWorldspawn();
 }
