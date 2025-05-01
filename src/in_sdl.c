@@ -6,18 +6,19 @@ float mouse_y;
 int mouse_oldbuttonstate;
 extern cvar_t realwidth;
 extern cvar_t realheight;
+static int buttonremap[] = { K_MOUSE1, K_MOUSE3, K_MOUSE2, K_MOUSE4, K_MOUSE5 };
 
 void Sys_SendKeyEvents()
 {
 	SDL_Event event;
-	int sym, state, modstate; // keep here for OpenBSD compiler
+	int sym, state, mod; // keep here for OpenBSD compiler
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
 		case SDL_KEYDOWN:
 		case SDL_KEYUP:
 			sym = event.key.keysym.sym;
 			state = event.key.state;
-			modstate = SDL_GetModState();
+			mod = SDL_GetModState() & KMOD_NUM;
 			switch (sym) {
 			case SDLK_DELETE: sym = K_DEL; break;
 			case SDLK_BACKSPACE: sym = K_BACKSPACE; break;
@@ -33,23 +34,12 @@ void Sys_SendKeyEvents()
 			case SDLK_F10: sym = K_F10; break;
 			case SDLK_F11: sym = K_F11; break;
 			case SDLK_F12: sym = K_F12; break;
-				//case SDLK_BREAK: ase SDLK_PAUSE; sym = K_PAUSE;
-				break;
-
-				// CyanBun96: vim-like keybinds that work in menus
-			case SDLK_h:
-				sym = vimmode ? K_LEFTARROW : 'h';
-				break;
-			case SDLK_j:
-				sym = vimmode ? K_DOWNARROW : 'j';
-				break;
-			case SDLK_k:
-				sym = vimmode ? K_UPARROW : 'k';
-				break;
-			case SDLK_l:
-				sym = vimmode ? K_RIGHTARROW : 'l';
-				break;
-
+			case SDLK_PAUSE: sym = K_PAUSE; break;
+			// CyanBun96: vim-like keybinds that work in menus
+			case SDLK_h: sym = vimmode ? K_LEFTARROW : 'h'; break;
+			case SDLK_j: sym = vimmode ? K_DOWNARROW : 'j'; break;
+			case SDLK_k: sym = vimmode ? K_UPARROW : 'k'; break;
+			case SDLK_l: sym = vimmode ? K_RIGHTARROW : 'l'; break;
 			case SDLK_UP: sym = K_UPARROW; break;
 			case SDLK_DOWN: sym = K_DOWNARROW; break;
 			case SDLK_RIGHT: sym = K_RIGHTARROW; break;
@@ -65,67 +55,17 @@ void Sys_SendKeyEvents()
 			case SDLK_LCTRL: sym = K_CTRL; break;
 			case SDLK_RALT:
 			case SDLK_LALT: sym = K_ALT; break;
-			case SDLK_KP_0:
-				if (modstate & KMOD_NUM)
-					sym = K_INS;
-				else
-					sym = SDLK_0;
-				break;
-			case SDLK_KP_1:
-				if (modstate & KMOD_NUM)
-					sym = K_END;
-				else
-					sym = SDLK_1;
-				break;
-			case SDLK_KP_2:
-				if (modstate & KMOD_NUM)
-					sym = K_DOWNARROW;
-				else
-					sym = SDLK_2;
-				break;
-			case SDLK_KP_3:
-				if (modstate & KMOD_NUM)
-					sym = K_PGDN;
-				else
-					sym = SDLK_3;
-				break;
-			case SDLK_KP_4:
-				if (modstate & KMOD_NUM)
-					sym = K_LEFTARROW;
-				else
-					sym = SDLK_4;
-				break;
+			case SDLK_KP_0: sym = mod ? K_INS:SDLK_0;break;
+			case SDLK_KP_1: sym = mod ? K_END:SDLK_1;break;
+			case SDLK_KP_2: sym = mod ? K_DOWNARROW:SDLK_2;break;
+			case SDLK_KP_3: sym = mod ? K_PGDN:SDLK_3;break;
+			case SDLK_KP_4: sym = mod ? K_LEFTARROW:SDLK_4;break;
 			case SDLK_KP_5: sym = SDLK_5; break;
-			case SDLK_KP_6:
-				if (modstate & KMOD_NUM)
-					sym = K_RIGHTARROW;
-				else
-					sym = SDLK_6;
-				break;
-			case SDLK_KP_7:
-				if (modstate & KMOD_NUM)
-					sym = K_HOME;
-				else
-					sym = SDLK_7;
-				break;
-			case SDLK_KP_8:
-				if (modstate & KMOD_NUM)
-					sym = K_UPARROW;
-				else
-					sym = SDLK_8;
-				break;
-			case SDLK_KP_9:
-				if (modstate & KMOD_NUM)
-					sym = K_PGUP;
-				else
-					sym = SDLK_9;
-				break;
-			case SDLK_KP_PERIOD:
-				if (modstate & KMOD_NUM)
-					sym = K_DEL;
-				else
-					sym = SDLK_PERIOD;
-				break;
+			case SDLK_KP_6: sym = mod ? K_RIGHTARROW:SDLK_6;break;
+			case SDLK_KP_7: sym = mod ? K_HOME:SDLK_7;break;
+			case SDLK_KP_8: sym = mod ? K_UPARROW:SDLK_8;break;
+			case SDLK_KP_9: sym = mod ? K_PGUP:SDLK_9;break;
+			case SDLK_KP_PERIOD: sym = mod ?K_DEL:SDLK_PERIOD;break;
 			case SDLK_KP_DIVIDE: sym = SDLK_SLASH; break;
 			case SDLK_KP_MULTIPLY: sym = SDLK_ASTERISK; break;
 			case SDLK_KP_MINUS: sym = SDLK_MINUS; break;
@@ -145,6 +85,27 @@ void Sys_SendKeyEvents()
 		case SDL_MOUSEMOTION:
 			mouse_x += event.motion.xrel;
 			mouse_y += event.motion.yrel;
+			break;
+		case SDL_MOUSEBUTTONDOWN:
+		case SDL_MOUSEBUTTONUP:
+			if (event.button.button < 1 ||
+				event.button.button > Q_COUNTOF(buttonremap)) {
+				Con_Printf("Ignored input event for MOUSE%d\n",
+						event.button.button);
+				break;
+			}
+			Key_Event(buttonremap[event.button.button - 1],
+					event.button.state == SDL_PRESSED);
+			break;
+		case SDL_MOUSEWHEEL:
+			if (event.wheel.y > 0) {
+				Key_Event(K_MWHEELUP, true);
+				Key_Event(K_MWHEELUP, false);
+			}
+			else if (event.wheel.y < 0) {
+				Key_Event(K_MWHEELDOWN, true);
+				Key_Event(K_MWHEELDOWN, false);
+			}
 			break;
 		case SDL_WINDOWEVENT:
 			switch (event.window.event) {
@@ -180,25 +141,6 @@ void IN_Init()
 void IN_Shutdown()
 {
 	mouse_avail = 0;
-}
-
-void IN_Commands()
-{
-
-	if (!mouse_avail)
-		return;
-	int i = SDL_GetMouseState(NULL, NULL);
-	// Quake swaps the second and third buttons
-	int mouse_buttonstate = (i & ~0x06)|((i & 0x02) << 1)|((i & 0x04) >> 1);
-	for (i = 0; i < 3; i++) {
-		if ((mouse_buttonstate & (1 << i))
-		    && !(mouse_oldbuttonstate & (1 << i)))
-			Key_Event(K_MOUSE1 + i, true);
-		if (!(mouse_buttonstate & (1 << i))
-		    && (mouse_oldbuttonstate & (1 << i)))
-			Key_Event(K_MOUSE1 + i, false);
-	}
-	mouse_oldbuttonstate = mouse_buttonstate;
 }
 
 void IN_Move(usercmd_t *cmd)

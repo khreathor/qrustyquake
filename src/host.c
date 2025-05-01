@@ -357,7 +357,6 @@ void _Host_Frame(float time)
 	if (!Host_FilterTime(time)) // decide the simulation time
 		return;	// don't run too fast, or packets will flood out
 	Sys_SendKeyEvents(); // get new key events
-	IN_Commands(); // allow mice or other external controllers to add commands
 	Cbuf_Execute(); // process console commands
 	NET_Poll();
 	if (sv.active) // if running the server locally, make intentions now
@@ -369,9 +368,8 @@ void _Host_Frame(float time)
 	if (!sv.active) // client operations
 		CL_SendCmd();
 	host_time += host_frametime;
-	if (cls.state == ca_connected) { // fetch results from server
+	if (cls.state == ca_connected) // fetch results from server
 		CL_ReadFromServer();
-	}
 	if (host_speeds.value) // update video
 		time1 = Sys_FloatTime();
 	SCR_UpdateScreen();

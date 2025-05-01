@@ -76,9 +76,20 @@
 #define K_AUX30 236
 #define K_AUX31 237
 #define K_AUX32 238
-// JACK: Intellimouse(c) Mouse Wheel Support
 #define K_MWHEELUP 239
 #define K_MWHEELDOWN 240
+#define K_MOUSE4 241
+#define K_MOUSE5 242
+#define K_LTHUMB 243 // SDL2 game controller keys
+#define K_RTHUMB 244
+#define K_LSHOULDER 245
+#define K_RSHOULDER 246
+#define K_ABUTTON 247
+#define K_BBUTTON 248
+#define K_XBUTTON 249
+#define K_YBUTTON 250
+#define K_LTRIGGER 251
+#define K_RTRIGGER 252
 
 typedef enum { key_game, key_console, key_message, key_menu } keydest_t;
 
