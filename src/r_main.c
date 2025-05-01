@@ -603,15 +603,16 @@ void R_DrawBEntitiesOnList()
 	cur_ent_alpha = 1;
 }
 
+edge_t ledges[NUMSTACKEDGES + ((CACHE_SIZE - 1) / sizeof(edge_t)) + 1]/*
+	__attribute__((aligned(CACHE_SIZE)))*/;
+surf_t lsurfs[NUMSTACKSURFACES + ((CACHE_SIZE - 1) / sizeof(surf_t)) +
+1] /*__attribute__((aligned(CACHE_SIZE)))*/;
+
 void R_EdgeDrawing()
 {
 	// CyanBun96: windows would crash all over the place with the original
 	// alignment code, this might be compiler-dependent but it works
 	// Align the arrays themselves
-	edge_t ledges[NUMSTACKEDGES + ((CACHE_SIZE - 1) / sizeof(edge_t)) + 1]
-	    __attribute__((aligned(CACHE_SIZE)));
-	surf_t lsurfs[NUMSTACKSURFACES + ((CACHE_SIZE - 1) / sizeof(surf_t)) +
-		      1] __attribute__((aligned(CACHE_SIZE)));
 	// Accessing them directly without pointer adjustment
 	r_edges = auxedges ? auxedges : &ledges[0]; // already aligned
 	if (r_surfsonstack) {

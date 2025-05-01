@@ -6,7 +6,7 @@
 #define __QUAKEDEF__
 // CyanBun96: imagine if we could keep all the includes in one place instead
 // of all over the .c and .h files that'd be cool right
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #ifdef __WIN32__
 #include <windows.h>
 #include <time.h>

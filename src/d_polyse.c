@@ -110,8 +110,8 @@ void D_PolysetDraw()
 		else dither_pat = 0;
 	}
 	spanpackage_t spans[DPS_MAXSPANS + 1 +
-		((CACHE_SIZE - 1) / sizeof(spanpackage_t)) + 1]
-		__attribute__((aligned(CACHE_SIZE)));
+		((CACHE_SIZE - 1) / sizeof(spanpackage_t)) + 1]/*
+		__attribute__((aligned(CACHE_SIZE)))*/;
 	a_spans = (spanpackage_t *)
 		(((uintptr_t) & spans[0] + CACHE_SIZE - 1) & ~(CACHE_SIZE - 1));
 	if (r_affinetridesc.drawtype)
