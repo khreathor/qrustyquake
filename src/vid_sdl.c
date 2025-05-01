@@ -68,14 +68,12 @@ int VID_GetDefaultMode()
 	// this function reads the default mode independently of the cvar status
 	char line[256];
 	int vid_default_mode = -1;
-	FILE *f;
-	long length = COM_FOpenFile ("config.cfg", &f, 0);
-	fshandle_t cfg_file = {f, ftell(f), 0, length, 0};
-	if (length == -1) {
-		printf("Failed to open config.cfg");
+	FILE *file = fopen("id1/config.cfg", "r");
+	if (!file) {
+		printf("Failed to open id1/config.cfg");
 		return -2;
 	}
-	while (FS_fgets(line, sizeof(line), &cfg_file)) {
+	while (fgets(line, sizeof(line), file)) {
 		char *key = "_vid_default_mode_win";
 		char *found = strstr(line, key);
 		if (found) {
@@ -90,11 +88,11 @@ int VID_GetDefaultMode()
 			}
 		}
 	}
-	FS_fclose(&cfg_file);
+	fclose(file);
 	if (vid_default_mode != -1)
 		printf("_vid_default_mode_win: %d\n", vid_default_mode);
 	else
-		printf("_vid_default_mode_win not found in config.cfg\n");
+		printf("_vid_default_mode_win not found in id1/config.cfg\n");
 	return vid_default_mode;
 }
 
@@ -372,7 +370,6 @@ void VID_AllocBuffers()
 	int chunk = vid.width * vid.height * sizeof(*d_pzbuffer);
 	int cachesize = D_SurfaceCacheForRes(vid.width, vid.height);
 	chunk += cachesize;
-	int mark = Hunk_LowMark();
 	if (d_pzbuffer) {
 		D_FlushCaches();
 		Hunk_FreeToHighMark(VID_highhunkmark);
