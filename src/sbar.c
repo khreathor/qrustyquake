@@ -704,7 +704,8 @@ void Sbar_FinaleOverlay()
 void Sbar_Draw()
 {
 	if (scr_con_current == HH || !(scr_hudstyle.value || sb_lines)
-		|| (sb_updates >= vid.numpages && !scr_hudstyle.value))
+		|| (sb_updates >= vid.numpages && !scr_hudstyle.value)
+		|| cl.intermission)
 		return;
 	if (sb_lines && WW/SCL > 320)
 		Draw_TileClear(0, HH - sb_lines/SCL, WW, sb_lines/SCL);
