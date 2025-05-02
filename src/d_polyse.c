@@ -129,6 +129,10 @@ void D_PolysetDrawFinalVerts(finalvert_t *fv, int numverts)
 				(fv->v[1] < r_refdef.vrectbottom)) {
 			int z = fv->v[5] >> 16;
 			short *zbuf = zspantable[fv->v[1]] + fv->v[0];
+			if ((unsigned long)zbuf < 0x100000) { // FIXME properly
+				printf("SEGFAULT 0 %lu\n", (unsigned long)zbuf);
+				continue;
+			}
 			if (!(z >= *zbuf))
 				continue;
 			int pix;
@@ -288,6 +292,10 @@ split: // split this edge
 		goto nodraw;
 	int z = new[5] >> 16;
 	short *zbuf = zspantable[new[1]] + new[0];
+	if ((unsigned long)zbuf < 0x100000) { // FIXME properly
+		printf("SEGFAULT 1 %lu\n", (unsigned long)zbuf);
+		goto nodraw;
+	}
 	if (z >= *zbuf) {
 		*zbuf = z;
 		int pix = d_pcolormap[skintable[new[3] >> 16][new[2] >> 16]];

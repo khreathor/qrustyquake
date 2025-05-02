@@ -442,11 +442,8 @@ void _Host_Frame(float time)
 		else
 			accumtime -= host_netinterval;
 		CL_SendCmd ();
-		if (sv.active) {
-			//PR_SwitchQCVM(&sv.qcvm); // CyanBun96: this is not vital... right?
+		if (sv.active)
 			Host_ServerFrame ();
-			//PR_SwitchQCVM(NULL);
-		}
 		host_frametime = realframetime;
 		Cbuf_Waited();
 		ranserver = true;
