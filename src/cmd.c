@@ -65,41 +65,66 @@ void Cbuf_InsertText(char *text)
 	}
 }
 
-void Cbuf_Execute()
-{
-	char line[1024];
-	while (cmd_text.cursize) {
-		// find a \n or ; line break
-		char *text = (char *)cmd_text.data;
-		int quotes = 0;
-		int i;
-		for (i = 0; i < cmd_text.cursize; i++) {
-			if (text[i] == '"')
-				quotes++;
-			if (!(quotes & 1) && text[i] == ';')
-				break;	// don't break if inside a quoted string
-			if (text[i] == '\n')
-				break;
-		}
-		memcpy(line, text, i);
-		line[i] = 0;
+
+void Cbuf_Waited()
+{ // Spike: for renderer/server isolation
+    cmd_wait = false;
+}
+
+
+void Cbuf_Execute ()
+{ // Spike: reworked 'wait' for renderer/server rate independance
+    int     i;
+    char    *text;
+    char    line[1024];
+    int     quotes, comment;
+
+    while (cmd_text.cursize && !cmd_wait)
+    {
+// find a \n or ; line break
+        text = (char *)cmd_text.data;
+
+        quotes = 0;
+        comment = 0;
+        for (i=0 ; i< cmd_text.cursize ; i++)
+        {
+            if (text[i] == '"')
+                quotes++;
+            if (text[i] == '/' && text[i + 1] == '/')
+                comment = true;
+            if (!(quotes&1) && !comment && text[i] == ';')
+                break;  // don't break if inside a quoted string
+            if (text[i] == '\n')
+                break;
+        }
+
+        if (i > (int)sizeof(line) - 1)
+        {
+            memcpy (line, text, sizeof(line) - 1);
+            line[sizeof(line) - 1] = 0;
+        }
+        else
+        {
+            memcpy (line, text, i);
+            line[i] = 0;
+        }
+
 // delete the text from the command buffer and move remaining commands down
 // this is necessary because commands (exec, alias) can insert data at the
 // beginning of the text buffer
-		if (i == cmd_text.cursize)
-			cmd_text.cursize = 0;
-		else {
-			i++;
-			cmd_text.cursize -= i;
-			Q_memmove(text, text + i, cmd_text.cursize);
-		}
-		// execute the command line
-		Cmd_ExecuteString(line, src_command);
-		if (cmd_wait) {	// skip out while text still remains in buffer
-			cmd_wait = false; // leaving it for next frame
-			break;
-		}
-	}
+
+        if (i == cmd_text.cursize)
+            cmd_text.cursize = 0;
+        else
+        {
+            i++;
+            cmd_text.cursize -= i;
+            memmove (text, text + i, cmd_text.cursize);
+        }
+
+// execute the command line
+        Cmd_ExecuteString (line, src_command);
+    }
 }
 
 

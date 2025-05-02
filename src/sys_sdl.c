@@ -1,6 +1,7 @@
 #include "quakedef.h"
 
 FILE *sys_handles[MAX_HANDLES];
+extern double Host_GetFrameInterval();
 
 void Sys_Printf(char *fmt, ...)
 {
@@ -56,6 +57,62 @@ static int Qfilelength(FILE *f)
 	int end = ftell(f);
 	fseek(f, pos, SEEK_SET);
 	return end;
+}
+
+static double Sys_WaitUntil (double endtime)
+{
+	static double estimate = 1e-3;
+	static double mean = 1e-3;
+	static double m2 = 0.0;
+	static double count = 1.0;
+
+	double now = Sys_DoubleTime ();
+	double before, observed, delta, stddev;
+
+	endtime -= 1e-6; // allow finishing 1 microsecond earlier than requested
+
+	while (now + estimate < endtime)
+	{
+		before = now;
+		SDL_Delay (1);
+		now = Sys_DoubleTime ();
+
+		// Determine Sleep(1) mean duration & variance using Welford's algorithm
+		// https://blog.bearcats.nl/accurate-sleep-function/
+		if (count < 1e6) // skip this if we already have more than enough samples
+		{
+			++count;
+			observed = now - before;
+			delta = observed - mean;
+			mean += delta / count;
+			m2 += delta * (observed - mean);
+			stddev = sqrt (m2 / (count - 1.0));
+			estimate = mean + 1.5 * stddev;
+
+			// Previous frame-limiting code assumed a duration of 2 msec.
+			// We don't want to burn more cycles in order to be more accurate
+			// in case the actual duration is higher.
+			estimate = q_min (estimate, 2e-3);
+		}
+	}
+
+	while (now < endtime)
+	{
+#ifdef USE_SSE2
+		_mm_pause (); _mm_pause (); _mm_pause (); _mm_pause ();
+		_mm_pause (); _mm_pause (); _mm_pause (); _mm_pause ();
+		_mm_pause (); _mm_pause (); _mm_pause (); _mm_pause ();
+		_mm_pause (); _mm_pause (); _mm_pause (); _mm_pause ();
+#endif
+		now = Sys_DoubleTime ();
+	}
+
+	return now;
+}
+
+static double Sys_Throttle (double oldtime)
+{
+	return Sys_WaitUntil (oldtime + Host_GetFrameInterval ());
 }
 
 int Sys_FileOpenRead(char *path, int *hndl)
@@ -172,7 +229,7 @@ int main(int c, char **v)
 	Host_Init();
 	double oldtime = Sys_FloatTime() - 0.1;
 	while (1) {
-		double newtime = Sys_FloatTime();
+		double newtime = Sys_Throttle(oldtime);
 		double deltatime = newtime - oldtime;
 		if (cls.state == ca_dedicated)
 			deltatime = sys_ticrate.value;

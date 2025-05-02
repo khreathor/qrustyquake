@@ -299,6 +299,7 @@ void V_CalcPowerupCshift()
 void V_UpdatePalette()
 {
 	V_CalcPowerupCshift();
+	float frametime = fabs (cl.time - cl.oldtime);
 	qboolean new = false;
 	for (int i = 0; i < NUM_CSHIFTS; i++) {
 		if (cl.cshifts[i].percent != cl.prev_cshifts[i].percent) {
@@ -314,11 +315,11 @@ void V_UpdatePalette()
 			}
 	}
 	// drop the damage value
-	cl.cshifts[CSHIFT_DAMAGE].percent -= host_frametime * 150;
+	cl.cshifts[CSHIFT_DAMAGE].percent -= frametime * 150;
 	if (cl.cshifts[CSHIFT_DAMAGE].percent <= 0)
 		cl.cshifts[CSHIFT_DAMAGE].percent = 0;
 	// drop the bonus value
-	cl.cshifts[CSHIFT_BONUS].percent -= host_frametime * 100;
+	cl.cshifts[CSHIFT_BONUS].percent -= frametime * 100;
 	if (cl.cshifts[CSHIFT_BONUS].percent <= 0)
 		cl.cshifts[CSHIFT_BONUS].percent = 0;
 	qboolean force = V_CheckGamma();
