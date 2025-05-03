@@ -305,11 +305,25 @@ void R_DrawSurfaceBlockRGB(int miplvl)
 			int lighttemp_b = lightleft_b - lightright_b; // Blue
 			int lightstep_b = lighttemp_b >> (4-miplvl);
 			int light_b = lightright_b;
-			for (int b = (1 << (4-miplvl)) - 1; b >= 0; b--) {
+			for (int b = (1 << (4-miplvl)) - 1; !lmonly && b >= 0; b--) {
 				unsigned char tex = psource[b];
 				unsigned char ir = ((unsigned char*)vid.colormap)[(light   & 0xFF00) + tex];
 				unsigned char ig = ((unsigned char*)vid.colormap)[(light_g & 0xFF00) + tex];
 				unsigned char ib = ((unsigned char*)vid.colormap)[(light_b & 0xFF00) + tex];
+				unsigned char r_ = host_basepal[ir * 3 + 0];
+				unsigned char g_ = host_basepal[ig * 3 + 1];
+				unsigned char b_ = host_basepal[ib * 3 + 2];
+				prowdest[b] = lit_lut[ QUANT(r_)
+					+ QUANT(g_)*LIT_LUT_RES
+					+ QUANT(b_)*LIT_LUT_RES*LIT_LUT_RES ];
+				light += lightstep;
+				light_g += lightstep_g;
+				light_b += lightstep_b;
+			}
+			for (int b = (1 << (4-miplvl)) - 1; lmonly && b >= 0; b--) {
+				unsigned char ir = ((unsigned char*)vid.colormap)[(light   & 0xFF00)+15];
+				unsigned char ig = ((unsigned char*)vid.colormap)[(light_g & 0xFF00)+15];
+				unsigned char ib = ((unsigned char*)vid.colormap)[(light_b & 0xFF00)+15];
 				unsigned char r_ = host_basepal[ir * 3 + 0];
 				unsigned char g_ = host_basepal[ig * 3 + 1];
 				unsigned char b_ = host_basepal[ib * 3 + 2];

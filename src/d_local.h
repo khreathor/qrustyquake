@@ -64,6 +64,7 @@ extern cvar_t r_entalpha;
 extern cvar_t r_alphastyle;
 extern unsigned char color_mix_lut[256][256][FOG_LUT_LEVELS];
 extern unsigned char fog_pal_index;
+extern int lmonly;
 
 void D_DrawSpans8(espan_t *pspans);
 void D_DrawTransSpans8(espan_t *pspans, float opacity);

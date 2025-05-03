@@ -147,6 +147,7 @@ extern cvar_t r_entalpha;
 extern unsigned char *lit_lut;
 extern int lit_lut_initialized;
 extern int color_lightmap;
+extern int lmonly;
 
 void R_DrawSprite();
 void R_RenderFace(msurface_t *fa, int clipflags);
