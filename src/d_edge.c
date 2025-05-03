@@ -218,7 +218,8 @@ void D_DrawSurfaces()
 				VectorCopy(base_modelorg, modelorg);
 				R_TransformFrustum();
 			}
-		} else if (is_ent && s->entity->alpha && r_entalpha.value == 1) {
+		} else if ((is_ent && s->entity->alpha && r_entalpha.value == 1)
+			|| (s->flags & SURF_DRAWTURB && s->entity->model->haslitwater)) {
 			if (s->insubmodel) {
 				// FIXME: we don't want to do all this for every polygon!
 				// TODO: store once at start of frame
@@ -242,6 +243,14 @@ void D_DrawSurfaces()
 			cachewidth = pcurrentcache->width;
 			D_CalcGradients(pface);
 			float opacity = 1 - (float)s->entity->alpha / 255;
+			if (s->flags & SURF_DRAWLAVA)
+				opacity = 1 - r_lavaalpha.value;
+			else if (s->flags & SURF_DRAWSLIME)
+				opacity = 1 - r_slimealpha.value;
+			else if (s->flags & SURF_DRAWWATER)
+				opacity = 1 - r_wateralpha.value;
+			else if (s->flags & SURF_DRAWTELE)
+				opacity = 1 - r_telealpha.value;
 			D_DrawTransSpans8(s->spans, opacity);
 			if (s->insubmodel) {
 				// restore the old drawing state
