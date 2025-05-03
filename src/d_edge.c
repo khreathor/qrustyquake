@@ -168,7 +168,7 @@ void D_DrawSurfaces()
 				D_DrawSolidSurface(s, (int)r_clearcolor.value & 0xFF);
 			else D_DrawSolidSurface(s, 0xFF);
 			D_DrawZSpans(s->spans);
-		} else if (s->flags & SURF_DRAWTURB) {
+		} else if (s->flags & SURF_DRAWTURB && !s->entity->model->haslitwater) {
 			msurface_t *pface = s->data;
 			miplevel = 0;
 			cacheblock = (pixel_t *)
