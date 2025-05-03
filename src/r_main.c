@@ -117,13 +117,13 @@ extern void Fog_FogCommand_f();
 extern void Fog_ParseWorldspawn();
 extern void R_InitSkyBox(); // Manoel Kasimier - skyboxes 
 extern void Sky_NewMap();
-extern void build_color_mix_lut();
+extern void build_color_mix_lut(cvar_t *cvar);
 
 void CreatePassages();
 void SetVisibilityByPassages();
 void R_MarkLeaves();
 void Sky_Init();
-void Fog_SetPalIndex();
+void Fog_SetPalIndex(cvar_t *cvar);
 
 void R_InitTextures()
 { // create a simple checkerboard texture for the default
