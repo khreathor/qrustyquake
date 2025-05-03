@@ -10,7 +10,11 @@
 #include <SDL2/SDL.h>
 #endif
 #ifdef __WIN32__
+#ifndef _WINCROSS
 #include <SDL.h>
+#else
+#include <SDL2/SDL.h>
+#endif
 #include <windows.h>
 #include <time.h>
 #include <direct.h>
