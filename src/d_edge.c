@@ -108,11 +108,14 @@ void D_DrawSurfaces()
 		if (!s->spans)
 			continue;
 		r_drawnpolycount++;
+		msurface_t *pface = s->data;
 		// CyanBun96: some entities are assigned an invalid address like
 		// 35, which leads to segfaults on any further checks while
 		// still passing s->entity != NULL check. Must be a symptom of
 		// some bigger issue that I can't be bothered to diagnose ATM.
 		unsigned long is_ent = (unsigned long)s->entity & 0xffff000;
+		// CyanBun96: a 0 in either of those causes an error. FIXME
+		if (!pface || !pface->extents[0] || !pface->extents[1])continue;
 		if (is_ent && s->entity->alpha && r_entalpha.value == 1)
 			winquake_surface_liquid_alpha = (float)s->entity->alpha / 255;
 		// Baker: Need to determine what kind of liquid we are
@@ -141,7 +144,6 @@ void D_DrawSurfaces()
 		} else if (s->flags & SURF_DRAWSKYBOX) {
 			// Manoel Kasimier - hi-res skyboxes - edited
 			extern byte r_skypixels[6][SKYBOX_MAX_SIZE*SKYBOX_MAX_SIZE];
-			msurface_t *pface = s->data;
 			miplevel = 0;
 			cacheblock = (byte *)(r_skypixels[pface->texinfo->texture->offsets[0]]);
 			// Manoel Kasimier - hi-res skyboxes - edited
@@ -170,7 +172,6 @@ void D_DrawSurfaces()
 			else D_DrawSolidSurface(s, 0xFF);
 			D_DrawZSpans(s->spans);
 		} else if (s->flags & SURF_DRAWTURB && !s->entity->model->haslitwater) {
-			msurface_t *pface = s->data;
 			miplevel = 0;
 			cacheblock = (pixel_t *)
 				((byte *) pface->texinfo->texture +
@@ -231,7 +232,6 @@ void D_DrawSurfaces()
 						transformed_modelorg);
 				R_RotateBmodel(); // FIXME: don't mess with the frustum, make entity passed in
 			}
-			msurface_t *pface = s->data;
 			miplevel = pface->flags & SURF_DRAWCUTOUT ? 0 :
 				D_MipLevelForScale(s->nearzi *
 					scale_for_mip *
@@ -269,7 +269,6 @@ void D_DrawSurfaces()
 						transformed_modelorg);
 				R_RotateBmodel(); // FIXME: don't mess with the frustum, make entity passed in
 			}
-			msurface_t *pface = s->data;
 			miplevel = pface->flags & SURF_DRAWCUTOUT ? 0 :
 				D_MipLevelForScale(s->nearzi *
 					scale_for_mip *
@@ -325,7 +324,6 @@ void D_DrawSurfaces()
 						transformed_modelorg);
 				R_RotateBmodel(); // FIXME: don't mess with the frustum, make entity passed in
 			}
-			msurface_t *pface = s->data;
 			miplevel = pface->flags & SURF_DRAWCUTOUT ? 0 :
 				D_MipLevelForScale(s->nearzi *
 					scale_for_mip *
