@@ -421,7 +421,7 @@ void _Host_Frame(float time)
 	if (setjmp(host_abortserver))
 		return;	// something bad happened, or the server disconnected
 	rand(); // keep the random time dependent
-	accumtime += host_netinterval?CLAMP(0.0, time, 0.2):0.0; // for renderer/server isolation
+	accumtime += host_netinterval?CLAMP(0.0, (double)time, 0.2):0.0; // for renderer/server isolation
 	Host_AdvanceTime (time);
 	Sys_SendKeyEvents(); // get new key events
 	Cbuf_Execute(); // process console commands

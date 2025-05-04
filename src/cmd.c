@@ -36,7 +36,7 @@ void Cbuf_Init() // Command Buffer
 	SZ_Alloc(&cmd_text, 1<<18); // space for commands and script files
 }
 
-void Cbuf_AddText(char *text)
+void Cbuf_AddText(const char *text)
 { // Adds command text at the end of the buffer
 	int l = Q_strlen(text);
 	if (cmd_text.cursize + l >= cmd_text.maxsize) {
@@ -328,7 +328,7 @@ char *Cmd_Args()
 	return cmd_args;
 }
 
-void Cmd_TokenizeString(char *text)
+void Cmd_TokenizeString(const char *text)
 { // Parses the given string into command line tokens.
 	for (int i = 0; i < cmd_argc; i++)
 		Z_Free(cmd_argv[i]); // clear the args from the last string
@@ -344,7 +344,7 @@ void Cmd_TokenizeString(char *text)
 		if (!*text)
 			return;
 		if (cmd_argc == 1)
-			cmd_args = text;
+			cmd_args = (char *)text;
 		text = COM_Parse(text);
 		if (!text)
 			return;
@@ -394,7 +394,7 @@ void Cmd_AddCommand(char *cmd_name, xcommand_t function)
 	} // johnfitz
 }
 
-qboolean Cmd_Exists(char *cmd_name)
+qboolean Cmd_Exists(const char *cmd_name)
 {
 	for (cmd_function_t *cmd = cmd_functions; cmd; cmd = cmd->next)
 		if (!Q_strcmp(cmd_name, cmd->name))
@@ -413,7 +413,7 @@ char *Cmd_CompleteCommand(char *partial)
 	return NULL;
 }
 
-void Cmd_ExecuteString(char *text, cmd_source_t src)
+void Cmd_ExecuteString(const char *text, cmd_source_t src)
 { // A complete command line has been parsed, so try to execute it
   // FIXME: lookupnoadd the token to speed search?
 	cmd_source = src;

@@ -3,7 +3,7 @@
 FILE *sys_handles[MAX_HANDLES];
 extern double Host_GetFrameInterval();
 
-void Sys_Printf(char *fmt, ...)
+void Sys_Printf(const char *fmt, ...)
 {
 	va_list argptr;
 	char text[1024];
@@ -26,7 +26,7 @@ void Sys_Quit()
 	exit(0);
 }
 
-void Sys_Error(char *error, ...)
+void Sys_Error(const char *error, ...)
 {
 	va_list argptr;
 	char string[1024];
@@ -115,7 +115,7 @@ static double Sys_Throttle (double oldtime)
 	return Sys_WaitUntil (oldtime + Host_GetFrameInterval ());
 }
 
-int Sys_FileOpenRead(char *path, int *hndl)
+int Sys_FileOpenRead(const char *path, int *hndl)
 {
 	int i = findhandle();
 	FILE *f = fopen(path, "rb");
@@ -145,7 +145,7 @@ int Sys_FileRead(int handle, void *dst, int count)
 	return fread(dst, 1, count, sys_handles[handle]);
 }
 
-int Sys_FileTime(char *path)
+int Sys_FileTime(const char *path)
 {
 	FILE *f = fopen(path, "rb");
 	if (f) {
@@ -174,7 +174,7 @@ int Sys_FileType (const char *path)
         return FS_ENT_NONE;
 }
 
-int Sys_FileOpenWrite(char *path)
+int Sys_FileOpenWrite(const char *path)
 {
 	int i = findhandle();
 	FILE *f = fopen(path, "wb");
@@ -184,7 +184,7 @@ int Sys_FileOpenWrite(char *path)
 	return i;
 }
 
-int Sys_FileWrite(int handle, void *src, int count)
+int Sys_FileWrite(int handle, const void *src, int count)
 {
 	return fwrite(src, 1, count, sys_handles[handle]);
 }
@@ -204,7 +204,7 @@ double Sys_FloatTime()
 
 double Sys_DoubleTime() { return Sys_FloatTime(); }
 
-void Sys_mkdir(char *path)
+void Sys_mkdir(const char *path)
 {
 	mkdir(path, 0777);
 }
