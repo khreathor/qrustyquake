@@ -298,6 +298,8 @@ void D_DrawSurfaces()
 			else if (s->flags & SURF_DRAWTELE)
 				opacity = 1 - r_telealpha.value;
 			Turbulent8(s->spans, opacity);
+			if (!r_wateralphapass) // Manoel Kasimier - translucent water
+				D_DrawZSpans(s->spans);
 			if (s->insubmodel) {
 				// restore the old drawing state
 				// FIXME: we don't want to do this every time!
