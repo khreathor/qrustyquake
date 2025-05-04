@@ -1431,6 +1431,10 @@ static void Mod_LoadFaces (lump_t *l, qboolean bsp2)
 			// lit water is handled in BuildSurfaceDisplayList
 			if (out->flags & SURF_DRAWTILED)
 			{
+				for (i = 0; i < 2; i++) {
+					out->extents[i] = 16384;
+					out->texturemins[i] = -8192;
+				}
 				Mod_PolyForUnlitSurface (out);
 				//GL_SubdivideSurface (out);
 			}
