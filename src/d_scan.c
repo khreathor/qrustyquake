@@ -14,7 +14,7 @@ short *pz; // Manoel Kasimier - translucent water
 int izi, izistep;
 int dither_pat = 0;
 unsigned char *litwater_base;
-unsigned long litwater_size = 0;
+int lwmark = 0;
 
 extern cvar_t r_skyfog;
 extern cvar_t r_alphastyle;
@@ -414,10 +414,9 @@ void D_DrawSpans8(espan_t *pspan)
 		unsigned char *pdest = (unsigned char *)((byte *) d_viewbuffer +
 				      (screenwidth * pspan->v) + pspan->u);
 		if (lmonly) {
-			if (litwater_size < vid.width*vid.height) {
-				if (litwater_base)
-					free (litwater_base);
-				litwater_base = malloc(vid.width*vid.height);
+			if (!litwater_base) {
+				lwmark = Hunk_HighMark();
+				litwater_base = Hunk_HighAllocName(vid.width*vid.height, "waterlightmap");
 			}
 			pdest = (unsigned char *)((byte *) litwater_base +
 				      (screenwidth * pspan->v) + pspan->u);

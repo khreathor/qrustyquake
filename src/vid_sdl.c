@@ -370,6 +370,11 @@ void VID_AllocBuffers()
 	int chunk = vid.width * vid.height * sizeof(*d_pzbuffer);
 	int cachesize = D_SurfaceCacheForRes(vid.width, vid.height);
 	chunk += cachesize;
+	if (litwater_base) {
+		D_FlushCaches();
+		Hunk_FreeToHighMark(lwmark);
+		litwater_base = NULL;
+	}
 	if (d_pzbuffer) {
 		D_FlushCaches();
 		Hunk_FreeToHighMark(VID_highhunkmark);
