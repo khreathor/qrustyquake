@@ -25,7 +25,7 @@ int r_stepback;
 int r_lightwidth;
 int r_numhblocks, r_numvblocks;
 unsigned char *r_source, *r_sourcemax;
-unsigned char *lit_lut;
+unsigned char lit_lut[LIT_LUT_RES*LIT_LUT_RES*LIT_LUT_RES];
 int lit_lut_initialized = 0;
 
 extern void init_color_conv();
@@ -228,7 +228,6 @@ void R_BuildLitLUT()
 	else
 		convfunc = rgbtoi;
 	const int llr = LIT_LUT_RES;
-	lit_lut = malloc(llr*llr*llr);
 	for (int r_ = 0; r_ < llr; ++r_) {
 	for (int g_ = 0; g_ < llr; ++g_) {
 	for (int b_ = 0; b_ < llr; ++b_) {
