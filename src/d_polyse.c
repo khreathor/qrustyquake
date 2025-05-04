@@ -129,8 +129,9 @@ void D_PolysetDrawFinalVerts(finalvert_t *fv, int numverts)
 				(fv->v[1] < r_refdef.vrectbottom)) {
 			int z = fv->v[5] >> 16;
 			short *zbuf = zspantable[fv->v[1]] + fv->v[0];
-			if ((unsigned long)zbuf < 0x100000) { // FIXME properly
-				printf("SEGFAULT 0 %lu\n", (unsigned long)zbuf);
+			if (zbuf < d_pzbuffer || // FIXME properly
+				zbuf >= (d_pzbuffer+vid.width*vid.height*2)) {
+				printf("ZBUF SEGFAULT 0 %lx\n", zbuf);
 				continue;
 			}
 			if (!(z >= *zbuf))
@@ -292,8 +293,9 @@ split: // split this edge
 		goto nodraw;
 	int z = new[5] >> 16;
 	short *zbuf = zspantable[new[1]] + new[0];
-	if ((unsigned long)zbuf < 0x100000) { // FIXME properly
-		printf("SEGFAULT 1 %lu\n", (unsigned long)zbuf);
+	if (zbuf < d_pzbuffer || // FIXME properly
+		zbuf >= (d_pzbuffer+vid.width*vid.height*2)) {
+		printf("ZBUF SEGFAULT 1 %lx\n", zbuf);
 		goto nodraw;
 	}
 	if (z >= *zbuf) {
