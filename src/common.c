@@ -2332,6 +2332,8 @@ static void COM_Game_f (void)
 		{
 			W_LoadWadFile ();
 			Draw_Init ();
+			SCR_Init ();
+			Sbar_Init ();
 			//FIXMER_NewGame ();
 		}
 		//FIXMEExtraMaps_NewGame ();

@@ -168,6 +168,10 @@ void SCR_SizeDown_f() // Keybinding command
 
 void SCR_Init()
 {
+	scr_ram = Draw_PicFromWad("ram");
+	scr_net = Draw_PicFromWad("net");
+	scr_turtle = Draw_PicFromWad("turtle");
+	if (scr_initialized) return;
 	Cvar_RegisterVariable(&scr_fov);
 	Cvar_RegisterVariable(&scr_viewsize);
 	Cvar_RegisterVariable(&scr_conspeed);
@@ -182,9 +186,6 @@ void SCR_Init()
 	Cmd_AddCommand("screenshot", SCR_ScreenShot_f);
 	Cmd_AddCommand("sizeup", SCR_SizeUp_f);
 	Cmd_AddCommand("sizedown", SCR_SizeDown_f);
-	scr_ram = Draw_PicFromWad("ram");
-	scr_net = Draw_PicFromWad("net");
-	scr_turtle = Draw_PicFromWad("turtle");
 	scr_initialized = true;
 }
 

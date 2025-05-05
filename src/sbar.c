@@ -120,8 +120,6 @@ void Sbar_Init()
 	sb_face_invuln = Draw_PicFromWad("face_invul2");
 	sb_face_invis_invuln = Draw_PicFromWad("face_inv2");
 	sb_face_quad = Draw_PicFromWad("face_quad");
-	Cmd_AddCommand("+showscores", Sbar_ShowScores);
-	Cmd_AddCommand("-showscores", Sbar_DontShowScores);
 	sb_sbar = Draw_PicFromWad("sbar");
 	sb_ibar = Draw_PicFromWad("ibar");
 	sb_scorebar = Draw_PicFromWad("scorebar");
@@ -161,6 +159,9 @@ void Sbar_Init()
 		rsb_ammo[1] = Draw_PicFromWad("r_ammomulti");
 		rsb_ammo[2] = Draw_PicFromWad("r_ammoplasma");
 	}
+	if (host_initialized) return;
+	Cmd_AddCommand("+showscores", Sbar_ShowScores);
+	Cmd_AddCommand("-showscores", Sbar_DontShowScores);
 	Cvar_RegisterVariable(&scr_sidescore);
 }
 
