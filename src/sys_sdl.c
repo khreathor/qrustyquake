@@ -29,14 +29,15 @@ void Sys_Quit()
 void Sys_Error(const char *error, ...)
 {
 	va_list argptr;
-	char string[1024];
+	char str[1024];
 	va_start(argptr, error);
-	vsprintf(string, error, argptr);
+	vsprintf(str, error, argptr);
 	va_end(argptr);
-	fprintf(stderr, "Error: %s\n", string);
+	fprintf(stderr, "Error: %s\n", str);
 #ifdef DEBUG
 	__asm__("int3");
 #endif
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "QrustyQuake", str, 0);
 	Host_Shutdown();
 	exit(1);
 }
