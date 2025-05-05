@@ -104,8 +104,9 @@ cvar_t r_fogbrightness = { "r_fogbrightness", "1", true, false, 0, NULL }; // Cy
 
 // johnfitz -- new cvars TODO actually implement these, they're currently placeholders
 cvar_t  r_nolerp_list = {"r_nolerp_list", "progs/flame.mdl,progs/flame2.mdl,progs/braztall.mdl,pro gs/brazshrt.mdl,progs/longtrch.mdl,progs/flame_pyre.mdl,progs/v_saw.mdl,progs/v_xfist.mdl,progs/h2 stuff/newfire.mdl", false, false, 0, NULL};
-cvar_t  r_noshadow_list = {"r_noshadow_list", "progs/proj_balllava.mdl,progs/flame2.mdl,progs/flame.mdl,progs/bolt1.mdl,pr ogs/bolt2.mdl,progs/bolt3.mdl,progs/laser.mdl", false, false, 0, NULL};
+cvar_t  r_noshadow_list = {"r_noshadow_list", "progs/proj_balllava.mdl,progs/flame2.mdl,progs/flame.mdl,progs/bolt1.mdl,progs/bolt2.mdl,progs/bolt3.mdl,progs/laser.mdl", false, false, 0, NULL};
 // johnfitz
+cvar_t r_fullbright_list = {"r_fullbright_list", "progs/spike.mdl,progs/s_spike.mdl,progs/missile.mdl,progs/k_spike.mdl,progs/proj_balllava.mdl,progs/flame2.mdl,progs/flame.mdl,progs/bolt1.mdl,progs/bolt2.mdl,progs/bolt3.mdl,progs/laser.mdl", false, false, 0, NULL};
 
 extern cvar_t scr_fov;
 extern float fog_density;
@@ -118,6 +119,7 @@ extern void Fog_ParseWorldspawn();
 extern void R_InitSkyBox(); // Manoel Kasimier - skyboxes 
 extern void Sky_NewMap();
 extern void build_color_mix_lut(cvar_t *cvar);
+extern qboolean nameInList(const char *list, const char *name);
 
 void CreatePassages();
 void SetVisibilityByPassages();
@@ -420,8 +422,9 @@ void R_DrawEntitiesOnList()
 					    192 - lighting.ambientlight;
 				cur_ent_alpha = currententity->alpha && r_entalpha.value == 1 ?
 					(float)currententity->alpha/255 : 1;
-				if (colored_aliaslight)
-					colored_aliaslight = !(currententity->model->flags & MOD_NOSHADOW);
+				if (colored_aliaslight &&
+					nameInList(r_fullbright_list.string, currententity->model->name))
+					colored_aliaslight = 0;
 				R_AliasDrawModel(&lighting);
 			}
 			break;
@@ -445,9 +448,10 @@ void R_DrawViewModel()
 	VectorInverse(viewlightvec);
 	int j = R_LightPoint(currententity->origin);
 	if (j < 24)
-		j = 24; // allways give some light on gun
+		j = 24; // allways give some light on the gun
 	r_viewlighting.ambientlight = j;
 	r_viewlighting.shadelight = j;
+	colored_aliaslight = 1;
 	for (int lnum = 0; lnum < MAX_DLIGHTS; lnum++) { // add dynamic lights
 		dlight_t *dl = &cl_dlights[lnum];
 		if (!dl->radius || dl->die < cl.time)
@@ -455,6 +459,8 @@ void R_DrawViewModel()
 		vec3_t dist;
 		VectorSubtract(currententity->origin, dl->origin, dist);
 		float add = dl->radius - Length(dist);
+		if (add > 150 && Length(dist) < 50) // hack in the muzzleflash
+			colored_aliaslight = 0; // FIXME and do it properly
 		if (add > 0)
 			r_viewlighting.ambientlight += add;
 	}

@@ -2366,7 +2366,7 @@ static void Mod_CalcAliasBounds (aliashdr_t *a) // johnfitz -- calculate bounds
 		}
 }
 
-static qboolean nameInList(const char *list, const char *name)
+qboolean nameInList(const char *list, const char *name)
 {
 	char tmp[MAX_QPATH];
 	const char *s = list;
