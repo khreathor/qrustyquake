@@ -192,18 +192,16 @@ void D_DrawSurfaces()
 			}
 			D_CalcGradients(pface);
 			float opacity = 1;
-			if ((int)r_twopass.value&1) {
-				if (s->entity && s->entity->alpha && r_entalpha.value == 1)
-					opacity -= (float)s->entity->alpha/255;
-				else if (s->flags & SURF_DRAWLAVA) opacity -= 
-					r_lavaalpha.value;
-				else if (s->flags & SURF_DRAWSLIME) opacity -=
-					r_slimealpha.value;
-				else if (s->flags & SURF_DRAWWATER) opacity -=
-					r_wateralpha.value;
-				else if (s->flags & SURF_DRAWTELE) opacity -=
-					r_telealpha.value;
-			}
+			if (s->entity && s->entity->alpha && r_entalpha.value == 1)
+				opacity -= (float)s->entity->alpha/255;
+			else if (s->flags & SURF_DRAWLAVA) opacity -= 
+				r_lavaalpha.value;
+			else if (s->flags & SURF_DRAWSLIME) opacity -=
+				r_slimealpha.value;
+			else if (s->flags & SURF_DRAWWATER) opacity -=
+				r_wateralpha.value;
+			else if (s->flags & SURF_DRAWTELE) opacity -=
+				r_telealpha.value;
 			Turbulent8(s->spans, opacity);
 			if (!r_wateralphapass) // Manoel Kasimier - translucent water
 				D_DrawZSpans(s->spans);
