@@ -47,6 +47,9 @@ cvar_t temp1 = { "temp1", "0", false, false, 0, NULL };
 cvar_t host_maxfps = {"host_maxfps", "72", true, false, 0, NULL}; //johnfitz
 cvar_t host_timescale = {"host_timescale", "0", CVAR_NONE}; //johnfitz
 cvar_t max_edicts = {"max_edicts", "8192", false, false, 0, NULL}; //johnfitz //ericw -- changed from 2048 to 8192, removed CVAR_ ARCHIVE
+cvar_t campaign = {"campaign","0",0,0,0,0}; // for the 2021 rerelease
+cvar_t horde = {"horde","0",0,0,0,0}; // for the 2021 rerelease
+cvar_t sv_cheats = {"sv_cheats","0",0,0,0,0}; // for the 2021 rerelease
 
 extern void IN_MLookDown();
 extern void Cbuf_Waited();
@@ -168,6 +171,9 @@ void Host_InitLocal()
 	Max_Fps_f (&host_maxfps);
 	Cvar_RegisterVariable(&host_timescale); // johnfitz
 	Cvar_RegisterVariable(&max_edicts); //johnfitz
+	Cvar_RegisterVariable(&campaign);
+	Cvar_RegisterVariable(&horde);
+	Cvar_RegisterVariable(&sv_cheats);
 	Host_FindMaxClients();
 	host_time = 1.0; // so a think at time 0 won't get called
 }
