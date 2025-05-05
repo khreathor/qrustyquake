@@ -280,7 +280,7 @@ void R_InitFog()
 }
 
 float compute_fog(int z) {
-	const int fog_scale = 18;
+	const int fog_scale = 18 * r_fogscale.value;
 	z = fog_scale > z ? fog_scale : z; // prevent distant objects from getting no fog
 	z /= fog_scale;
 	return expf(-(1.0f-fog_density) * (1.0f-fog_density) * (float)(z * z));
@@ -299,7 +299,7 @@ void R_DrawFog() {
 		int i = x + y * vid.width;
 		int bias = randarr[(scr_vrect.width*scr_vrect.height - j)%RANDARR_SIZE] * 10;
 		++j;
-		float fog_factor = compute_fog(d_pzbuffer[i] + bias);
+		float fog_factor = compute_fog(d_pzbuffer[i] + bias) * r_fogfactor.value;
 		switch (style) {
 			case 0: // noisy
 				float random_val = (lfsr_random() & 0xFFFF) / 65535.0f;
