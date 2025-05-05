@@ -192,6 +192,7 @@ void R_Init()
 	Cvar_RegisterVariable(&r_fogbrightness);
 	Cvar_RegisterVariable(&r_fogfactor);
 	Cvar_RegisterVariable(&r_fogscale);
+	Cvar_RegisterVariable(&r_fullbright_list);
 	Cvar_SetCallback(&r_labmixpal, build_color_mix_lut);
 	Cvar_SetCallback(&r_fogbrightness, Fog_SetPalIndex);
 	Cvar_SetValue("r_maxedges", (float)NUMSTACKEDGES);
