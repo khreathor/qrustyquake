@@ -2629,18 +2629,29 @@ unsigned COM_HashString (const char *str)
 	return hash;
 }
 
+/*
+================
+COM_HashBlock
+Computes the FNV-1a hash of a memory block
+================
+*/
+unsigned COM_HashBlock (const void *data, size_t size)
+{
+    const byte *ptr = (const byte *)data;
+    unsigned hash = 0x811c9dc5u;
+    while (size--)
+    {
+        hash ^= *ptr++;
+        hash *= 0x01000193u;
+    }
+    return hash;
+}
+
 static size_t mz_zip_file_read_func(void *opaque, mz_uint64 ofs, void *buf, size_t n)
 {
 	if (SDL_RWseek((SDL_RWops*)opaque, (Sint64)ofs, RW_SEEK_SET) < 0)
 		return 0;
-	#ifdef USE_SDL2
 	return SDL_RWread((SDL_RWops*)opaque, buf, 1, n);
-	#else
-	else {
-		int r = SDL_RWread((SDL_RWops*)opaque, buf, 1, n);
-		return (r < 0)? 0 : r;
-	}
-	#endif
 }
 
 /*
@@ -2648,10 +2659,10 @@ static size_t mz_zip_file_read_func(void *opaque, mz_uint64 ofs, void *buf, size
 LOC_LoadFile
 ================
 */
-void LOC_LoadFile (const char *file)
+qboolean LOC_LoadFile (const char *file)
 {
 	char path[1024];
-	int i,lineno;
+	int i,lineno,warnings;
 	char *cursor;
 
 	SDL_RWops *rw = NULL;
@@ -2669,29 +2680,15 @@ void LOC_LoadFile (const char *file)
 	localization.numindices = 0;
 
 	if (!file || !*file)
-		return;
-
-	Con_Printf("\nLanguage initialization\n");
+		return false;
 
 	memset(&archive, 0, sizeof(archive));
-	q_snprintf(path, sizeof(path), "%s/%s", com_basedir, file);
+	q_snprintf(path, sizeof(path), "%s", file);
 	rw = SDL_RWFromFile(path, "rb");
-	#if defined(DO_USERDIRS)
-	if (!rw) {
-		q_snprintf(path, sizeof(path), "%s/%s", host_parms.userdir, file);
-		rw = SDL_RWFromFile(path, "rb");
-	}
-	#endif
 	if (!rw)
 	{
 		q_snprintf(path, sizeof(path), "%s/QuakeEX.kpf", com_basedir);
 		rw = SDL_RWFromFile(path, "rb");
-		#if defined(DO_USERDIRS)
-		if (!rw) {
-			q_snprintf(path, sizeof(path), "%s/QuakeEX.kpf", host_parms.userdir);
-			rw = SDL_RWFromFile(path, "rb");
-		}
-		#endif
 		if (!rw) goto fail;
 		sz = SDL_RWsize(rw);
 		if (sz <= 0) goto fail;
@@ -2714,8 +2711,8 @@ void LOC_LoadFile (const char *file)
 		{
 fail:			mz_zip_reader_end(&archive);
 			if (rw) SDL_RWclose(rw);
-			Con_Printf("Couldn't load '%s'\nfrom '%s'\n", file, com_basedir);
-			return;
+			Con_Printf("Couldn't load '%s'\n", file);
+			return false;
 		}
 		SDL_RWread(rw, localization.text, 1, sz);
 		SDL_RWclose(rw);
@@ -2727,6 +2724,7 @@ fail:			mz_zip_reader_end(&archive);
 	if ((unsigned char)(cursor[0]) == 0xEF && (unsigned char)(cursor[1]) == 0xBB && (unsigned char)(cursor[2]) == 0xBF)
 		cursor += 3;
 
+	warnings = 0;
 	lineno = 0;
 	while (*cursor)
 	{
@@ -2835,6 +2833,21 @@ fail:			mz_zip_reader_end(&archive);
 				localization.entries = (locentry_t*) realloc(localization.entries, sizeof(*localization.entries) * localization.maxnumentries);
 			}
 
+			//FIXMEUTF8_ToQuake (value, strlen (value) + 1, value);
+
+			// Log entries with unprintable characters if developer is set to 2 or higher
+			/*if (developer.value >= 2.f && strchr (value, QCHAR_BOX))
+			{
+				int trim = (int) strlen (value);
+				// trim trailing newlines
+				while (trim > 0 && value[trim - 1] == '\n')
+					--trim;
+				// print header before first entry
+				if (!warnings++)
+					Sys_Printf ("Entries with unprintable characters:\n");
+				Sys_Printf ("   %d. %s = \"%.*s\"\n", warnings, line, trim, value);
+			}*/
+
 			entry = &localization.entries[localization.numentries++];
 			entry->key = line;
 			entry->value = value;
@@ -2844,13 +2857,16 @@ fail:			mz_zip_reader_end(&archive);
 			*cursor++ = 0; // terminate line and advance to next
 	}
 
+	if (developer.value >= 2.f && warnings > 0)
+		Sys_Printf ("%d strings with unprintable characters\n", warnings);
+
 	// hash all entries
 
 	localization.numindices = localization.numentries * 2; // 50% load factor
 	if (localization.numindices == 0)
 	{
 		Con_Printf("No localized strings in file '%s'\n", file);
-		return;
+		return false;
 	}
 
 	localization.indices = (unsigned*) realloc(localization.indices, localization.numindices * sizeof(*localization.indices));
@@ -2878,8 +2894,11 @@ fail:			mz_zip_reader_end(&archive);
 		}
 	}
 
-	Con_Printf("Loaded %d strings from '%s'\n", localization.numentries, file);
+	Con_SafePrintf ("[skipnotify]Loaded %d strings from '%s'\n", localization.numentries, file);
+
+	return true;
 }
+
 
 /*
 ================

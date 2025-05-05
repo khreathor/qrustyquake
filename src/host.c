@@ -560,6 +560,7 @@ void Host_Init()
 		Sbar_Init();
 		CL_Init();
 	}
+	LOC_Init(); // for 2021 rerelease support.
 	Cbuf_InsertText("exec quake.rc\n");
 	IN_MLookDown();
 	Hunk_AllocName(0, "-HOST_HUNKLEVEL-");
