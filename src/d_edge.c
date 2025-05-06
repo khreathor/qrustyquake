@@ -115,7 +115,21 @@ void D_DrawSurfaces()
 		// some bigger issue that I can't be bothered to diagnose ATM.
 		unsigned long is_ent = (unsigned long)s->entity & 0xffff000;
 		// CyanBun96: a 0 in either of those causes an error. FIXME
-		if (!pface || !pface->extents[0] || !pface->extents[1])continue;
+		if (!pface || !pface->extents[0] || !pface->extents[1]) {
+			if (pface)
+				Con_DPrintf("Broken surface extents %hd %hd\n",
+					pface->extents[0], pface->extents[1]);
+			else
+				Con_DPrintf("Broken surface\n");
+			continue;
+		}
+		// CyanBun96: reject broken surfaces earlier to avoid crashes
+		int wd = pface->extents[0] >> (MIPLEVELS-1);
+		int sz = wd * pface->extents[1] >> (MIPLEVELS-1);
+		if ((wd < 0 || wd > 256) || (sz <= 0 || sz > 0x10000)) {
+			Con_DPrintf("Invalid surface width/size %d %d\n",wd,sz);
+			continue;
+		}
 		if (is_ent && s->entity->alpha && r_entalpha.value == 1)
 			winquake_surface_liquid_alpha = (float)s->entity->alpha / 255;
 		// Baker: Need to determine what kind of liquid we are

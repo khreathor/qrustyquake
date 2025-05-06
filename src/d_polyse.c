@@ -131,7 +131,7 @@ void D_PolysetDrawFinalVerts(finalvert_t *fv, int numverts)
 			short *zbuf = zspantable[fv->v[1]] + fv->v[0];
 			if (zbuf < d_pzbuffer || // FIXME properly
 				zbuf >= (d_pzbuffer+vid.width*vid.height*2)) {
-				printf("ZBUF SEGFAULT 0 %lx\n", zbuf);
+				Con_DPrintf("Zbuf segfault 0 %lx\n", zbuf);
 				continue;
 			}
 			if (!(z >= *zbuf))
@@ -295,7 +295,7 @@ split: // split this edge
 	short *zbuf = zspantable[new[1]] + new[0];
 	if (zbuf < d_pzbuffer || // FIXME properly
 		zbuf >= (d_pzbuffer+vid.width*vid.height*2)) {
-		printf("ZBUF SEGFAULT 1 %lx\n", zbuf);
+		Con_DPrintf("Zbuf segfault 1 %lx\n", zbuf);
 		goto nodraw;
 	}
 	if (z >= *zbuf) {
@@ -465,7 +465,7 @@ void D_PolysetDrawSpans8(spanpackage_t *pspanpackage)
 			int llight = pspanpackage->light;
 			int lzi = pspanpackage->zi;
 			if (lpz + lcount - d_pzbuffer > vid.width * vid.height * sizeof(short)) {
-				printf ("Invalid span length: %d %d\n", 
+				Con_DPrintf ("Invalid span length: %d %d\n", 
 					lpz + lcount - d_pzbuffer, vid.width * vid.height * sizeof(short));
 				break;
 				// CyanBun96: i caused this bug and i can't be bothered to fix it. Here, have a
