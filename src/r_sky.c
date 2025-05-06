@@ -134,6 +134,24 @@ unsigned char fast_rgbtoi(unsigned char r, unsigned char g, unsigned char b)
     return rgb_lut[i];
 }
 
+byte *Upscale_NearestNeighbor(byte *src, int width, int height, int *new_width,
+	int *new_height) {
+	*new_width = (width < 256) ? 256 : width;
+	*new_height = (height < 256) ? 256 : height;
+	if (*new_width == width && *new_height == height)
+		return src;
+	int scale_x = *new_width / width;
+	int scale_y = *new_height / height;
+	byte *dest = malloc((*new_width) * (*new_height));
+	if (!dest) return 0;
+	for (int y = 0; y < *new_height; ++y) {
+		for (int x = 0; x < *new_width; ++x) {
+			dest[y*(*new_width)+x] = src[y/scale_y*width+x/scale_x];
+		}
+	}
+	return dest;
+}
+
 int R_LoadSkybox (const char *name)
 {
 	if (!name || !name[0]) {
@@ -163,6 +181,10 @@ int R_LoadSkybox (const char *name)
 						CLAMP(0,g,255),
 						CLAMP(0,b,255));
 		}
+		byte *final_pic = Upscale_NearestNeighbor(pic,
+				width, height, &width, &height);
+		byte *origpic = pic;
+		pic = final_pic;
 		if (!pic) {
 			Con_Printf ("Couldn't load %s", pathname);
 			return false;
@@ -174,7 +196,10 @@ int R_LoadSkybox (const char *name)
 				break;
 			default: // We aren't good
 				Con_Printf ("skybox width (%d) for %s must be 256, 512, 1024", width, pathname);
+				pic = origpic;
 				Hunk_FreeToLowMark (mark);
+				if (final_pic != origpic)
+					free(final_pic);
 				return false;
 		}
 		switch (height) {
@@ -184,7 +209,10 @@ int R_LoadSkybox (const char *name)
 				break;
 			default:
 				Con_Printf ("skybox height (%d) for %s must be 256, 512, 1024", height, pathname);
+				pic = origpic;
 				Hunk_FreeToLowMark (mark);
+				if (final_pic != origpic)
+					free(final_pic);
 				return false;
 		}
 		r_skytexinfo[i].texture = &r_skytextures[i];
@@ -214,7 +242,10 @@ int R_LoadSkybox (const char *name)
 		}
 		else Con_DPrintf ("Warning: No surface to load yet for WinQuake skybox");
 		memcpy (r_skypixels[i], pic, width*height);
+		pic = origpic;
 		Hunk_FreeToLowMark (mark);
+		if (final_pic != origpic)
+			free(final_pic);
 	}
 	return true;
 }
