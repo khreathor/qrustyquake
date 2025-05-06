@@ -126,7 +126,8 @@ void D_DrawSurfaces()
 		// CyanBun96: reject broken surfaces earlier to avoid crashes
 		int wd = pface->extents[0] >> (MIPLEVELS-1);
 		int sz = wd * pface->extents[1] >> (MIPLEVELS-1);
-		if ((wd < 0 || wd > 256) || (sz <= 0 || sz > 0x10000)) {
+		if (((wd < 0 || wd > 256) || (sz <= 0 || sz > 0x10000)) &&
+			!SURF_WINQUAKE_DRAWTRANSLUCENT) {
 			Con_DPrintf("Invalid surface width/size %d %d\n",wd,sz);
 			continue;
 		}
@@ -185,7 +186,8 @@ void D_DrawSurfaces()
 				D_DrawSolidSurface(s, (int)r_clearcolor.value & 0xFF);
 			else D_DrawSolidSurface(s, 0xFF);
 			D_DrawZSpans(s->spans);
-		} else if (s->flags & SURF_DRAWTURB && !s->entity->model->haslitwater) {
+		} else if (s->flags & SURF_DRAWTURB && (!s->entity->model->haslitwater
+				|| !r_litwater.value)) {
 			miplevel = 0;
 			cacheblock = (pixel_t *)
 				((byte *) pface->texinfo->texture +
@@ -269,7 +271,7 @@ void D_DrawSurfaces()
 				VectorCopy(base_modelorg, modelorg);
 				R_TransformFrustum();
 			}
-		} else if (s->flags & SURF_DRAWTURB && s->entity->model->haslitwater) {
+		} else if (s->flags & SURF_DRAWTURB && s->entity->model->haslitwater && r_litwater.value) {
 			if (s->insubmodel) {
 				// FIXME: we don't want to do all this for every polygon!
 				// TODO: store once at start of frame
