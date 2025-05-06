@@ -105,6 +105,9 @@ cvar_t r_fogfactor = { "r_fogfactor", "0.5", true, false, 0, NULL }; // CyanBun9
 cvar_t r_fogscale = { "r_fogscale", "1", true, false, 0, NULL }; // CyanBun96
 cvar_t r_fognoise = { "r_fognoise", "1", true, false, 0, NULL }; // CyanBun96
 cvar_t r_litwater = { "r_litwater", "1", true, false, 0, NULL }; // CyanBun96
+cvar_t vid_cwidth = { "vid_cwidth", "0", true, false, 0, NULL }; // CyanBun96
+cvar_t vid_cheight = { "vid_cheight", "0", true, false, 0, NULL }; // CyanBun96
+cvar_t vid_cwmode = { "vid_cwmode", "0", true, false, 0, NULL }; // CyanBun96
 
 // johnfitz -- new cvars TODO actually implement these, they're currently placeholders
 cvar_t  r_nolerp_list = {"r_nolerp_list", "progs/flame.mdl,progs/flame2.mdl,progs/braztall.mdl,pro gs/brazshrt.mdl,progs/longtrch.mdl,progs/flame_pyre.mdl,progs/v_saw.mdl,progs/v_xfist.mdl,progs/h2 stuff/newfire.mdl", false, false, 0, NULL};
@@ -197,6 +200,9 @@ void R_Init()
 	Cvar_RegisterVariable(&r_fognoise);
 	Cvar_RegisterVariable(&r_fullbright_list);
 	Cvar_RegisterVariable(&r_litwater);
+	Cvar_RegisterVariable(&vid_cwidth);
+	Cvar_RegisterVariable(&vid_cheight);
+	Cvar_RegisterVariable(&vid_cwmode);
 	Cvar_SetCallback(&r_labmixpal, build_color_mix_lut);
 	Cvar_SetCallback(&r_fogbrightness, Fog_SetPalIndex);
 	Cvar_SetValue("r_maxedges", (float)NUMSTACKEDGES);

@@ -60,40 +60,39 @@ cvar_t realheight = { "realheight", "0", 0, 0, 0, 0 }; // 0 - auto
 void VID_CalcScreenDimensions(cvar_t *cvar);
 void VID_AllocBuffers();
 
-int VID_GetDefaultMode()
+int VID_GetConfigCvar(const char *cvname)
 {
 	// CyanBun96: _vid_default_mode_win gets read from config.cfg only after
 	// video is initialized. To avoid creating a window and textures just to
 	// destroy them right away and only then replace them with valid ones,
 	// this function reads the default mode independently of the cvar status
 	char line[256];
-	int vid_default_mode = -1;
+	int ret = -1;
 	FILE *file = fopen("id1/config.cfg", "r");
 	if (!file) {
 		printf("Failed to open id1/config.cfg");
 		return -2;
 	}
 	while (fgets(line, sizeof(line), file)) {
-		char *key = "_vid_default_mode_win";
-		char *found = strstr(line, key);
+		char *found = strstr(line, cvname);
 		if (found) {
 			char *start = strchr(found, '"');
 			if (start) {
 				char *end = strchr(start + 1, '"');
 				if (end) {
 					*end = '\0';
-					vid_default_mode = atoi(start + 1);
+					ret = atoi(start + 1);
 					break;
 				}
 			}
 		}
 	}
 	fclose(file);
-	if (vid_default_mode != -1)
-		printf("_vid_default_mode_win: %d\n", vid_default_mode);
+	if (ret != -1)
+		printf("%s: %d\n", cvname, ret);
 	else
-		printf("_vid_default_mode_win not found in id1/config.cfg\n");
-	return vid_default_mode;
+		printf("%s not found in id1/config.cfg\n", cvname);
+	return ret;
 }
 
 int VID_DetermineMode()
@@ -150,13 +149,24 @@ void VID_Init(unsigned char *palette)
 	if (!(COM_CheckParm("-width") || COM_CheckParm("-height")
 	   || COM_CheckParm("-window") || COM_CheckParm("-fullscreen")
 	   || COM_CheckParm("-winsize"))) {
-		defmode = VID_GetDefaultMode();
+		defmode = VID_GetConfigCvar("_vid_default_mode_win");
 		if (defmode >= 0 && defmode < NUM_OLDMODES) {
 			vid.width = oldmodes[defmode * 2];
 			vid.height = oldmodes[defmode * 2 + 1];
 			winmode = defmode < 3;
 		}
 	}
+	int confwidth = VID_GetConfigCvar("vid_cwidth");
+	int confheight = VID_GetConfigCvar("vid_cheight");
+	int confwmode = VID_GetConfigCvar("vid_cwmode");
+	if (confwidth >= 320 && confheight >= 200 &&
+		confwidth <= MAXWIDTH && confheight <= MAXHEIGHT) {
+		vid.width = confwidth;
+		vid.height = confheight;
+		Sys_Printf("Using vid_cwidth x vid_cheight to set mode\n");
+	}
+	else if (defmode != -1)
+		Sys_Printf("Using _vid_default_mode_win to set mode\n");
 	if ((pnum = COM_CheckParm("-winsize"))) {
 		if (pnum >= com_argc - 2)
 			Sys_Error("VID: -winsize <width> <height>\n");
@@ -187,14 +197,14 @@ void VID_Init(unsigned char *palette)
 	// CyanBun96: what most modern games call "Fullscreen borderless
 	// can be achieved by passing -fullscreen_desktop and -borderless
 	// -fullscreen will try to change the display resolution
-	if (COM_CheckParm("-fullscreen"))
+	if (COM_CheckParm("-fullscreen") || confwmode == 1)
 		flags |= SDL_WINDOW_FULLSCREEN;
-	else if (COM_CheckParm("-fullscreen_desktop"))
+	else if (COM_CheckParm("-fullscreen_desktop") || confwmode == 2)
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-	else if (COM_CheckParm("-window"))
+	else if (COM_CheckParm("-window") || confwmode == 0)
 		flags &= ~SDL_WINDOW_FULLSCREEN;
 	else if (winmode == 0)
-		flags |= SDL_WINDOW_FULLSCREEN;
+		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 	else if (winmode == 1)
 		flags &= ~SDL_WINDOW_FULLSCREEN;
 	if (COM_CheckParm("-borderless"))
@@ -458,4 +468,7 @@ void VID_SetMode(int modenum, int customw, int customh, int customwinmode,
 	realwidth.value = 0;
 	VID_CalcScreenDimensions(0);
 	Cvar_SetValue("vid_mode", (float)vid_modenum);
+	Cvar_SetValue("vid_cwidth", (float)customw);
+	Cvar_SetValue("vid_cheight", (float)customh);
+	Cvar_SetValue("vid_cwmode", (float)customwinmode);
 }
