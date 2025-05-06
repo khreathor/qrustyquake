@@ -314,6 +314,7 @@ void VID_CalcScreenDimensions(cvar_t *cvar)
 	destRect.y = (winH - destH) / 2;
 	destRect.w = destW;
 	destRect.h = destH;
+	Sbar_CalcPos();
 }
 
 void VID_Update()
@@ -335,7 +336,7 @@ void VID_Update()
 		SDL_RenderCopy(renderer, texture, NULL, &destRect);
 		SDL_RenderPresent(renderer);
 	}
-	if (uiscale != scr_uiscale.value
+	if (uiscale != scr_uiscale.value // TODO make this a callback function
 	    && vid.width / 320 >= scr_uiscale.value && scr_uiscale.value > 0) {
 		uiscale = scr_uiscale.value;
 		vid.recalc_refdef = 1;
