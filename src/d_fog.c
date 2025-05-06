@@ -297,7 +297,7 @@ void R_DrawFog() {
         for (int y = scr_vrect.y; y < scr_vrect.y + scr_vrect.height; ++y) {
         for (int x = scr_vrect.x; x < scr_vrect.x + scr_vrect.width; ++x) {
 		int i = x + y * vid.width;
-		int bias = randarr[(scr_vrect.width*scr_vrect.height - j)%RANDARR_SIZE] * 10;
+		int bias = randarr[(scr_vrect.width*scr_vrect.height - j)%RANDARR_SIZE] * 10 * r_fognoise.value;
 		++j;
 		float fog_factor = compute_fog(d_pzbuffer[i] + bias) * r_fogfactor.value;
 		switch (style) {
