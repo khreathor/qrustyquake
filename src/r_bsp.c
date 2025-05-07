@@ -204,6 +204,9 @@ void R_DrawSolidClippedSubmodelPolygons(model_t *pmodel)
 	msurface_t *psurf = &pmodel->surfaces[pmodel->firstmodelsurface];
 	if (psurf->flags&SURF_DRAWCUTOUT&&!r_pass&&(int)r_twopass.value&1)
 		return;
+	if ((psurf->flags&SURF_DRAWSKY) && 
+	    (psurf->texinfo->texture->width/psurf->texinfo->texture->height!=2))
+		return; // avoid drawing broken skies
 	int numsurfaces = pmodel->nummodelsurfaces;
 	medge_t *pedges = pmodel->edges;
 	for (int i = 0; i < numsurfaces; i++, psurf++) {
@@ -338,7 +341,9 @@ void R_RecursiveWorldNode(mnode_t *node, int clipflags)
 			} else if (dot > BACKFACE_EPSILON) {
 				do {
 					if (!(surf->flags & SURF_PLANEBACK) && (surf->visframe == r_framecount)
-						&& !(surf->flags&SURF_DRAWCUTOUT&&!r_pass&&(int)r_twopass.value&1)) {
+						&& !(surf->flags&SURF_DRAWCUTOUT&&!r_pass&&(int)r_twopass.value&1)
+						&& strncmp(surf->texinfo->texture->name, "bal_pureblack", 13)) {
+						// hardcoded texture skip fixes the black sky bottom in ad_tears
 						R_RenderFace(surf, clipflags);
 					}
 					surf++;

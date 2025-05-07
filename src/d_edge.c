@@ -152,8 +152,7 @@ void D_DrawSurfaces()
 		d_zistepv = s->d_zistepv;
 		d_ziorigin = s->d_ziorigin;
 		lmonly = 0;
-		if (s->flags & SURF_DRAWSKY && 
-			pface->texinfo->texture->width/pface->texinfo->texture->height==2) {
+		if (s->flags & SURF_DRAWSKY) {
 			if (!r_skymade)
 				R_MakeSky();
 			D_DrawSkyScans8(s->spans);
