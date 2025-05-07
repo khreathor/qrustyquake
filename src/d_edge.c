@@ -109,6 +109,7 @@ void D_DrawSurfaces()
 			continue;
 		r_drawnpolycount++;
 		msurface_t *pface = s->data;
+		if (pface == 0) continue;
 		// CyanBun96: some entities are assigned an invalid address like
 		// 35, which leads to segfaults on any further checks while
 		// still passing s->entity != NULL check. Must be a symptom of
@@ -151,7 +152,8 @@ void D_DrawSurfaces()
 		d_zistepv = s->d_zistepv;
 		d_ziorigin = s->d_ziorigin;
 		lmonly = 0;
-		if (s->flags & SURF_DRAWSKY) {
+		if (s->flags & SURF_DRAWSKY && 
+			pface->texinfo->texture->width/pface->texinfo->texture->height==2) {
 			if (!r_skymade)
 				R_MakeSky();
 			D_DrawSkyScans8(s->spans);
