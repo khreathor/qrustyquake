@@ -50,7 +50,7 @@
 #define FITZQUAKE_VERSION 0.85
 #define GAMENAME "id1"
 #define CMDLINE_LENGTH 256
-#define DEFAULT_MEMORY (1024 * 1024 * 1024)
+#define DEFAULT_MEMORY (2 * 1000 * 1000 * 1000)
 #define CACHE_SIZE 32 // used to align key data structures
 #define MINIMUM_MEMORY 0x550000
 #define MINIMUM_MEMORY_LEVELPAK (MINIMUM_MEMORY + 0x100000)
