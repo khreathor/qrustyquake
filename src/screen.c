@@ -257,7 +257,7 @@ void SCR_DrawPause()
 	if (!scr_showpause.value || !cl.paused) // turn off for screenshots
 		return;
 	qpic_t *pic = Draw_CachePic("gfx/pause.lmp");
-	Draw_PicScaled((vid.width - pic->width * uiscale) / 2,
+	Draw_TransPicScaled((vid.width - pic->width * uiscale) / 2,
 		       (vid.height - 48 * uiscale - pic->height * uiscale) / 2,
 		       pic, uiscale);
 }
@@ -267,7 +267,7 @@ void SCR_DrawLoading()
 	if (!scr_drawloading)
 		return;
 	qpic_t *pic = Draw_CachePic("gfx/loading.lmp");
-	Draw_PicScaled((vid.width - pic->width * uiscale) / 2,
+	Draw_TransPicScaled((vid.width - pic->width * uiscale) / 2,
 		       (vid.height - 48 * uiscale - pic->height * uiscale) / 2,
 		       pic, uiscale);
 }
