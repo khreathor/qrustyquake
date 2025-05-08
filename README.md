@@ -180,7 +180,7 @@ VM is VirtualBox unless specified otherwise.
 
    - Not tested on real hardware yet, TODO
 
-- Android [HW, Termux, AARCH64] v0.4.5
+- Android [HW, Termux, AARCH64] v0.5.0
 
    - Ran through X11 with touch controls. *unpleasant*
 

@@ -19,7 +19,6 @@ int lwmark = 0;
 extern cvar_t r_skyfog;
 extern cvar_t r_alphastyle;
 extern int fog_lut_built;
-extern void build_color_mix_lut();
 
 void D_DrawTurbulent8Span();
 
@@ -106,7 +105,7 @@ void D_DrawTurbulent8Span()
 void D_DrawTurbulent8SpanAlpha (float opacity)
 {
 	if (r_alphastyle.value == 0 && !lmonly) {
-		if (!fog_lut_built) build_color_mix_lut();
+		if (!fog_lut_built) build_color_mix_lut(0);
 		do {
 			if (*pz <= (izi >> 16)) {
 				int s=((r_turb_s+r_turb_turb[(r_turb_t>>16)&(CYCLE-1)])>>16)&63;
@@ -122,7 +121,7 @@ void D_DrawTurbulent8SpanAlpha (float opacity)
 		} while (--r_turb_spancount > 0);
 		return;
 	} else if (r_alphastyle.value == 0 && lmonly) {
-		if (!fog_lut_built) build_color_mix_lut();
+		if (!fog_lut_built) build_color_mix_lut(0);
 		if (!lit_lut_initialized) R_BuildLitLUT();
 		do {
 			if (*pz <= (izi >> 16)) {
@@ -600,7 +599,7 @@ void D_DrawTransSpans8(espan_t *pspan, float opacity)
 			int foglut = opacity*FOG_LUT_LEVELS;
 			if (r_alphastyle.value == 0) {
 				if (!fog_lut_built)
-					build_color_mix_lut();
+					build_color_mix_lut(0);
 				do {
 					if (*pz <= (izi >> 16)) {
 						unsigned char pix = *(pbase + (s >> 16) +

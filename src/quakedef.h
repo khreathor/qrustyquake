@@ -235,4 +235,11 @@ void Host_ShutdownServer(qboolean crash);
 void Chase_Init();
 void Chase_Update();
 void Cvar_SetCallback(cvar_t *var, cvarcallback_t func);
+
+// rgbtoi.c
+extern void init_color_conv();
+unsigned char rgbtoi_lab(unsigned char r, unsigned char g, unsigned char b);
+unsigned char rgbtoi(unsigned char r, unsigned char g, unsigned char b);
+void build_color_mix_lut(cvar_t *cvar);
+void R_BuildLitLUT();
 #endif

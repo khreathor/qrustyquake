@@ -25,8 +25,6 @@ int r_stepback;
 int r_lightwidth;
 int r_numhblocks, r_numvblocks;
 unsigned char *r_source, *r_sourcemax;
-unsigned char lit_lut[LIT_LUT_RES*LIT_LUT_RES*LIT_LUT_RES];
-int lit_lut_initialized = 0;
 
 extern void init_color_conv();
 extern cvar_t r_labmixpal;
@@ -216,27 +214,6 @@ void R_DrawSurface()
 			soffset = 0;
 		pcolumndest += horzblockstep;
 	}
-}
-
-void R_BuildLitLUT()
-{
-	unsigned char (*convfunc)(unsigned char, unsigned char, unsigned char);
-	if (r_labmixpal.value == 1) {
-		init_color_conv();
-		convfunc = rgbtoi_lab;
-	}
-	else
-		convfunc = rgbtoi;
-	const int llr = LIT_LUT_RES;
-	for (int r_ = 0; r_ < llr; ++r_) {
-	for (int g_ = 0; g_ < llr; ++g_) {
-	for (int b_ = 0; b_ < llr; ++b_) {
-		int rr = (r_ * 255) / (llr - 1);
-		int gg = (g_ * 255) / (llr - 1);
-		int bb = (b_ * 255) / (llr - 1);
-		lit_lut[r_+g_*llr+b_*llr*llr] = convfunc(rr, gg, bb);
-	} } }
-	lit_lut_initialized = 1;
 }
 
 void R_DrawSurfaceBlock(int miplvl)

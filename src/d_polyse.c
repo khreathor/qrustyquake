@@ -64,7 +64,6 @@ float cur_ent_alpha = 1;
 
 extern unsigned char color_mix_lut[256][256][FOG_LUT_LEVELS];
 extern int fog_lut_built;
-extern void build_color_mix_lut();
 extern vec3_t lightcolor;
 extern int colored_aliaslight;
 
@@ -99,7 +98,7 @@ void D_PolysetScanLeftEdge(int height);
 void D_PolysetDraw()
 {
 	if (r_alphastyle.value == 0 && cur_ent_alpha != 1 && !fog_lut_built)
-		build_color_mix_lut();
+		build_color_mix_lut(0);
 	if (r_alphastyle.value == 1 && cur_ent_alpha != 1) {
 		if (cur_ent_alpha >= 0.83f) dither_pat = 6;
 		else if (cur_ent_alpha >= 0.75f) dither_pat = 5;
