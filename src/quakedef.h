@@ -164,6 +164,8 @@ typedef struct {
 	int memsize;
 } quakeparms_t;
 
+#include "typedefs.h"
+#include "globals.h"
 #include "q_stdinc.h"
 #include "common.h"
 #include "bspfile.h"
