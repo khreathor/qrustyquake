@@ -8,7 +8,7 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
 - A "New Options" menu, can be toggled with "newoptions 0/1"
 
-- Integer scaling
+- Integer/nearest neighbor scaling
 
 - Borderless window with -borderless parameter
 
@@ -62,25 +62,19 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
 - Unlocked FPS with host_maxfps cvar
 
-   - No client-server separation yet, be careful with values > 72 (the default)
+   - Render-server separation for 72<FPS
 
 - Expanded limits, Fitzquake protocol allowing for moden mod support
 
-   - Underdark Overbright and Honey have been tested and are 100% playable (with minor visual bugs)
-
-   - BSP2 and other modern features are being actively worked on, expect bugs and crashes on bigger maps
-
-   - AD's Foggy Bogbottom and The Forgotten Sepulcher are playable with minor visual glitches
-
-   - Other Arcane Dimensions maps load but are untested
-
-   - Much more limited on windows, currently, but still higher than vanilla
+   - 2021 rerelease support, place QuakeEX.kpf in the base folder for working localization
 
 - Software imitations of modern rendering features
 
    - Colored lighting, .lit file support
 
       - r_rgblighting 0,1 to toggle
+
+      - Lit water is supported with r_litwater cvar
 
    - Translucent liquids on supported maps (r_{water,slime,lava,tele}alpha 0-1)
 
@@ -102,47 +96,41 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
       - r_nofog 1 to disable
 
+      - r_fognoise to adjust noise bias level: 0 - disable, 1 - noisy
+
+      - r_fogfactor to adjust fog thickness: 0.5 - lighter, 1 - full
+
+      - r_fogscale to adjust the distance to the fog: 0.5 - further, 2 - closer
+
       - r_fogstyle 0/1/2/3, with 3 being the default and most "modern-looking"
 
       - r_fogbrightness (0.5 for half brightness, 2 for double), independent of the fog color dictated by the map
 
 # Planned
 
+- An actual design document. Lots of documentation, really.
+
 - Overhaul, modernization and trimming of the source code - removal of dead platforms and platform-specific code in favor of portable, properly formatted and readable code.
-
-   - The codebase has been reduced by more than 50% compared to original WinQuake release in v0.3
-
-      - ... and then bloated back up in v0.4. i'm working on it though.
-
-   - The formatting has also been unified, along with tons of other minor readability improvements
-
-      - ... except for the v0.4 bits
-
-   - Most of the changes to the original code (that wasn't deleted) are purely cosmetic so far, deeper refactoring with more meaningful improvements is planned
 
    - The long-term goal for this port keeping it as well-maintained as a 1996 game can be.
 
    - The whole "modernized" rendering system is a mess, akin to layers of makeup on a rotting corpse. I hope someone will rewrite it someday, or I'll have to do it myself.
 
-- Modern mod support
-
-   - Mostly implemented, forever being worked on
-
 - Other modern features (optional)
 
    - More modern console
-
-   - Client-server separation (mostly for 72< framerates)
 
    - Different FOV modes
 
    - Independent world and UI scaling
 
+   - External music support
+
 - (definitely not) CD Audio
 
    - Might have been pulled from Quakespasm along with the rest of the sound system, though I have no way or desire to test it.
 
-Contributions of any kind are very welcome. If someone implements CD audio or something I'll definitely try to merge it.
+Contributions of any kind are very welcome. If someone implements CD audio or something I'll definitely try to merge it. Issue reports are also greatly appreciated.
 
 # Building
 
@@ -152,7 +140,7 @@ Other -nixes: cd src && make -f Makefile.freebsd/openbsd/...
 
 Windows: cd src && make -f Makefile.w64
 
-The windows makefile is for cross-compilation from under Linux, I have no plans of making it buildable under windows.
+The windows makefile is for cross-compilation from under Linux. Use CMakeLists.txt for building natively.
 
 # Successful builds
 
@@ -160,7 +148,7 @@ x86_64 unless specified otherwise.
 
 VM is VirtualBox unless specified otherwise.
 
-- Arch Linux [HW] v0.4.6
+- Arch Linux [HW] v0.5.0
 
    - The main platform that this port is developed on. The most likely one to work
 
@@ -169,6 +157,12 @@ VM is VirtualBox unless specified otherwise.
    - Other Linuxes not tested yet, but should be the same with the gcc/make toolchain
 
    - TODO other compilers, Alpine
+
+- Debian 11 [VM] v0.5.0
+
+   - The oldest tested distro
+
+   - Used to build the release AppImage
 
 - FreeBSD [VM] v0.4
 
@@ -190,13 +184,17 @@ VM is VirtualBox unless specified otherwise.
 
    - Ran through X11 with touch controls. *unpleasant*
 
-- Windows [VM, HW] v0.4.6
+- Windows [VM, HW] v0.5.0
 
    - Tested with w10 on hardware and w11 on a VM
 
    - Has more strict surface limits and such, to prevent crashing 
 
    - Network fails on UDP initialization, but proceeds to work fine?
+
+   - Release .exes are cross-compiled
+
+   - Use CMakeLists.txt for native builds
 
 # Credits
 
@@ -207,6 +205,8 @@ Which was a fork of another fork. It's forks all the way down...
 Some code, including VGA text blurbs, has been taken from https://github.com/erysdren/sdl3quake/
 
 Big thanks to Erysdren for contributing quite a lot to the backend and makefiles to make compilation on exotic systems possible.
+
+Izhido heroically made the native windows build possible, and in process brought the windows version to the same feature level as the others.
 
 The Fitzquake protocol implementation, both client and server, sound system, model loading, filesystem functions, cvars and a whole lot more has been pulled directly from Quakespasm.
 
