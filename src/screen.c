@@ -392,7 +392,7 @@ void SCR_ScreenShot_f()
 		return;
 	}
 	WritePCXfile(pcxname, vid.buffer, vid.width, vid.height, vid.rowbytes,
-		     host_basepal); // save the pcx file 
+		     vid_curpal); // save the pcx file 
 	Con_Printf("Wrote %s\n", pcxname);
 }
 
