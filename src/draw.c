@@ -268,7 +268,7 @@ void Draw_ConsoleBackground(int lines)
 void R_DrawRect(vrect_t *prect, int rowbytes, byte *psrc, int transparent)
 {
 	byte *pdest = vid.buffer + (prect->y * vid.rowbytes) + prect->x;
-	int maxdest = (unsigned long)vid.buffer + vid.rowbytes * vid.height;
+	unsigned long maxdest = (unsigned long)vid.buffer+vid.width*vid.height;
 	if (transparent) {
 		int srcdelta = rowbytes - prect->width;
 		int destdelta = vid.rowbytes - prect->width;
@@ -285,7 +285,7 @@ void R_DrawRect(vrect_t *prect, int rowbytes, byte *psrc, int transparent)
 		}
 	} else {
 		for (int i = 0; i < prect->height; i++) {
-			if ((unsigned long)pdest + prect->width > maxdest)break;
+			if ((unsigned long)pdest+prect->width >= maxdest) break;
 			memcpy(pdest, psrc, prect->width);
 			psrc += rowbytes;
 			pdest += vid.rowbytes;

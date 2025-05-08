@@ -302,8 +302,7 @@ void R_DrawFog() {
 		float fog_factor = compute_fog(d_pzbuffer[i] + bias) * r_fogfactor.value;
 		switch (style) {
 			case 0: // noisy
-				float random_val = (lfsr_random() & 0xFFFF) / 65535.0f;
-				if (random_val < fog_factor)
+				if ((lfsr_random() & 0xFFFF) / 65535.0f < fog_factor)
 					((unsigned char *)(screen->pixels))[i] = fog_pal_index;
 				break;
 			case 1: // dither
