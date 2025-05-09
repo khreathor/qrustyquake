@@ -1723,8 +1723,12 @@ void M_Video_Key(int key)
 	case 'D':
 	case 'd':
 		S_LocalSound("misc/menu1.wav");
-		if (vid_modenum >= 0 && vid_modenum < NUM_OLDMODES)
+		if (vid_modenum >= 0 && vid_modenum < NUM_OLDMODES) {
 			Cvar_SetValue("_vid_default_mode_win", vid_modenum);
+			Cvar_SetValue("vid_cheight", -1);
+			Cvar_SetValue("vid_cwidth", -1);
+			Cvar_SetValue("vid_cwmode", -1);
+		}
 		break;
 	default:
 		break;
