@@ -3,6 +3,91 @@
 #include "quakedef.h"
 #include "r_local.h"
 
+float map_fallbackalpha;
+float map_wateralpha;
+float map_lavaalpha;
+float map_telealpha;
+float map_slimealpha;
+
+void R_ParseWorldspawn()
+{
+	char key[128], value[4096];
+	map_fallbackalpha = r_wateralpha.value;
+	int ct = cl.worldmodel->contentstransparent;
+	map_wateralpha = (ct&SURF_DRAWWATER)?r_wateralpha.value:1;
+	map_lavaalpha =  (ct&SURF_DRAWLAVA)? r_lavaalpha.value:1;
+	map_telealpha =  (ct&SURF_DRAWTELE)? r_telealpha.value:1;
+	map_slimealpha = (ct&SURF_DRAWSLIME)?r_slimealpha.value:1;
+	const char *data = COM_Parse(cl.worldmodel->entities);
+	if(!data)return; // error
+	if(com_token[0] != '{')return; // error
+	while(1){
+		data = COM_Parse(data);
+		if(!data)return; // error
+		if(com_token[0]=='}')break; // end of worldspawn
+		if(com_token[0]=='_')q_strlcpy(key, com_token + 1, sizeof(key));
+		else q_strlcpy(key, com_token, sizeof(key));
+		while(key[0]&&key[strlen(key)-1]==' ') // remove trailing spaces
+			key[strlen(key)-1] = 0;
+		data = COM_ParseEx(data, CPE_ALLOWTRUNC);
+		if(!data)return; // error
+		q_strlcpy(value, com_token, sizeof(value));
+		if(!strcmp("wateralpha", key))map_wateralpha = atof(value);
+		if(!strcmp("lavaalpha", key)) map_lavaalpha  = atof(value);
+		if(!strcmp("telealpha", key)) map_telealpha  = atof(value);
+		if(!strcmp("slimealpha", key))map_slimealpha = atof(value);
+	}
+}
+
+void R_SetWateralpha_f(cvar_t *var) 
+{ // -- ericw
+	if (cls.signon == SIGNONS && cl.worldmodel &&
+		!(cl.worldmodel->contentstransparent&SURF_DRAWWATER)
+		&& var->value < 1)
+		Con_Print("Map does not appear to be water-vised\n");
+	map_wateralpha = var->value;
+	map_fallbackalpha = var->value;
+}
+
+void R_SetLavaalpha_f(cvar_t *var)
+{
+	if (cls.signon == SIGNONS && cl.worldmodel &&
+		!(cl.worldmodel->contentstransparent&SURF_DRAWLAVA)
+		&& var->value && var->value < 1)
+		Con_Print("Map does not appear to be lava-vised\n");
+	map_lavaalpha = var->value;
+}
+
+void R_SetTelealpha_f(cvar_t *var)
+{
+	if (cls.signon == SIGNONS && cl.worldmodel &&
+		!(cl.worldmodel->contentstransparent&SURF_DRAWTELE)
+		&& var->value && var->value < 1)
+		Con_Print("Map does not appear to be tele-vised\n");
+	map_telealpha = var->value;
+}
+
+void R_SetSlimealpha_f(cvar_t *var)
+{
+	if (cls.signon == SIGNONS && cl.worldmodel &&
+		!(cl.worldmodel->contentstransparent&SURF_DRAWSLIME)
+		&& var->value && var->value < 1)
+		Con_Print("Map does not appear to be slime-vised\n");
+	map_slimealpha = var->value;
+}
+
+float R_WaterAlphaForTextureType(textype_t type)
+{
+	if (type == TEXTYPE_LAVA)
+		return map_lavaalpha > 0 ? map_lavaalpha : map_fallbackalpha;
+	else if (type == TEXTYPE_TELE)
+		return map_telealpha > 0 ? map_telealpha : map_fallbackalpha;
+	else if (type == TEXTYPE_SLIME)
+		return map_slimealpha > 0 ? map_slimealpha : map_fallbackalpha;
+	else
+		return map_wateralpha;
+}
+
 void R_CheckVariables()
 {
 	static float oldbright;

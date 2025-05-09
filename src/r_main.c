@@ -123,10 +123,15 @@ extern float cur_ent_alpha;
 extern void R_DrawFog();
 extern void Fog_FogCommand_f();
 extern void Fog_ParseWorldspawn();
+extern void R_ParseWorldspawn();
 extern void R_InitSkyBox(); // Manoel Kasimier - skyboxes 
 extern void Sky_NewMap();
 extern void build_color_mix_lut(cvar_t *cvar);
 extern qboolean nameInList(const char *list, const char *name);
+extern void R_SetWateralpha_f(cvar_t *var);
+extern void R_SetLavaalpha_f(cvar_t *var);
+extern void R_SetTelealpha_f(cvar_t *var);
+extern void R_SetSlimealpha_f(cvar_t *var);
 
 void CreatePassages();
 void SetVisibilityByPassages();
@@ -205,6 +210,10 @@ void R_Init()
 	Cvar_RegisterVariable(&vid_cwmode);
 	Cvar_SetCallback(&r_labmixpal, build_color_mix_lut);
 	Cvar_SetCallback(&r_fogbrightness, Fog_SetPalIndex);
+	Cvar_SetCallback(&r_wateralpha, R_SetWateralpha_f);
+	Cvar_SetCallback(&r_lavaalpha, R_SetLavaalpha_f);
+	Cvar_SetCallback(&r_telealpha, R_SetTelealpha_f);
+	Cvar_SetCallback(&r_slimealpha, R_SetSlimealpha_f);
 	Cvar_SetValue("r_maxedges", (float)NUMSTACKEDGES);
 	Cvar_SetValue("r_maxsurfs", (float)NUMSTACKSURFACES);
 	view_clipplanes[0].leftedge = true;
@@ -256,6 +265,7 @@ void R_NewMap()
 	r_skymade = 0;
 	Sky_NewMap();
 	Fog_ParseWorldspawn();
+	R_ParseWorldspawn();
 }
 
 void R_SetVrect(vrect_t *pvrectin, vrect_t *pvrect, int lineadj)

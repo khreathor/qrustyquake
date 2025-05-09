@@ -53,6 +53,20 @@ typedef struct btofpoly_s {
 	msurface_t *psurf;
 } btofpoly_t;
 
+typedef enum {
+	TEXTYPE_DEFAULT,
+	TEXTYPE_CUTOUT,
+	TEXTYPE_SKY,
+	TEXTYPE_LAVA,
+	TEXTYPE_SLIME,
+	TEXTYPE_TELE,
+	TEXTYPE_WATER,
+	TEXTYPE_COUNT,
+	TEXTYPE_FIRSTLIQUID = TEXTYPE_LAVA,
+	TEXTYPE_LASTLIQUID = TEXTYPE_WATER,
+	TEXTYPE_NUMLIQUIDS = TEXTYPE_LASTLIQUID + 1 - TEXTYPE_FIRSTLIQUID,
+} textype_t;
+
 extern cvar_t r_draworder;
 extern cvar_t r_speeds;
 extern cvar_t r_timegraph;
@@ -146,6 +160,11 @@ extern cvar_t r_twopass;
 extern cvar_t r_entalpha;
 extern int color_lightmap;
 extern int lmonly;
+extern float map_fallbackalpha;
+extern float map_wateralpha;
+extern float map_lavaalpha;
+extern float map_telealpha;
+extern float map_slimealpha;
 
 void R_DrawSprite();
 void R_RenderFace(msurface_t *fa, int clipflags);
@@ -205,3 +224,4 @@ extern unsigned char rgbtoi_lab(unsigned char r, unsigned char g, unsigned char 
 extern unsigned char rgbtoi(unsigned char r, unsigned char g, unsigned char b);
 extern void init_color_conv();
 extern void R_BuildLitLUT();
+extern float R_WaterAlphaForTextureType(textype_t type);

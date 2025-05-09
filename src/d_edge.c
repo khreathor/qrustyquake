@@ -2,6 +2,7 @@
 
 #include "quakedef.h"
 #include "d_local.h"
+#include "r_local.h"
 
 extern int screenwidth;
 static int miplevel;
@@ -137,13 +138,13 @@ void D_DrawSurfaces()
 		// Baker: Need to determine what kind of liquid we are
 		else if (s->flags & SURF_WINQUAKE_DRAWTRANSLUCENT) {
 			if (s->flags & SURF_DRAWLAVA)
-				winquake_surface_liquid_alpha = r_lavaalpha.value;
+				winquake_surface_liquid_alpha = R_WaterAlphaForTextureType(TEXTYPE_LAVA);
 			else if (s->flags & SURF_DRAWSLIME)
-				winquake_surface_liquid_alpha = r_slimealpha.value;
+				winquake_surface_liquid_alpha = R_WaterAlphaForTextureType(TEXTYPE_SLIME);
 			else if (s->flags & SURF_DRAWWATER)
-				winquake_surface_liquid_alpha = r_wateralpha.value;
+				winquake_surface_liquid_alpha = R_WaterAlphaForTextureType(TEXTYPE_WATER);
 			else if (s->flags & SURF_DRAWTELE)
-				winquake_surface_liquid_alpha = r_telealpha.value;
+				winquake_surface_liquid_alpha = R_WaterAlphaForTextureType(TEXTYPE_TELE);
 		} else
 			winquake_surface_liquid_alpha = 1;
 		if (r_wateralphapass && winquake_surface_liquid_alpha == 1 && r_entalpha.value == 1)
@@ -211,14 +212,10 @@ void D_DrawSurfaces()
 			float opacity = 1;
 			if (s->entity && s->entity->alpha && r_entalpha.value == 1)
 				opacity -= (float)s->entity->alpha/255;
-			else if (s->flags & SURF_DRAWLAVA) opacity -= 
-				r_lavaalpha.value;
-			else if (s->flags & SURF_DRAWSLIME) opacity -=
-				r_slimealpha.value;
-			else if (s->flags & SURF_DRAWWATER) opacity -=
-				r_wateralpha.value;
-			else if (s->flags & SURF_DRAWTELE) opacity -=
-				r_telealpha.value;
+			else if (s->flags & SURF_DRAWLAVA) opacity -= R_WaterAlphaForTextureType(TEXTYPE_LAVA);
+			else if (s->flags & SURF_DRAWSLIME) opacity -= R_WaterAlphaForTextureType(TEXTYPE_SLIME);
+			else if (s->flags & SURF_DRAWWATER) opacity -= R_WaterAlphaForTextureType(TEXTYPE_WATER);
+			else if (s->flags & SURF_DRAWTELE) opacity -= R_WaterAlphaForTextureType(TEXTYPE_TELE);
 			Turbulent8(s->spans, opacity);
 			if (!r_wateralphapass) // Manoel Kasimier - translucent water
 				D_DrawZSpans(s->spans);

@@ -240,10 +240,10 @@ void R_RenderFace(msurface_t *fa, int clipflags)
 	// Manoel Kasimier - skyboxes - end
 	if (fa->flags & SURF_WINQUAKE_DRAWTRANSLUCENT)
 	{
-		if (fa->flags & SURF_DRAWLAVA) winquake_surface_liquid_alpha = r_lavaalpha.value;
-		else if (fa->flags & SURF_DRAWSLIME) winquake_surface_liquid_alpha = r_slimealpha.value;
-		else if (fa->flags & SURF_DRAWWATER) winquake_surface_liquid_alpha = r_wateralpha.value;
-		else if (fa->flags & SURF_DRAWTELE) winquake_surface_liquid_alpha = r_telealpha.value;
+		if (fa->flags & SURF_DRAWLAVA) winquake_surface_liquid_alpha = R_WaterAlphaForTextureType(TEXTYPE_LAVA);
+		else if (fa->flags & SURF_DRAWSLIME) winquake_surface_liquid_alpha = R_WaterAlphaForTextureType(TEXTYPE_SLIME);
+		else if (fa->flags & SURF_DRAWWATER) winquake_surface_liquid_alpha = R_WaterAlphaForTextureType(TEXTYPE_WATER);
+		else if (fa->flags & SURF_DRAWTELE) winquake_surface_liquid_alpha = R_WaterAlphaForTextureType(TEXTYPE_TELE);
 	} else if (cur_ent_alpha < 1 && r_entalpha.value == 1)
 		winquake_surface_liquid_alpha = cur_ent_alpha;
 	else winquake_surface_liquid_alpha = 1;
