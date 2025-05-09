@@ -426,6 +426,7 @@ void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 *palette)
 	vid.recalc_refdef = 1;
 	VID_SetPalette(palette, screen);
 	VID_SetPalette(host_basepal, screen1);
+	SDL_SetColorKey(screen1, 1, 255);
 	if(!custw || !custh){
 		if(modenum <= 2){
 			SDL_SetWindowFullscreen(window, 0);
