@@ -66,55 +66,6 @@ float dp_time1, dp_time2, db_time1, db_time2, rw_time1, rw_time2;
 float se_time1, se_time2, de_time1, de_time2, dv_time1, dv_time2;
 int colored_aliaslight;
 
-cvar_t r_draworder = { "r_draworder", "0", false, false, 0, NULL };
-cvar_t r_speeds = { "r_speeds", "0", false, false, 0, NULL };
-cvar_t r_timegraph = { "r_timegraph", "0", false, false, 0, NULL };
-cvar_t r_graphheight = { "r_graphheight", "10", false, false, 0, NULL };
-cvar_t r_clearcolor = { "r_clearcolor", "2", false, false, 0, NULL };
-cvar_t r_waterwarp = { "r_waterwarp", "1", false, false, 0, NULL };
-cvar_t r_fullbright = { "r_fullbright", "0", false, false, 0, NULL };
-cvar_t r_drawentities = { "r_drawentities", "1", false, false, 0, NULL };
-cvar_t r_drawviewmodel = { "r_drawviewmodel", "1", false, false, 0, NULL };
-cvar_t r_aliasstats = { "r_polymodelstats", "0", false, false, 0, NULL };
-cvar_t r_dspeeds = { "r_dspeeds", "0", false, false, 0, NULL };
-cvar_t r_drawflat = { "r_drawflat", "0", false, false, 0, NULL };
-cvar_t r_ambient = { "r_ambient", "0", false, false, 0, NULL };
-cvar_t r_reportsurfout = { "r_reportsurfout", "0", false, false, 0, NULL };
-cvar_t r_maxsurfs = { "r_maxsurfs", "0", false, false, 0, NULL };
-cvar_t r_numsurfs = { "r_numsurfs", "0", false, false, 0, NULL };
-cvar_t r_reportedgeout = { "r_reportedgeout", "0", false, false, 0, NULL };
-cvar_t r_maxedges = { "r_maxedges", "0", false, false, 0, NULL };
-cvar_t r_numedges = { "r_numedges", "0", false, false, 0, NULL };
-cvar_t r_aliastransbase = { "r_aliastransbase", "200", false, false, 0, NULL };
-cvar_t r_aliastransadj = { "r_aliastransadj", "100", false, false, 0, NULL };
-cvar_t r_wateralpha = { "r_wateralpha", "1", true, false, 0, NULL };
-cvar_t r_slimealpha = { "r_slimealpha", "1", true, false, 0, NULL };
-cvar_t r_lavaalpha = { "r_lavaalpha", "1", true, false, 0, NULL };
-cvar_t r_telealpha = { "r_telealpha", "1", true, false, 0, NULL };
-cvar_t r_twopass = { "r_twopass", "1", true, false, 0, NULL }; // CyanBun96
-	// 0 - off (smart) 1 - on (smart) 2 - force off 3 - force on
-	// smart gets set on map load if cutouts were found
-cvar_t r_fogstyle = { "r_fogstyle", "3", true, false, 0, NULL }; // CyanBun96
-cvar_t r_nofog = { "r_nofog", "0", true, false, 0, NULL }; // CyanBun96
-cvar_t r_alphastyle = { "r_alphastyle", "0", true, false, 0, NULL }; // CyanBun96
-cvar_t r_entalpha = { "r_entalpha", "1", true, false, 0, NULL }; // CyanBun96
-cvar_t r_labmixpal = { "r_labmixpal", "1", true, false, 0, NULL }; // CyanBun96
-cvar_t r_rgblighting = { "r_rgblighting", "1", true, false, 0, NULL }; // CyanBun96
-cvar_t r_fogbrightness = { "r_fogbrightness", "1", true, false, 0, NULL }; // CyanBun96
-cvar_t r_fogfactor = { "r_fogfactor", "0.5", true, false, 0, NULL }; // CyanBun96
-cvar_t r_fogscale = { "r_fogscale", "1", true, false, 0, NULL }; // CyanBun96
-cvar_t r_fognoise = { "r_fognoise", "1", true, false, 0, NULL }; // CyanBun96
-cvar_t r_litwater = { "r_litwater", "1", true, false, 0, NULL }; // CyanBun96
-cvar_t vid_cwidth = { "vid_cwidth", "0", true, false, 0, NULL }; // CyanBun96
-cvar_t vid_cheight = { "vid_cheight", "0", true, false, 0, NULL }; // CyanBun96
-cvar_t vid_cwmode = { "vid_cwmode", "0", true, false, 0, NULL }; // CyanBun96
-
-// johnfitz -- new cvars TODO actually implement these, they're currently placeholders
-cvar_t  r_nolerp_list = {"r_nolerp_list", "progs/flame.mdl,progs/flame2.mdl,progs/braztall.mdl,pro gs/brazshrt.mdl,progs/longtrch.mdl,progs/flame_pyre.mdl,progs/v_saw.mdl,progs/v_xfist.mdl,progs/h2 stuff/newfire.mdl", false, false, 0, NULL};
-cvar_t  r_noshadow_list = {"r_noshadow_list", "progs/proj_balllava.mdl,progs/flame2.mdl,progs/flame.mdl,progs/bolt1.mdl,progs/bolt2.mdl,progs/bolt3.mdl,progs/laser.mdl", false, false, 0, NULL};
-// johnfitz
-cvar_t r_fullbright_list = {"r_fullbright_list", "progs/spike.mdl,progs/s_spike.mdl,progs/missile.mdl,progs/k_spike.mdl,progs/proj_balllava.mdl,progs/flame2.mdl,progs/flame.mdl,progs/bolt1.mdl,progs/bolt2.mdl,progs/bolt3.mdl,progs/laser.mdl", false, false, 0, NULL};
-
 extern cvar_t scr_fov;
 extern float fog_density;
 extern int fog_initialized;

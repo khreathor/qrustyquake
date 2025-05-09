@@ -193,6 +193,7 @@ typedef struct {
 #include "crc.h"
 #include "vgatext.h"
 #include "globals.h"
+#include "cvarlist.h"
 #include "client.h"
 
 extern double host_time;

@@ -32,16 +32,6 @@ u8 vid_curpal[256 * 3];
 s32 VID_highhunkmark;
 viddef_t vid; // global video state
 
-cvar_t vid_mode = { "vid_mode", "0", 0, 0, 0, 0 };
-cvar_t _vid_default_mode_win = { "_vid_default_mode_win", "3", 1, 0, 0, 0 };
-cvar_t scr_uiscale = { "scr_uiscale", "1", 1, 0, 0, 0 };
-cvar_t sensitivityyscale = { "sensitivityyscale", "1.0", 1, 0, 0, 0 };
-cvar_t _windowed_mouse = { "_windowed_mouse", "0", 1, 0, 0, 0 };
-cvar_t newoptions = { "newoptions", "1", 1, 0, 0, 0 };
-cvar_t aspectr = { "aspectr", "0", 1, 0, 0, 0 }; // 0 - auto
-cvar_t realwidth = { "realwidth", "0", 0, 0, 0, 0 }; // 0 - auto
-cvar_t realheight = { "realheight", "0", 0, 0, 0, 0 }; // 0 - auto
-
 void VID_CalcScreenDimensions(cvar_t *cvar);
 void VID_AllocBuffers();
 
