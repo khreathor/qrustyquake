@@ -111,9 +111,11 @@ void VID_Init(u8 *palette)
 	Cvar_RegisterVariable(&aspectr);
 	Cvar_RegisterVariable(&realwidth);
 	Cvar_RegisterVariable(&realheight);
-	Cvar_SetCallback(&aspectr, (void (*)(struct cvar_s *))VID_CalcScreenDimensions);
-	Cvar_SetCallback(&realwidth, (void (*)(struct cvar_s *))VID_CalcScreenDimensions);
-	Cvar_SetCallback(&realheight, (void (*)(struct cvar_s *))VID_CalcScreenDimensions);
+	void (*vid_callback)(struct cvar_s *) =
+		(void (*)(struct cvar_s *))VID_CalcScreenDimensions;
+	Cvar_SetCallback(&aspectr, vid_callback);
+	Cvar_SetCallback(&realwidth, vid_callback);
+	Cvar_SetCallback(&realheight, vid_callback);
 	// Set up display mode (width and height)
 	vid.width = 320;
 	vid.height = 240;
