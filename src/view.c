@@ -347,7 +347,7 @@ void V_UpdatePalette()
 		newpal[2] = gammatable[b];
 		newpal += 3;
 	}
-	VID_SetPalette(pal);
+	VID_SetPalette(pal, screen);
 }
 
 // View rendering 

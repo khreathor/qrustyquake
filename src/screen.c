@@ -31,6 +31,7 @@ float scr_conlines; // lines of console to display
 float oldscreensize, oldfov;
 hudstyle_t hudstyle;
 extern int fog_initialized;
+extern int drawlayer;
 
 cvar_t scr_viewsize = { "viewsize", "100", true, false, 0, NULL };
 cvar_t scr_fov = { "fov", "90", false, false, 0, NULL };
@@ -77,6 +78,7 @@ void SCR_DrawCenterString()
 	scr_erase_center = 0;
 	char *start = scr_centerstring;
 	int y = scr_center_lines <= 4 ? vid.height * 0.35 : 48 * uiscale;
+	drawlayer = 1;
 	do {
 		int l = 0;
 		for (; l < 40; l++) // scan the width of the line
@@ -95,6 +97,7 @@ void SCR_DrawCenterString()
 			break;
 		start++; // skip the \n
 	} while (1);
+	drawlayer = 0;
 }
 
 void SCR_CheckDrawCenterString()

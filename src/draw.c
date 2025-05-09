@@ -24,6 +24,7 @@ static rectdesc_t r_rectdesc;
 byte *draw_chars; // 8*8 graphic characters
 qpic_t *draw_disc;
 qpic_t *draw_backtile;
+int drawlayer = 0;
 
 qpic_t *Draw_PicFromWad(char *name)
 {
@@ -85,7 +86,8 @@ void Draw_CharacterScaled(int x, int y, int num, int scale)
 		y = 0;
 	} else
 		drawline = 8;
-	byte *dest = vid.conbuffer + y * vid.width + x;
+	byte *dest = drawlayer == 1 ? screen1->pixels : screen->pixels;
+	dest += y * vid.width + x;
 	while (drawline--) {
 		for (int k = 0; k < scale; ++k) {
 			for (int j = 0; j < scale; ++j) {

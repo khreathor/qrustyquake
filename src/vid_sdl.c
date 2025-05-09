@@ -15,8 +15,9 @@ SDL_Texture *texture;
 SDL_Rect blitRect;
 SDL_Rect destRect;
 SDL_Surface *scaleBuffer;
-SDL_Surface *screen;
-s8 modelist[NUM_OLDMODES][8];	// "320x240" etc. for menus
+SDL_Surface *screen; // the main video buffer
+SDL_Surface *screen1; // used for scr_centerstring only ATM
+s8 modelist[NUM_OLDMODES][8]; // "320x240" etc. for menus
 u32 force_old_render = 0;
 u32 SDLWindowFlags;
 u32 uiscale;
@@ -91,7 +92,7 @@ s32 VID_DetermineMode()
 	return -1;
 }
 
-void VID_SetPalette(u8 *palette)
+void VID_SetPalette(u8 *palette, SDL_Surface *dest)
 {
 	SDL_Color colors[256];
 	if(palette != vid_curpal)
@@ -101,7 +102,7 @@ void VID_SetPalette(u8 *palette)
 		colors[i].g = *palette++;
 		colors[i].b = *palette++;
 	}
-	SDL_SetPaletteColors(screen->format->palette, colors, 0, 256);
+	SDL_SetPaletteColors(dest->format->palette, colors, 0, 256);
 }
 
 void VID_Init(u8 *palette)
@@ -206,6 +207,10 @@ void VID_Init(u8 *palette)
 				  realwidth.value, realheight.value, flags);
 	screen = SDL_CreateRGBSurfaceWithFormat(0, vid.width, vid.height,
 		8, SDL_PIXELFORMAT_INDEX8);
+	screen1 = SDL_CreateRGBSurfaceWithFormat(0, vid.width, vid.height,
+		8, SDL_PIXELFORMAT_INDEX8);
+	VID_SetPalette(host_basepal, screen1);
+	SDL_SetColorKey(screen1, 1, 255);
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 	renderer = SDL_CreateRenderer(window, -1, 0);
 	if(!force_old_render){
@@ -310,8 +315,9 @@ void VID_Update()
 	// Machines without a proper GPU will try to simulate one with software,
 	// adding a lot of overhead. In my tests software rendering accomplished
 	// the same result with almost a 200% performance increase.
-	if(force_old_render){	// pure software rendering
+	if(force_old_render){ // pure software rendering
 		SDL_UpperBlit(screen, NULL, scaleBuffer, NULL);
+		SDL_UpperBlit(screen1, NULL, scaleBuffer, NULL);
 		SDL_UpperBlitScaled(scaleBuffer, &blitRect, windowSurface,
 				    &destRect);
 		SDL_UpdateWindowSurface(window);
@@ -319,6 +325,7 @@ void VID_Update()
 		SDL_LockTexture(texture, &blitRect, &argbbuffer->pixels,
 				&argbbuffer->pitch);
 		SDL_LowerBlit(screen, &blitRect, argbbuffer, &blitRect);
+		SDL_LowerBlit(screen1, &blitRect, argbbuffer, &blitRect);
 		SDL_UnlockTexture(texture);
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, texture, NULL, &destRect);
@@ -339,6 +346,7 @@ void VID_Update()
 		Cvar_SetValue("vid_mode", (f32)vid_modenum);
 		vid_realmode = vid_modenum;
 	}
+	memset(screen1->pixels, 255, vid.width*vid.height);
 }
 
 s8 *VID_GetModeDescription(s32 mode)
@@ -393,7 +401,10 @@ void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 *palette)
 	}
 	// CyanBun96: why do surfaces get freed but textures get destroyed :(
 	SDL_FreeSurface(screen);
+	SDL_FreeSurface(screen1);
 	screen = SDL_CreateRGBSurfaceWithFormat(0, vid.width, vid.height, 8,
+		SDL_PIXELFORMAT_INDEX8);
+	screen1 = SDL_CreateRGBSurfaceWithFormat(0, vid.width, vid.height, 8,
 		SDL_PIXELFORMAT_INDEX8);
 	if(!force_old_render){
 		SDL_FreeSurface(argbbuffer);
@@ -413,7 +424,8 @@ void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 *palette)
 	vid.direct = (pixel_t *) screen->pixels;
 	VID_AllocBuffers();
 	vid.recalc_refdef = 1;
-	VID_SetPalette(palette);
+	VID_SetPalette(palette, screen);
+	VID_SetPalette(host_basepal, screen1);
 	if(!custw || !custh){
 		if(modenum <= 2){
 			SDL_SetWindowFullscreen(window, 0);
