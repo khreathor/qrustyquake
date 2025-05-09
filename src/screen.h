@@ -15,10 +15,7 @@ extern unsigned int scr_fullupdate; // set to 0 to force full redraw
 extern unsigned int clearnotify; // set to 0 whenever notify text is drawn
 extern qboolean scr_disabled_for_loading;
 extern qboolean scr_skipupdate;
-extern cvar_t scr_viewsize;
-extern cvar_t scr_viewsize;
 extern qboolean block_drawing;
-extern cvar_t scr_showfps;
 
 typedef enum hudstyle_t
 {
@@ -29,5 +26,4 @@ typedef enum hudstyle_t
 	HUD_COUNT,
 } hudstyle_t;
 
-extern cvar_t scr_hudstyle;
 extern hudstyle_t hudstyle;

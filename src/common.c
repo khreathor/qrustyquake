@@ -16,9 +16,6 @@ static char	argvdummy[] = " ";
 
 int		safemode;
 
-cvar_t	registered = {"registered","1",CVAR_ROM}; /* set to correct value in COM_CheckRegistered() */
-cvar_t	cmdline = {"cmdline","",CVAR_ROM/*|CVAR_SERVERINFO*/}; /* sending cmdline upon CCREQ_RULE_INFO is evil */
-
 static qboolean		com_modified;	// set true if using non-id files
 
 qboolean		fitzmode;

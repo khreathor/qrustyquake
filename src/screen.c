@@ -33,17 +33,6 @@ hudstyle_t hudstyle;
 extern int fog_initialized;
 extern int drawlayer;
 
-cvar_t scr_viewsize = { "viewsize", "100", true, false, 0, NULL };
-cvar_t scr_fov = { "fov", "90", false, false, 0, NULL };
-cvar_t scr_conspeed = { "scr_conspeed", "300", false, false, 0, NULL };
-cvar_t scr_centertime = { "scr_centertime", "2", false, false, 0, NULL };
-cvar_t scr_showram = { "showram", "1", false, false, 0, NULL };
-cvar_t scr_showturtle = { "showturtle", "0", false, false, 0, NULL };
-cvar_t scr_showpause = { "showpause", "1", false, false, 0, NULL };
-cvar_t scr_printspeed = { "scr_printspeed", "8", false, false, 0, NULL };
-cvar_t scr_showfps = { "scr_showfps", "0", true, false, 0, NULL };
-cvar_t scr_hudstyle = {"hudstyle", "0", true, false, 0, NULL};
-
 void SCR_HUDStyle_f (cvar_t *cvar);
 
 void SCR_CenterPrint(const char *str) // Called for important messages

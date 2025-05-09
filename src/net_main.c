@@ -35,9 +35,6 @@ int messagesReceived = 0;
 int unreliableMessagesSent = 0;
 int unreliableMessagesReceived = 0;
 static PollProcedure *pollProcedureList = NULL;
-static cvar_t net_messagetimeout = { "net_messagetimeout", "300", 0, 0, 0, 0 };
-cvar_t hostname = { "hostname", "UNNAMED", 0, 0, 0, 0 };
-
 static void Slist_Send(void *);
 static void Slist_Poll(void *);
 static PollProcedure slistSendProcedure = { NULL, 0.0, Slist_Send, NULL };

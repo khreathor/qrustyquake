@@ -22,7 +22,6 @@ vec3_t r_pright, r_pup, r_ppn;
 vec3_t avelocities[NUMVERTEXNORMALS];
 
 extern float r_avertexnormals[NUMVERTEXNORMALS][3];
-extern cvar_t sv_gravity;
 
 void R_InitParticles()
 {

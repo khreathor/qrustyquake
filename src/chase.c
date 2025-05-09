@@ -4,10 +4,6 @@
 
 #include "quakedef.h"
 
-cvar_t chase_back = { "chase_back", "100", false, false, 0, NULL };
-cvar_t chase_up = { "chase_up", "16", false, false, 0, NULL };
-cvar_t chase_right = { "chase_right", "0", false, false, 0, NULL };
-cvar_t chase_active = { "chase_active", "0", false, false, 0, NULL };
 vec3_t chase_pos;
 vec3_t chase_angles;
 vec3_t chase_dest;

@@ -45,7 +45,6 @@ int wpos[9][2]; // weapons
 int kpos[2][2]; // keys
 int iposx[12]; // classic items
 int iposy;
-cvar_t scr_sidescore = { "scr_sidescore", "1", true, false, 0, NULL };
 
 inline static int Sbar_ColorForMap(int m)
 { return m < 128 ? m + 8 : m + 8; }

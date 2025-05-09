@@ -4,8 +4,6 @@ qboolean mouse_avail;
 float mouse_x;
 float mouse_y;
 int mouse_oldbuttonstate;
-extern cvar_t realwidth;
-extern cvar_t realheight;
 static int buttonremap[] = { K_MOUSE1, K_MOUSE3, K_MOUSE2, K_MOUSE4, K_MOUSE5 };
 
 void Sys_SendKeyEvents()

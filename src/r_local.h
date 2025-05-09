@@ -67,24 +67,6 @@ typedef enum {
 	TEXTYPE_NUMLIQUIDS = TEXTYPE_LASTLIQUID + 1 - TEXTYPE_FIRSTLIQUID,
 } textype_t;
 
-extern cvar_t r_draworder;
-extern cvar_t r_speeds;
-extern cvar_t r_timegraph;
-extern cvar_t r_graphheight;
-extern cvar_t r_clearcolor;
-extern cvar_t r_waterwarp;
-extern cvar_t r_fullbright;
-extern cvar_t r_drawentities;
-extern cvar_t r_aliasstats;
-extern cvar_t r_dspeeds;
-extern cvar_t r_drawflat;
-extern cvar_t r_ambient;
-extern cvar_t r_reportsurfout;
-extern cvar_t r_maxsurfs;
-extern cvar_t r_numsurfs;
-extern cvar_t r_reportedgeout;
-extern cvar_t r_maxedges;
-extern cvar_t r_numedges;
 extern clipplane_t view_clipplanes[4];
 extern mplane_t screenedge[4];
 extern vec3_t r_origin;
@@ -154,10 +136,7 @@ extern mnode_t *r_pefragtopnode;
 extern int r_clipflags;
 extern unsigned int r_dlightframecount;
 extern qboolean r_fov_greater_than_90;
-extern cvar_t r_wateralpha, r_slimealpha, r_lavaalpha, r_telealpha;
 extern int r_pass;
-extern cvar_t r_twopass;
-extern cvar_t r_entalpha;
 extern int color_lightmap;
 extern int lmonly;
 extern float map_fallbackalpha;
@@ -218,8 +197,6 @@ void R_ClipEdge(mvertex_t *pv0, mvertex_t *pv1, clipplane_t *clip);
 void R_SplitEntityOnNode2(mnode_t *node);
 void R_MarkLights(dlight_t *light, int bit, mnode_t *node);
 
-extern cvar_t r_labmixpal;
-extern cvar_t r_rgblighting;
 extern unsigned char rgbtoi_lab(unsigned char r, unsigned char g, unsigned char b);
 extern unsigned char rgbtoi(unsigned char r, unsigned char g, unsigned char b);
 extern void init_color_conv();

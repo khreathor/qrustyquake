@@ -72,7 +72,6 @@ extern pixel_t *cacheblock;
 extern int screenwidth;
 extern float pixelAspect;
 extern int r_drawnpolycount;
-extern cvar_t r_clearcolor;
 extern int sintable[SIN_BUFFER_SIZE];
 extern int intsintable[SIN_BUFFER_SIZE];
 extern vec3_t vup, base_vup;

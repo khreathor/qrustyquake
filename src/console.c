@@ -23,8 +23,6 @@ int con_notifylines; // scan lines to clear for notify lines
 float con_times[NUM_CON_TIMES];	// realtime time the line was generated
 				// for transparent notify lines
 
-cvar_t con_notifytime = { "con_notifytime", "3", false, false, 0, NULL }; // sec
-
 extern char key_lines[32][MAXCMDLINE];
 extern int edit_line;
 extern int key_linepos;

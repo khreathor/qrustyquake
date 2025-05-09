@@ -41,10 +41,6 @@ static model_t *Mod_LoadModel (model_t *mod, qboolean crash);
 
 static void Mod_Print ();
 
-static cvar_t	external_ents = {"external_ents", "1", CVAR_ARCHIVE};
-static cvar_t	external_vis = {"external_vis", "1", CVAR_ARCHIVE};
-static cvar_t	external_textures = {"external_textures", "1", CVAR_ARCHIVE};
-
 static byte	*mod_novis;
 static int	mod_novis_capacity;
 
@@ -2493,7 +2489,6 @@ qboolean nameInList(const char *list, const char *name)
 
 void Mod_SetExtraFlags (model_t *mod)
 { // johnfitz -- set up extra flags that aren't in the mdl
-	extern cvar_t r_nolerp_list, r_noshadow_list;
 	if (!mod || mod->type != mod_alias)
 		return;
 	mod->flags &= (0xFF | MF_HOLEY); //only preserve first byte, plus MF_HOLEY

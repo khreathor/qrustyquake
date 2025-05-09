@@ -9,7 +9,6 @@
 int current_skill;
 
 extern char *pr_strings;
-extern cvar_t pausable;
 
 void Mod_Print();
 

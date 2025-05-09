@@ -9,11 +9,7 @@ f32 fog_green; // but they get quantized to a single index in the color
 f32 fog_blue; // palette before use, stored in fog_pal_index
 u8 fog_pal_index;
 f32 randarr[RANDARR_SIZE];
-extern cvar_t r_labmixpal;
 extern s32 fog_lut_built;
-extern cvar_t r_fogstyle;
-extern cvar_t r_nofog;
-extern cvar_t r_fogbrightness;
 extern u32 sb_updates; // if >= vid.numpages, no update needed
 
 void Fog_SetPalIndex(cvar_t *cvar)

@@ -102,7 +102,6 @@ typedef struct
 	int surfheight; // in mipmapped texels
 } drawsurf_t;
 
-extern cvar_t r_drawflat;
 extern int d_spanpixcount;
 extern unsigned int r_framecount; // sequence # of current frame since Quake started
 extern qboolean r_recursiveaffinetriangles; // true if a driver wants to use recursive triangular subdivison and vertex drawing via D_PolysetDrawFinalVerts() past a certain distance(normally only used by the software driver)

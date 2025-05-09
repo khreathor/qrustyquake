@@ -14,33 +14,6 @@ vec3_t forward, right, up;
 extern int in_forward, in_forward2, in_back;
 extern vrect_t scr_vrect;
 
-cvar_t scr_ofsx = { "scr_ofsx", "0", false, false, 0, NULL };
-cvar_t scr_ofsy = { "scr_ofsy", "0", false, false, 0, NULL };
-cvar_t scr_ofsz = { "scr_ofsz", "0", false, false, 0, NULL };
-cvar_t cl_rollspeed = { "cl_rollspeed", "200", false, false, 0, NULL };
-cvar_t cl_rollangle = { "cl_rollangle", "2.0", false, false, 0, NULL };
-cvar_t cl_bob = { "cl_bob", "0.02", false, false, 0, NULL };
-cvar_t cl_bobcycle = { "cl_bobcycle", "0.6", false, false, 0, NULL };
-cvar_t cl_bobup = { "cl_bobup", "0.5", false, false, 0, NULL };
-cvar_t v_kicktime = { "v_kicktime", "0.5", false, false, 0, NULL };
-cvar_t v_kickroll = { "v_kickroll", "0.6", false, false, 0, NULL };
-cvar_t v_kickpitch = { "v_kickpitch", "0.6", false, false, 0, NULL };
-cvar_t v_iyaw_cycle = { "v_iyaw_cycle", "2", false, false, 0, NULL };
-cvar_t v_iroll_cycle = { "v_iroll_cycle", "0.5", false, false, 0, NULL };
-cvar_t v_ipitch_cycle = { "v_ipitch_cycle", "1", false, false, 0, NULL };
-cvar_t v_iyaw_level = { "v_iyaw_level", "0.3", false, false, 0, NULL };
-cvar_t v_iroll_level = { "v_iroll_level", "0.1", false, false, 0, NULL };
-cvar_t v_ipitch_level = { "v_ipitch_level", "0.3", false, false, 0, NULL };
-cvar_t v_idlescale = { "v_idlescale", "0", false, false, 0, NULL };
-cvar_t crosshair = { "crosshair", "0", true, false, 0, NULL };
-cvar_t cl_crossx = { "cl_crossx", "0", true, false, 0, NULL };
-cvar_t cl_crossy = { "cl_crossy", "0", true, false, 0, NULL };
-cvar_t cl_crosschar = { "cl_crosschar", "43", true, false, 0, NULL };
-cvar_t gl_cshiftpercent = { "gl_cshiftpercent", "100", false, false, 0, NULL };
-cvar_t v_centermove = { "v_centermove", "0.15", false, false, 0, NULL };
-cvar_t v_centerspeed = { "v_centerspeed", "500", false, false, 0, NULL };
-cvar_t v_gamma = { "gamma", "1", true, false, 0, NULL };
-
 // Palette flashes 
 cshift_t cshift_empty = { { 130, 80, 50 }, 0 };
 cshift_t cshift_water = { { 130, 80, 50 }, 128 };

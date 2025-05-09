@@ -10,7 +10,6 @@
 
 #define IPXSOCKETS 18
 
-extern cvar_t hostname;
 static sys_socket_t net_acceptsocket = INVALID_SOCKET; // socket for fielding new connections
 static sys_socket_t net_controlsocket;
 static struct sockaddr_ipx broadcastaddr;

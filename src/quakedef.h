@@ -201,16 +201,12 @@ extern SDL_Window *window; // global for checking windowed state in options
 extern Uint32 SDLWindowFlags;
 extern qboolean noclip_anglehack;
 extern quakeparms_t host_parms;
-extern cvar_t sys_ticrate;
-extern cvar_t sys_nostdout;
-extern cvar_t developer;
 extern qboolean host_initialized; // true if into command execution
 extern double host_frametime;
 extern byte *host_basepal;
 extern byte *host_colormap;
 extern qboolean isDedicated;
 extern int minimum_memory;
-extern cvar_t chase_active;
 extern int host_framecount; // incremented every frame, never reset
 extern double realtime; // not bounded in any way, changed at
 			// start of every frame, never reset
@@ -220,7 +216,6 @@ extern int current_skill; // skill level for currently loaded level (in case
 			  // the user changes the cvar while the level is
 			  // running, this reflects the level actually in use)
 extern byte r_foundtranswater, r_wateralphapass; // Manoel Kasimier - translucent water
-extern cvar_t max_edicts;
 
 void Host_ClearMemory();
 void Host_ServerFrame();

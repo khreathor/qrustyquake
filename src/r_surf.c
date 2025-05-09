@@ -27,8 +27,6 @@ int r_numhblocks, r_numvblocks;
 unsigned char *r_source, *r_sourcemax;
 
 extern void init_color_conv();
-extern cvar_t r_labmixpal;
-extern cvar_t r_rgblighting;
 extern unsigned char rgbtoi_lab(unsigned char r, unsigned char g, unsigned char b);
 extern unsigned char rgbtoi(unsigned char r, unsigned char g, unsigned char b);
 

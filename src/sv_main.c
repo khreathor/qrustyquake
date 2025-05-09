@@ -56,7 +56,6 @@ int		sv_protocol = PROTOCOL_FITZQUAKE; //johnfitz
 extern qboolean pr_alpha_supported; //johnfitz
 extern int pr_effects_mask;
 
-extern cvar_t nomonsters;
 
 byte *SV_FatPVS (vec3_t org, model_t *worldmodel); //johnfitz -- added worldmodel as a parameter
  
@@ -102,18 +101,6 @@ void SV_Init (void)
 {
 	int		i;
 	const char	*p;
-	extern	cvar_t	sv_maxvelocity;
-	extern	cvar_t	sv_gravity;
-	extern	cvar_t	sv_nostep;
-	extern	cvar_t	sv_freezenonclients;
-	extern	cvar_t	sv_friction;
-	extern	cvar_t	sv_edgefriction;
-	extern	cvar_t	sv_stopspeed;
-	extern	cvar_t	sv_maxspeed;
-	extern	cvar_t	sv_accelerate;
-	extern	cvar_t	sv_idealpitchscale;
-	extern	cvar_t	sv_aim;
-	extern	cvar_t	sv_altnoclip; //johnfitz
 
 	sv.edicts = NULL; // ericw -- sv.edicts switched to use malloc()
 

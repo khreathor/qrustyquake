@@ -137,7 +137,6 @@ void Cbuf_Execute ()
 void Cmd_StuffCmds_f() // Script Commands
 {
 	char cmds[CMDLINE_LENGTH];
-	extern cvar_t cmdline;
 	int plus = false; // On Unix, argv[0] is command name
 	int j = 0;
 	for (int i = 0; cmdline.string[i]; i++) {

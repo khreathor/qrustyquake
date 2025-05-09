@@ -9,10 +9,6 @@
 
 edict_t	*sv_player;
 
-extern	cvar_t	sv_friction;
-cvar_t	sv_edgefriction = {"edgefriction", "2", CVAR_NONE};
-extern	cvar_t	sv_stopspeed;
-
 static	vec3_t		forward, right, up;
 
 // world
@@ -23,9 +19,6 @@ float	*velocity;
 qboolean	onground;
 
 usercmd_t	cmd;
-
-cvar_t	sv_idealpitchscale = {"sv_idealpitchscale","0.8",CVAR_NONE};
-cvar_t	sv_altnoclip = {"sv_altnoclip","1",CVAR_ARCHIVE}; //johnfitz
 
 /*
 ===============
@@ -147,8 +140,6 @@ void SV_UserFriction (void)
 SV_Accelerate
 ==============
 */
-cvar_t	sv_maxspeed = {"sv_maxspeed", "320", CVAR_NOTIFY|CVAR_SERVERINFO};
-cvar_t	sv_accelerate = {"sv_accelerate", "10", CVAR_NONE};
 void SV_Accelerate (float wishspeed, const vec3_t wishdir)
 {
 	int			i;

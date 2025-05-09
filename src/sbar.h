@@ -3,7 +3,6 @@
 // the status bar is only redrawn if something has changed, but if anything
 // does, the entire thing will be redrawn for the next vid.numpages frames.
 extern int sb_lines; // scan lines to draw
-extern cvar_t scr_sidescore;
 void Sbar_Init();
 void Sbar_Changed(); // call whenever any of the client stats represented on the sbar changes
 void Sbar_Draw(); // called every frame by screen

@@ -16,8 +16,6 @@ int dither_pat = 0;
 unsigned char *litwater_base;
 int lwmark = 0;
 
-extern cvar_t r_skyfog;
-extern cvar_t r_alphastyle;
 extern int fog_lut_built;
 
 void D_DrawTurbulent8Span();

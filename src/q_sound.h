@@ -152,16 +152,10 @@ extern	vec3_t		listener_forward;
 extern	vec3_t		listener_right;
 extern	vec3_t		listener_up;
 
-extern	cvar_t		sndspeed;
-extern	cvar_t		snd_mixspeed;
-extern	cvar_t		snd_filterquality;
-extern	cvar_t		sfxvolume;
-extern	cvar_t		loadas8bit;
 
 #define	MAX_RAW_SAMPLES	8192
 extern	portable_samplepair_t	s_rawsamples[MAX_RAW_SAMPLES];
 
-extern	cvar_t		bgmvolume;
 
 void S_LocalSound (const char *name);
 sfxcache_t *S_LoadSound (sfx_t *s);

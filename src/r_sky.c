@@ -12,8 +12,6 @@
 unsigned char rgb_lut[RGB_LUT_SIZE];
 int rgb_lut_built = 0;
 
-cvar_t r_skyfog = {"r_skyfog", "0.5", 0, 0, 0, 0};
-
 extern byte *Image_LoadImage (const char *name, int *width, int *height);
 extern unsigned char rgbtoi(unsigned char r, unsigned char g, unsigned char b);
 extern unsigned int lfsr_random();

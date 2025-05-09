@@ -66,7 +66,6 @@ float dp_time1, dp_time2, db_time1, db_time2, rw_time1, rw_time2;
 float se_time1, se_time2, de_time1, de_time2, dv_time1, dv_time2;
 int colored_aliaslight;
 
-extern cvar_t scr_fov;
 extern float fog_density;
 extern int fog_initialized;
 extern float cur_ent_alpha;
@@ -77,8 +76,9 @@ extern void Fog_ParseWorldspawn();
 extern void R_ParseWorldspawn();
 extern void R_InitSkyBox(); // Manoel Kasimier - skyboxes 
 extern void Sky_NewMap();
-extern void build_color_mix_lut(cvar_t *cvar);
 extern qboolean nameInList(const char *list, const char *name);
+
+extern void build_color_mix_lut(cvar_t *cvar);
 extern void R_SetWateralpha_f(cvar_t *var);
 extern void R_SetLavaalpha_f(cvar_t *var);
 extern void R_SetTelealpha_f(cvar_t *var);

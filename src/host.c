@@ -29,28 +29,6 @@ jmp_buf host_abortserver;
 byte *host_basepal;
 byte *host_colormap;
 
-cvar_t host_framerate = { "host_framerate", "0", false, false, 0, NULL };
-cvar_t host_speeds = { "host_speeds", "0", false, false, 0, NULL };
-cvar_t sys_ticrate = { "sys_ticrate", "0.05", false, false, 0, NULL };
-cvar_t serverprofile = { "serverprofile", "0", false, false, 0, NULL };
-cvar_t fraglimit = { "fraglimit", "0", false, true, 0, NULL };
-cvar_t timelimit = { "timelimit", "0", false, true, 0, NULL };
-cvar_t teamplay = { "teamplay", "0", false, true, 0, NULL };
-cvar_t samelevel = { "samelevel", "0", false, false, 0, NULL };
-cvar_t noexit = { "noexit", "0", false, true, 0, NULL };
-cvar_t developer = { "developer", "0", false, false, 0, NULL };
-cvar_t skill = { "skill", "1", false, false, 0, NULL };
-cvar_t deathmatch = { "deathmatch", "0", false, false, 0, NULL };
-cvar_t coop = { "coop", "0", false, false, 0, NULL };
-cvar_t pausable = { "pausable", "1", false, false, 0, NULL };
-cvar_t temp1 = { "temp1", "0", false, false, 0, NULL };
-cvar_t host_maxfps = {"host_maxfps", "72", true, false, 0, NULL}; //johnfitz
-cvar_t host_timescale = {"host_timescale", "0", CVAR_NONE}; //johnfitz
-cvar_t max_edicts = {"max_edicts", "8192", false, false, 0, NULL}; //johnfitz //ericw -- changed from 2048 to 8192, removed CVAR_ ARCHIVE
-cvar_t campaign = {"campaign","0",0,0,0,0}; // for the 2021 rerelease
-cvar_t horde = {"horde","0",0,0,0,0}; // for the 2021 rerelease
-cvar_t sv_cheats = {"sv_cheats","0",0,0,0,0}; // for the 2021 rerelease
-
 extern void IN_MLookDown();
 extern void Cbuf_Waited();
 extern void CL_AccumulateCmd();

@@ -295,13 +295,6 @@ qboolean m_recursiveDraw;
 int m_return_state;
 qboolean m_return_onerror;
 char m_return_reason[32];
-extern cvar_t aspectr;
-extern cvar_t r_wateralpha;
-extern cvar_t r_slimealpha;
-extern cvar_t r_lavaalpha;
-extern cvar_t host_maxfps;
-extern cvar_t r_twopass;
-extern cvar_t r_alphastyle;
 
 void M_DrawCharacter(int cx, int line, int num)
 { // Draws one solid graphics character
