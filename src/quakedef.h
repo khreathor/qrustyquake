@@ -165,11 +165,9 @@ typedef struct {
 } quakeparms_t;
 
 #include "typedefs.h"
-#include "globals.h"
 #include "q_stdinc.h"
 #include "common.h"
 #include "bspfile.h"
-#include "vid.h"
 #include "sys.h"
 #include "zone.h"
 #include "wad.h"
@@ -182,7 +180,6 @@ typedef struct {
 #include "sbar.h"
 #include "q_sound.h"
 #include "render.h"
-#include "client.h"
 #include "progs.h"
 #include "server.h"
 #include "model.h"
@@ -194,8 +191,9 @@ typedef struct {
 #include "view.h"
 #include "menu.h"
 #include "crc.h"
-#include "vid.h"
 #include "vgatext.h"
+#include "globals.h"
+#include "client.h"
 
 extern double host_time;
 extern SDL_Window *window; // global for checking windowed state in options
@@ -237,11 +235,4 @@ void Host_ShutdownServer(qboolean crash);
 void Chase_Init();
 void Chase_Update();
 void Cvar_SetCallback(cvar_t *var, cvarcallback_t func);
-
-// rgbtoi.c
-extern void init_color_conv();
-unsigned char rgbtoi_lab(unsigned char r, unsigned char g, unsigned char b);
-unsigned char rgbtoi(unsigned char r, unsigned char g, unsigned char b);
-void build_color_mix_lut(cvar_t *cvar);
-void R_BuildLitLUT();
 #endif

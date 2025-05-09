@@ -85,7 +85,7 @@ void Draw_CharacterScaled(int x, int y, int num, int scale)
 		y = 0;
 	} else
 		drawline = 8;
-	byte *dest = vid.conbuffer + y * vid.conrowbytes + x;
+	byte *dest = vid.conbuffer + y * vid.width + x;
 	while (drawline--) {
 		for (int k = 0; k < scale; ++k) {
 			for (int j = 0; j < scale; ++j) {
@@ -93,7 +93,7 @@ void Draw_CharacterScaled(int x, int y, int num, int scale)
 					if (source[i])
 						dest[i * scale + j] = source[i];
 			}
-			dest += vid.conrowbytes;
+			dest += vid.width;
 		}
 		source += 128;
 	}
@@ -243,7 +243,7 @@ void Draw_ConsoleBackground(int lines)
 	for (unsigned long x = 0; x < strlen(ver); x++)
 		Draw_CharToConbackScaled(ver[x], dest + x * 8 * scale, scale, conback->width);
 	dest = vid.conbuffer; // draw the pic
-	for (int y = 0; y < lines; y++, dest += vid.conrowbytes) {
+	for (int y = 0; y < lines; y++, dest += vid.width) {
 		int v = (vid.conheight-lines+y)*conback->height/vid.conheight;
 		byte *src = conback->data + v * conback->width;
 		if (vid.conwidth == conback->width)

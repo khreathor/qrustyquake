@@ -1,21 +1,12 @@
 #include "quakedef.h"
 #include "d_local.h"
 
-#define NUM_OLDMODES 9
-#define MAX_MODE_LIST 30
-#define VID_ROW_SIZE 3
-#define MAX_COLUMN_SIZE 5
-#define MODE_AREA_HEIGHT (MAX_COLUMN_SIZE + 6)
-#define MAX_MODEDESCS (MAX_COLUMN_SIZE * 3)
-#define NO_MODE -1
-
-unsigned int oldmodes[NUM_OLDMODES * 2] = {
-	320, 240, 640, 480, 800, 600,
-	320, 200, 320, 240, 640, 350,
-	640, 400, 640, 480, 800, 600
+u32 oldmodes[NUM_OLDMODES * 2] = {
+	320, 240,	640, 480,	800, 600,
+	320, 200,	320, 240,	640, 350,
+	640, 400,	640, 480,	800, 600
 };
 
-char modelist[NUM_OLDMODES][8];	// "320x240" etc. for menus
 SDL_Window *window;
 SDL_Surface *windowSurface;
 SDL_Renderer *renderer;
@@ -25,26 +16,19 @@ SDL_Rect blitRect;
 SDL_Rect destRect;
 SDL_Surface *scaleBuffer;
 SDL_Surface *screen;
-unsigned int force_old_render = 0;
-unsigned int SDLWindowFlags;
-unsigned int uiscale;
-unsigned int vimmode;
-unsigned int VGA_width;
-unsigned int VGA_height;
-unsigned int VGA_rowbytes;
-unsigned int VGA_bufferrowbytes;
-unsigned char *VGA_pagebase;
-int vid_line;
-int lockcount;
-int vid_modenum;
-int vid_testingmode;
-int vid_realmode;
-int vid_default;
-double vid_testendtime;
-unsigned char vid_curpal[256 * 3]; // save for mode changes
-qboolean vid_initialized;
-qboolean palette_changed;
-int VID_highhunkmark;
+s8 modelist[NUM_OLDMODES][8];	// "320x240" etc. for menus
+u32 force_old_render = 0;
+u32 SDLWindowFlags;
+u32 uiscale;
+u32 vimmode;
+s32 vid_line;
+s32 vid_modenum;
+s32 vid_testingmode;
+s32 vid_realmode;
+s32 vid_default;
+f64 vid_testendtime;
+u8 vid_curpal[256 * 3]; // save for mode changes
+s32 VID_highhunkmark;
 viddef_t vid; // global video state
 
 cvar_t vid_mode = { "vid_mode", "0", 0, 0, 0, 0 };
@@ -60,26 +44,26 @@ cvar_t realheight = { "realheight", "0", 0, 0, 0, 0 }; // 0 - auto
 void VID_CalcScreenDimensions(cvar_t *cvar);
 void VID_AllocBuffers();
 
-int VID_GetConfigCvar(const char *cvname)
+s32 VID_GetConfigCvar(const s8 *cvname)
 {
 	// CyanBun96: _vid_default_mode_win gets read from config.cfg only after
 	// video is initialized. To avoid creating a window and textures just to
 	// destroy them right away and only then replace them with valid ones,
 	// this function reads the default mode independently of the cvar status
-	char line[256];
-	int ret = -1;
+	s8 line[256];
+	s32 ret = -1;
 	FILE *file = fopen("id1/config.cfg", "r");
-	if (!file) {
+	if(!file){
 		printf("Failed to open id1/config.cfg");
 		return -2;
 	}
-	while (fgets(line, sizeof(line), file)) {
-		char *found = strstr(line, cvname);
-		if (found) {
-			char *start = strchr(found, '"');
-			if (start) {
-				char *end = strchr(start + 1, '"');
-				if (end) {
+	while(fgets(line, sizeof(line), file)){
+		s8 *found = strstr(line, cvname);
+		if(found){
+			s8 *start = strchr(found, '"');
+			if(start){
+				s8 *end = strchr(start + 1, '"');
+				if(end){
 					*end = '\0';
 					ret = atoi(start + 1);
 					break;
@@ -88,32 +72,31 @@ int VID_GetConfigCvar(const char *cvname)
 		}
 	}
 	fclose(file);
-	if (ret != -1)
+	if(ret != -1)
 		printf("%s: %d\n", cvname, ret);
 	else
 		printf("%s not found in id1/config.cfg\n", cvname);
 	return ret;
 }
 
-int VID_DetermineMode()
+s32 VID_DetermineMode()
 {
-	int win = !(SDLWindowFlags & (SDL_WINDOW_FULLSCREEN
+	s32 win = !(SDLWindowFlags & (SDL_WINDOW_FULLSCREEN
 				      | SDL_WINDOW_FULLSCREEN_DESKTOP));
-	for (int i = 0; i < NUM_OLDMODES; ++i) {
-		if (i > 2 ? !win : win && vid.width == oldmodes[i * 2]
+	for(s32 i = 0; i < NUM_OLDMODES; ++i){
+		if(i > 2 ? !win : win && vid.width == oldmodes[i * 2]
 		    && vid.height == oldmodes[i * 2 + 1])
 			return i;
 	}
 	return -1;
 }
 
-void VID_SetPalette(unsigned char *palette)
+void VID_SetPalette(u8 *palette)
 {
 	SDL_Color colors[256];
-	palette_changed = true;
-	if (palette != vid_curpal)
+	if(palette != vid_curpal)
 		memcpy(vid_curpal, palette, sizeof(vid_curpal));
-	for (int i = 0; i < 256; ++i) {
+	for(s32 i = 0; i < 256; ++i){
 		colors[i].r = *palette++;
 		colors[i].g = *palette++;
 		colors[i].b = *palette++;
@@ -121,13 +104,13 @@ void VID_SetPalette(unsigned char *palette)
 	SDL_SetPaletteColors(screen->format->palette, colors, 0, 256);
 }
 
-void VID_Init(unsigned char *palette)
+void VID_Init(u8 *palette)
 {
-	int pnum;
-	int flags;
-	int winmode;
-	int defmode = -1;
-	char caption[50];
+	s32 pnum;
+	s32 flags;
+	s32 winmode;
+	s32 defmode = -1;
+	s8 caption[50];
 	Cvar_RegisterVariable(&_windowed_mouse);
 	Cvar_RegisterVariable(&_vid_default_mode_win);
 	Cvar_RegisterVariable(&vid_mode);
@@ -146,47 +129,47 @@ void VID_Init(unsigned char *palette)
 	vid.width = 320;
 	vid.height = 240;
 	winmode = 0;
-	if (!(COM_CheckParm("-width") || COM_CheckParm("-height")
+	if(!(COM_CheckParm("-width") || COM_CheckParm("-height")
 	   || COM_CheckParm("-window") || COM_CheckParm("-fullscreen")
-	   || COM_CheckParm("-winsize"))) {
+	   || COM_CheckParm("-winsize"))){
 		defmode = VID_GetConfigCvar("_vid_default_mode_win");
-		if (defmode >= 0 && defmode < NUM_OLDMODES) {
+		if(defmode >= 0 && defmode < NUM_OLDMODES){
 			vid.width = oldmodes[defmode * 2];
 			vid.height = oldmodes[defmode * 2 + 1];
 			winmode = defmode < 3;
 		}
 	}
-	int confwidth = VID_GetConfigCvar("vid_cwidth");
-	int confheight = VID_GetConfigCvar("vid_cheight");
-	int confwmode = VID_GetConfigCvar("vid_cwmode");
-	if (confwidth >= 320 && confheight >= 200 &&
-		confwidth <= MAXWIDTH && confheight <= MAXHEIGHT) {
+	s32 confwidth = VID_GetConfigCvar("vid_cwidth");
+	s32 confheight = VID_GetConfigCvar("vid_cheight");
+	s32 confwmode = VID_GetConfigCvar("vid_cwmode");
+	if(confwidth >= 320 && confheight >= 200 &&
+		confwidth <= MAXWIDTH && confheight <= MAXHEIGHT){
 		vid.width = confwidth;
 		vid.height = confheight;
 		Sys_Printf("Using vid_cwidth x vid_cheight to set mode\n");
 	}
-	else if (defmode != -1)
+	else if(defmode != -1)
 		Sys_Printf("Using _vid_default_mode_win to set mode\n");
-	if ((pnum = COM_CheckParm("-winsize"))) {
-		if (pnum >= com_argc - 2)
+	if((pnum = COM_CheckParm("-winsize"))){
+		if(pnum >= com_argc - 2)
 			Sys_Error("VID: -winsize <width> <height>\n");
 		vid.width = Q_atoi(com_argv[pnum + 1]);
 		vid.height = Q_atoi(com_argv[pnum + 2]);
-		if (!vid.width || !vid.height)
+		if(!vid.width || !vid.height)
 			Sys_Error("VID: Bad window width/height\n");
 	}
-	if ((pnum = COM_CheckParm("-width"))) {
-		if (pnum >= com_argc - 1)
+	if((pnum = COM_CheckParm("-width"))){
+		if(pnum >= com_argc - 1)
 			Sys_Error("VID: -width <width>\n");
 		vid.width = Q_atoi(com_argv[pnum + 1]);
-		if (!vid.width)
+		if(!vid.width)
 			Sys_Error("VID: Bad window width\n");
 	}
-	if ((pnum = COM_CheckParm("-height"))) {
-		if (pnum >= com_argc - 1)
+	if((pnum = COM_CheckParm("-height"))){
+		if(pnum >= com_argc - 1)
 			Sys_Error("VID: -height <height>\n");
 		vid.height = Q_atoi(com_argv[pnum + 1]);
-		if (!vid.height)
+		if(!vid.height)
 			Sys_Error("VID: Bad window height\n");
 	}
 	// In windowed mode, the window can be resized at runtime
@@ -197,27 +180,27 @@ void VID_Init(unsigned char *palette)
 	// CyanBun96: what most modern games call "Fullscreen borderless
 	// can be achieved by passing -fullscreen_desktop and -borderless
 	// -fullscreen will try to change the display resolution
-	if (COM_CheckParm("-fullscreen") || confwmode == 1)
+	if(COM_CheckParm("-fullscreen") || confwmode == 1)
 		flags |= SDL_WINDOW_FULLSCREEN;
-	else if (COM_CheckParm("-fullscreen_desktop") || confwmode == 2)
+	else if(COM_CheckParm("-fullscreen_desktop") || confwmode == 2)
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-	else if (COM_CheckParm("-window") || confwmode == 0)
+	else if(COM_CheckParm("-window") || confwmode == 0)
 		flags &= ~SDL_WINDOW_FULLSCREEN;
-	else if (winmode == 0)
+	else if(winmode == 0)
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-	else if (winmode == 1)
+	else if(winmode == 1)
 		flags &= ~SDL_WINDOW_FULLSCREEN;
-	if (COM_CheckParm("-borderless"))
+	if(COM_CheckParm("-borderless"))
 		flags |= SDL_WINDOW_BORDERLESS;
-	if (COM_CheckParm("-forceoldrender"))
+	if(COM_CheckParm("-forceoldrender"))
 		force_old_render = 1;
-	if (COM_CheckParm("-vimmode"))
+	if(COM_CheckParm("-vimmode"))
 		vimmode = 1;
-	if (vid.width > 1280 || vid.height > 1024)
+	if(vid.width > 1280 || vid.height > 1024)
 		Sys_Printf("vanilla maximum resolution is 1280x1024\n");
 	aspectr.value = 1.333333;
 	realwidth.value = vid.width;
-	realheight.value = (int)(vid.width / aspectr.value + 0.5);
+	realheight.value = (s32)(vid.width / aspectr.value + 0.5);
 	window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_UNDEFINED,
 				  SDL_WINDOWPOS_UNDEFINED,
 				  realwidth.value, realheight.value, flags);
@@ -225,7 +208,7 @@ void VID_Init(unsigned char *palette)
 		8, SDL_PIXELFORMAT_INDEX8);
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 	renderer = SDL_CreateRenderer(window, -1, 0);
-	if (!force_old_render) {
+	if(!force_old_render){
 		argbbuffer = SDL_CreateRGBSurfaceWithFormatFrom(NULL, vid.width,
 			vid.height, 0, 0, SDL_PIXELFORMAT_ARGB8888);
 		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
@@ -236,50 +219,45 @@ void VID_Init(unsigned char *palette)
 	}
 	windowSurface = SDL_GetWindowSurface(window);
 	sprintf(caption, "QrustyQuake - Version %4.2f", VERSION);
-	SDL_SetWindowTitle(window, (const char *)&caption);
+	SDL_SetWindowTitle(window, (const s8 *)&caption);
 	SDLWindowFlags = SDL_GetWindowFlags(window);
-	VGA_width = vid.conwidth = vid.width;
-	VGA_height = vid.conheight = vid.height;
-	vid.aspect = ((float)vid.height / (float)vid.width) * (320.0 / 240.0);
+	vid.aspect = ((f32)vid.height / (f32)vid.width) * (320.0 / 240.0);
 	vid.numpages = 1;
 	vid.colormap = host_colormap;
-	vid.fullbright = 256 - LittleLong(*((int *)vid.colormap + 2048));
-	VGA_pagebase = vid.buffer = screen->pixels;
-	VGA_rowbytes = vid.rowbytes = screen->pitch;
+	vid.fullbright = 256 - LittleLong(*((s32 *)vid.colormap + 2048));
+	vid.buffer = screen->pixels;
 	vid.conbuffer = vid.buffer;
-	vid.conrowbytes = vid.rowbytes;
 	vid.direct = (pixel_t *) screen->pixels;
 	VID_AllocBuffers(); // allocate z buffer, surface cache and the fbuffer
 	SDL_ShowCursor(0); // initialize the mouse
-	vid_initialized = true;
-	if (defmode >= 0)
+	if(defmode >= 0)
 		vid_modenum = defmode;
 	else
 		vid_modenum = VID_DetermineMode();
-	if (vid_modenum < 0)
+	if(vid_modenum < 0)
 		Con_Printf("WARNING: non-standard video mode\n");
 	else
 		Con_Printf("Detected video mode %d\n", vid_modenum);
 	realwidth.value = 0;
+	vid.rowbytes = vid.width; //TODO remove
+	vid.conwidth = vid.width; //TODO remove
+	vid.conheight = vid.height; //TODO remove
 	VID_CalcScreenDimensions(0);
 }
 
 void VID_Shutdown()
 {
-	if (vid_initialized) {
-		if (screen != NULL && lockcount > 0)
-			SDL_UnlockSurface(screen);
-		if (!force_old_render)
-			SDL_UnlockTexture(texture);
-		vid_initialized = 0;
-		SDL_QuitSubSystem(SDL_INIT_VIDEO);
-	}
+	if(screen != NULL)
+		SDL_UnlockSurface(screen);
+	if(!force_old_render)
+		SDL_UnlockTexture(texture);
+	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
 void VID_CalcScreenDimensions(cvar_t *cvar)
 {
 	uiscale = (vid.width / 320);
-	if (uiscale * 200 > vid.height)
+	if(uiscale * 200 > vid.height)
 		uiscale = 1; // For weird resolutions like 800x200
 	Cvar_SetValue("scr_uiscale", uiscale);
 	// Scaling code, courtesy of ChatGPT
@@ -289,8 +267,8 @@ void VID_CalcScreenDimensions(cvar_t *cvar)
 	blitRect.w = vid.width;
 	blitRect.h = vid.height;
 	// Get window dimensions
-	int winW, winH;
-	if (realwidth.value == 0 || realheight.value == 0) {
+	s32 winW, winH;
+	if(realwidth.value == 0 || realheight.value == 0){
 		winW = windowSurface->w;
 		winH = windowSurface->h;
 	}
@@ -299,25 +277,25 @@ void VID_CalcScreenDimensions(cvar_t *cvar)
 		winH = realheight.value;
 	}
 	// Get scaleBuffer dimensions
-	int bufW = vid.width;
-	int bufH = vid.height;
-	float bufAspect;
-	if (aspectr.value == 0) {
-		bufAspect = (float)bufW / bufH;
+	s32 bufW = vid.width;
+	s32 bufH = vid.height;
+	f32 bufAspect;
+	if(aspectr.value == 0){
+		bufAspect = (f32)bufW / bufH;
 	}
 	else
 		bufAspect = aspectr.value;
 	Cvar_SetValue("aspectr", bufAspect);
 	// Calculate scaled dimensions
-	int destW, destH;
-	if ((float)winW / winH > bufAspect) {
+	s32 destW, destH;
+	if((f32)winW / winH > bufAspect){
 		// Window is wider than buffer, black bars on sides
 		destH = winH;
-		destW = (int)(winH * bufAspect + 0.5);
+		destW = (s32)(winH * bufAspect + 0.5);
 	} else {
 		// Window is taller than buffer, black bars on top/bottom
 		destW = winW;
-		destH = (int)(winW / bufAspect + 0.5);
+		destH = (s32)(winW / bufAspect + 0.5);
 	}
 	// Center the destination rectangle
 	destRect.x = (winW - destW) / 2;
@@ -332,7 +310,7 @@ void VID_Update()
 	// Machines without a proper GPU will try to simulate one with software,
 	// adding a lot of overhead. In my tests software rendering accomplished
 	// the same result with almost a 200% performance increase.
-	if (force_old_render) {	// pure software rendering
+	if(force_old_render){	// pure software rendering
 		SDL_UpperBlit(screen, NULL, scaleBuffer, NULL);
 		SDL_UpperBlitScaled(scaleBuffer, &blitRect, windowSurface,
 				    &destRect);
@@ -346,29 +324,29 @@ void VID_Update()
 		SDL_RenderCopy(renderer, texture, NULL, &destRect);
 		SDL_RenderPresent(renderer);
 	}
-	if (uiscale != scr_uiscale.value // TODO make this a callback function
-	    && vid.width / 320 >= scr_uiscale.value && scr_uiscale.value > 0) {
+	if(uiscale != scr_uiscale.value // TODO make this a callback function
+	    && vid.width / 320 >= scr_uiscale.value && scr_uiscale.value > 0){
 		uiscale = scr_uiscale.value;
 		vid.recalc_refdef = 1;
 	}
-	if (vid_testingmode) {
-		if (realtime >= vid_testendtime) {
+	if(vid_testingmode){
+		if(realtime >= vid_testendtime){
 			VID_SetMode(vid_realmode, 0, 0, 0, vid_curpal);
 			vid_testingmode = 0;
 		}
-	} else if ((int)vid_mode.value != vid_realmode) {
-		VID_SetMode((int)vid_mode.value, 0, 0, 0, vid_curpal);
-		Cvar_SetValue("vid_mode", (float)vid_modenum);
+	} else if((s32)vid_mode.value != vid_realmode){
+		VID_SetMode((s32)vid_mode.value, 0, 0, 0, vid_curpal);
+		Cvar_SetValue("vid_mode", (f32)vid_modenum);
 		vid_realmode = vid_modenum;
 	}
 }
 
-char *VID_GetModeDescription(int mode)
+s8 *VID_GetModeDescription(s32 mode)
 {
-	static char pinfo[40];
-	if ((mode < 0) || (mode >= NUM_OLDMODES))
+	static s8 pinfo[40];
+	if((mode < 0) || (mode >= NUM_OLDMODES))
 		sprintf(pinfo, "Custom fullscreen");
-	else if (mode >= 3)
+	else if(mode >= 3)
 		sprintf(pinfo, "%s fullscreen", modelist[mode]);
 	else
 		sprintf(pinfo, "%s windowed", modelist[mode]);
@@ -378,36 +356,35 @@ char *VID_GetModeDescription(int mode)
 void VID_AllocBuffers()
 {
 	// allocate z buffer and surface cache
-	int chunk = vid.width * vid.height * sizeof(*d_pzbuffer);
-	int cachesize = D_SurfaceCacheForRes(vid.width, vid.height);
+	s32 chunk = vid.width * vid.height * sizeof(*d_pzbuffer);
+	s32 cachesize = D_SurfaceCacheForRes(vid.width, vid.height);
 	chunk += cachesize;
-	if (litwater_base) {
+	if(litwater_base){
 		D_FlushCaches();
 		Hunk_FreeToHighMark(lwmark);
 		litwater_base = NULL;
 	}
-	if (d_pzbuffer) {
+	if(d_pzbuffer){
 		D_FlushCaches();
 		Hunk_FreeToHighMark(VID_highhunkmark);
 		d_pzbuffer = NULL;
 	}
 	VID_highhunkmark = Hunk_HighMark();
 	d_pzbuffer = Hunk_HighAllocName(chunk, "video");
-	if (d_pzbuffer == NULL)
+	if(d_pzbuffer == NULL)
 		Sys_Error("Not enough memory for video mode\n");
-	unsigned char *cache = (byte *) d_pzbuffer
+	u8 *cache = (byte *) d_pzbuffer
 	    + vid.width * vid.height * sizeof(*d_pzbuffer);
 	D_InitCaches(cache, cachesize);
 }
 
-void VID_SetMode(int modenum, int customw, int customh, int customwinmode,
-		 unsigned char *palette)
+void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 *palette)
 {
-	if (modenum == vid_modenum)
+	if(modenum == vid_modenum)
 		return;
-	if (customw && customh) {
-		vid.width = customw;
-		vid.height = customh;
+	if(custw && custh){
+		vid.width = custw;
+		vid.height = custh;
 		vid_modenum = -1;
 	} else {
 		vid.width = oldmodes[modenum * 2];
@@ -418,7 +395,7 @@ void VID_SetMode(int modenum, int customw, int customh, int customwinmode,
 	SDL_FreeSurface(screen);
 	screen = SDL_CreateRGBSurfaceWithFormat(0, vid.width, vid.height, 8,
 		SDL_PIXELFORMAT_INDEX8);
-	if (!force_old_render) {
+	if(!force_old_render){
 		SDL_FreeSurface(argbbuffer);
 		argbbuffer = SDL_CreateRGBSurfaceWithFormatFrom(NULL, vid.width,
 			vid.height, 0, 0, SDL_PIXELFORMAT_ARGB8888);
@@ -430,19 +407,15 @@ void VID_SetMode(int modenum, int customw, int customh, int customwinmode,
 		scaleBuffer = SDL_CreateRGBSurfaceWithFormat(0, vid.width,
 			vid.height, 8, SDL_GetWindowPixelFormat (window));
 	}
-	VGA_width = vid.conwidth = vid.width;
-	VGA_height = vid.conheight = vid.height;
-	vid.aspect = ((float)vid.height / (float)vid.width) * (320.0 / 240.0);
-	VGA_pagebase = vid.buffer = screen->pixels;
-	VGA_rowbytes = vid.rowbytes = screen->pitch;
+	vid.aspect = ((f32)vid.height / (f32)vid.width) * (320.0 / 240.0);
+	vid.buffer = screen->pixels;
 	vid.conbuffer = vid.buffer;
-	vid.conrowbytes = vid.rowbytes;
 	vid.direct = (pixel_t *) screen->pixels;
 	VID_AllocBuffers();
 	vid.recalc_refdef = 1;
 	VID_SetPalette(palette);
-	if (!customw || !customh) {
-		if (modenum <= 2) {
+	if(!custw || !custh){
+		if(modenum <= 2){
 			SDL_SetWindowFullscreen(window, 0);
 			SDL_SetWindowSize(window, realwidth.value, realheight.value);
 			SDL_SetWindowPosition(window, SDL_WINDOWPOS_UNDEFINED,
@@ -452,13 +425,13 @@ void VID_SetMode(int modenum, int customw, int customh, int customwinmode,
 				SDL_WINDOW_FULLSCREEN_DESKTOP);
 		}
 	} else {
-		if (customwinmode == 0) {
+		if(custwinm == 0){
 			SDL_SetWindowFullscreen(window, 0);
 			SDL_SetWindowSize(window,
 					realwidth.value, realheight.value);
 			SDL_SetWindowPosition(window, SDL_WINDOWPOS_UNDEFINED,
 				SDL_WINDOWPOS_UNDEFINED);
-		} else if (customwinmode == 1) {
+		} else if(custwinm== 1){
 			SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
 		} else {
 			SDL_SetWindowFullscreen(window,
@@ -466,9 +439,12 @@ void VID_SetMode(int modenum, int customw, int customh, int customwinmode,
 		}
 	}
 	realwidth.value = 0;
+	vid.rowbytes = vid.width; //TODO remove
+	vid.conwidth = vid.width; //TODO remove
+	vid.conheight = vid.height; //TODO remove
 	VID_CalcScreenDimensions(0);
-	Cvar_SetValue("vid_mode", (float)vid_modenum);
-	Cvar_SetValue("vid_cwidth", (float)customw);
-	Cvar_SetValue("vid_cheight", (float)customh);
-	Cvar_SetValue("vid_cwmode", (float)customwinmode);
+	Cvar_SetValue("vid_mode", (f32)vid_modenum);
+	Cvar_SetValue("vid_cwidth", (f32)custw);
+	Cvar_SetValue("vid_cheight", (f32)custh);
+	Cvar_SetValue("vid_cwmode", (f32)custwinm);
 }
