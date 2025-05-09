@@ -112,11 +112,11 @@ void Draw_StringScaled(int x, int y, char *str, int scale)
 
 void Draw_PicScaled(int x, int y, qpic_t *pic, int scale)
 {
-	byte *dest = vid.buffer + y * vid.rowbytes + x;
+	byte *dest = vid.buffer + y * vid.width + x;
 	int maxwidth = pic->width;
 	if (x + pic->width * scale > vid.width)
 		maxwidth -= (x + pic->width * scale - vid.width) / scale;
-	int rowinc = vid.rowbytes;
+	int rowinc = vid.width;
 	if (y + pic->height * scale > vid.height)
 		return;
 	for (unsigned int v = 0; v < pic->height; v++) {
@@ -138,7 +138,7 @@ void Draw_PicScaled(int x, int y, qpic_t *pic, int scale)
 void Draw_PicScaledPartial(int x,int y,int l,int t,int w,int h,qpic_t *p,int s)
 {
         byte *source = p->data;
-        byte *dest = vid.buffer + y * vid.rowbytes + x;
+        byte *dest = vid.buffer + y * vid.width + x;
         for (unsigned int v = 0; v < p->height; v++) {
                 if (v * s + y >= vid.height || v > h)
                         return;
@@ -152,7 +152,7 @@ void Draw_PicScaledPartial(int x,int y,int l,int t,int w,int h,qpic_t *p,int s)
                                         if (i * s + j + x < vid.width)
                                                 dest[i * s + j] = source[i];
                         }
-                        dest += vid.rowbytes;
+                        dest += vid.width;
                 }
                 source += p->width;
         }	
@@ -161,7 +161,7 @@ void Draw_PicScaledPartial(int x,int y,int l,int t,int w,int h,qpic_t *p,int s)
 void Draw_TransPicScaled(int x, int y, qpic_t *pic, int scale)
 {
 	byte *source = pic->data;
-	byte *dest = vid.buffer + y * vid.rowbytes + x;
+	byte *dest = vid.buffer + y * vid.width + x;
 	for (unsigned int v = 0; v < pic->height; v++) {
 		if (v * scale + y >= vid.height)
 			return;
@@ -174,7 +174,7 @@ void Draw_TransPicScaled(int x, int y, qpic_t *pic, int scale)
 					if (u * scale + i + x < vid.width)
 						dest[u * scale + i] = tbyte;
 			}
-			dest += vid.rowbytes;
+			dest += vid.width;
 		}
 		source += pic->width;
 	}
@@ -183,7 +183,7 @@ void Draw_TransPicScaled(int x, int y, qpic_t *pic, int scale)
 void Draw_TransPicTranslateScaled(int x, int y, qpic_t *p, byte *tl, int scale)
 {
 	byte *source = p->data;
-	byte *dest = vid.buffer + y * vid.rowbytes + x;
+	byte *dest = vid.buffer + y * vid.width + x;
 	for (unsigned int v = 0; v < p->height; v++) {
 		if (v * scale + y >= vid.height)
 			return;
@@ -196,7 +196,7 @@ void Draw_TransPicTranslateScaled(int x, int y, qpic_t *p, byte *tl, int scale)
 					if (u * scale + i + x < vid.width)
 						dest[u * scale + i] = tl[tbyte];
 			}
-			dest += vid.rowbytes;
+			dest += vid.width;
 		}
 		source += p->width;
 	}
@@ -244,16 +244,16 @@ void Draw_ConsoleBackground(int lines)
 		+ conback->width - 11*scale - 8*scale * strlen(ver);
 	for (unsigned long x = 0; x < strlen(ver); x++)
 		Draw_CharToConbackScaled(ver[x], dest + x * 8 * scale, scale, conback->width);
-	dest = vid.conbuffer; // draw the pic
+	dest = vid.buffer; // draw the pic
 	for (int y = 0; y < lines; y++, dest += vid.width) {
-		int v = (vid.conheight-lines+y)*conback->height/vid.conheight;
+		int v = (vid.height-lines+y)*conback->height/vid.height;
 		byte *src = conback->data + v * conback->width;
-		if (vid.conwidth == conback->width)
-			memcpy(dest, src, vid.conwidth);
+		if (vid.width == conback->width)
+			memcpy(dest, src, vid.width);
 		else {
 			int f = 0;
-			int fstep = conback->width * 0x10000 / vid.conwidth;
-			for (unsigned int x = 0; x < vid.conwidth; x += 4) {
+			int fstep = conback->width * 0x10000 / vid.width;
+			for (unsigned int x = 0; x < vid.width; x += 4) {
 				dest[x] = src[f >> 16];
 				f += fstep;
 				dest[x + 1] = src[f >> 16];
@@ -269,11 +269,11 @@ void Draw_ConsoleBackground(int lines)
 
 void R_DrawRect(vrect_t *prect, int rowbytes, byte *psrc, int transparent)
 {
-	byte *pdest = vid.buffer + (prect->y * vid.rowbytes) + prect->x;
+	byte *pdest = vid.buffer + (prect->y * vid.width) + prect->x;
 	unsigned long maxdest = (unsigned long)vid.buffer+vid.width*vid.height;
 	if (transparent) {
 		int srcdelta = rowbytes - prect->width;
-		int destdelta = vid.rowbytes - prect->width;
+		int destdelta = vid.width - prect->width;
 		for (int i = 0; i < prect->height; i++) {
 			for (int j = 0; j < prect->width; j++) {
 				byte t = *psrc;
@@ -290,7 +290,7 @@ void R_DrawRect(vrect_t *prect, int rowbytes, byte *psrc, int transparent)
 			if ((unsigned long)pdest+prect->width >= maxdest) break;
 			memcpy(pdest, psrc, prect->width);
 			psrc += rowbytes;
-			pdest += vid.rowbytes;
+			pdest += vid.width;
 		}
 	}
 }
@@ -331,8 +331,8 @@ void Draw_TileClear(int x, int y, int w, int h) // This repeats a 64*64
 
 void Draw_Fill(int x, int y, int w, int h, int c)
 { // Fills a box of pixels with a single color
-	byte *dest = vid.buffer + y * vid.rowbytes + x;
-	for (int v = 0; v < h; v++, dest += vid.rowbytes)
+	byte *dest = vid.buffer + y * vid.width + x;
+	for (int v = 0; v < h; v++, dest += vid.width)
 		memset(dest, c, w); // Fast horizontal fill
 }
 
@@ -340,8 +340,8 @@ void Draw_FadeScreen()
 {
 	for (unsigned int y = 0; y < vid.height / uiscale; y++)
 		for (unsigned int i = 0; i < uiscale; i++) {
-			byte *pbuf = (byte *) (vid.buffer + vid.rowbytes * y
-				* uiscale + vid.rowbytes * i);
+			byte *pbuf = (byte *) (vid.buffer + vid.width * y
+				* uiscale + vid.width * i);
 			unsigned int t = (y & 1) << 1;
 			for (unsigned int x = 0; x < vid.width / uiscale; x++)
 				if ((x & 3) != t)

@@ -53,8 +53,8 @@ void D_WarpScreen() // this performs a slight compression of the screen at the
 		column[u] = r_refdef.vrect.x + (int)((float)u * wratio * w /
 						     (w + AMP2 * 2));
 	int *turb = intsintable + ((int)(cl.time * SPEED) & (CYCLE - 1));
-	byte *dest = vid.buffer + scr_vrect.y * vid.rowbytes + scr_vrect.x;
-	for (int v = 0; v < scr_vrect.height; v++, dest += vid.rowbytes) {
+	byte *dest = vid.buffer + scr_vrect.y * vid.width + scr_vrect.x;
+	for (int v = 0; v < scr_vrect.height; v++, dest += vid.width) {
 		int *col = &column[turb[v]];
 		byte **row = &rowptr[v];
 		for (int u = 0; u < scr_vrect.width; u += 4) {

@@ -117,18 +117,18 @@ void R_LineGraph(int x, int y, int h)
 // FIXME: should be disabled on no-buffer adapters, or should be in the driver
 	x += r_refdef.vrect.x;
 	y += r_refdef.vrect.y;
-	byte *dest = vid.buffer + vid.rowbytes * y + x;
+	byte *dest = vid.buffer + vid.width * y + x;
 	int s = r_graphheight.value;
 	if (h > s)
 		h = s;
 	int i = 0;
-	for (; i < h; i++, dest -= vid.rowbytes * 2) {
+	for (; i < h; i++, dest -= vid.width * 2) {
 		dest[0] = 0xff;
-		*(dest - vid.rowbytes) = 0x30;
+		*(dest - vid.width) = 0x30;
 	}
-	for (; i < s; i++, dest -= vid.rowbytes * 2) {
+	for (; i < s; i++, dest -= vid.width * 2) {
 		dest[0] = 0x30;
-		*(dest - vid.rowbytes) = 0x30;
+		*(dest - vid.width) = 0x30;
 	}
 }
 
@@ -272,8 +272,8 @@ void R_SetupFrame()
 	vrect_t vrect;
 	if ((r_dowarp != r_dowarpold) || r_viewchanged) {
 		if (r_dowarp) {
-			if ((vid.width <= vid.maxwarpwidth) &&
-					(vid.height <= vid.maxwarpheight)) {
+			if ((vid.width <= WARP_WIDTH) &&
+					(vid.height <= WARP_HEIGHT)) {
 				vrect.x = 0;
 				vrect.y = 0;
 				vrect.width = vid.width;
@@ -282,13 +282,13 @@ void R_SetupFrame()
 			} else {
 				float w = vid.width;
 				float h = vid.height;
-				if (w > vid.maxwarpwidth) {
-					h *= (float)vid.maxwarpwidth / w;
-					w = vid.maxwarpwidth;
+				if (w > WARP_WIDTH) {
+					h *= (float)WARP_WIDTH / w;
+					w = WARP_WIDTH;
 				}
-				if (h > vid.maxwarpheight) {
-					h = vid.maxwarpheight;
-					w *= (float)vid.maxwarpheight / h;
+				if (h > WARP_HEIGHT) {
+					h = WARP_HEIGHT;
+					w *= (float)WARP_HEIGHT / h;
 				}
 				vrect.x = 0;
 				vrect.y = 0;

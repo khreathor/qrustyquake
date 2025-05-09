@@ -394,7 +394,7 @@ void SCR_ScreenShot_f()
 		Con_Printf("SCR_ScreenShot_f: Couldn't create a PCX file\n");
 		return;
 	}
-	WritePCXfile(pcxname, vid.buffer, vid.width, vid.height, vid.rowbytes,
+	WritePCXfile(pcxname, vid.buffer, vid.width, vid.height, vid.width,
 		     vid_curpal); // save the pcx file 
 	Con_Printf("Wrote %s\n", pcxname);
 }

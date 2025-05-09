@@ -21,19 +21,10 @@ typedef struct vrect_s {                                                  // vid
 typedef struct {
         u8  *buffer; // invisible buffer
         u8  *colormap; // 256 * VID_GRADES size
-        u16 *colormap16; // 256 * VID_GRADES size
-        u32 fullbright; // index of first fullbright color
-        u32 rowbytes; // may be > width if displayed in a window
         u32 width;
         u32 height;
         f32 aspect; // width / height -- < 0 is taller than wide
         u32 numpages;
         u32 recalc_refdef; // if true, recalc vid-based stuff
-        u8  *conbuffer;
-        u32 conwidth;
-        u32 conheight;
-        u32 maxwarpwidth;
-        u32 maxwarpheight;
-        u8  *direct; // direct drawing to framebuffer, if not NULL
 } viddef_t;
 #endif

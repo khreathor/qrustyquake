@@ -28,7 +28,7 @@ s32 vid_testingmode;
 s32 vid_realmode;
 s32 vid_default;
 f64 vid_testendtime;
-u8 vid_curpal[256 * 3]; // save for mode changes
+u8 vid_curpal[256 * 3];
 s32 VID_highhunkmark;
 viddef_t vid; // global video state
 
@@ -125,8 +125,6 @@ void VID_Init(u8 *palette)
 	Cvar_SetCallback(&realwidth, VID_CalcScreenDimensions);
 	Cvar_SetCallback(&realheight, VID_CalcScreenDimensions);
 	// Set up display mode (width and height)
-	vid.maxwarpwidth = WARP_WIDTH;
-	vid.maxwarpheight = WARP_HEIGHT;
 	vid.width = 320;
 	vid.height = 240;
 	winmode = 0;
@@ -229,10 +227,7 @@ void VID_Init(u8 *palette)
 	vid.aspect = ((f32)vid.height / (f32)vid.width) * (320.0 / 240.0);
 	vid.numpages = 1;
 	vid.colormap = host_colormap;
-	vid.fullbright = 256 - LittleLong(*((s32 *)vid.colormap + 2048));
 	vid.buffer = screen->pixels;
-	vid.conbuffer = vid.buffer;
-	vid.direct = (pixel_t *) screen->pixels;
 	VID_AllocBuffers(); // allocate z buffer, surface cache and the fbuffer
 	SDL_ShowCursor(0); // initialize the mouse
 	if(defmode >= 0)
@@ -244,9 +239,6 @@ void VID_Init(u8 *palette)
 	else
 		Con_Printf("Detected video mode %d\n", vid_modenum);
 	realwidth.value = 0;
-	vid.rowbytes = vid.width; //TODO remove
-	vid.conwidth = vid.width; //TODO remove
-	vid.conheight = vid.height; //TODO remove
 	VID_CalcScreenDimensions(0);
 }
 
@@ -420,8 +412,6 @@ void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 *palette)
 	}
 	vid.aspect = ((f32)vid.height / (f32)vid.width) * (320.0 / 240.0);
 	vid.buffer = screen->pixels;
-	vid.conbuffer = vid.buffer;
-	vid.direct = (pixel_t *) screen->pixels;
 	VID_AllocBuffers();
 	vid.recalc_refdef = 1;
 	VID_SetPalette(palette, screen);
@@ -430,7 +420,8 @@ void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 *palette)
 	if(!custw || !custh){
 		if(modenum <= 2){
 			SDL_SetWindowFullscreen(window, 0);
-			SDL_SetWindowSize(window, realwidth.value, realheight.value);
+			SDL_SetWindowSize(window,
+				realwidth.value, realheight.value);
 			SDL_SetWindowPosition(window, SDL_WINDOWPOS_UNDEFINED,
 				SDL_WINDOWPOS_UNDEFINED);
 		} else {
@@ -452,9 +443,6 @@ void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 *palette)
 		}
 	}
 	realwidth.value = 0;
-	vid.rowbytes = vid.width; //TODO remove
-	vid.conwidth = vid.width; //TODO remove
-	vid.conheight = vid.height; //TODO remove
 	VID_CalcScreenDimensions(0);
 	Cvar_SetValue("vid_mode", (f32)vid_modenum);
 	Cvar_SetValue("vid_cwidth", (f32)custw);
