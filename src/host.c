@@ -542,15 +542,25 @@ void Host_Init()
 	NET_Init();
 	SV_Init();
 	Con_Printf("Exe: " __TIME__ " " __DATE__ "\n");
-	Con_Printf("%4.1f megabyte heap\n", host_parms.memsize / (1024 * 1024.0));
+	Con_Printf("%4.1f megabyte heap\n", host_parms.memsize / (1024*1024.0));
 	R_InitTextures(); // needed even for dedicated servers
 	if (cls.state != ca_dedicated) {
-		host_basepal = (byte *) COM_LoadHunkFile("gfx/palette.lmp", NULL);
-		if (!host_basepal)
-			Sys_Error("Couldn't load gfx/palette.lmp");
-		host_colormap = (byte *) COM_LoadHunkFile("gfx/colormap.lmp", NULL);
-		if (!host_colormap)
-			Sys_Error("Couldn't load gfx/colormap.lmp");
+		FILE *f; // Ironwail pasta. TODO - the rest if relevant
+		COM_FOpenFile ("gfx/custompalette.lmp", &f, NULL);
+		if (!f) COM_FOpenFile ("gfx/palette.lmp", &f, NULL);
+		if (!f) Sys_Error ("Couldn't load gfx/palette.lmp");
+		int mark = Hunk_LowMark ();
+		host_basepal = (byte *) Hunk_AllocName (768, "basepal");
+		if (fread(host_basepal, 768, 1, f) != 1)
+			Sys_Error ("Failed reading gfx/palette.lmp");
+		fclose(f);
+		COM_FOpenFile ("gfx/customcolormap.lmp", &f, NULL);
+		if (!f) COM_FOpenFile ("gfx/colormap.lmp", &f, NULL);
+		if (!f) Sys_Error ("Couldn't load gfx/colormap.lmp");
+		host_colormap = (byte *) Hunk_AllocName (256 * 64, "colormap");
+		if (fread(host_colormap, 256 * 64, 1, f) != 1)
+			Sys_Error ("TexMgr_LoadPalette: colormap read error");
+		fclose(f); // Ironwail pasta end
 		IN_Init();
 		VID_Init(host_basepal);
 		Draw_Init();
