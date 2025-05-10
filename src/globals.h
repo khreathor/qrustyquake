@@ -1,5 +1,8 @@
-#define EX extern // globals.h only
+#include "quakedef.h"
 
+#ifndef QGLOBALS_
+#define QGLOBALS_
+#define EX extern // globals.h only
 #define FOG_LUT_LEVELS 32                                            // rgbtoi.c
 #define LIT_LUT_RES 64
 EX u8	color_mix_lut[256][256][FOG_LUT_LEVELS];
@@ -61,6 +64,7 @@ EX cvar_t _windowed_mouse;
 EX cvar_t scr_uiscale;
 EX cvar_t newoptions;
 EX cvar_t sensitivityyscale;
+EX s32 VID_highhunkmark;
 EX s8 *VID_GetModeDescription(s32 mode);
 EX void VID_SetPalette(u8 *palette, SDL_Surface *dest);
 EX void VID_Init(u8 *palette);
@@ -71,3 +75,4 @@ EX void VID_SetMode(s32 moden, s32 custw, s32 custh, s32 custwinm, u8 *pal);
 EX void VID_Update();
 
 #undef EX
+#endif

@@ -1,37 +1,6 @@
 #include "quakedef.h"
 #include "d_local.h"
 
-u32 oldmodes[NUM_OLDMODES * 2] = {
-	320, 240,	640, 480,	800, 600,
-	320, 200,	320, 240,	640, 350,
-	640, 400,	640, 480,	800, 600
-};
-
-SDL_Window *window;
-SDL_Surface *windowSurface;
-SDL_Renderer *renderer;
-SDL_Surface *argbbuffer;
-SDL_Texture *texture;
-SDL_Rect blitRect;
-SDL_Rect destRect;
-SDL_Surface *scaleBuffer;
-SDL_Surface *screen; // the main video buffer
-SDL_Surface *screen1; // used for scr_centerstring only ATM
-s8 modelist[NUM_OLDMODES][8]; // "320x240" etc. for menus
-u32 force_old_render = 0;
-u32 SDLWindowFlags;
-u32 uiscale;
-u32 vimmode;
-s32 vid_line;
-s32 vid_modenum;
-s32 vid_testingmode;
-s32 vid_realmode;
-s32 vid_default;
-f64 vid_testendtime;
-u8 vid_curpal[256 * 3];
-s32 VID_highhunkmark;
-viddef_t vid; // global video state
-
 void VID_CalcScreenDimensions(cvar_t *cvar);
 void VID_AllocBuffers();
 

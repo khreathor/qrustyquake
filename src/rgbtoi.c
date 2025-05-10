@@ -2,14 +2,6 @@
 #include "d_local.h"
 #include "r_local.h"
 
-u8 color_mix_lut[256][256][FOG_LUT_LEVELS];
-s32 fog_lut_built = 0;
-f32 gamma_lut[256];
-s32 color_conv_initialized = 0;
-lab_t lab_palette[256];
-u8 lit_lut[LIT_LUT_RES*LIT_LUT_RES*LIT_LUT_RES];
-u8 lit_lut_initialized = 0;
-
 f32 lab_f(f32 t)
 { // cube-root if > epsilon, linear otherwise
 	return (t > 0.008856f) ? cbrtf(t) : ((903.3f * t + 16.0f) / 116.0f);

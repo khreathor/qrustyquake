@@ -1,14 +1,6 @@
 #include "quakedef.h"
 #include "d_local.h"
 
-s32 fog_initialized = 0;
-u32 lfsr = 0x1337; // non-zero seed
-f32 fog_density;
-f32 fog_red; // CyanBun96: we store the actual RGB values in these,
-f32 fog_green; // but they get quantized to a single index in the color
-f32 fog_blue; // palette before use, stored in fog_pal_index
-u8 fog_pal_index;
-f32 randarr[RANDARR_SIZE];
 extern s32 fog_lut_built;
 extern u32 sb_updates; // if >= vid.numpages, no update needed
 
