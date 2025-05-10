@@ -1,6 +1,6 @@
 #include "quakedef.h"
-                                            // Default value |   | Save to 
-#define ZR 0,0,0,0                          //               V   v config.cfg
+
+#define ZR 0,0,0,0      // "name", default value, flags (1 - save to config.cfg)
 cvar_t vid_mode=                                        {"vid_mode", "0", 0,ZR};
 cvar_t _vid_default_mode_win=              {"_vid_default_mode_win", "3", 1,ZR};
 cvar_t scr_uiscale=                                  {"scr_uiscale", "1", 1,ZR};
@@ -60,7 +60,7 @@ cvar_t nosound=                                          {"nosound", "0", 0,ZR};
 cvar_t ambient_level=                            {"ambient_level", "0.3", 0,ZR};
 cvar_t ambient_fade=                              {"ambient_fade", "100", 0,ZR};
 cvar_t snd_noextraupdate=                      {"snd_noextraupdate", "0", 0,ZR};
-cvar_t snd_show=                                        {"snd_show", "0", 0,ZR};                 
+cvar_t snd_show=                                        {"snd_show", "0", 0,ZR};
 cvar_t _snd_mixahead=                            {"_snd_mixahead", "0.1", 1,ZR};
 cvar_t snd_filterquality=                      {"snd_filterquality", "1", 0,ZR};
 cvar_t external_ents=                              {"external_ents", "1", 1,ZR};
