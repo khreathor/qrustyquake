@@ -14,7 +14,7 @@ s32 VID_GetConfigCvar(const s8 *cvname)
 	s32 ret = -1;
 	FILE *file = fopen("id1/config.cfg", "r");
 	if(!file){
-		printf("Failed to open id1/config.cfg");
+		printf("VID_GetConfigCvar: Failed to open id1/config.cfg\n");
 		return -2;
 	}
 	while(fgets(line, sizeof(line), file)){
