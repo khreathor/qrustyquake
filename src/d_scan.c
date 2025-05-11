@@ -302,6 +302,8 @@ void Turbulent8(espan_t *pspan, float opacity)
 
 void D_DrawSkyboxScans8(espan_t *pspan)
 { // CyanBun96: this is exactly the same as DrawSpans8 except for the fog mixing part. consolidate. FIXME
+	if(fog_density > 0 && !fog_lut_built) // for r_skyfog
+		build_color_mix_lut(0);
 	unsigned char *pbase = (unsigned char *)cacheblock;
 	float sdivz8stepu = d_sdivzstepu * 8;
 	float tdivz8stepu = d_tdivzstepu * 8;
@@ -388,7 +390,8 @@ void D_DrawSkyboxScans8(espan_t *pspan)
 			do {
 				unsigned char pix = *(pbase + (s >> 16) +
 					(t >> 16) * cachewidth);
-				pix = color_mix_lut[pix][fog_pal_index][foglut];
+				if (fog_density > 0)
+					pix = color_mix_lut[pix][fog_pal_index][foglut];
 				if (pix != 0xff || !((int)r_twopass.value&1))
 					*pdest = pix;
 				pdest++;
