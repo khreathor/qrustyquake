@@ -3,10 +3,6 @@
 // Copyright (C) 2007-2008 Kristian Duske
 // GPLv3 See LICENSE for details.
 
-#define MOVE_NORMAL 0
-#define MOVE_NOMONSTERS 1
-#define MOVE_MISSILE 2
-
 typedef struct
 {
 	vec3_t normal;

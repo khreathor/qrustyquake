@@ -24,30 +24,6 @@ static inline void VectorCopy(const vec3_t a, vec3_t b) {
 	b[2] = a[2];
 }
 
-#define M_PI_DIV_180 (M_PI / 180.0) //johnfitz
-#define Q_rint(x) ((x) > 0 ? (int)((x) + 0.5) : (int)((x) - 0.5)) // johnfitz -- from joequake
-#define DotProduct(x,y) (x[0]*y[0]+x[1]*y[1]+x[2]*y[2])
-#define DoublePrecisionDotProduct(x,y) ((double)(x)[0]*(y)[0]+(double)(x)[1]*(y)[1]+(double)(x)[2]*(y)[2])
-#define LERP(a, b, t) ((a) + ((b)-(a))*(t))
-#define IS_NAN(x) isnan(x)
-// johnfitz -- courtesy of lordhavoc
-#define VectorNormalizeFast(_v)                                           \
-{                                                                         \
-        float _y, _number;                                                \
-        _number = DotProduct(_v, _v);                                     \
-        if (_number != 0.0)                                               \
-        {                                                                 \
-                *((int *)&_y) = 0x5f3759df - ((* (int *) &_number) >> 1); \
-                _y = _y * (1.5f - (_number * 0.5f * _y * _y));            \
-                VectorScale(_v, _y, _v);                                  \
-        }                                                                 \
-}
-#define BOX_ON_PLANE_SIDE(emins, emaxs, p)                          \
-        (((p)->type < 3) ? (                                        \
-                ((p)->dist <= (emins)[(p)->type]) ? 1               \
-                      : (((p)->dist >= (emaxs)[(p)->type]) ? 2 : 3) \
-        ) : BoxOnPlaneSide((emins), (emaxs), (p)))
-
 typedef float vec_t;
 typedef vec_t vec3_t[3];
 typedef vec_t vec5_t[5];

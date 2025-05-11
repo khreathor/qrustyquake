@@ -46,17 +46,6 @@ interface from being ambiguous.
 
 */
 
-#define	CVAR_NONE		0
-#define	CVAR_ARCHIVE		(1U << 0)	// if set, causes it to be saved to config
-#define	CVAR_NOTIFY		(1U << 1)	// changes will be broadcasted to all players (q1)
-#define	CVAR_SERVERINFO		(1U << 2)	// added to serverinfo will be sent to clients (q1/net_dgrm.c and qwsv)
-#define	CVAR_USERINFO		(1U << 3)	// added to userinfo, will be sent to server (qwcl)
-#define	CVAR_CHANGED		(1U << 4)
-#define	CVAR_ROM		(1U << 6)
-#define	CVAR_LOCKED		(1U << 8)	// locked temporarily
-#define	CVAR_REGISTERED		(1U << 10)	// the var is added to the list of variables
-#define	CVAR_CALLBACK		(1U << 16)	// var has a callback
-
 void	Cvar_RegisterVariable (cvar_t *variable);
 // registers a cvar that already has the name, string, and optionally
 // the archive elements set.

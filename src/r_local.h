@@ -4,24 +4,6 @@
 
 #include "r_shared.h"
 
-#define ALIAS_BASE_SIZE_RATIO (1.0 / 11.0) // normalizing factor so player model
-	// works out to about 1 pixel per triangle
-#define BMODEL_FULLY_CLIPPED 0x10 // value returned by R_BmodelCheckBBox () if
-	// bbox is trivially rejected
-#define XCENTERING (1.0 / 2.0)
-#define YCENTERING (1.0 / 2.0)
-#define CLIP_EPSILON 0.001
-#define BACKFACE_EPSILON 0.01
-#define DIST_NOT_SET 98765
-#define NEAR_CLIP 0.01
-#define ALIAS_Z_CLIP_PLANE 0.1 // CyanBun96: was 5, lowered for high FOV guns
-#define MAX_BTOFPOLYS 5000 // FIXME: tune this
-#define AMP 8*0x10000 // turbulence stuff
-#define AMP2 3
-#define SPEED 20
-#define LIT_LUT_RES 64
-#define QUANT(x) (((x) * (LIT_LUT_RES - 1)) / 255)
-
 extern clipplane_t view_clipplanes[4];
 extern mplane_t screenedge[4];
 extern vec3_t r_origin;

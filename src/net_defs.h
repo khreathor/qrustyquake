@@ -11,25 +11,6 @@ struct qsockaddr
 	unsigned char qsa_data[14];
 };
 
-#define Q_COUNTOF(x) (sizeof(x) / sizeof((x)[0]))
-#define NET_HEADERSIZE		(2 * sizeof(unsigned int))
-#define NET_DATAGRAMSIZE	(MAX_DATAGRAM + NET_HEADERSIZE)
-
-// NetHeader flags
-#define NETFLAG_LENGTH_MASK	0x0000ffff
-#define NETFLAG_DATA		0x00010000
-#define NETFLAG_ACK		0x00020000
-#define NETFLAG_NAK		0x00040000
-#define NETFLAG_EOM		0x00080000
-#define NETFLAG_UNRELIABLE	0x00100000
-#define NETFLAG_CTL		0x80000000
-
-#if (NETFLAG_LENGTH_MASK & NET_MAXMESSAGE) != NET_MAXMESSAGE
-#error "NET_MAXMESSAGE must fit within NETFLAG_LENGTH_MASK"
-#endif
-
-#define NET_PROTOCOL_VERSION	3
-
 /**
 
 This is the network info/connection protocol.  It is used to find Quake
@@ -93,16 +74,6 @@ CCREP_RULE_INFO
 
 **/
 
-#define CCREQ_CONNECT		0x01
-#define CCREQ_SERVER_INFO	0x02
-#define CCREQ_PLAYER_INFO	0x03
-#define CCREQ_RULE_INFO		0x04
-
-#define CCREP_ACCEPT		0x81
-#define CCREP_REJECT		0x82
-#define CCREP_SERVER_INFO	0x83
-#define CCREP_PLAYER_INFO	0x84
-#define CCREP_RULE_INFO		0x85
 
 typedef struct qsocket_s
 {
@@ -165,7 +136,6 @@ typedef struct
 	int		(*SetSocketPort) (struct qsockaddr *addr, int port);
 } net_landriver_t;
 
-#define	MAX_NET_DRIVERS		8
 extern net_landriver_t	net_landrivers[];
 extern const int	net_numlandrivers;
 
@@ -190,8 +160,7 @@ typedef struct
 extern net_driver_t	net_drivers[];
 extern const int	net_numdrivers;
 
-/* Loop driver must always be registered the first */
-#define IS_LOOP_DRIVER(p)	((p) == 0)
+
 
 extern int		net_driverlevel;
 
@@ -205,7 +174,6 @@ void NET_FreeQSocket(qsocket_t *);
 double SetNetTime();
 
 
-#define HOSTCACHESIZE	8
 
 typedef struct
 {

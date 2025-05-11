@@ -23,17 +23,6 @@ typedef enum
 	ev_pointer
 } etype_t;
 
-#define	OFS_NULL		0
-#define	OFS_RETURN		1
-#define	OFS_PARM0		4	// leave 3 ofs for each parm to hold vectors
-#define	OFS_PARM1		7
-#define	OFS_PARM2		10
-#define	OFS_PARM3		13
-#define	OFS_PARM4		16
-#define	OFS_PARM5		19
-#define	OFS_PARM6		22
-#define	OFS_PARM7		25
-#define	RESERVED_OFS	28
 
 
 enum
@@ -129,10 +118,6 @@ typedef struct
 	int		s_name;
 } ddef_t;
 
-#define	DEF_SAVEGLOBAL	(1<<15)
-
-#define	MAX_PARMS	8
-
 typedef struct
 {
 	int		first_statement;	// negative numbers are builtins
@@ -149,7 +134,6 @@ typedef struct
 } dfunction_t;
 
 
-#define	PROG_VERSION	6
 typedef struct
 {
 	int		version;
@@ -177,4 +161,3 @@ typedef struct
 } dprograms_t;
 
 #endif	/* __PR_COMP_H */
-

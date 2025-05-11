@@ -1,5 +1,7 @@
 #include <stdint.h>
 
+#ifndef QTYPEDEFS_
+#define QTYPEDEFS_
 typedef uint8_t  u8;                                           // standard types
 typedef int8_t   s8;
 typedef uint16_t u16;
@@ -13,8 +15,15 @@ typedef double   f64;
 
 typedef unsigned char byte; // TODO remove
 typedef unsigned char pixel_t; // TODO remove
-#ifndef QTYPEDEFS_
-#define QTYPEDEFS_
+
+typedef f32   vec_t;                                                 // q_stdinc
+typedef vec_t vec3_t[3];
+typedef vec_t vec4_t[4];
+typedef vec_t vec5_t[5];
+typedef s32   fixed4_t;
+typedef s32   fixed8_t;
+typedef s32   fixed16_t;
+
 typedef struct {                                                      // bspfile
 	s32 fileofs, filelen;
 } lump_t;
@@ -635,4 +644,106 @@ typedef struct model_s {
 	s32 vbostofs; // offset in vbo of hdr->numverts_vbo meshst_t
 	cache_user_t cache;//extra model data, only access through Mod_Extradata
 } model_t;
+
+typedef struct espan_s {                                             // r_shared
+	long u, v, count;
+	struct espan_s *pnext;
+} espan_t;
+typedef struct surf_s {
+	struct surf_s *next; // active surface stack in r_edge.c
+	struct surf_s *prev; // used in r_edge.c for active surf stack
+	struct espan_s *spans; // pointer to linked list of spans to draw
+	int key; // sorting key (BSP order)
+	long last_u; // set during tracing
+	int spanstate; // 0 = not in span
+		       // 1 = in span
+		       // -1 = in inverted span (end before start)
+	int flags; // currentface flags
+	void *data; // associated data like msurface_t
+	entity_t *entity;
+	float nearzi; // nearest 1/z on surface, for mipmapping
+	bool insubmodel;
+	float d_ziorigin, d_zistepu, d_zistepv;
+	int pad[2]; // to 64 bytes
+} surf_t;
+typedef struct edge_s {
+	long u;
+	long u_step;
+	struct edge_s *prev, *next;
+	unsigned short surfs[2];
+	struct edge_s *nextremove;
+	float nearzi;
+	medge_t *owner;
+} edge_t;
+
+typedef struct {                                                      // d_iface
+	float u, v;
+	float s, t;
+	float zi;
+} emitpoint_t;
+typedef enum {
+	pt_static, pt_grav, pt_slowgrav, pt_fire, pt_explode, pt_explode2, pt_blob, pt_blob2
+} ptype_t;
+typedef struct particle_s {
+	// driver-usable fields
+	vec3_t org;
+	float color;
+	// drivers never touch the following fields
+	struct particle_s *next;
+	vec3_t vel;
+	float ramp;
+	float die;
+	ptype_t type;
+} particle_t;
+typedef struct polyvert_s {
+	float u, v, zi, s, t;
+} polyvert_t;
+typedef struct polydesc_s {
+	int numverts;
+	float nearzi;
+	msurface_t *pcurrentface;
+	polyvert_t *pverts;
+} polydesc_t;
+typedef struct finalvert_s {
+	int v[6]; // u, v, s, t, l, 1/z
+	int flags;
+	float reserved;
+} finalvert_t;
+typedef struct {
+	void *pskin;
+	maliasskindesc_t *pskindesc;
+	int skinwidth;
+	int skinheight;
+	mtriangle_t *ptriangles;
+	finalvert_t *pfinalverts;
+	int numtriangles;
+	int drawtype;
+	int seamfixupX16;
+} affinetridesc_t;
+typedef struct {
+	float u, v, zi, color;
+} screenpart_t;
+typedef struct {
+	int nump;
+	emitpoint_t *pverts; // there's room for an extra element at [nump], if the driver wants to duplicate element [0] at element [nump] to avoid dealing with wrapping
+	mspriteframe_t *pspriteframe;
+	vec3_t vup, vright, vpn; // in worldspace
+	float nearzi;
+} spritedesc_t;
+typedef struct {
+	int u, v;
+	float zi;
+	int color;
+} zpointdesc_t;
+typedef struct {
+	pixel_t *surfdat; // destination for generated surface
+	int rowbytes; // destination logical width in bytes
+	msurface_t *surf; // description for surface to generate
+	fixed8_t lightadj[MAXLIGHTMAPS];
+	// adjust for lightmap levels for dynamic lighting
+	texture_t *texture; // corrected for animating textures
+	int surfmip; // mipmapped ratio of surface texels / world pixels
+	int surfwidth; // in mipmapped texels
+	int surfheight; // in mipmapped texels
+} drawsurf_t;
 #endif

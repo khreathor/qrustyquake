@@ -10,24 +10,6 @@
 //   TYPES
 //===============
 
-#define	CMP_NONE		0
-#define	CMP_LZSS		1
-
-#define	TYP_NONE		0
-#define	TYP_LABEL		1
-
-#define	TYP_LUMPY		64				// 64 + grab command number
-#define	TYP_PALETTE		64
-#define	TYP_QTEX		65
-#define	TYP_QPIC		66
-#define	TYP_SOUND		67
-#define	TYP_MIPTEX_PALETTE	67
-#define	TYP_MIPTEX		68
-
-#define WADID		('W' | ('A' << 8) | ('D' << 16) | ('2' << 24))
-#define WADID_VALVE	('W' | ('A' << 8) | ('D' << 16) | ('3' << 24))
-
-#define	WADFILENAME "gfx.wad" //johnfitz -- filename is now hard-coded for honesty
 
 typedef struct
 {

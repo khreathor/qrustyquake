@@ -9,7 +9,6 @@
 #ifndef __QUAKE_SOUND__
 #define __QUAKE_SOUND__
 
-/* !!! if this is changed, it must be changed in asm_i386.h too !!! */
 typedef struct
 {
 	int left;
@@ -22,7 +21,6 @@ typedef struct sfx_s
 	cache_user_t	cache;
 } sfx_t;
 
-/* !!! if this is changed, it must be changed in asm_i386.h too !!! */
 typedef struct
 {
 	int	length;
@@ -45,7 +43,6 @@ typedef struct
 	unsigned char	*buffer;
 } dma_t;
 
-/* !!! if this is changed, it must be changed in asm_i386.h too !!! */
 typedef struct
 {
 	sfx_t	*sfx;			/* sfx number					*/
@@ -61,7 +58,6 @@ typedef struct
 	int	master_vol;		/* 0-255 master volume				*/
 } channel_t;
 
-#define WAV_FORMAT_PCM	1
 
 typedef struct
 {
@@ -131,8 +127,6 @@ void SNDDMA_UnblockSound(void);
  * ====================================================================
  */
 
-#define	MAX_CHANNELS		1024 // ericw -- was 512 /* johnfitz -- was 128 */
-#define	MAX_DYNAMIC_CHANNELS	128 /* johnfitz -- was 8   */
 
 extern	channel_t	snd_channels[MAX_CHANNELS];
 /* 0 to MAX_DYNAMIC_CHANNELS-1	= normal entity sounds
@@ -153,7 +147,6 @@ extern	vec3_t		listener_right;
 extern	vec3_t		listener_up;
 
 
-#define	MAX_RAW_SAMPLES	8192
 extern	portable_samplepair_t	s_rawsamples[MAX_RAW_SAMPLES];
 
 

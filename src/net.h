@@ -7,9 +7,6 @@
 // net.h: quake's interface to the networking layer network functions and data
 // common to the whole engine
 
-#define NET_NAMELEN 64
-#define NET_MAXMESSAGE 65535 /* ericw -- was 32000 */
-
 extern int DEFAULTnet_hostport;
 extern int net_hostport;
 extern double net_time;

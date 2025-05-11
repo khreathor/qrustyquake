@@ -1,7 +1,5 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
 
-#define	MAX_HANDLES 32
-
 // File IO
 int Sys_FileType (const char *path);
 int Sys_FileOpenRead (const char *path, int *hndl);

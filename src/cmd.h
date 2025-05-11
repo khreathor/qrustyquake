@@ -4,9 +4,6 @@
 
 // cmd.h -- Command buffer and command execution
 
-#define MAX_ALIAS_NAME 32
-#define MAX_ARGS 80
-
 // Any number of commands can be added in a frame, from several different sources.
 // Most commands come from either keybindings or console line input, but remote
 // servers can also send across commands and entire text files can be execed.

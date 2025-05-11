@@ -25,22 +25,12 @@ typedef struct
 	int		percent;		// 0-256
 } cshift_t;
 
-#define	CSHIFT_CONTENTS	0
-#define	CSHIFT_DAMAGE	1
-#define	CSHIFT_BONUS	2
-#define	CSHIFT_POWERUP	3
-#define	NUM_CSHIFTS		4
-
-#define	NAME_LENGTH	64
 
 
 //
 // client_state_t should hold all pieces of the client state
 //
 
-#define	SIGNONS		4			// signon messages to receive before connected
-
-#define	MAX_DLIGHTS		64
 typedef struct
 {
 	vec3_t	origin;
@@ -53,7 +43,6 @@ typedef struct
 } dlight_t;
 
 
-#define	MAX_BEAMS	32
 typedef struct
 {
 	int		entity;
@@ -62,11 +51,6 @@ typedef struct
 	vec3_t	start, end;
 } beam_t;
 
-#define	MAX_EFRAGS		2048
-
-#define	MAX_MAPSTRING	2048
-#define	MAX_DEMOS		8
-#define	MAX_DEMONAME	16
 
 typedef enum {
 ca_dedicated, 		// a dedicated server with no ability to start a client
@@ -211,9 +195,6 @@ typedef struct
 // cvars
 //
 
-#define	MAX_TEMP_ENTITIES 1024 // lightning bolts, etc
-#define	MAX_STATIC_ENTITIES 2048 // torches, etc
-
 extern	client_state_t	cl;
 
 // FIXME, allocate dynamically
@@ -245,7 +226,6 @@ void CL_Disconnect (void);
 void CL_Disconnect_f (void);
 void CL_NextDemo (void);
 
-#define MAX_VISEDICTS 16384 // larger, now we support BSP2
 extern	int				cl_numvisedicts;
 extern	entity_t		*cl_visedicts[MAX_VISEDICTS];
 

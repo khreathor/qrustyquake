@@ -19,7 +19,6 @@ typedef union eval_s
 	int		edict;
 } eval_t;
 
-#define	MAX_ENT_LEAFS	32
 typedef struct edict_s
 {
 	qboolean	free;
@@ -41,7 +40,6 @@ typedef struct edict_s
 	/* other fields from progs come immediately after */
 } edict_t;
 
-#define	EDICT_FROM_AREA(l)	STRUCT_FROM_LINK(l,edict_t,area)
 
 //============================================================================
 
@@ -77,32 +75,9 @@ const char *ED_ParseGlobals (const char *data);
 
 void ED_LoadFromFile (const char *data);
 
-/*
-#define EDICT_NUM(n)		((edict_t *)(sv.edicts+ (n)*pr_edict_size))
-#define NUM_FOR_EDICT(e)	(((byte *)(e) - sv.edicts) / pr_edict_size)
-*/
 edict_t *EDICT_NUM(int);
 int NUM_FOR_EDICT(edict_t*);
 
-#define	NEXT_EDICT(e)		((edict_t *)( (byte *)e + pr_edict_size))
-
-#define	EDICT_TO_PROG(e)	(int)((byte *)e - (byte *)sv.edicts)
-#define PROG_TO_EDICT(e)	((edict_t *)((byte *)sv.edicts + e))
-
-#define	G_FLOAT(o)		(pr_globals[o])
-#define	G_INT(o)		(*(int *)&pr_globals[o])
-#define	G_EDICT(o)		((edict_t *)((byte *)sv.edicts+ *(int *)&pr_globals[o]))
-#define G_EDICTNUM(o)		NUM_FOR_EDICT(G_EDICT(o))
-#define	G_VECTOR(o)		(&pr_globals[o])
-#define	G_STRING(o)		(PR_GetString(*(string_t *)&pr_globals[o]))
-#define	G_FUNCTION(o)		(*(func_t *)&pr_globals[o])
-
-#define	E_FLOAT(e,o)		(((float*)&e->v)[o])
-#define	E_INT(e,o)		(*(int *)&((float*)&e->v)[o])
-#define	E_VECTOR(e,o)		(&((float*)&e->v)[o])
-#define	E_STRING(e,o)		(PR_GetString(*(string_t *)&((float*)&e->v)[o]))
-
-#define NUM_TYPE_SIZES 8
 extern const int	type_size[NUM_TYPE_SIZES];
 
 typedef void (*builtin_t) (void);
@@ -124,7 +99,7 @@ extern	int		pr_xstatement;
 
 extern	unsigned short	pr_crc;
 
-void PR_RunError (const char *error, ...) FUNC_PRINTF(1,2);
+void PR_RunError (const char *error, ...);// FUNC_PRINTF(1,2);
 
 void ED_PrintEdicts (void);
 void ED_PrintNum (int ent);

@@ -7,9 +7,7 @@ typedef float f32;
 #define QGLOBALS_
 
 #define EX extern // globals.h only
-#define FOG_LUT_LEVELS 32                                            // rgbtoi.c
-#define LIT_LUT_RES 64
-EX u8	color_mix_lut[256][256][FOG_LUT_LEVELS];
+EX u8	color_mix_lut[256][256][FOG_LUT_LEVELS];                     // rgbtoi.c
 EX u8	lit_lut[LIT_LUT_RES*LIT_LUT_RES*LIT_LUT_RES];
 EX u8	lit_lut_initialized;
 EX s32	fog_lut_built;
@@ -22,8 +20,7 @@ EX u8 rgbtoi(u8 r, u8 g, u8 b);
 EX void build_color_mix_lut(cvar_t *cvar);
 EX void R_BuildLitLUT();
 
-#define RANDARR_SIZE 19937 // prime to reduce unintended patterns     // d_fog.c
-EX s32	fog_initialized;
+EX s32	fog_initialized;                                              // d_fog.c
 EX u32	lfsr;
 EX f32	fog_density;
 EX f32	fog_red;
@@ -32,14 +29,7 @@ EX f32	fog_blue;
 EX u8	fog_pal_index;
 EX f32	randarr[RANDARR_SIZE];
 
-#define NUM_OLDMODES 9                                              // vid_sdl.c
-#define VID_GRADES (1 << VID_CBITS)
-#define VID_CBITS 6
-#define MAX_MODE_LIST 30
-#define VID_ROW_SIZE 3
-#define MAX_COLUMN_SIZE 5
-#define MODE_AREA_HEIGHT (MAX_COLUMN_SIZE + 6)
-EX u32 oldmodes[NUM_OLDMODES*2];
+EX u32 oldmodes[NUM_OLDMODES*2];                                    // vid_sdl.c
 EX s8 modelist[NUM_OLDMODES][8];
 EX SDL_Window *window;
 EX SDL_Surface *windowSurface;
@@ -78,8 +68,7 @@ EX void VID_RenderFrame();
 EX void VID_SetMode(s32 moden, s32 custw, s32 custh, s32 custwinm, u8 *pal);
 EX void VID_Update();
 
-#define	VIEWMODNAME_LENGTH 256                                       // r_main.c
-EX byte r_foundtranswater, r_wateralphapass;
+EX byte r_foundtranswater, r_wateralphapass;                         // r_main.c
 EX s32 r_pass;
 EX void *colormap;
 EX vec3_t viewlightvec;
