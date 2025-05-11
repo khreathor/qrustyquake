@@ -46,3 +46,60 @@ u8 vid_curpal[256 * 3];
 s32 VID_highhunkmark;
 viddef_t vid; // global video state
 
+byte r_foundtranswater, r_wateralphapass;                            // r_main.c
+s32 r_pass; // CyanBun96: 1 - cutout textures 0 - everything else
+void *colormap;
+vec3_t viewlightvec;
+alight_t r_viewlighting = { 128, 192, viewlightvec };
+f32 r_time1;
+s32 r_numallocatededges;
+bool r_recursiveaffinetriangles = true;
+s32 r_pixbytes = 1;
+f32 r_aliasuvscale = 1.0;
+s32 r_outofsurfaces;
+s32 r_outofedges;
+bool r_dowarp, r_dowarpold, r_viewchanged;
+s32 numbtofpolys;
+btofpoly_t *pbtofpolys;
+mvertex_t *r_pcurrentvertbase;
+s32 c_surf;
+s32 r_maxsurfsseen, r_maxedgesseen, r_cnumsurfs;
+bool r_surfsonstack;
+s32 r_clipflags;
+byte *r_warpbuffer;
+bool r_fov_greater_than_90;
+vec3_t vup, base_vup; // view origin
+vec3_t vpn, base_vpn;
+vec3_t vright, base_vright;
+vec3_t r_origin;
+refdef_t r_refdef; // screen size info
+f32 xcenter, ycenter;
+f32 xscale, yscale;
+f32 xscaleinv, yscaleinv;
+f32 xscaleshrink, yscaleshrink;
+f32 aliasxscale, aliasyscale, aliasxcenter, aliasycenter;
+s32 screenwidth;
+f32 pixelAspect;
+f32 screenAspect;
+f32 verticalFieldOfView;
+f32 xOrigin, yOrigin;
+mplane_t screenedge[4];
+u32 r_visframecount; // refresh flags
+u32 r_framecount = 1; // so frame counts initialized to 0 don't match
+s32 d_spanpixcount;
+s32 r_polycount;
+s32 r_drawnpolycount;
+s32 r_wholepolycount;
+s8 viewmodname[VIEWMODNAME_LENGTH + 1];
+s32 modcount;
+s32 *pfrustum_indexes[4];
+s32 r_frustum_indexes[4 * 6];
+s32 reinit_surfcache = 1; // if 1, surface cache is currently empty and
+			// must be reinitialized for current cache size
+mleaf_t *r_viewleaf, *r_oldviewleaf;
+texture_t *r_notexture_mip;
+f32 r_aliastransition, r_resfudge;
+s32 d_lightstylevalue[256]; // 8.8 fraction of base light value
+f32 dp_time1, dp_time2, db_time1, db_time2, rw_time1, rw_time2;
+f32 se_time1, se_time2, de_time1, de_time2, dv_time1, dv_time2;
+s32 colored_aliaslight;

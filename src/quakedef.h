@@ -149,6 +149,7 @@
 // Use for multiplayer testing only - VERY dangerous!!!
 // #define IDGODS
 
+#include "defines.h"
 #include "mathlib.h"
 
 // the host system specifies the base of the directory tree, the
@@ -165,9 +166,9 @@ typedef struct {
 } quakeparms_t;
 
 #include "typedefs.h"
+#include "globals.h"
 #include "q_stdinc.h"
 #include "common.h"
-#include "bspfile.h"
 #include "sys.h"
 #include "zone.h"
 #include "wad.h"
@@ -176,10 +177,10 @@ typedef struct {
 #include "screen.h"
 #include "net.h"
 #include "protocol.h"
+#include "render.h"
 #include "cmd.h"
 #include "sbar.h"
 #include "q_sound.h"
-#include "render.h"
 #include "progs.h"
 #include "server.h"
 #include "model.h"
@@ -192,13 +193,11 @@ typedef struct {
 #include "menu.h"
 #include "crc.h"
 #include "vgatext.h"
-#include "globals.h"
 #include "cvarlist.h"
 #include "client.h"
 
 extern double host_time;
 extern SDL_Window *window; // global for checking windowed state in options
-extern Uint32 SDLWindowFlags;
 extern qboolean noclip_anglehack;
 extern quakeparms_t host_parms;
 extern qboolean host_initialized; // true if into command execution
@@ -215,7 +214,6 @@ extern qboolean msg_suppress_1; // suppresses resolution and cache size console
 extern int current_skill; // skill level for currently loaded level (in case
 			  // the user changes the cvar while the level is
 			  // running, this reflects the level actually in use)
-extern byte r_foundtranswater, r_wateralphapass; // Manoel Kasimier - translucent water
 
 void Host_ClearMemory();
 void Host_ServerFrame();

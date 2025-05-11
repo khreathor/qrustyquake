@@ -3,13 +3,31 @@
 // Copyright (C) 2007-2008 Kristian Duske
 // GPLv3 See LICENSE for details.
 
+typedef float vec_t;
+typedef vec_t vec3_t[3];
+
+static inline void VectorSubtract(const vec3_t a, const vec3_t b, vec3_t c) {
+	c[0] = a[0] - b[0];
+	c[1] = a[1] - b[1];
+	c[2] = a[2] - b[2];
+}
+
+static inline void VectorAdd(const vec3_t a, const vec3_t b, vec3_t c) {
+	c[0] = a[0] + b[0];
+	c[1] = a[1] + b[1];
+	c[2] = a[2] + b[2];
+}
+
+static inline void VectorCopy(const vec3_t a, vec3_t b) {
+	b[0] = a[0];
+	b[1] = a[1];
+	b[2] = a[2];
+}
+
 #define M_PI_DIV_180 (M_PI / 180.0) //johnfitz
 #define Q_rint(x) ((x) > 0 ? (int)((x) + 0.5) : (int)((x) - 0.5)) // johnfitz -- from joequake
 #define DotProduct(x,y) (x[0]*y[0]+x[1]*y[1]+x[2]*y[2])
 #define DoublePrecisionDotProduct(x,y) ((double)(x)[0]*(y)[0]+(double)(x)[1]*(y)[1]+(double)(x)[2]*(y)[2])
-#define VectorSubtract(a,b,c) {c[0]=a[0]-b[0];c[1]=a[1]-b[1];c[2]=a[2]-b[2];}
-#define VectorAdd(a,b,c) {c[0]=a[0]+b[0];c[1]=a[1]+b[1];c[2]=a[2]+b[2];}
-#define VectorCopy(a,b) {b[0]=a[0];b[1]=a[1];b[2]=a[2];}
 #define LERP(a, b, t) ((a) + ((b)-(a))*(t))
 #define IS_NAN(x) isnan(x)
 // johnfitz -- courtesy of lordhavoc

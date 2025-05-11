@@ -22,51 +22,6 @@
 #define LIT_LUT_RES 64
 #define QUANT(x) (((x) * (LIT_LUT_RES - 1)) / 255)
 
-typedef struct { // viewmodel lighting
-	int ambientlight;
-	int shadelight;
-	float *plightvec;
-} alight_t;
-
-typedef struct bedge_s // clipped bmodel edges
-{
-	mvertex_t *v[2];
-	struct bedge_s *pnext;
-} bedge_t;
-
-typedef struct {
-	float fv[3]; // viewspace x, y
-} auxvert_t;
-
-typedef struct clipplane_s
-{
-	vec3_t normal;
-	float dist;
-	struct clipplane_s *next;
-	byte leftedge;
-	byte rightedge;
-	byte reserved[2];
-} clipplane_t;
-
-typedef struct btofpoly_s {
-	int clipflags;
-	msurface_t *psurf;
-} btofpoly_t;
-
-typedef enum {
-	TEXTYPE_DEFAULT,
-	TEXTYPE_CUTOUT,
-	TEXTYPE_SKY,
-	TEXTYPE_LAVA,
-	TEXTYPE_SLIME,
-	TEXTYPE_TELE,
-	TEXTYPE_WATER,
-	TEXTYPE_COUNT,
-	TEXTYPE_FIRSTLIQUID = TEXTYPE_LAVA,
-	TEXTYPE_LASTLIQUID = TEXTYPE_WATER,
-	TEXTYPE_NUMLIQUIDS = TEXTYPE_LASTLIQUID + 1 - TEXTYPE_FIRSTLIQUID,
-} textype_t;
-
 extern clipplane_t view_clipplanes[4];
 extern mplane_t screenedge[4];
 extern vec3_t r_origin;
@@ -76,7 +31,7 @@ extern float verticalFieldOfView;
 extern float xOrigin, yOrigin;
 extern unsigned int r_visframecount;
 extern int vstartscan;
-extern qboolean insubmodel; // current entity info
+extern bool insubmodel; // current entity info
 extern vec3_t r_worldmodelorg; // current entity info
 extern int c_faceclip;
 extern int r_polycount;
@@ -127,15 +82,15 @@ extern float dp_time1, dp_time2, db_time1, db_time2, rw_time1, rw_time2;
 extern float se_time1, se_time2, de_time1, de_time2, dv_time1, dv_time2;
 extern int r_frustum_indexes[4*6];
 extern int r_maxsurfsseen, r_maxedgesseen, r_cnumsurfs;
-extern qboolean r_surfsonstack;
+extern bool r_surfsonstack;
 extern cshift_t cshift_water;
-extern qboolean r_dowarpold, r_viewchanged;
+extern bool r_dowarpold, r_viewchanged;
 extern mleaf_t *r_viewleaf, *r_oldviewleaf;
 extern vec3_t r_emins, r_emaxs;
 extern mnode_t *r_pefragtopnode;
 extern int r_clipflags;
 extern unsigned int r_dlightframecount;
-extern qboolean r_fov_greater_than_90;
+extern bool r_fov_greater_than_90;
 extern int r_pass;
 extern int color_lightmap;
 extern int lmonly;
@@ -175,7 +130,7 @@ extern void R_EdgeCodeEnd();
 extern void R_RotateBmodel();
 void R_InitTurb();
 void R_ZDrawSubmodelPolys(model_t *clmodel);
-qboolean R_AliasCheckBBox();
+bool R_AliasCheckBBox();
 void R_DrawParticles();
 void R_InitParticles();
 void R_ClearParticles();

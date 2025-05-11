@@ -80,8 +80,8 @@ void VID_Init(u8 *palette)
 	Cvar_RegisterVariable(&aspectr);
 	Cvar_RegisterVariable(&realwidth);
 	Cvar_RegisterVariable(&realheight);
-	void (*vid_callback)(struct cvar_s *) =
-		(void (*)(struct cvar_s *))VID_CalcScreenDimensions;
+	void (*vid_callback)(cvar_t *) =
+		(void (*)(cvar_t *))VID_CalcScreenDimensions;
 	Cvar_SetCallback(&aspectr, vid_callback);
 	Cvar_SetCallback(&realwidth, vid_callback);
 	Cvar_SetCallback(&realheight, vid_callback);

@@ -9,7 +9,7 @@
 typedef enum { touchessolid, drawnode, nodrawnode } solidstate_t;
 
 // current entity info
-qboolean insubmodel;
+bool insubmodel;
 entity_t *currententity;
 // modelorg is the viewpoint reletive to the currently rendering entity
 vec3_t modelorg, base_modelorg;

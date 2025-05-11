@@ -117,11 +117,6 @@ void *Hunk_TempAlloc (int size);
 
 void Hunk_Check (void);
 
-typedef struct cache_user_s
-{
-	void	*data;
-} cache_user_t;
-
 void Cache_Flush (void);
 
 void *Cache_Check (cache_user_t *c);
@@ -137,4 +132,3 @@ void *Cache_Alloc (cache_user_t *c, int size, const char *name);
 void Cache_Report (void);
 
 #endif	/* __ZZONE_H */
-

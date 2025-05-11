@@ -9,15 +9,16 @@ vec3_t chase_angles;
 vec3_t chase_dest;
 vec3_t chase_dest_angles;
 
+extern void Cvar_RegisterVariable (cvar_t *variable);
 extern qboolean SV_RecursiveHullCheck(hull_t *hull, int num, float p1f,
 			float p2f, vec3_t p1, vec3_t p2, trace_t *trace);
 
 void Chase_Init()
 {
-	Cvar_RegisterVariable(&chase_back);
-	Cvar_RegisterVariable(&chase_up);
-	Cvar_RegisterVariable(&chase_right);
-	Cvar_RegisterVariable(&chase_active);
+	Cvar_RegisterVariable((struct cvar_s *)&chase_back);
+	Cvar_RegisterVariable((struct cvar_s *)&chase_up);
+	Cvar_RegisterVariable((struct cvar_s *)&chase_right);
+	Cvar_RegisterVariable((struct cvar_s *)&chase_active);
 }
 
 void TraceLine(vec3_t start, vec3_t end, vec3_t impact)

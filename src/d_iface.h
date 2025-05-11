@@ -103,11 +103,8 @@ typedef struct
 } drawsurf_t;
 
 extern int d_spanpixcount;
-extern unsigned int r_framecount; // sequence # of current frame since Quake started
-extern qboolean r_recursiveaffinetriangles; // true if a driver wants to use recursive triangular subdivison and vertex drawing via D_PolysetDrawFinalVerts() past a certain distance(normally only used by the software driver)
 extern float r_aliasuvscale; // scale-up factor for screen u and on Alias vertices passed to driver
 extern int r_pixbytes;
-extern qboolean r_dowarp;
 extern affinetridesc_t r_affinetridesc;
 extern spritedesc_t r_spritedesc;
 extern zpointdesc_t r_zpointdesc;

@@ -57,20 +57,6 @@ interface from being ambiguous.
 #define	CVAR_REGISTERED		(1U << 10)	// the var is added to the list of variables
 #define	CVAR_CALLBACK		(1U << 16)	// var has a callback
 
-
-typedef void (*cvarcallback_t) (struct cvar_s *);
-
-typedef struct cvar_s
-{
-	const char	*name;
-	const char	*string;
-	unsigned int	flags;
-	float		value;
-	const char	*default_string; //johnfitz -- remember defaults for reset function
-	cvarcallback_t	callback;
-	struct cvar_s	*next;
-} cvar_t;
-
 void	Cvar_RegisterVariable (cvar_t *variable);
 // registers a cvar that already has the name, string, and optionally
 // the archive elements set.

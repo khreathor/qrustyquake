@@ -51,7 +51,7 @@ void R_AliasTransformFinalVert(finalvert_t *fv, auxvert_t *av,
 				trivertx_t *pverts, stvert_t *pstverts);
 void R_AliasProjectFinalVert(finalvert_t *fv, auxvert_t *av);
 
-qboolean R_AliasCheckBBox()
+bool R_AliasCheckBBox()
 {
 	// expand, rotate, and translate points into worldspace
 	currententity->trivial_accept = 0;

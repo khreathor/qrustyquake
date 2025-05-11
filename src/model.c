@@ -202,7 +202,7 @@ static model_t *Mod_FindName (const char *name)
 	return mod;
 }
 
-void Mod_TouchModel (const char *name)
+void Mod_TouchModel (const s8 *name)
 {
 	model_t	*mod = Mod_FindName (name);
 	if (!mod->needload == NL_PRESENT && mod->type == mod_alias)
@@ -248,7 +248,7 @@ static model_t *Mod_LoadModel (model_t *mod, qboolean crash)
 	return mod;
 }
 
-model_t *Mod_ForName (const char *name, qboolean crash)
+model_t *Mod_ForName (const s8 *name, bool crash)
 { // Loads in a model for the given name
 	model_t	*mod = Mod_FindName (name);
 	return Mod_LoadModel (mod, crash);
