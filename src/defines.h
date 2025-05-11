@@ -1,6 +1,21 @@
 #ifndef GLOBDEFINES_
 #define GLOBDEFINES_
 
+#define	q_min(a, b)	(((a) < (b)) ? (a) : (b))                      // common
+#define	q_max(a, b)	(((a) > (b)) ? (a) : (b))
+#define	CLAMP(_minval, x, _maxval)		\
+	((x) < (_minval) ? (_minval) :		\
+	 (x) > (_maxval) ? (_maxval) : (x))
+#define	STRUCT_FROM_LINK(l,t,m) ((t *)((byte *)l - offsetof(t,m)))
+#define VEC_HEADER(v)			(((vec_header_t*)(v))[-1])
+#define VEC_PUSH(v,n)			do { Vec_Grow((void**)&(v), sizeof((v)[0]), 1); (v)[VEC_HEADER(v).size++] = (n); } while (0)
+#define VEC_SIZE(v)				((v) ? VEC_HEADER(v).size : 0)
+#define VEC_FREE(v)				Vec_Free((void**)&(v))
+#define VEC_CLEAR(v)			Vec_Clear((void**)&(v))
+#define	FS_ENT_NONE		(0)
+#define	FS_ENT_FILE		(1 << 0)
+#define	FS_ENT_DIRECTORY	(1 << 1)
+
 #define M_PI_DIV_180 (M_PI / 180.0) //johnfitz                        // mathlib
 #define Q_rint(x) ((x) > 0 ? (int)((x) + 0.5) : (int)((x) - 0.5)) // johnfitz -- from joequake
 #define DotProduct(x,y) (x[0]*y[0]+x[1]*y[1]+x[2]*y[2])
@@ -826,4 +841,56 @@
 #define MOD_NOLERP 256 // don't lerp when animating
 #define MOD_NOSHADOW 512 // don't cast a shadow
 #define MOD_FBRIGHTHACK 1024 // when fullbrights are disabled, use a hack to render this model brighter
+
+#define Q_MINIZ_H 1                                                     // miniz
+#define MINIZ_EXPORT
+#define MINIZ_NO_STDIO
+#define MINIZ_NO_TIME
+#define MINIZ_NO_DEFLATE_APIS
+#define MINIZ_NO_ARCHIVE_WRITING_APIS
+#define MINIZ_NO_ZLIB_APIS
+#define MINIZ_NO_ZLIB_COMPATIBLE_NAMES
+#define MINIZ_LITTLE_ENDIAN (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+#define MINIZ_NO_ARCHIVE_WRITING_APIS
+#define MINIZ_USE_UNALIGNED_LOADS_AND_STORES 1
+#define MINIZ_UNALIGNED_USE_MEMCPY
+#define MINIZ_HAS_64BIT_REGISTERS 1
+#define MZ_CRC32_INIT (0)
+#define MZ_DEFLATED 8
+#define MZ_VERSION "10.2.0"
+#define MZ_VERNUM 0xA100
+#define MZ_VER_MAJOR 10
+#define MZ_VER_MINOR 2
+#define MZ_VER_REVISION 0
+#define MZ_VER_SUBREVISION 0
+#define MZ_FALSE (0)
+#define MZ_TRUE (1)
+#define MZ_MACRO_END while (0)
+#define MZ_FILE void *
+#define MZ_ASSERT(x) assert(x)
+#define MZ_MALLOC(x) malloc(x)
+#define MZ_FREE(x) free(x)
+#define MZ_REALLOC(p, x) realloc(p, x)
+#define MZ_MAX(a, b) (((a) > (b)) ? (a) : (b))
+#define MZ_MIN(a, b) (((a) < (b)) ? (a) : (b))
+#define MZ_CLEAR_OBJ(obj) memset(&(obj), 0, sizeof(obj))
+#define MZ_CLEAR_ARR(obj) memset((obj), 0, sizeof(obj))
+#define MZ_CLEAR_PTR(obj) memset((obj), 0, sizeof(*obj))
+#define MZ_READ_LE16(p) *((const mz_uint16 *)(p))
+#define MZ_READ_LE32(p) *((const mz_uint32 *)(p))
+#define MZ_READ_LE64(p) (((mz_uint64)MZ_READ_LE32(p)) | (((mz_uint64)MZ_READ_LE32((const mz_uint8 *)(p) + sizeof(mz_uint32))) << 32U))
+#define MZ_FORCEINLINE inline
+#define MZ_UINT16_MAX (0xFFFFU)
+#define MZ_UINT32_MAX (0xFFFFFFFFU)
+#define TINFL_LZ_DICT_SIZE 32768
+// Initializes the decompressor to its initial state.
+#define tinfl_init(r)     \
+    do                    \
+    {                     \
+        (r)->m_state = 0; \
+    }                     \
+    MZ_MACRO_END
+#define tinfl_get_adler32(r) (r)->m_check_adler32
+#define TINFL_USE_64BIT_BITBUF 1
+#define TINFL_BITBUF_SIZE (64)
 #endif

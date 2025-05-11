@@ -11,94 +11,6 @@
 typedef unsigned char byte;
 typedef int qboolean;
 
-#if defined(_WIN32)
-#ifdef _MSC_VER
-#  pragma warning(disable:4244)
-	/* 'argument'	: conversion from 'type1' to 'type2',
-			  possible loss of data */
-#  pragma warning(disable:4305)
-	/* 'identifier'	: truncation from 'type1' to 'type2' */
-	/*  in our case, truncation from 'double' to 'float' */
-#  pragma warning(disable:4267)
-	/* 'var'	: conversion from 'size_t' to 'type',
-			  possible loss of data (/Wp64 warning) */
-#endif	/* _MSC_VER */
-#endif	/* _WIN32 */
-
-#undef	min
-#undef	max
-
-#if (0 && defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L))
-#define GENERIC_TYPES(x, separator) \
-	x(int, i) separator \
-	x(unsigned int, u) separator \
-	x(long, l) separator \
-	x(unsigned long, ul) separator \
-	x(long long, ll) separator \
-	x(unsigned long long, ull) separator \
-	x(float, f) separator \
-	x(double, d)
-
-#define COMMA ,
-#define NO_COMMA
-
-#define IMPL_GENERIC_FUNCS(type, suffix) \
-static inline type q_min_##suffix (type a, type b) { \
-	return (a < b) ? a : b; \
-} \
-static inline type q_max_##suffix (type a, type b) { \
-	return (a > b) ? a : b; \
-} \
-static inline type clamp_##suffix (type minval, type val, type maxval) { \
-	return (val < minval) ? minval : ((val > maxval) ? maxval : val); \
-}
-
-GENERIC_TYPES (IMPL_GENERIC_FUNCS, NO_COMMA)
-
-#define SELECT_Q_MIN(type, suffix) type: q_min_##suffix
-#define q_min(a, b) _Generic((a) + (b), GENERIC_TYPES (SELECT_Q_MIN, COMMA))(a, b)
-
-#define SELECT_Q_MAX(type, suffix) type: q_max_##suffix
-#define q_max(a, b) _Generic((a) + (b), GENERIC_TYPES (SELECT_Q_MAX, COMMA))(a, b)
-
-#define SELECT_CLAMP(type, suffix) type: clamp_##suffix
-#define CLAMP(minval, val, maxval) _Generic((minval) + (val) + (maxval), \
-	GENERIC_TYPES (SELECT_CLAMP, COMMA))(minval, val, maxval)
-
-#elif defined(__GNUC__)
-/* min and max macros with type checking -- based on tyrquake. */
-#define q_max(a,b) ({           \
-    const __typeof(a) a_ = (a); \
-    const __typeof(b) b_ = (b); \
-    (void)(&a_ == &b_);         \
-    (a_ > b_) ? a_ : b_;        \
-})
-#define q_min(a,b) ({           \
-    const __typeof(a) a_ = (a); \
-    const __typeof(b) b_ = (b); \
-    (void)(&a_ == &b_);         \
-    (a_ < b_) ? a_ : b_;        \
-})
-#define CLAMP(_minval, x, _maxval) ({           \
-    const __typeof(x) x_ = (x);                 \
-    const __typeof(_minval) valmin_ = (_minval);\
-    const __typeof(_maxval) valmax_ = (_maxval);\
-    (void)(&x_ == &valmin_);                    \
-    (void)(&x_ == &valmax_);                    \
-    (x_ < valmin_) ? valmin_ :                  \
-    (x_ > valmax_) ? valmax_ : x_;              \
-})
-
-#else
-#define	q_min(a, b)	(((a) < (b)) ? (a) : (b))
-#define	q_max(a, b)	(((a) > (b)) ? (a) : (b))
-#define	CLAMP(_minval, x, _maxval)		\
-	((x) < (_minval) ? (_minval) :		\
-	 (x) > (_maxval) ? (_maxval) : (x))
-#endif
-
-#define countof(arr) (sizeof(arr) / sizeof(arr[0]))
-
 typedef struct sizebuf_s
 {
 	qboolean	allowoverflow;	// if false, do a Sys_Error
@@ -131,7 +43,6 @@ void InsertLinkAfter (link_t *l, link_t *after);
 // (type *)STRUCT_FROM_LINK(link_t *link, type, member)
 // ent = STRUCT_FROM_LINK(link,entity_t,order)
 // FIXME: remove this mess!
-#define	STRUCT_FROM_LINK(l,t,m) ((t *)((byte *)l - offsetof(t,m)))
 
 //============================================================================
 
@@ -140,12 +51,6 @@ typedef struct vec_header_t {
 	size_t size;
 } vec_header_t;
 
-#define VEC_HEADER(v)			(((vec_header_t*)(v))[-1])
-
-#define VEC_PUSH(v,n)			do { Vec_Grow((void**)&(v), sizeof((v)[0]), 1); (v)[VEC_HEADER(v).size++] = (n); } while (0)
-#define VEC_SIZE(v)				((v) ? VEC_HEADER(v).size : 0)
-#define VEC_FREE(v)				Vec_Free((void**)&(v))
-#define VEC_CLEAR(v)			Vec_Clear((void**)&(v))
 
 void Vec_Grow (void **pvec, size_t element_size, size_t count);
 void Vec_Append (void **pvec, size_t element_size, const void *data, size_t count);
@@ -362,9 +267,6 @@ const char *COM_ParseFloatNewline(const char *buffer, float *value);
 const char *COM_ParseStringNewline(const char *buffer);
 
 
-#define	FS_ENT_NONE		(0)
-#define	FS_ENT_FILE		(1 << 0)
-#define	FS_ENT_DIRECTORY	(1 << 1)
 
 /* The following FS_*() stdio replacements are necessary if one is
  * to perform non-sequential reads on files reopened on pak files

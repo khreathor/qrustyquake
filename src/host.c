@@ -466,7 +466,7 @@ void _Host_Frame(float time)
 			pass[0] /= q_max (numserverframes, 1);
 			pass[1] /= numframes;
 			pass[2] /= numframes;
-			Host_PrintTimes (pass, names, countof (pass), host_speeds.value < 0.f);
+			Host_PrintTimes (pass, names, Q_COUNTOF(pass), host_speeds.value < 0.f);
 			pass[0] = pass[1] = pass[2] = elapsed = 0.0;
 			numframes = numserverframes = 0;
 		}
