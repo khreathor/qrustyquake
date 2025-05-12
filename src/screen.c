@@ -3,7 +3,6 @@
 // screen.c -- master for refresh, status bar, console, chat, notify, etc
 
 #include "quakedef.h"
-#include "r_local.h"
 
 extern viddef_t vid; // global video state
 bool scr_initialized; // ready to draw

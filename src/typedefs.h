@@ -1183,4 +1183,232 @@ typedef struct {
 	edict_t *ent; // entity the surface is on
 } trace_t;
 
+typedef void (*xcommand_t) ();                                            // cmd
+typedef struct cmdalias_s {
+        struct cmdalias_s *next;
+        char name[MAX_ALIAS_NAME];
+        char *value;
+} cmdalias_t;
+typedef struct cmd_function_s {
+        struct cmd_function_s *next;
+        char *name;
+        xcommand_t function;
+} cmd_function_t;
+typedef enum { src_client, src_command } cmd_source_t;
+
+typedef struct { int left; int right; } portable_samplepair_t;        // q_sound
+typedef struct sfx_s { char name[MAX_QPATH]; cache_user_t cache; } sfx_t;
+typedef struct {
+	int length;
+	int loopstart;
+	int speed;
+	int width;
+	int stereo;
+	byte data[1]; /* variable sized */
+} sfxcache_t;
+typedef struct {
+	int channels;
+	int samples; /* mono samples in buffer */
+	int submission_chunk; /* don't mix less than this # */
+	int samplepos; /* in mono samples */
+	int samplebits;
+	int signed8; /* device opened for S8 format? (e.g. Amiga AHI) */
+	int speed;
+	unsigned char *buffer;
+} dma_t;
+typedef struct {
+	sfx_t *sfx; /* sfx number */
+	int leftvol; /* 0-255 volume */
+	int rightvol; /* 0-255 volume */
+	int end; /* end time in global paintsamples */
+	int pos; /* sample position in sfx */
+	int looping; /* where to loop, -1 = no looping */
+	int entnum; /* to allow overriding a specific sound */
+	int entchannel;
+	vec3_t origin; /* origin of sound effect */
+	vec_t dist_mult; /* distance multiplier (attenuation/clipK) */
+	int master_vol; /* 0-255 master volume */
+} channel_t;
+typedef struct {
+	int rate;
+	int width;
+	int channels;
+	int loopstart;
+	int samples;
+	int dataofs; /* chunk starts this many bytes from file start */
+} wavinfo_t;
+
+typedef struct {                                                       // client
+	int length;
+	char map[MAX_STYLESTRING];
+	char average; //johnfitz
+	char peak; //johnfitz
+} lightstyle_t;
+typedef struct {
+	char name[MAX_SCOREBOARDNAME];
+	float entertime;
+	int frags;
+	int colors; // two 4 bit fields
+	byte translations[VID_GRADES*256];
+} scoreboard_t;
+typedef struct {
+	int destcolor[3];
+	int percent; // 0-256
+} cshift_t;
+typedef struct {
+	vec3_t origin;
+	float radius;
+	float die; // stop lighting after this time
+	float decay; // drop this each second
+	float minlight; // don't add when contributing less
+	int key;
+	vec3_t color; //johnfitz -- lit support via lordhavoc
+} dlight_t;
+typedef struct {
+	int entity;
+	struct model_s *model;
+	float endtime;
+	vec3_t start, end;
+} beam_t;
+typedef enum {
+	ca_dedicated, // dedicated server with no ability to start a client
+	ca_disconnected, // full screen console with no connection
+	ca_connected // valid netcon, talking to a server
+} cactive_t;
+typedef struct {
+	cactive_t state; // personalization data sent to server
+	char spawnparms[MAX_MAPSTRING]; // to restart a level
+	int demonum; // -1 = don't play demos
+	char demos[MAX_DEMOS][MAX_DEMONAME];
+	bool demorecording;
+	bool demoplayback;
+	bool demopaused;
+	bool timedemo;
+	int forcetrack; // -1 = use normal cd track
+	FILE *demofile;
+	int td_lastframe; // to meter out one message a frame
+	int td_startframe; // host_framecount at start
+	float td_starttime; // realtime at second frame of timedemo
+	int signon; // 0 to SIGNONS
+	struct qsocket_s *netcon;
+	sizebuf_t message; // writing buffer to send to server
+} client_static_t;
+extern client_static_t cls;
+typedef struct {
+	int movemessages;
+	usercmd_t cmd; // last command sent to the server
+	usercmd_t pendingcmd;
+	int stats[MAX_CL_STATS]; // health, etc
+	int items; // inventory bit flags
+	float item_gettime[32]; // cl.time of aquiring item, for blinking
+	float faceanimtime; // use anim frame if cl.time < this
+	cshift_t cshifts[NUM_CSHIFTS]; // color shifts for damage, powerups
+	cshift_t prev_cshifts[NUM_CSHIFTS];
+	vec3_t mviewangles[2];
+	vec3_t viewangles;
+	vec3_t mvelocity[2];
+	vec3_t velocity; // lerped between mvelocity[0] and [1]
+	vec3_t punchangle; // temporary offset
+	float idealpitch;
+	float pitchvel;
+	bool nodrift;
+	float driftmove;
+	double laststop;
+	float viewheight;
+	float crouch; // local amount for smoothing stepups
+	bool paused; // send over by server
+	bool onground;
+	bool inwater;
+	int intermission; // don't change view angle, full screen, etc
+	int completed_time; // latched at intermission start
+	double mtime[2]; // the timestamp of last two messages
+	double time;
+	double oldtime;
+	float last_received_message;
+	struct model_s *model_precache[MAX_MODELS];
+	struct sfx_s *sound_precache[MAX_SOUNDS];
+	char mapname[128];
+	char levelname[128];
+	int viewentity; // cl_entitites[cl.viewentity] = player
+	int maxclients;
+	int gametype;
+	struct model_s *worldmodel; // cl_entitites[0].model
+	struct efrag_s *free_efrags;
+	int num_efrags;
+	int num_entities; // held in cl_entities array
+	int num_statics; // held in cl_staticentities array
+	entity_t viewent; // the gun model
+	int cdtrack, looptrack; // cd audio
+	scoreboard_t *scores; // [cl.maxclients]
+	unsigned protocol; //johnfitz
+	unsigned protocolflags;
+} client_state_t;
+typedef struct {
+	int down[2]; // key nums holding it down
+	int state; // low bit is down state
+} kbutton_t;
+
+typedef struct {                                                       // client
+	int maxclients;
+	int maxclientslimit;
+	struct client_s *clients; // [maxclients]
+	int serverflags; // episode completion information
+	bool changelevel_issued; // cleared when at SV_SpawnServer
+} server_static_t;
+typedef enum {ss_loading, ss_active} server_state_t;
+typedef struct {
+	bool active; // false if only a net client
+	bool paused;
+	bool loadgame; // handle connections specially
+	bool nomonsters; // server started with 'nomonsters' cvar active
+	double time;
+	int lastcheck; // used by PF_checkclient
+	double lastchecktime;
+	char name[64]; // map name
+	char modelname[64]; // maps/<name>.bsp, for model_precache[0]
+	struct model_s *worldmodel;
+	const char *model_precache[MAX_MODELS]; // NULL terminated
+	struct model_s *models[MAX_MODELS];
+	const char *sound_precache[MAX_SOUNDS]; // NULL terminated
+	const char *lightstyles[MAX_LIGHTSTYLES];
+	int num_edicts;
+	int max_edicts;
+	edict_t *edicts;
+	server_state_t state; // some actions are only valid during load
+	sizebuf_t datagram;
+	byte datagram_buf[MAX_DATAGRAM];
+	sizebuf_t reliable_datagram;
+	byte reliable_datagram_buf[MAX_DATAGRAM];
+	sizebuf_t *signon;
+	int num_signon_buffers;
+	sizebuf_t *signon_buffers[MAX_SIGNON_BUFFERS];
+	unsigned protocol; //johnfitz
+	unsigned protocolflags;
+} server_t;
+enum sendsignon_e {
+	PRESPAWN_DONE,
+	PRESPAWN_FLUSH=1,
+	PRESPAWN_SIGNONBUFS,
+	PRESPAWN_SIGNONMSG,
+};
+typedef struct client_s {
+	bool active; // false = client is free
+	bool spawned; // false = don't send datagrams
+	bool dropasap; // has been told to go to another level
+	enum sendsignon_e sendsignon; // only valid before spawned
+	int signonidx;
+	double last_message; // reliable messages must be sent periodically
+	struct qsocket_s *netconnection; // communications handle
+	usercmd_t cmd; // movement
+	vec3_t wishdir; // intended motion calced from cmd
+	sizebuf_t message;
+	byte msgbuf[MAX_MSGLEN];
+	edict_t *edict; // EDICT_NUM(clientnum+1)
+	char name[32]; // for printing to other people
+	int colors;
+	float ping_times[NUM_PING_TIMES];
+	int num_pings; // ping_times[num_pings%NUM_PING_TIMES]
+	float spawn_parms[NUM_SPAWN_PARMS];
+	int old_frags;
+} client_t;
 #endif

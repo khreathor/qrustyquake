@@ -8,7 +8,6 @@
 // on the same machine.
 
 #include "quakedef.h"
-#include "r_local.h"
 
 #define	MAX_MOD_KNOWN 32768 /*johnfitz -- was 512 */
 #define ANIM_CYCLE 2

@@ -3,7 +3,6 @@
 // r_aclip.c: clip routines for drawing Alias models directly to the screen
 
 #include "quakedef.h"
-#include "r_local.h"
 
 static finalvert_t fv[2][8];
 static auxvert_t av[8];

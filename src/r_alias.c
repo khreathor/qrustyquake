@@ -3,7 +3,6 @@
 // r_alias.c: routines for setting up to draw alias models
 
 #include "quakedef.h"
-#include "r_local.h"
 
 #define NUMVERTEXNORMALS 162
 #define LIGHT_MIN 5 // lowest light value we'll allow, to avoid the

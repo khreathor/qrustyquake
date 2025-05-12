@@ -293,7 +293,7 @@ void VID_Update()
 			VID_SetMode(vid_realmode, 0, 0, 0, vid_curpal);
 			vid_testingmode = 0;
 		}
-	} else if((s32)vid_mode.value != vid_realmode){
+	} else if((s32)vid_mode.value != vid_realmode && vid_realmode != -1){
 		VID_SetMode((s32)vid_mode.value, 0, 0, 0, vid_curpal);
 		Cvar_SetValue("vid_mode", (f32)vid_modenum);
 		vid_realmode = vid_modenum;
@@ -340,7 +340,10 @@ void VID_AllocBuffers()
 
 void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 *palette)
 {
-	if(modenum == vid_modenum)
+	Con_DPrintf("SetMode: %d %dx%d %d\n", modenum, custw, custh, custwinm);
+	if(custw < 320 || custw > MAXWIDTH || custh < 200 || custh > MAXHEIGHT)
+		return;
+	if(modenum == vid_modenum && (!custw || !custh))
 		return;
 	if(custw && custh){
 		vid.width = custw;
@@ -422,9 +425,9 @@ void VID_VidSetModeCommand_f()
 		Con_Printf("          2 - borderless\n");
 		return;
 	case 4:
-		VID_SetMode(0, CLAMP(320, Q_atoi(Cmd_Argv(1)), MAXWIDTH),
-				CLAMP(200, Q_atoi(Cmd_Argv(2)), MAXHEIGHT),
-				Q_atoi(Cmd_Argv(3)), vid_curpal);
+		vid_realmode = -1;
+		VID_SetMode(-1, atoi(Cmd_Argv(1)), atoi(Cmd_Argv(2)),
+				atoi(Cmd_Argv(3)), vid_curpal);
 		break;
 	}
 }

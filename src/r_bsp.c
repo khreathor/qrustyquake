@@ -1,7 +1,6 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
 
 #include "quakedef.h"
-#include "r_local.h"
 
 #define MAX_BMODEL_VERTS 2500 // CyanBun96: was 500
 #define MAX_BMODEL_EDGES 5000 // was 1000

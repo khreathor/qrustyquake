@@ -1,5 +1,4 @@
 #include "quakedef.h"
-#include "r_local.h"
 
 f32 lab_f(f32 t)
 { // cube-root if > epsilon, linear otherwise

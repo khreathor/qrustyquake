@@ -3,7 +3,6 @@
 // d_surf.c: rasterization driver surface heap manager
 
 #include "quakedef.h"
-#include "r_local.h"
 
 #define GUARDSIZE       4
 

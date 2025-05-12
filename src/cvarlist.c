@@ -1,7 +1,6 @@
 #include "quakedef.h"
 
 #define ZR 0,0,0,0      // "name", default value, flags (1 - save to config.cfg)
-cvar_t vid_mode=                                        {"vid_mode", "0", 0,ZR};
 cvar_t _vid_default_mode_win=              {"_vid_default_mode_win", "3", 1,ZR};
 cvar_t scr_uiscale=                                  {"scr_uiscale", "1", 1,ZR};
 cvar_t sensitivityyscale=                      {"sensitivityyscale", "1", 1,ZR};
@@ -175,6 +174,7 @@ cvar_t v_gamma=                                            {"gamma", "1", 1,ZR};
 cvar_t net_messagetimeout=                  {"net_messagetimeout", "300", 0,ZR};
 cvar_t registered=                               {"registered","1",CVAR_ROM,ZR};
 cvar_t cmdline=                                      {"cmdline","",CVAR_ROM,ZR};
+cvar_t vid_mode=                                 {"vid_mode", "0", CVAR_ROM,ZR};
 cvar_t sv_maxspeed=        {"sv_maxspeed","320",CVAR_NOTIFY|CVAR_SERVERINFO,ZR};
 cvar_t sv_friction=          {"sv_friction","4",CVAR_NOTIFY|CVAR_SERVERINFO,ZR};
 cvar_t sv_gravity=          {"sv_gravity","800",CVAR_NOTIFY|CVAR_SERVERINFO,ZR};

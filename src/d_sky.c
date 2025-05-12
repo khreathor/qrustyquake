@@ -1,7 +1,6 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
 
 #include "quakedef.h"
-#include "r_local.h"
 
 #define SKY_SPAN_SHIFT	5
 #define SKY_SPAN_MAX	(1 << SKY_SPAN_SHIFT)

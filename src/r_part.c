@@ -1,7 +1,6 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
 
 #include "quakedef.h"
-#include "r_local.h"
 
 #define NUMVERTEXNORMALS 162
 #define MAX_PARTICLES 2048 // default max # of particles at one time
