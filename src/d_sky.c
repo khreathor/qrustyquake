@@ -2,7 +2,6 @@
 
 #include "quakedef.h"
 #include "r_local.h"
-#include "d_local.h"
 
 #define SKY_SPAN_SHIFT	5
 #define SKY_SPAN_MAX	(1 << SKY_SPAN_SHIFT)

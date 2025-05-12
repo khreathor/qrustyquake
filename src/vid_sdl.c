@@ -1,5 +1,4 @@
 #include "quakedef.h"
-#include "d_local.h"
 
 void VID_CalcScreenDimensions(cvar_t *cvar);
 void VID_AllocBuffers();

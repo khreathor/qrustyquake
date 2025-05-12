@@ -2,8 +2,6 @@
 
 // r_local.h -- private refresh defs
 
-#include "r_shared.h"
-
 extern clipplane_t view_clipplanes[4];
 extern mplane_t screenedge[4];
 extern vec3_t r_origin;

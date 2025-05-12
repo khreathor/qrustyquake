@@ -103,3 +103,14 @@ s32 d_lightstylevalue[256]; // 8.8 fraction of base light value
 f32 dp_time1, dp_time2, db_time1, db_time2, rw_time1, rw_time2;
 f32 se_time1, se_time2, de_time1, de_time2, dv_time1, dv_time2;
 s32 colored_aliaslight;
+
+float d_sdivzstepu, d_tdivzstepu, d_zistepu;                         // d_vars.c
+float d_sdivzstepv, d_tdivzstepv, d_zistepv;
+float d_sdivzorigin, d_tdivzorigin, d_ziorigin;
+fixed16_t sadjust, tadjust, bbextents, bbextentt;
+pixel_t *cacheblock;
+int cachewidth;
+pixel_t *d_viewbuffer;
+short *d_pzbuffer;
+unsigned int d_zrowbytes;
+unsigned int d_zwidth;

@@ -3,7 +3,6 @@
 // d_part.c: software driver module for drawing particles
 
 #include "quakedef.h"
-#include "d_local.h"
 
 void D_DrawParticle(particle_t *pparticle)
 {

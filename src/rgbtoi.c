@@ -1,5 +1,4 @@
 #include "quakedef.h"
-#include "d_local.h"
 #include "r_local.h"
 
 f32 lab_f(f32 t)

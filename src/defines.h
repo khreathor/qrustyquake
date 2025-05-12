@@ -57,6 +57,8 @@
 #define	E_INT(e,o)		(*(int *)&((float*)&e->v)[o])
 #define	E_VECTOR(e,o)		(&((float*)&e->v)[o])
 #define	E_STRING(e,o)		(PR_GetString(*(string_t *)&((float*)&e->v)[o]))
+#define PROGHEADER_CRC 5927
+
 #define Q_COUNTOF(x) (sizeof(x) / sizeof((x)[0])) // for array size  // q_stdinc
 
 #define WAV_FORMAT_PCM	1                                             // q_sound

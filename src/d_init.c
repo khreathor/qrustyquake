@@ -3,7 +3,6 @@
 // d_init.c: rasterization driver initialization
 
 #include "quakedef.h"
-#include "d_local.h"
 
 #define NUM_MIPS 4
 

@@ -3,7 +3,6 @@
 // GPLv3 See LICENSE for details.
 
 #include "quakedef.h"
-#include "net_dgrm.h"
 
 // This is enables a simple IP banning mechanism
 #define BAN_TEST

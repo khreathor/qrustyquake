@@ -1,7 +1,6 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
 
 #include "quakedef.h"
-#include "net_dgrm.h"
 
 net_driver_t net_drivers[] = {
 	{ "Loopback",
@@ -35,7 +34,6 @@ net_driver_t net_drivers[] = {
 	 Datagram_Shutdown }
 };
 const int net_numdrivers = Q_COUNTOF(net_drivers);
-#include "net_udp.h"
 net_landriver_t net_landrivers[] = {
 	{ "UDP",
 	 0,

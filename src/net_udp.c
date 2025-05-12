@@ -4,7 +4,6 @@
 // GPLv3 See LICENSE for details.
 
 #include "quakedef.h"
-#include "net_udp.h"
 
 static sys_socket_t net_acceptsocket = INVALID_SOCKET;	// socket for fielding new connections
 static sys_socket_t net_controlsocket;

@@ -6,7 +6,6 @@
 // common.c -- misc functions used in client and server
 
 #include "quakedef.h"
-#include "q_ctype.h"
 #include <errno.h>
 
 #include "miniz.h"
@@ -95,7 +94,21 @@ override an explicit setting on the original command line.
 
 //============================================================================
 
-
+static int q_islower(int c){return (c >= 'a' && c <= 'z');}
+static int q_isupper(int c){return (c >= 'A' && c <= 'Z');}
+static int q_tolower(int c){return ((q_isupper(c)) ? (c | ('a' - 'A')) : c);}
+static int q_toupper(int c){return ((q_islower(c)) ? (c & ~('a' - 'A')) : c);}
+static int q_isdigit(int c){return (c >= '0' && c <= '9');}
+static int q_isblank(int c){return (c == ' ' || c == '\t');}
+static int q_isspace(int c)
+{
+	switch(c) {
+	case ' ':  case '\t':
+	case '\n': case '\r':
+	case '\f': case '\v': return 1;
+	}
+	return 0;
+}
 // ClearLink is used for new headnodes
 void ClearLink (link_t *l)
 {

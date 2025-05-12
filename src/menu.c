@@ -1,7 +1,6 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
 
 #include "quakedef.h"
-#include "r_shared.h"
 
 #define	MAIN_ITEMS 5
 #define	SINGLEPLAYER_ITEMS 3

@@ -1,5 +1,4 @@
 #include "quakedef.h"
-#include "d_local.h"
 
 extern s32 fog_lut_built;
 extern u32 sb_updates; // if >= vid.numpages, no update needed

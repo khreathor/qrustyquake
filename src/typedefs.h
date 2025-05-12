@@ -889,4 +889,298 @@ typedef struct _PollProcedure {
 	void    (*procedure)(void *);
 	void    *arg;
 } PollProcedure;
+
+typedef enum hudstyle_t {                                              // screen
+	HUD_CLASSIC,
+	HUD_MODERN_CENTERAMMO, // Modern 1
+	HUD_MODERN_SIDEAMMO, // Modern 2
+	HUD_QUAKEWORLD,
+	HUD_COUNT,
+} hudstyle_t;
+
+typedef struct {                                                          // wad
+	int width, height;
+	byte data[4]; // variably sized
+} qpic_t;
+typedef struct {
+	char identification[4]; // should be WAD2 or 2DAW
+	int numlumps;
+	int infotableofs;
+} wadinfo_t;
+typedef struct {
+	int filepos;
+	int disksize;
+	int size; // uncompressed
+	char type;
+	char compression;
+	char pad1, pad2;
+	char name[16]; // must be null terminated
+} lumpinfo_t;
+typedef struct wad_s {
+	char name[MAX_QPATH];
+	int id;
+	fshandle_t fh;
+	int numlumps;
+	lumpinfo_t *lumps;
+	struct wad_s *next;
+} wad_t;
+
+typedef struct surfcache_s {                                          // d_local
+	struct surfcache_s *next;
+	struct surfcache_s **owner; // NULL is an empty chunk of memory
+	int lightadj[MAXLIGHTMAPS]; // checked for strobe flush
+	int dlight;
+	int size; // including header
+	unsigned width;
+	unsigned height; // DEBUG only needed for debug
+	float mipscale;
+	struct texture_s *texture; // checked for animating textures
+	byte data[4]; // width*height elements
+} surfcache_t;
+typedef struct sspan_s {
+	int u, v, count;
+} sspan_t;
+
+typedef int func_t;                                                   // pr_comp
+typedef int string_t;
+typedef enum {
+	ev_bad = -1, ev_void = 0, ev_string, ev_float,
+	ev_vector, ev_entity, ev_field, ev_function,
+	ev_pointer
+} etype_t;
+enum {  OP_DONE, OP_MUL_F, OP_MUL_V, OP_MUL_FV, OP_MUL_VF,
+	OP_DIV_F, OP_ADD_F, OP_ADD_V, OP_SUB_F, OP_SUB_V,
+	OP_EQ_F, OP_EQ_V, OP_EQ_S, OP_EQ_E, OP_EQ_FNC,
+	OP_NE_F, OP_NE_V, OP_NE_S, OP_NE_E, OP_NE_FNC,
+	OP_LE, OP_GE, OP_LT, OP_GT,
+	OP_LOAD_F, OP_LOAD_V, OP_LOAD_S,
+	OP_LOAD_ENT, OP_LOAD_FLD, OP_LOAD_FNC,
+	OP_ADDRESS,
+	OP_STORE_F, OP_STORE_V, OP_STORE_S,
+	OP_STORE_ENT, OP_STORE_FLD, OP_STORE_FNC,
+	OP_STOREP_F, OP_STOREP_V, OP_STOREP_S,
+	OP_STOREP_ENT, OP_STOREP_FLD, OP_STOREP_FNC,
+	OP_RETURN, OP_NOT_F, OP_NOT_V, OP_NOT_S, OP_NOT_ENT,
+	OP_NOT_FNC, OP_IF, OP_IFNOT,
+	OP_CALL0, OP_CALL1, OP_CALL2, OP_CALL3, OP_CALL4,
+	OP_CALL5, OP_CALL6, OP_CALL7, OP_CALL8,
+	OP_STATE, OP_GOTO, OP_AND, OP_OR,
+	OP_BITAND, OP_BITOR
+};
+typedef struct statement_s {
+	unsigned short op;
+	short a, b, c;
+} dstatement_t;
+typedef struct {
+	unsigned short type;
+	unsigned short ofs;
+	int s_name;
+} ddef_t;
+typedef struct {
+	int first_statement; // negative numbers are builtins
+	int parm_start;
+	int locals; // total ints of parms + locals
+	int profile; // runtime
+	int s_name;
+	int s_file; // source file defined in
+	int numparms;
+	byte parm_size[MAX_PARMS];
+} dfunction_t;
+typedef struct {
+	int version;
+	int crc; // check of header file
+	int ofs_statements;
+	int numstatements; // statement 0 is an error
+	int ofs_globaldefs;
+	int numglobaldefs;
+	int ofs_fielddefs;
+	int numfielddefs;
+	int ofs_functions;
+	int numfunctions; // function 0 is an empty
+	int ofs_strings;
+	int numstrings; // first string is a null string
+	int ofs_globals;
+	int numglobals;
+	int entityfields;
+} dprograms_t;
+
+typedef struct {                                                     // progdefs
+	int	pad[28];
+	int	self;
+	int	other;
+	int	world;
+	float	time;
+	float	frametime;
+	float	force_retouch;
+	string_t	mapname;
+	float	deathmatch;
+	float	coop;
+	float	teamplay;
+	float	serverflags;
+	float	total_secrets;
+	float	total_monsters;
+	float	found_secrets;
+	float	killed_monsters;
+	float	parm1;
+	float	parm2;
+	float	parm3;
+	float	parm4;
+	float	parm5;
+	float	parm6;
+	float	parm7;
+	float	parm8;
+	float	parm9;
+	float	parm10;
+	float	parm11;
+	float	parm12;
+	float	parm13;
+	float	parm14;
+	float	parm15;
+	float	parm16;
+	vec3_t	v_forward;
+	vec3_t	v_up;
+	vec3_t	v_right;
+	float	trace_allsolid;
+	float	trace_startsolid;
+	float	trace_fraction;
+	vec3_t	trace_endpos;
+	vec3_t	trace_plane_normal;
+	float	trace_plane_dist;
+	int	trace_ent;
+	float	trace_inopen;
+	float	trace_inwater;
+	int	msg_entity;
+	func_t	main;
+	func_t	StartFrame;
+	func_t	PlayerPreThink;
+	func_t	PlayerPostThink;
+	func_t	ClientKill;
+	func_t	ClientConnect;
+	func_t	PutClientInServer;
+	func_t	ClientDisconnect;
+	func_t	SetNewParms;
+	func_t	SetChangeParms;
+} globalvars_t;
+typedef struct {
+	float	modelindex;
+	vec3_t	absmin;
+	vec3_t	absmax;
+	float	ltime;
+	float	movetype;
+	float	solid;
+	vec3_t	origin;
+	vec3_t	oldorigin;
+	vec3_t	velocity;
+	vec3_t	angles;
+	vec3_t	avelocity;
+	vec3_t	punchangle;
+	string_t	classname;
+	string_t	model;
+	float	frame;
+	float	skin;
+	float	effects;
+	vec3_t	mins;
+	vec3_t	maxs;
+	vec3_t	size;
+	func_t	touch;
+	func_t	use;
+	func_t	think;
+	func_t	blocked;
+	float	nextthink;
+	int	groundentity;
+	float	health;
+	float	frags;
+	float	weapon;
+	string_t	weaponmodel;
+	float	weaponframe;
+	float	currentammo;
+	float	ammo_shells;
+	float	ammo_nails;
+	float	ammo_rockets;
+	float	ammo_cells;
+	float	items;
+	float	takedamage;
+	int	chain;
+	float	deadflag;
+	vec3_t	view_ofs;
+	float	button0;
+	float	button1;
+	float	button2;
+	float	impulse;
+	float	fixangle;
+	vec3_t	v_angle;
+	float	idealpitch;
+	string_t	netname;
+	int	enemy;
+	float	flags;
+	float	colormap;
+	float	team;
+	float	max_health;
+	float	teleport_time;
+	float	armortype;
+	float	armorvalue;
+	float	waterlevel;
+	float	watertype;
+	float	ideal_yaw;
+	float	yaw_speed;
+	int	aiment;
+	int	goalentity;
+	float	spawnflags;
+	string_t	target;
+	string_t	targetname;
+	float	dmg_take;
+	float	dmg_save;
+	int	dmg_inflictor;
+	int	owner;
+	vec3_t	movedir;
+	string_t	message;
+	float	sounds;
+	string_t	noise;
+	string_t	noise1;
+	string_t	noise2;
+	string_t	noise3;
+} entvars_t;
+
+typedef union eval_s {                                                  // progs
+	string_t string;
+	float _float;
+	float vector[3];
+	func_t function;
+	int _int;
+	int edict;
+} eval_t;
+typedef struct edict_s {
+	bool free;
+	link_t area;
+	int num_leafs;
+	int leafnums[MAX_ENT_LEAFS];
+	entity_state_t baseline;
+	unsigned char alpha;
+	unsigned char scale;
+	bool sendinterval;
+	float oldframe;
+	float oldthinktime;
+	float freetime;
+	entvars_t v;
+} edict_t;
+typedef struct {
+	const char *name;
+	int first_statement;
+	int patch_statement;
+} exbuiltin_t;
+
+typedef struct {                                                        // world
+	vec3_t normal;
+	float dist;
+} plane_t;
+typedef struct {
+	bool allsolid; // if true, plane is not valid
+	bool startsolid; // if true, the initial point was in a solid area
+	bool inopen, inwater;
+	float fraction; // time completed, 1.0 = didn't hit anything
+	vec3_t endpos; // final position
+	plane_t plane; // surface normal at impact
+	edict_t *ent; // entity the surface is on
+} trace_t;
+
 #endif

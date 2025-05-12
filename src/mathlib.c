@@ -10,10 +10,14 @@
 vec3_t vec3_origin = { 0, 0, 0 };
 int nanmask = 255 << 23;
 
-vec_t VectorLength(vec3_t v)
-{
-        return sqrt(DotProduct(v,v));
-}
+void VectorSubtract(const vec3_t a, const vec3_t b, vec3_t c)
+{ c[0] = a[0] - b[0]; c[1] = a[1] - b[1]; c[2] = a[2] - b[2]; }
+void VectorAdd(const vec3_t a, const vec3_t b, vec3_t c)
+{ c[0] = a[0] + b[0]; c[1] = a[1] + b[1]; c[2] = a[2] + b[2]; }
+void VectorCopy(const vec3_t a, vec3_t b)
+{ b[0] = a[0]; b[1] = a[1]; b[2] = a[2]; }
+
+vec_t VectorLength(vec3_t v) { return sqrt(DotProduct(v,v)); }
 
 void ProjectPointOnPlane(vec3_t dst, const vec3_t p, const vec3_t normal)
 {
