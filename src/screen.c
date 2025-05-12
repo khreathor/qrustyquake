@@ -385,7 +385,8 @@ void SCR_ScreenShot_f()
 	}
 	WritePCXfile(pcxname, vid.buffer, vid.width, vid.height, vid.width,
 		     vid_curpal); // save the pcx file 
-	Con_Printf("Wrote %s\n", pcxname);
+	snprintf(checkname, 95, "echo Wrote %s", pcxname);
+	Cbuf_AddText(checkname);
 }
 
 void SCR_BeginLoadingPlaque()
