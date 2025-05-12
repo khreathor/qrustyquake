@@ -4,7 +4,7 @@
 
 sys_socket_t WIPX_Init();
 void WIPX_Shutdown();
-void WIPX_Listen(qboolean state);
+void WIPX_Listen(bool state);
 sys_socket_t WIPX_OpenSocket(int port);
 int WIPX_CloseSocket(sys_socket_t socketid);
 int WIPX_Connect(sys_socket_t socketid, struct qsockaddr *addr);

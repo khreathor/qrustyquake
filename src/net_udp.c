@@ -3,9 +3,7 @@
 // Copyright (C) 2010-2014 QuakeSpasm developers
 // GPLv3 See LICENSE for details.
 
-#include "net_sys.h"
 #include "quakedef.h"
-#include "net_defs.h"
 #include "net_udp.h"
 
 static sys_socket_t net_acceptsocket = INVALID_SOCKET;	// socket for fielding new connections
@@ -91,7 +89,7 @@ void UDP_Shutdown()
 	UDP_CloseSocket(net_controlsocket);
 }
 
-void UDP_Listen(qboolean state)
+void UDP_Listen(bool state)
 {
 	// enable listening
 	if (state) {

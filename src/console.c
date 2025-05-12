@@ -8,7 +8,7 @@
 #define MAXGAMEDIRLEN 1000
 #define MAXPRINTMSG 4096
 
-qboolean con_forcedup; // because no entities to refresh
+bool con_forcedup; // because no entities to refresh
 int con_totallines; // total lines in console scrollback
 int con_backscroll; // lines up from bottom to display
 int con_current; // where next message will be printed
@@ -17,8 +17,8 @@ char *con_text = 0;
 int con_linewidth;
 float con_cursorspeed = 4;
 int con_vislines;
-qboolean con_debuglog;
-qboolean con_initialized;
+bool con_debuglog;
+bool con_initialized;
 int con_notifylines; // scan lines to clear for notify lines
 float con_times[NUM_CON_TIMES];	// realtime time the line was generated
 				// for transparent notify lines
@@ -26,7 +26,7 @@ float con_times[NUM_CON_TIMES];	// realtime time the line was generated
 extern char key_lines[32][MAXCMDLINE];
 extern int edit_line;
 extern int key_linepos;
-extern qboolean team_message;
+extern bool team_message;
 extern void M_Menu_Main_f();
 
 void Con_ToggleConsole_f()
@@ -247,7 +247,7 @@ void Con_Printf(const char *fmt, ...) // FIXME make a buffer size safe vsprintf?
 	// Whatever, I don't see any effect after commenting it out. />
 	// Fix this properly yourself if you find a reason to care.
 	// update the screen if the console is displayed
-	// static qboolean inupdate;
+	// static bool inupdate;
 	// if (cls.signon != SIGNONS && !scr_disabled_for_loading) {
 	//	// protect against infinite loop if something in
 	//	// SCR_UpdateScreen calls Con_Printd
@@ -342,7 +342,7 @@ void Con_DrawNotify()
 }
 
 
-void Con_DrawConsole(int lines, qboolean drawinput)//Draws console with solid bg
+void Con_DrawConsole(int lines, bool drawinput)//Draws console with solid bg
 { // Typing input line at the bottom should only be drawn if typing is allowed
 	char *text;
 	if (lines <= 0)

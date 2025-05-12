@@ -1,6 +1,6 @@
 #include "quakedef.h"
 
-qboolean mouse_avail;
+bool mouse_avail;
 float mouse_x;
 float mouse_y;
 int mouse_oldbuttonstate;

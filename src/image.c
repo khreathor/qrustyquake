@@ -67,7 +67,7 @@ byte *Image_LoadTGA (FILE *fin, int *width, int *height)
 	int row, column;
 	byte *targa_rgba;
 	int realrow; //johnfitz -- fix for upside-down targas
-	qboolean upside_down; //johnfitz -- fix for upside-down targas
+	bool upside_down; //johnfitz -- fix for upside-down targas
 	stdio_buffer_t *buf;
 	targaheader_t targa_header;
 

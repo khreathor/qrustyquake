@@ -15,7 +15,7 @@ static void S_Play (void);
 static void S_PlayVol (void);
 static void S_SoundList (void);
 static void S_Update_ (void);
-void S_StopAllSounds (qboolean clear);
+void S_StopAllSounds (bool clear);
 static void S_StopAllSoundsC (void);
 
 // =======================================================================
@@ -26,7 +26,7 @@ channel_t	snd_channels[MAX_CHANNELS];
 int		total_channels;
 
 static int	snd_blocked = 0;
-static qboolean	snd_initialized = false;
+static bool	snd_initialized = false;
 
 static dma_t	sn;
 volatile dma_t	*shm = NULL;
@@ -51,7 +51,7 @@ static int	num_sfx;
 
 static sfx_t	*ambient_sfx[NUM_AMBIENTS];
 
-static qboolean	sound_started = false;
+static bool	sound_started = false;
 
 #define SND_FILTERQUALITY_DEFAULT "1"
 
@@ -487,7 +487,7 @@ void S_StopSound (int entnum, int entchannel)
 	}
 }
 
-void S_StopAllSounds (qboolean clear)
+void S_StopAllSounds (bool clear)
 {
 	int		i;
 

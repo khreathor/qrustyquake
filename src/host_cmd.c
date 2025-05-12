@@ -1,8 +1,6 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
 
-#include "net_sys.h"
 #include "quakedef.h"
-#include "net_defs.h"
 
 #define SAVEGAME_VERSION 5
 
@@ -14,7 +12,7 @@ void Mod_Print();
 
 extern void M_Menu_Quit_f();
 
-qboolean noclip_anglehack;
+bool noclip_anglehack;
 
 void Host_Quit_f()
 {
@@ -541,10 +539,10 @@ void Host_Please_f()
 }
 #endif
 
-void Host_Say(qboolean teamonly)
+void Host_Say(bool teamonly)
 {
 	char text[64];
-	qboolean fromServer = false;
+	bool fromServer = false;
 	if (cmd_source == src_command) {
 		if (cls.state == ca_dedicated) {
 			fromServer = true;
@@ -845,7 +843,7 @@ void Host_Kick_f() // Kicks a user off of the server
 	const char *message = NULL;
 	client_t *save;
 	int i;
-	qboolean byNumber = false;
+	bool byNumber = false;
 	if (cmd_source == src_command) {
 		if (!sv.active) {
 			Cmd_ForwardToServer();

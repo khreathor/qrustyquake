@@ -180,7 +180,7 @@ void CL_PlayDemo_f()
 	cls.state = ca_connected;
 	cls.forcetrack = 0;
 	int c;
-	qboolean neg = false;
+	bool neg = false;
 	while ((c = getc(cls.demofile)) != '\n')
 		if (c == '-')
 			neg = true;

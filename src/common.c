@@ -16,9 +16,9 @@ static char	argvdummy[] = " ";
 
 int		safemode;
 
-static qboolean		com_modified;	// set true if using non-id files
+static bool		com_modified;	// set true if using non-id files
 
-qboolean		fitzmode;
+bool		fitzmode;
 
 static void COM_Path_f (void);
 
@@ -38,7 +38,7 @@ char	**com_argv;
 #define CMDLINE_LENGTH	256		/* johnfitz -- mirrored in cmd.c */
 char	com_cmdline[CMDLINE_LENGTH];
 
-qboolean standard_quake = true, rogue, hipnotic;
+bool standard_quake = true, rogue, hipnotic;
 
 // this graphic needs to be in the pak file to use registered features
 static unsigned short pop[] =
@@ -639,7 +639,7 @@ float Q_atof (const char *str)
 ============================================================================
 */
 
-qboolean	host_bigendian;
+bool	host_bigendian;
 
 short	(*BigShort) (short l);
 short	(*LittleShort) (short l);
@@ -840,7 +840,7 @@ void MSG_WriteAngle16 (sizebuf_t *sb, float f, unsigned int flags)
 // reading functions
 //
 int		msg_readcount;
-qboolean	msg_badread;
+bool	msg_badread;
 
 void MSG_BeginReading (void)
 {
@@ -1813,7 +1813,7 @@ COM_FileExists
 Returns whether the file is found in the quake filesystem.
 ===========
 */
-qboolean COM_FileExists (const char *filename, unsigned int *path_id)
+bool COM_FileExists (const char *filename, unsigned int *path_id)
 {
 	int ret = COM_FindFile (filename, NULL, NULL, path_id);
 	return (ret == -1) ? false : true;
@@ -2139,7 +2139,7 @@ static void COM_AddGameDirectory (const char *base, const char *dir)
 	searchpath_t *search;
 	pack_t *pak, *qspak;
 	char pakfile[MAX_OSPATH];
-	qboolean been_here = false;
+	bool been_here = false;
 
 	q_strlcpy (com_gamedir, va("%s/%s", base, dir), sizeof(com_gamedir));
 
@@ -2164,7 +2164,7 @@ _add_path:
 		if (i != 0 || path_id != 1 || fitzmode)
 			qspak = NULL;
 		else {
-			qboolean old = com_modified;
+			bool old = com_modified;
 			if (been_here) base = host_parms.userdir;
 			q_snprintf (pakfile, sizeof(pakfile), "%s/quakespasm.pak", base);
 			qspak = COM_LoadPackFile (pakfile);
@@ -2317,7 +2317,7 @@ static void COM_Game_f (void)
 		{
 			q_snprintf (com_gamedir, sizeof(com_gamedir), "%s/%s",
 					(host_parms.userdir != host_parms.basedir)?
-						   host_parms.userdir : com_basedir,
+					(char *)host_parms.userdir : com_basedir,
 					GAMENAME);
 		}
 
@@ -2656,7 +2656,7 @@ static size_t mz_zip_file_read_func(void *opaque, mz_uint64 ofs, void *buf, size
 LOC_LoadFile
 ================
 */
-qboolean LOC_LoadFile (const char *file)
+bool LOC_LoadFile (const char *file)
 {
 	char path[1024];
 	int i,lineno,warnings;
@@ -2751,8 +2751,8 @@ fail:			mz_zip_reader_end(&archive);
 		else if (equals)
 		{
 			char *key_end = equals;
-			qboolean leading_quote;
-			qboolean trailing_quote;
+			bool leading_quote;
+			bool trailing_quote;
 			locentry_t *entry;
 			char *value_src;
 			char *value_dst;
@@ -3005,7 +3005,7 @@ static int LOC_ParseArg (const char **pstr)
 LOC_HasPlaceholders
 ================
 */
-qboolean LOC_HasPlaceholders (const char *str)
+bool LOC_HasPlaceholders (const char *str)
 {
 	if (!localization.numindices)
 		return false;

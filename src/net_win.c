@@ -3,10 +3,7 @@
 // GPLv3 See LICENSE for details.
 
 #include "quakedef.h"
-#include "net_sys.h"
-#include "net_defs.h"
 #include "net_dgrm.h"
-#include "net_loop.h"
 
 net_driver_t net_drivers[] = {
 	{ "Loopback",

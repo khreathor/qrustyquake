@@ -1,7 +1,7 @@
 // Copyright (c) 2024-2025 erysdren (it/its) GPLv3 See LICENSE for details.
 // Originally MIT License
 
-#include "vgatext.h"
+#include "quakedef.h"
 #include "vgafont.h"
 
 #define BLINK_HZ ((1000 / 70) * 16)

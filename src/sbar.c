@@ -28,7 +28,7 @@ qpic_t *rsb_ammo[3];
 qpic_t *rsb_teambord; // PGM 01/19/97 - team color border
       //MED 01/04/97 added two more weapons + 3 alternates for grenade launcher
 qpic_t *hsb_weapons[7][5]; // 0 is active, 1 is owned, 2-5 are flashes
-qboolean sb_showscores;
+bool sb_showscores;
 int sb_lines; // scan lines to draw
 int hipweapons[4] = //MED 01/04/97 added array to simplify weapon parsing
 { HIT_LASER_CANNON_BIT, HIT_MJOLNIR_BIT, 4, HIT_PROXIMITY_GUN_BIT };

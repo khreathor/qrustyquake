@@ -13,8 +13,8 @@ Memory is cleared / released when a server or client begins, not when they end.
 */
 
 quakeparms_t host_parms;
-qboolean host_initialized; // true if into command execution
-qboolean isDedicated;
+bool host_initialized; // true if into command execution
+bool isDedicated;
 double host_frametime;
 double host_rawframetime;
 float host_netinterval;
@@ -69,7 +69,7 @@ void Host_Error(char *error, ...)
 {
 	va_list argptr;
 	char string[1024];
-	static qboolean inerror = false;
+	static bool inerror = false;
 	if (inerror)
 		Sys_Error("Host_Error: recursively entered");
 	inerror = true;
@@ -211,7 +211,7 @@ void Host_ClientCommands(char *fmt, ...)
 }
 
 
-void SV_DropClient(qboolean crash)
+void SV_DropClient(bool crash)
 { // Called when the player is getting totally kicked off the host
   // if (crash = true), don't bother sending signofs
 	int i;
@@ -258,7 +258,7 @@ void SV_DropClient(qboolean crash)
 	}
 }
 
-void Host_ShutdownServer(qboolean crash)
+void Host_ShutdownServer(bool crash)
 { // This only happens at the end of a game, not between levels
 	unsigned char message[4];
 	int i;
@@ -371,7 +371,7 @@ void Host_ServerFrame()
 	SV_SendClientMessages(); // send all messages to the clients
 }
 
-static void Host_PrintTimes (const double times[], const char *names[], int count, qboolean showtotal)
+static void Host_PrintTimes (const double times[], const char *names[], int count, bool showtotal)
 {
 	char line[1024];
 	double total = 0.0;
@@ -401,7 +401,7 @@ void _Host_Frame(float time)
 { // Runs all active servers
 	static double accumtime = 0;
 	static double time1, time2, time3;
-	qboolean ranserver = false;
+	bool ranserver = false;
 	if (setjmp(host_abortserver))
 		return;	// something bad happened, or the server disconnected
 	rand(); // keep the random time dependent
@@ -502,7 +502,7 @@ void Host_Frame(float time)
 void Host_Init()
 {
 	com_argc = host_parms.argc;
-	com_argv = host_parms.argv;
+	com_argv = (char **)host_parms.argv;
 	Memory_Init(host_parms.membase, host_parms.memsize);
 	Cbuf_Init();
 	Cmd_Init();
@@ -561,7 +561,7 @@ void Host_Init()
 // to run quit through here before the final handoff to the sys code.
 void Host_Shutdown()
 {
-	static qboolean isdown = false;
+	static bool isdown = false;
 	if (isdown) {
 		printf("recursive shutdown\n");
 		return;

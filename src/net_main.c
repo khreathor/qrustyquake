@@ -3,8 +3,6 @@
 // GPLv3 See LICENSE for details.
 
 #include "quakedef.h"
-#include "net_sys.h"
-#include "net_defs.h"
 
 // these two macros are to make the code more readable
 #define sfunc net_drivers[sock->driver]
@@ -17,15 +15,15 @@ hostcache_t hostcache[HOSTCACHESIZE];
 qsocket_t *net_activeSockets = NULL;
 qsocket_t *net_freeSockets = NULL;
 int net_numsockets = 0;
-qboolean tcpipAvailable = false;
+bool tcpipAvailable = false;
 int net_hostport;
 int DEFAULTnet_hostport = 26000;
 char my_ipx_address[NET_NAMELEN];
 char my_tcpip_address[NET_NAMELEN];
-static qboolean listening = false;
-qboolean slistInProgress = false;
-qboolean slistSilent = false;
-qboolean slistLocal = true;
+static bool listening = false;
+bool slistInProgress = false;
+bool slistSilent = false;
+bool slistLocal = true;
 static double slistStartTime;
 static int slistLastShown;
 sizebuf_t net_message;
@@ -415,7 +413,7 @@ int NET_SendUnreliableMessage(qsocket_t *sock, sizebuf_t *data)
 
 // Returns true or false if the given qsocket can currently accept a
 // message to be transmitted.
-qboolean NET_CanSendMessage(qsocket_t *sock)
+bool NET_CanSendMessage(qsocket_t *sock)
 {
 	if (!sock)
 		return false;
@@ -430,8 +428,8 @@ int NET_SendToAll(sizebuf_t *data, double blocktime)
 	double start;
 	int i = 0;
 	int count = 0;
-	qboolean msg_init[MAX_SCOREBOARD];	/* did we write the message to the client's connection  */
-	qboolean msg_sent[MAX_SCOREBOARD];	/* did the msg arrive its destination (canSend state).  */
+	bool msg_init[MAX_SCOREBOARD];	/* did we write the message to the client's connection  */
+	bool msg_sent[MAX_SCOREBOARD];	/* did the msg arrive its destination (canSend state).  */
 	for (host_client = svs.clients; i < svs.maxclients; i++, host_client++){
 		if (host_client->netconnection && host_client->active) {
 			if (IS_LOOP_DRIVER(host_client->netconnection->driver)){

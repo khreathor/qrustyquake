@@ -8,7 +8,7 @@ extern int reinit_surfcache;
 extern vec3_t r_origin, vpn, vright, vup;
 // surface cache related
 extern int reinit_surfcache; // if 1, surface cache is currently empty and
-extern qboolean r_cache_thrash; // set if thrashing the surface cache
+extern bool r_cache_thrash; // set if thrashing the surface cache
 
 void R_Init();
 void R_InitTextures();

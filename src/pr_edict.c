@@ -18,7 +18,7 @@ static	int		pr_numknownstrings;
 static	ddef_t		*pr_fielddefs;
 static	ddef_t		*pr_globaldefs;
 
-qboolean	pr_alpha_supported; //johnfitz
+bool	pr_alpha_supported; //johnfitz
 int		pr_effects_mask; // only enable 2021 rerelease quad/penta dlights when applicable
 
 dstatement_t	*pr_statements;
@@ -40,7 +40,7 @@ const int	type_size[NUM_TYPE_SIZES] = {
 };
 
 static ddef_t	*ED_FieldAtOfs (int ofs);
-static qboolean	ED_ParseEpair (void *base, ddef_t *key, const char *s);
+static bool	ED_ParseEpair (void *base, ddef_t *key, const char *s);
 
 #define	MAX_FIELD_LEN	64
 #define	GEFV_CACHESIZE	2
@@ -763,7 +763,7 @@ Can parse either fields or globals
 returns false if error
 =============
 */
-static qboolean ED_ParseEpair (void *base, ddef_t *key, const char *s)
+static bool ED_ParseEpair (void *base, ddef_t *key, const char *s)
 {
 	int		i;
 	char	string[128];
@@ -855,7 +855,7 @@ const char *ED_ParseEdict (const char *data, edict_t *ent)
 {
 	ddef_t		*key;
 	char		keyname[256];
-	qboolean	anglehack, init;
+	bool	anglehack, init;
 	int		n;
 
 	init = false;
@@ -1060,7 +1060,7 @@ void ED_LoadFromFile (const char *data)
 PR_HasGlobal
 ===============
 */
-static qboolean PR_HasGlobal (const char *name, float value)
+static bool PR_HasGlobal (const char *name, float value)
 {
 	ddef_t *g = ED_FindGlobal (name);
 	return g && (g->type & ~DEF_SAVEGLOBAL) == ev_float && G_FLOAT (g->ofs) == value;
@@ -1078,7 +1078,7 @@ to avoid conflicts (e.g. Arcane Dimensions uses bit 32 for its explosions)
 */
 static int PR_FindSupportedEffects (void)
 {
-	qboolean isqex = 
+	bool isqex = 
 		PR_HasGlobal ("EF_QUADLIGHT", EF_QEX_QUADLIGHT) &&
 		(PR_HasGlobal ("EF_PENTLIGHT", EF_QEX_PENTALIGHT) || PR_HasGlobal ("EF_PENTALIGHT", EF_QEX_PENTALIGHT))
 	;

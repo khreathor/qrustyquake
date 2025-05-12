@@ -16,6 +16,16 @@ typedef double   f64;
 typedef unsigned char byte; // TODO remove
 typedef unsigned char pixel_t; // TODO remove
 
+typedef struct { // specified by the host system                     // quakedef
+	s8 *basedir;
+	s8 *userdir;
+	s8 *cachedir; // for development over ISDN lines
+	s32 argc;
+	s8 **argv;
+	void *membase;
+	s32 memsize;
+} quakeparms_t;
+
 typedef f32   vec_t;                                                 // q_stdinc
 typedef vec_t vec3_t[3];
 typedef vec_t vec4_t[4];
@@ -23,6 +33,44 @@ typedef vec_t vec5_t[5];
 typedef s32   fixed4_t;
 typedef s32   fixed8_t;
 typedef s32   fixed16_t;
+
+typedef struct sizebuf_s {                                             // common
+	bool allowoverflow; // if false, do a Sys_Error
+	bool overflowed;  // set to true if the buffer size failed
+	byte  *data;
+	int  maxsize;
+	int  cursize;
+} sizebuf_t;
+typedef struct link_s {
+	struct link_s *prev, *next;
+} link_t;
+typedef struct vec_header_t {
+	size_t capacity;
+	size_t size;
+} vec_header_t;
+typedef struct {
+	char name[MAX_QPATH];
+	int  filepos, filelen;
+} packfile_t;
+typedef struct pack_s {
+	char filename[MAX_OSPATH];
+	int  handle;
+	int  numfiles;
+	packfile_t *files;
+} pack_t;
+typedef struct searchpath_s {
+	unsigned int path_id; // identifier assigned to the game directory
+	char filename[MAX_OSPATH];
+	pack_t *pack;   // only one of filename / pack will be used
+	struct searchpath_s *next;
+} searchpath_t;
+typedef struct _fshandle_t {
+	FILE *file;
+	bool pak; /* is the file read from a pak */
+	long start; /* file or data start position */
+	long length; /* file or data size */
+	long pos; /* current position relative to start */
+} fshandle_t;
 
 typedef struct {                                                      // bspfile
 	s32 fileofs, filelen;
@@ -746,4 +794,99 @@ typedef struct {
 	int surfwidth; // in mipmapped texels
 	int surfheight; // in mipmapped texels
 } drawsurf_t;
+
+typedef enum { key_game, key_console, key_message, key_menu } keydest_t; // keys
+typedef struct { s8 *name; s32 keynum; } keyname_t;
+
+#ifndef _WIN32                                                        // net_sys
+typedef int sys_socket_t;
+#else
+typedef u_long in_addr_t;
+typedef SOCKET sys_socket_t;
+#endif
+
+struct qsockaddr {                                                   // net_defs
+	short qsa_family;
+	unsigned char qsa_data[14];
+};
+typedef struct qsocket_s {
+	struct qsocket_s *next;
+	double  connecttime;
+	double  lastMessageTime;
+	double  lastSendTime;
+	bool disconnected;
+	bool canSend;
+	bool sendNext;
+	int  driver;
+	int  landriver;
+	sys_socket_t socket;
+	void  *driverdata;
+	unsigned int ackSequence;
+	unsigned int sendSequence;
+	unsigned int unreliableSendSequence;
+	int  sendMessageLength;
+	byte  sendMessage [NET_MAXMESSAGE];
+	unsigned int receiveSequence;
+	unsigned int unreliableReceiveSequence;
+	int  receiveMessageLength;
+	byte  receiveMessage [NET_MAXMESSAGE];
+	struct qsockaddr addr;
+	char  address[NET_NAMELEN];
+
+} qsocket_t;
+typedef struct {
+	const char *name;
+	bool initialized;
+	sys_socket_t controlSock;
+	sys_socket_t (*Init) ();
+	void  (*Shutdown) ();
+	void  (*Listen) (bool state);
+	sys_socket_t (*Open_Socket) (int port);
+	int  (*Close_Socket) (sys_socket_t socketid);
+	int  (*Connect) (sys_socket_t socketid, struct qsockaddr *addr);
+	sys_socket_t (*CheckNewConnections) ();
+	int  (*Read) (sys_socket_t socketid, byte *buf, int len, struct qsockaddr *addr);
+	int  (*Write) (sys_socket_t socketid, byte *buf, int len, struct qsockaddr *addr);
+	int  (*Broadcast) (sys_socket_t socketid, byte *buf, int len);
+	const char * (*AddrToString) (struct qsockaddr *addr);
+	int  (*StringToAddr) (const char *string, struct qsockaddr *addr);
+	int  (*GetSocketAddr) (sys_socket_t socketid, struct qsockaddr *addr);
+	int  (*GetNameFromAddr) (struct qsockaddr *addr, char *name);
+	int  (*GetAddrFromName) (const char *name, struct qsockaddr *addr);
+	int  (*AddrCompare) (struct qsockaddr *addr1, struct qsockaddr *addr2);
+	int  (*GetSocketPort) (struct qsockaddr *addr);
+	int  (*SetSocketPort) (struct qsockaddr *addr, int port);
+} net_landriver_t;
+typedef struct {
+	const char *name;
+	bool initialized;
+	int  (*Init) ();
+	void  (*Listen) (bool state);
+	void  (*SearchForHosts) (bool xmit);
+	qsocket_t *(*Connect) (const char *host);
+	qsocket_t *(*CheckNewConnections) ();
+	int  (*QGetMessage) (qsocket_t *sock);
+	int  (*QSendMessage) (qsocket_t *sock, sizebuf_t *data);
+	int  (*SendUnreliableMessage) (qsocket_t *sock, sizebuf_t *data);
+	bool (*CanSendMessage) (qsocket_t *sock);
+	bool (*CanSendUnreliableMessage) (qsocket_t *sock);
+	void  (*Close) (qsocket_t *sock);
+	void  (*Shutdown) ();
+} net_driver_t;
+typedef struct {
+	char name[16];
+	char map[16];
+	char cname[32];
+	int  users;
+	int  maxusers;
+	int  driver;
+	int  ldriver;
+	struct qsockaddr addr;
+} hostcache_t;
+typedef struct _PollProcedure {
+	struct _PollProcedure *next;
+	double    nextTime;
+	void    (*procedure)(void *);
+	void    *arg;
+} PollProcedure;
 #endif

@@ -1,12 +1,12 @@
 #include "quakedef.h"
 
 FILE *sys_handles[MAX_HANDLES];
-extern double Host_GetFrameInterval();
+extern f64 Host_GetFrameInterval();
 
-void Sys_Printf(const char *fmt, ...)
+void Sys_Printf(const s8 *fmt, ...)
 {
 	va_list argptr;
-	char text[1024];
+	s8 text[1024];
 	va_start(argptr, fmt);
 	vsprintf(text, fmt, argptr);
 	va_end(argptr);
@@ -17,19 +17,19 @@ void Sys_Quit()
 {
 	Host_Shutdown();
         Uint16 *screen; // erysdren (it/its)
-        if (registered.value)
+        if(registered.value)
                 screen = (Uint16 *)COM_LoadHunkFile("end2.bin", 0);
         else
                 screen = (Uint16 *)COM_LoadHunkFile("end1.bin", 0);
-        if (screen)
+        if(screen)
                 vgatext_main(window, screen);
 	exit(0);
 }
 
-void Sys_Error(const char *error, ...)
+void Sys_Error(const s8 *error, ...)
 {
 	va_list argptr;
-	char str[1024];
+	s8 str[1024];
 	va_start(argptr, error);
 	vsprintf(str, error, argptr);
 	va_end(argptr);
@@ -42,37 +42,37 @@ void Sys_Error(const char *error, ...)
 	exit(1);
 }
 
-int findhandle()
+s32 findhandle()
 {
-	for (int i = 1; i < MAX_HANDLES; i++)
-		if (!sys_handles[i])
+	for(s32 i = 1; i < MAX_HANDLES; i++)
+		if(!sys_handles[i])
 			return i;
 	Sys_Error("out of handles");
 	return -1;
 }
 
-static int Qfilelength(FILE *f)
+static s32 Qfilelength(FILE *f)
 {
-	int pos = ftell(f);
+	s32 pos = ftell(f);
 	fseek(f, 0, SEEK_END);
-	int end = ftell(f);
+	s32 end = ftell(f);
 	fseek(f, pos, SEEK_SET);
 	return end;
 }
 
-static double Sys_WaitUntil (double endtime)
+static f64 Sys_WaitUntil (f64 endtime)
 {
-	static double estimate = 1e-3;
-	static double mean = 1e-3;
-	static double m2 = 0.0;
-	static double count = 1.0;
+	static f64 estimate = 1e-3;
+	static f64 mean = 1e-3;
+	static f64 m2 = 0.0;
+	static f64 count = 1.0;
 
-	double now = Sys_DoubleTime ();
-	double before, observed, delta, stddev;
+	f64 now = Sys_DoubleTime ();
+	f64 before, observed, delta, stddev;
 
 	endtime -= 1e-6; // allow finishing 1 microsecond earlier than requested
 
-	while (now + estimate < endtime)
+	while(now + estimate < endtime)
 	{
 		before = now;
 		SDL_Delay (1);
@@ -80,7 +80,7 @@ static double Sys_WaitUntil (double endtime)
 
 		// Determine Sleep(1) mean duration & variance using Welford's algorithm
 		// https://blog.bearcats.nl/accurate-sleep-function/
-		if (count < 1e6) // skip this if we already have more than enough samples
+		if(count < 1e6) // skip this if we already have more than enough samples
 		{
 			++count;
 			observed = now - before;
@@ -97,7 +97,7 @@ static double Sys_WaitUntil (double endtime)
 		}
 	}
 
-	while (now < endtime)
+	while(now < endtime)
 	{
 #ifdef USE_SSE2
 		_mm_pause (); _mm_pause (); _mm_pause (); _mm_pause ();
@@ -111,16 +111,16 @@ static double Sys_WaitUntil (double endtime)
 	return now;
 }
 
-static double Sys_Throttle (double oldtime)
+static f64 Sys_Throttle (f64 oldtime)
 {
 	return Sys_WaitUntil (oldtime + Host_GetFrameInterval ());
 }
 
-int Sys_FileOpenRead(const char *path, int *hndl)
+s32 Sys_FileOpenRead(const s8 *path, s32 *hndl)
 {
-	int i = findhandle();
+	s32 i = findhandle();
 	FILE *f = fopen(path, "rb");
-	if (!f) {
+	if(!f){
 		*hndl = -1;
 		return -1;
 	}
@@ -130,26 +130,26 @@ int Sys_FileOpenRead(const char *path, int *hndl)
 }
 
 
-void Sys_FileClose(int handle)
+void Sys_FileClose(s32 handle)
 {
 	fclose(sys_handles[handle]);
 	sys_handles[handle] = NULL;
 }
 
-void Sys_FileSeek(int handle, int position)
+void Sys_FileSeek(s32 handle, s32 position)
 {
 	fseek(sys_handles[handle], position, SEEK_SET);
 }
 
-int Sys_FileRead(int handle, void *dst, int count)
+s32 Sys_FileRead(s32 handle, void *dst, s32 count)
 {
 	return fread(dst, 1, count, sys_handles[handle]);
 }
 
-int Sys_FileTime(const char *path)
+s32 Sys_FileTime(const s8 *path)
 {
 	FILE *f = fopen(path, "rb");
-	if (f) {
+	if(f){
 		fclose(f);
 		return 1;
 	}
@@ -157,55 +157,55 @@ int Sys_FileTime(const char *path)
 }
 
 #ifndef _WIN32
-int Sys_FileType (const char *path)
+s32 Sys_FileType (const s8 *path)
 {
         /*
-        if (access(path, R_OK) == -1)
+        if(access(path, R_OK) == -1)
                 return 0;
         */
         struct stat     st;
 
-        if (stat(path, &st) != 0)
+        if(stat(path, &st) != 0)
                 return FS_ENT_NONE;
-        if (S_ISDIR(st.st_mode))
+        if(S_ISDIR(st.st_mode))
                 return FS_ENT_DIRECTORY;
-        if (S_ISREG(st.st_mode))
+        if(S_ISREG(st.st_mode))
                 return FS_ENT_FILE;
 
         return FS_ENT_NONE;
 }
 
-int Sys_FileOpenWrite(const char *path)
+s32 Sys_FileOpenWrite(const s8 *path)
 {
-	int i = findhandle();
+	s32 i = findhandle();
 	FILE *f = fopen(path, "wb");
-	if (!f)
+	if(!f)
 		Sys_Error("Error opening %s: %s", path, strerror(errno));
 	sys_handles[i] = f;
 	return i;
 }
 
-int Sys_FileWrite(int handle, const void *src, int count)
+s32 Sys_FileWrite(s32 handle, const void *src, s32 count)
 {
 	return fwrite(src, 1, count, sys_handles[handle]);
 }
 
-double Sys_FloatTime()
+f64 Sys_FloatTime()
 { // CyanBun96: TODO move this to DoubleTime and remove FloatTime
 	struct timeval tp;
 	struct timezone tzp;
-	static int secbase;
+	static s32 secbase;
 	gettimeofday(&tp, &tzp);
-	if (!secbase) {
+	if(!secbase){
 		secbase = tp.tv_sec;
 		return tp.tv_usec / 1000000.0;
 	}
 	return (tp.tv_sec - secbase) + tp.tv_usec / 1000000.0;
 }
 
-double Sys_DoubleTime() { return Sys_FloatTime(); }
+f64 Sys_DoubleTime(){ return Sys_FloatTime(); }
 
-void Sys_mkdir(const char *path)
+void Sys_mkdir(const s8 *path)
 {
 	mkdir(path, 0777);
 }
@@ -213,28 +213,28 @@ void Sys_mkdir(const char *path)
 
 int main(int c, char **v)
 {
-	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
+	if(SDL_Init(SDL_INIT_EVERYTHING) < 0)
 		Sys_Error("SDL_Init failed: %s", SDL_GetError());
 	quakeparms_t parms;
 	host_parms.argc = c;
-	host_parms.argv = v;
-	COM_InitArgv(host_parms.argc, host_parms.argv);
+	host_parms.argv = (s8**)v;
+	COM_InitArgv(host_parms.argc, (char**)host_parms.argv);
 	host_parms.memsize = DEFAULT_MEMORY;
-	if (COM_CheckParm("-heapsize")) {
-		int t = COM_CheckParm("-heapsize") + 1;
-		if (t < c)
+	if(COM_CheckParm("-heapsize")){
+		s32 t = COM_CheckParm("-heapsize") + 1;
+		if(t < c)
 			host_parms.memsize = Q_atoi(v[t]) * 1024;
 	}
 	host_parms.membase = malloc(host_parms.memsize);
 	host_parms.basedir = ".";
 	Host_Init();
-	double oldtime = Sys_FloatTime() - 0.1;
-	while (1) {
-		double newtime = Sys_Throttle(oldtime);
-		double deltatime = newtime - oldtime;
-		if (cls.state == ca_dedicated)
+	f64 oldtime = Sys_FloatTime() - 0.1;
+	while(1){
+		f64 newtime = Sys_Throttle(oldtime);
+		f64 deltatime = newtime - oldtime;
+		if(cls.state == ca_dedicated)
 			deltatime = sys_ticrate.value;
-		if (deltatime > sys_ticrate.value * 2)
+		if(deltatime > sys_ticrate.value * 2)
 			oldtime = newtime;
 		else
 			oldtime += deltatime;

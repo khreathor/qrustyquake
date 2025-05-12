@@ -9,7 +9,7 @@
 #define GUARDSIZE       4
 
 float surfscale;
-qboolean r_cache_thrash; // set if surface cache is thrashing
+bool r_cache_thrash; // set if surface cache is thrashing
 unsigned long sc_size;
 surfcache_t *sc_rover, *sc_base;
 int lmonly; // render lightmap only, for lit water
@@ -72,7 +72,7 @@ surfcache_t *D_SCAlloc(int width, uintptr_t size)
 	if (size > sc_size)
 		Sys_Error("D_SCAlloc: %i > cache size", size);
 	// if there is not size bytes after the rover, reset to the start
-	qboolean wrapped_this_time = false;
+	bool wrapped_this_time = false;
 	if (!sc_rover || (unsigned long)((byte *) sc_rover - (byte *) sc_base)
 			> sc_size - size) {
 		if (sc_rover) {

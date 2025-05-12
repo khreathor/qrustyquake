@@ -6,7 +6,7 @@
 #include "r_local.h"
 
 extern viddef_t vid; // global video state
-qboolean scr_initialized; // ready to draw
+bool scr_initialized; // ready to draw
 qpic_t *scr_ram;
 qpic_t *scr_net;
 qpic_t *scr_turtle;
@@ -14,11 +14,11 @@ unsigned int scr_fullupdate;
 unsigned int clearconsole;
 unsigned int clearnotify;
 vrect_t scr_vrect;
-qboolean scr_disabled_for_loading;
-qboolean scr_drawloading;
+bool scr_disabled_for_loading;
+bool scr_drawloading;
 float scr_disabled_time;
-qboolean scr_skipupdate;
-qboolean block_drawing;
+bool scr_skipupdate;
+bool block_drawing;
 void SCR_ScreenShot_f();
 char scr_centerstring[1024]; // center printing
 float scr_centertime_start; // for slow victory printing
@@ -414,7 +414,7 @@ void SCR_EndLoadingPlaque()
 }
 
 char *scr_notifystring;
-qboolean scr_drawdialog;
+bool scr_drawdialog;
 
 void SCR_DrawNotifyString()
 {

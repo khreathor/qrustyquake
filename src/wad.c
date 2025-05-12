@@ -139,7 +139,7 @@ void *W_GetLumpNum (int num)
 W_OpenWadFile
 =================
 */
-static qboolean W_OpenWadFile (const char *filename, fshandle_t *fh)
+static bool W_OpenWadFile (const char *filename, fshandle_t *fh)
 {
 	FILE *f;
 	long  length;

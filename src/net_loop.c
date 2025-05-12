@@ -3,11 +3,8 @@
 // GPLv3 See LICENSE for details.
 
 #include "quakedef.h"
-#include "net_sys.h"
-#include "net_defs.h"
-#include "net_loop.h"
 
-static qboolean localconnectpending = false;
+static bool localconnectpending = false;
 static qsocket_t *loop_client = NULL;
 static qsocket_t *loop_server = NULL;
 
@@ -22,12 +19,12 @@ void Loop_Shutdown()
 {
 }
 
-void Loop_Listen(qboolean state)
+void Loop_Listen(bool state)
 {
 	(void)state; // removing the argument would break things, probably
 } // mentioning it here with void just to quiet the compiler
 
-void Loop_SearchForHosts(qboolean xmit)
+void Loop_SearchForHosts(bool xmit)
 {
 	(void)xmit; // same as above
 	if (!sv.active)
@@ -151,14 +148,14 @@ int Loop_SendUnreliableMessage(qsocket_t *sock, sizebuf_t *data)
 	return 1;
 }
 
-qboolean Loop_CanSendMessage(qsocket_t *sock)
+bool Loop_CanSendMessage(qsocket_t *sock)
 {
 	if (!sock->driverdata)
 		return false;
 	return sock->canSend;
 }
 
-qboolean Loop_CanSendUnreliableMessage(qsocket_t *sock)
+bool Loop_CanSendUnreliableMessage(qsocket_t *sock)
 {
 	(void)sock;
 	return true;

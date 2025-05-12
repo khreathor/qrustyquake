@@ -3,9 +3,7 @@
 // GPLv3 See LICENSE for details.
 
 #include "quakedef.h"
-#include "net_sys.h"
 #include <wsipx.h>
-#include "net_defs.h"
 #include "net_wipx.h"
 
 #define IPXSOCKETS 18
@@ -77,7 +75,7 @@ void WIPX_Shutdown()
 		WSACleanup();
 }
 
-void WIPX_Listen(qboolean state)
+void WIPX_Listen(bool state)
 {
 	// enable listening
 	if (state) {

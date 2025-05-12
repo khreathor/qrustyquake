@@ -3,8 +3,6 @@
 // GPLv3 See LICENSE for details.
 
 #include "quakedef.h"
-#include "net_sys.h"
-#include "net_defs.h"
 #include "net_dgrm.h"
 
 // This is enables a simple IP banning mechanism
@@ -28,7 +26,7 @@ static int receivedDuplicateCount = 0;
 static int shortPacketCount = 0;
 static int droppedDatagrams;
 static int myDriverLevel;
-extern qboolean m_return_onerror;
+extern bool m_return_onerror;
 extern char m_return_reason[32];
 
 static char *StrAddr(struct qsockaddr *addr)
@@ -167,14 +165,14 @@ static int ReSendMessage(qsocket_t *sock)
 	return 1;
 }
 
-qboolean Datagram_CanSendMessage(qsocket_t *sock)
+bool Datagram_CanSendMessage(qsocket_t *sock)
 {
 	if (sock->sendNext)
 		SendMessageNext(sock);
 	return sock->canSend;
 }
 
-qboolean Datagram_CanSendUnreliableMessage(qsocket_t *sock)
+bool Datagram_CanSendUnreliableMessage(qsocket_t *sock)
 {
 	(void)sock; // the other sock, i found it.
 	return true;
@@ -386,7 +384,7 @@ static const char *Strip_Port(const char *host)
 	return noport;
 }
 
-static qboolean testInProgress = false;
+static bool testInProgress = false;
 static int testPollCount;
 static int testDriver;
 static sys_socket_t testSocket;
@@ -501,7 +499,7 @@ JustDoIt:
 	SchedulePollProcedure(&testPollProcedure, 0.1);
 }
 
-static qboolean test2InProgress = false;
+static bool test2InProgress = false;
 static int test2Driver;
 static sys_socket_t test2Socket;
 static void Test2_Poll(void *);
@@ -660,7 +658,7 @@ void Datagram_Close(qsocket_t *sock)
 	sfunc.Close_Socket(sock->socket);
 }
 
-void Datagram_Listen(qboolean state)
+void Datagram_Listen(bool state)
 {
 	int i;
 	for (i = 0; i < net_numlandrivers; i++) {
@@ -917,7 +915,7 @@ qsocket_t *Datagram_CheckNewConnections()
 	return ret;
 }
 
-static void _Datagram_SearchForHosts(qboolean xmit)
+static void _Datagram_SearchForHosts(bool xmit)
 {
 	int ret;
 	int n;
@@ -1008,7 +1006,7 @@ static void _Datagram_SearchForHosts(qboolean xmit)
 	}
 }
 
-void Datagram_SearchForHosts(qboolean xmit)
+void Datagram_SearchForHosts(bool xmit)
 {
 	for (net_landriverlevel = 0; net_landriverlevel < net_numlandrivers;
 	     net_landriverlevel++) {

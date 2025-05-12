@@ -23,7 +23,7 @@ static mvertex_t *pbverts;
 static bedge_t *pbedges;
 static int numbverts, numbedges;
 static mvertex_t *pfrontenter, *pfrontexit;
-static qboolean makeclippededge;
+static bool makeclippededge;
 
 extern void R_EmitSkyBox(); // Manoel Kasimier - skyboxes
 

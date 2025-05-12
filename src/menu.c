@@ -1,9 +1,7 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
 
-#include "net_sys.h"
 #include "quakedef.h"
 #include "r_shared.h"
-#include "net_defs.h"
 
 #define	MAIN_ITEMS 5
 #define	SINGLEPLAYER_ITEMS 3
@@ -52,7 +50,7 @@ char customheightstr[16];
 int newwinmode;
 int msgNumber;
 int m_quit_prevstate;
-qboolean wasInMenus;
+bool wasInMenus;
 int lanConfig_port;
 char lanConfig_portname[6];
 char lanConfig_joinname[22];
@@ -61,7 +59,7 @@ int lanConfig_cursor_table[] = { 72, 92, 124 };
 int startepisode;
 int startlevel;
 int maxplayers;
-qboolean m_serverInfoMessage = false;
+bool m_serverInfoMessage = false;
 double m_serverInfoMessageTime;
 int gameoptions_cursor_table[] = { 40, 56, 64, 72, 80, 88, 96, 112, 120 };
 int gameoptions_cursor;
@@ -286,14 +284,14 @@ void M_GameOptions_Key(int key);
 void M_ServerList_Key(int key);
 void M_ConfigureNetSubsystem();
 int help_page;
-qboolean searchComplete = false;
+bool searchComplete = false;
 double searchCompleteTime;
 int slist_cursor;
-qboolean slist_sorted;
-qboolean m_entersound; // play after drawing a frame, so caching won't disrupt the sound
-qboolean m_recursiveDraw;
+bool slist_sorted;
+bool m_entersound; // play after drawing a frame, so caching won't disrupt the sound
+bool m_recursiveDraw;
 int m_return_state;
-qboolean m_return_onerror;
+bool m_return_onerror;
 char m_return_reason[32];
 
 void M_DrawCharacter(int cx, int line, int num)

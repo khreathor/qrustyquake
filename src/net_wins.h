@@ -4,7 +4,7 @@
 
 sys_socket_t WINS_Init();
 void WINS_Shutdown();
-void WINS_Listen(qboolean state);
+void WINS_Listen(bool state);
 sys_socket_t WINS_OpenSocket(int port);
 int WINS_CloseSocket(sys_socket_t socketid);
 int WINS_Connect(sys_socket_t socketid, struct qsockaddr *addr);

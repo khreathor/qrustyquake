@@ -3,8 +3,6 @@
 // GPLv3 See LICENSE for details.
 
 #include "quakedef.h"
-#include "net_sys.h"
-#include "net_defs.h"
 #include "net_wins.h"
 
 static sys_socket_t net_acceptsocket = INVALID_SOCKET;	// socket for fielding new connections
@@ -140,7 +138,7 @@ void WINS_Shutdown()
 		WSACleanup();
 }
 
-void WINS_Listen(qboolean state)
+void WINS_Listen(bool state)
 {
 	// enable listening
 	if (state) {

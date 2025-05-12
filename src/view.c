@@ -133,7 +133,7 @@ void BuildGammaTable(float g)
 	}
 }
 
-qboolean V_CheckGamma()
+bool V_CheckGamma()
 {
 	static float oldgammavalue;
 	if (v_gamma.value == oldgammavalue)
@@ -274,7 +274,7 @@ void V_UpdatePalette()
 {
 	V_CalcPowerupCshift();
 	float frametime = fabs (cl.time - cl.oldtime);
-	qboolean new = false;
+	bool new = false;
 	for (int i = 0; i < NUM_CSHIFTS; i++) {
 		if (cl.cshifts[i].percent != cl.prev_cshifts[i].percent) {
 			new = true;
@@ -296,7 +296,7 @@ void V_UpdatePalette()
 	cl.cshifts[CSHIFT_BONUS].percent -= frametime * 100;
 	if (cl.cshifts[CSHIFT_BONUS].percent <= 0)
 		cl.cshifts[CSHIFT_BONUS].percent = 0;
-	qboolean force = V_CheckGamma();
+	bool force = V_CheckGamma();
 	if (!new && !force)
 		return;
 	byte pal[768];

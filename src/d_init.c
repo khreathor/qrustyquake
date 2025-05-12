@@ -8,7 +8,7 @@
 #define NUM_MIPS 4
 
 surfcache_t *d_initial_rover;
-qboolean d_roverwrapped;
+bool d_roverwrapped;
 int d_minmip;
 float d_scalemip[NUM_MIPS - 1];
 static float basemip[NUM_MIPS - 1] = { 1.0, 0.5 * 0.8, 0.25 * 0.8 };

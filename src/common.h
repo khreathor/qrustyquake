@@ -9,16 +9,7 @@
 // comndef.h  -- general definitions
 
 typedef unsigned char byte;
-typedef int qboolean;
 
-typedef struct sizebuf_s
-{
-	qboolean	allowoverflow;	// if false, do a Sys_Error
-	qboolean	overflowed;		// set to true if the buffer size failed
-	byte		*data;
-	int		maxsize;
-	int		cursize;
-} sizebuf_t;
 
 void SZ_Alloc (sizebuf_t *buf, int startsize);
 void SZ_Free (sizebuf_t *buf);
@@ -29,10 +20,6 @@ void SZ_Print (sizebuf_t *buf, const char *data);	// strcats onto the sizebuf
 
 //============================================================================
 
-typedef struct link_s
-{
-	struct link_s	*prev, *next;
-} link_t;
 
 
 void ClearLink (link_t *l);
@@ -46,10 +33,6 @@ void InsertLinkAfter (link_t *l, link_t *after);
 
 //============================================================================
 
-typedef struct vec_header_t {
-	size_t capacity;
-	size_t size;
-} vec_header_t;
 
 
 void Vec_Grow (void **pvec, size_t element_size, size_t count);
@@ -59,7 +42,7 @@ void Vec_Free (void **pvec);
 
 //============================================================================
 
-extern	qboolean		host_bigendian;
+extern	bool		host_bigendian;
 
 extern	short	(*BigShort) (short l);
 extern	short	(*LittleShort) (short l);
@@ -81,7 +64,7 @@ void MSG_WriteAngle (sizebuf_t *sb, float f, unsigned int flags);
 void MSG_WriteAngle16 (sizebuf_t *sb, float f, unsigned int flags); //johnfitz
 
 extern	int			msg_readcount;
-extern	qboolean	msg_badread;		// set if a read goes beyond end of message
+extern	bool	msg_badread;		// set if a read goes beyond end of message
 
 void MSG_BeginReading (void);
 int MSG_ReadChar (void);
@@ -133,7 +116,7 @@ extern int q_vsnprintf(char *str, size_t size, const char *format, va_list args)
 //============================================================================
 
 extern	char		com_token[1024];
-extern	qboolean	com_eof;
+extern	bool	com_eof;
 
 typedef enum
 {
@@ -182,35 +165,12 @@ void LOC_Init (void);
 void LOC_Shutdown (void);
 const char* LOC_GetRawString (const char *key);
 const char* LOC_GetString (const char *key);
-qboolean LOC_HasPlaceholders (const char *str);
+bool LOC_HasPlaceholders (const char *str);
 size_t LOC_Format (const char *format, const char* (*getarg_fn)(int idx, void* userdata), void* userdata, char* out, size_t len);
 
 //============================================================================
 
 // QUAKEFS
-typedef struct
-{
-	char	name[MAX_QPATH];
-	int		filepos, filelen;
-} packfile_t;
-
-typedef struct pack_s
-{
-	char	filename[MAX_OSPATH];
-	int		handle;
-	int		numfiles;
-	packfile_t	*files;
-} pack_t;
-
-typedef struct searchpath_s
-{
-	unsigned int path_id;	// identifier assigned to the game directory
-					// Note that <install_dir>/game1 and
-					// <userdir>/game1 have the same id.
-	char	filename[MAX_OSPATH];
-	pack_t	*pack;			// only one of filename / pack will be used
-	struct searchpath_s	*next;
-} searchpath_t;
 
 extern searchpath_t *com_searchpaths;
 extern searchpath_t *com_base_searchpaths;
@@ -225,7 +185,7 @@ extern	int	file_from_pak;	// global indicating that file came from a pak
 void COM_WriteFile (const char *filename, const void *data, int len);
 int COM_OpenFile (const char *filename, int *handle, unsigned int *path_id);
 int COM_FOpenFile (const char *filename, FILE **file, unsigned int *path_id);
-qboolean COM_FileExists (const char *filename, unsigned int *path_id);
+bool COM_FileExists (const char *filename, unsigned int *path_id);
 void COM_CloseFile (int h);
 
 // these procedures open a file using COM_FindFile and loads it into a proper
@@ -274,14 +234,6 @@ const char *COM_ParseStringNewline(const char *buffer);
  * Allocating and filling in the fshandle_t structure is the users'
  * responsibility when the file is initially opened. */
 
-typedef struct _fshandle_t
-{
-	FILE *file;
-	qboolean pak;	/* is the file read from a pak */
-	long start;	/* file or data start position */
-	long length;	/* file or data size */
-	long pos;	/* current position relative to start */
-} fshandle_t;
 
 size_t FS_fread(void *ptr, size_t size, size_t nmemb, fshandle_t *fh);
 int FS_fseek(fshandle_t *fh, long offset, int whence);
@@ -297,8 +249,8 @@ int q_strlcpy (char *dst, const char *src, size_t siz);
 size_t q_strlcat (char *dst, const char *src, size_t siz);
 
 extern struct cvar_s	registered;
-extern qboolean		standard_quake, rogue, hipnotic;
-extern qboolean		fitzmode;
+extern bool		standard_quake, rogue, hipnotic;
+extern bool		fitzmode;
 	/* if true, run in fitzquake mode disabling custom quakespasm hacks */
 
 #endif	/* _Q_COMMON_H */

@@ -52,7 +52,7 @@ void Cbuf_Execute (); // Pulls off \n terminated lines of text from the command
 void Cmd_AddCommand (char *cmd_name, xcommand_t function); // called by the init
 // functions of other parts of the program to register commands and functions to
 // call for them. cmd_name is referenced later so it shouldn't be in temp memory
-qboolean Cmd_Exists (const char *cmd_name); // used by the cvar code to check
+bool Cmd_Exists (const char *cmd_name); // used by the cvar code to check
 // for cvar / command name overlap
 char *Cmd_CompleteCommand (char *partial); // attempts to match a partial
 // command for automatic command line completion returns NULL if nothing fits

@@ -13,13 +13,13 @@ extern double net_time;
 extern sizebuf_t net_message;
 extern int net_activeconnections;
 // Server list related globals:
-extern qboolean slistInProgress;
-extern qboolean slistSilent;
-extern qboolean slistLocal;
+extern bool slistInProgress;
+extern bool slistSilent;
+extern bool slistLocal;
 extern int hostCacheCount;
 // FIXME: driver related, but public:
-extern qboolean ipxAvailable;
-extern qboolean tcpipAvailable;
+extern int ipxAvailable;
+extern bool tcpipAvailable;
 extern char my_ipx_address[NET_NAMELEN];
 extern char my_tcpip_address[NET_NAMELEN];
 
@@ -29,7 +29,7 @@ struct qsocket_s *NET_CheckNewConnections(); // returns a new connection number
 					// if there is one pending, else -1
 struct qsocket_s *NET_Connect(const char *host); // called by client to connect
 					// to a host. Returns -1 if not able to
-qboolean NET_CanSendMessage(struct qsocket_s *sock); // Returns true or false if
+bool NET_CanSendMessage(struct qsocket_s *sock); // Returns true or false if
 	// the given qsocket can currently accept a message to be transmitted.
 int NET_GetMessage(struct qsocket_s *sock);
 // returns data in net_message sizebuf

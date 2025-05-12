@@ -10,7 +10,7 @@
 cmdalias_t *cmd_alias;
 int trashtest;
 int *trashspot;
-qboolean cmd_wait;
+bool cmd_wait;
 sizebuf_t cmd_text;
 static int cmd_argc;
 static char *cmd_argv[MAX_ARGS];
@@ -393,7 +393,7 @@ void Cmd_AddCommand(char *cmd_name, xcommand_t function)
 	} // johnfitz
 }
 
-qboolean Cmd_Exists(const char *cmd_name)
+bool Cmd_Exists(const char *cmd_name)
 {
 	for (cmd_function_t *cmd = cmd_functions; cmd; cmd = cmd->next)
 		if (!Q_strcmp(cmd_name, cmd->name))

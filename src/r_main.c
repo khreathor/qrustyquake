@@ -12,7 +12,7 @@ extern void R_DrawFog();
 extern void R_ParseWorldspawn();
 extern void R_InitSkyBox(); // Manoel Kasimier - skyboxes 
 extern void Sky_NewMap();
-extern qboolean nameInList(const s8 *list, const s8 *name);
+extern bool nameInList(const s8 *list, const s8 *name);
 
 extern void R_SetWateralpha_f(cvar_t *var);
 extern void R_SetLavaalpha_f(cvar_t *var);

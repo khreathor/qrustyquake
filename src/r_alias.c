@@ -77,8 +77,8 @@ bool R_AliasCheckBBox()
 	// z worldspace coordinates
 	bp[0][2]=bp[1][2]=bp[4][2]=bp[5][2]=(float)pframedesc->bboxmin.v[2];
 	bp[2][2]=bp[3][2]=bp[6][2]=bp[7][2]=(float)pframedesc->bboxmax.v[2];
-	qboolean zclipped = false;
-	qboolean zfullyclipped = true;
+	bool zclipped = false;
+	bool zfullyclipped = true;
 	int minz = 9999;
 	finalvert_t *pv0, *pv1, viewpts[16];
 	auxvert_t *pa0, *pa1, viewaux[16];
