@@ -410,3 +410,22 @@ void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 *palette)
 	Cvar_SetValue("vid_cheight", (f32)custh);
 	Cvar_SetValue("vid_cwmode", (f32)custwinm);
 }
+
+void VID_VidSetModeCommand_f()
+{
+	switch(Cmd_Argc()){
+	default:
+	case 1:
+		Con_Printf("usage:\n");
+		Con_Printf("   vid_setmode <width> <height> <mode>\n");
+		Con_Printf("   modes: 0 - windowed\n");
+		Con_Printf("          1 - fullscreen\n");
+		Con_Printf("          2 - borderless\n");
+		return;
+	case 4:
+		VID_SetMode(0, CLAMP(320, Q_atoi(Cmd_Argv(1)), MAXWIDTH),
+				CLAMP(200, Q_atoi(Cmd_Argv(2)), MAXHEIGHT),
+				Q_atoi(Cmd_Argv(3)), vid_curpal);
+		break;
+	}
+}

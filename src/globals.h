@@ -65,6 +65,7 @@ EX void VID_CalcScreenDimensions(cvar_t *cvar);
 EX void VID_RenderFrame();
 EX void VID_SetMode(s32 moden, s32 custw, s32 custh, s32 custwinm, u8 *pal);
 EX void VID_Update();
+EX void VID_VidSetModeCommand_f();
 
 EX byte r_foundtranswater, r_wateralphapass;                         // r_main.c
 EX s32 r_pass;
