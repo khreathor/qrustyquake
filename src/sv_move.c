@@ -23,7 +23,7 @@ bool SV_CheckBottom (edict_t *ent)
 	vec3_t	mins, maxs, start, stop;
 	trace_t	trace;
 	s32		x, y;
-	float	mid, bottom;
+	f32	mid, bottom;
 
 	VectorAdd (ent->v.origin, ent->v.mins, mins);
 	VectorAdd (ent->v.origin, ent->v.maxs, maxs);
@@ -93,7 +93,7 @@ pr_global_struct->trace_normal is set to the normal of the blocking wall
 */
 bool SV_movestep (edict_t *ent, vec3_t move, bool relink)
 {
-	float		dz;
+	f32		dz;
 	vec3_t		oldorg, neworg, end;
 	trace_t		trace;
 	s32			i;
@@ -214,10 +214,10 @@ facing it.
 ======================
 */
 void PF_changeyaw (void);
-bool SV_StepDirection (edict_t *ent, float yaw, float dist)
+bool SV_StepDirection (edict_t *ent, f32 yaw, f32 dist)
 {
 	vec3_t		move, oldorigin;
-	float		delta;
+	f32		delta;
 
 	ent->v.ideal_yaw = yaw;
 	PF_changeyaw();
@@ -262,11 +262,11 @@ SV_NewChaseDir
 
 ================
 */
-void SV_NewChaseDir (edict_t *actor, edict_t *enemy, float dist)
+void SV_NewChaseDir (edict_t *actor, edict_t *enemy, f32 dist)
 {
-	float		deltax,deltay;
-	float			d[3];
-	float		tdir, olddir, turnaround;
+	f32		deltax,deltay;
+	f32			d[3];
+	f32		tdir, olddir, turnaround;
 
 	olddir = anglemod( (s32)(actor->v.ideal_yaw/45)*45 );
 	turnaround = anglemod(olddir - 180);
@@ -351,7 +351,7 @@ SV_CloseEnough
 
 ======================
 */
-bool SV_CloseEnough (edict_t *ent, edict_t *goal, float dist)
+bool SV_CloseEnough (edict_t *ent, edict_t *goal, f32 dist)
 {
 	s32		i;
 
@@ -374,7 +374,7 @@ SV_MoveToGoal
 void SV_MoveToGoal (void)
 {
 	edict_t		*ent, *goal;
-	float		dist;
+	f32		dist;
 
 	ent = PROG_TO_EDICT(pr_global_struct->self);
 	goal = PROG_TO_EDICT(ent->v.goalentity);

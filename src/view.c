@@ -9,7 +9,7 @@
 // entities sent from the server may not include everything in the pvs,
 // especially when crossing a water boudnary.
 
-float v_dmg_time, v_dmg_roll, v_dmg_pitch;
+f32 v_dmg_time, v_dmg_roll, v_dmg_pitch;
 vec3_t forward, right, up;
 extern s32 in_forward, in_forward2, in_back;
 extern vrect_t scr_vrect;
@@ -19,22 +19,22 @@ cshift_t cshift_empty = { { 130, 80, 50 }, 0 };
 cshift_t cshift_water = { { 130, 80, 50 }, 128 };
 cshift_t cshift_slime = { { 0, 25, 5 }, 150 };
 cshift_t cshift_lava = { { 255, 80, 0 }, 150 };
-byte gammatable[256]; // palette is sent through this
+u8 gammatable[256]; // palette is sent through this
 
-float V_CalcRoll(vec3_t angles, vec3_t velocity)
+f32 V_CalcRoll(vec3_t angles, vec3_t velocity)
 { // Used by view and sv_user
 	AngleVectors(angles, forward, right, up);
-	float side = DotProduct(velocity, right);
-	float sign = side < 0 ? -1 : 1;
+	f32 side = DotProduct(velocity, right);
+	f32 sign = side < 0 ? -1 : 1;
 	side = fabs(side);
-	float value = cl_rollangle.value;
+	f32 value = cl_rollangle.value;
 	side=side<cl_rollspeed.value?side*value/cl_rollspeed.value:value;
 	return side * sign;
 }
 
-float V_CalcBob()
+f32 V_CalcBob()
 {
-	float cycle=cl.time-(s32)(cl.time/cl_bobcycle.value)*cl_bobcycle.value;
+	f32 cycle=cl.time-(s32)(cl.time/cl_bobcycle.value)*cl_bobcycle.value;
 	cycle /= cl_bobcycle.value;
 	if (cycle < cl_bobup.value)
 		cycle = M_PI * cycle / cl_bobup.value;
@@ -43,7 +43,7 @@ float V_CalcBob()
 			/ (1.0 - cl_bobup.value);
 	// bob is proportional to velocity in the xy plane
 	// (don't count Z, or jumping messes it up)
-	float bob = sqrt(cl.velocity[0] * cl.velocity[0] + cl.velocity[1]
+	f32 bob = sqrt(cl.velocity[0] * cl.velocity[0] + cl.velocity[1]
 			* cl.velocity[1]) * cl_bob.value;
 	bob = bob * 0.3 + bob * 0.7 * sin(cycle);
 	if (bob > 4)
@@ -94,12 +94,12 @@ void V_DriftPitch()
 		}
 		return;
 	}
-	float delta = cl.idealpitch - cl.viewangles[PITCH];
+	f32 delta = cl.idealpitch - cl.viewangles[PITCH];
 	if (!delta) {
 		cl.pitchvel = 0;
 		return;
 	}
-	float move = host_frametime * cl.pitchvel;
+	f32 move = host_frametime * cl.pitchvel;
 	cl.pitchvel += host_frametime * v_centerspeed.value;
 	if (delta > 0) {
 		if (move > delta) {
@@ -116,7 +116,7 @@ void V_DriftPitch()
 	}
 }
 
-void BuildGammaTable(float g)
+void BuildGammaTable(f32 g)
 {
 	if (g == 1.0) {
 		for (s32 i = 0; i < 256; i++)
@@ -135,7 +135,7 @@ void BuildGammaTable(float g)
 
 bool V_CheckGamma()
 {
-	static float oldgammavalue;
+	static f32 oldgammavalue;
 	if (v_gamma.value == oldgammavalue)
 		return false;
 	oldgammavalue = v_gamma.value;
@@ -151,8 +151,8 @@ void V_ParseDamage (void)
         s32             i;
         vec3_t  forward, right, up;
         entity_t        *ent;
-        float   side;
-        float   count;
+        f32   side;
+        f32   count;
 
         armor = MSG_ReadByte ();
         blood = MSG_ReadByte ();
@@ -273,7 +273,7 @@ void V_CalcPowerupCshift()
 void V_UpdatePalette()
 {
 	V_CalcPowerupCshift();
-	float frametime = fabs (cl.time - cl.oldtime);
+	f32 frametime = fabs (cl.time - cl.oldtime);
 	bool new = false;
 	for (s32 i = 0; i < NUM_CSHIFTS; i++) {
 		if (cl.cshifts[i].percent != cl.prev_cshifts[i].percent) {
@@ -299,9 +299,9 @@ void V_UpdatePalette()
 	bool force = V_CheckGamma();
 	if (!new && !force)
 		return;
-	byte pal[768];
-	byte *basepal = host_basepal;
-	byte *newpal = pal;
+	u8 pal[768];
+	u8 *basepal = host_basepal;
+	u8 *newpal = pal;
 	for (s32 i = 0; i < 256; i++) {
 		s32 r = basepal[0];
 		s32 g = basepal[1];
@@ -324,7 +324,7 @@ void V_UpdatePalette()
 }
 
 // View rendering 
-float angledelta(float a)
+f32 angledelta(f32 a)
 {
 	a = anglemod(a);
 	if (a > 180)
@@ -334,10 +334,10 @@ float angledelta(float a)
 
 void CalcGunAngle()
 {
-	static float oldyaw = 0;
-	static float oldpitch = 0;
-	float yaw = r_refdef.viewangles[YAW];
-	float pitch = -r_refdef.viewangles[PITCH];
+	static f32 oldyaw = 0;
+	static f32 oldpitch = 0;
+	f32 yaw = r_refdef.viewangles[YAW];
+	f32 pitch = -r_refdef.viewangles[PITCH];
 	yaw = angledelta(yaw - r_refdef.viewangles[YAW]) * 0.4;
 	if (yaw > 10)
 		yaw = 10;
@@ -348,7 +348,7 @@ void CalcGunAngle()
 		pitch = 10;
 	if (pitch < -10)
 		pitch = -10;
-	float move = host_frametime * 20;
+	f32 move = host_frametime * 20;
 	if (yaw > oldyaw) {
 		if (oldyaw + move < yaw)
 			yaw = oldyaw + move;
@@ -411,7 +411,7 @@ void V_AddIdle()
 
 void V_CalcViewRoll()
 { // Roll is induced by movement and damage
-	float side = V_CalcRoll(cl_entities[cl.viewentity].angles, cl.velocity);
+	f32 side = V_CalcRoll(cl_entities[cl.viewentity].angles, cl.velocity);
 	r_refdef.viewangles[ROLL] += side;
 	if (v_dmg_time > 0) {
 		r_refdef.viewangles[ROLL] +=
@@ -436,7 +436,7 @@ void V_CalcIntermissionRefdef()
 	VectorCopy(ent->angles, r_refdef.viewangles);
 	view->model = NULL;
 	// allways idle in intermission
-	float old = v_idlescale.value;
+	f32 old = v_idlescale.value;
 	v_idlescale.value = 1;
 	V_AddIdle();
 	v_idlescale.value = old;
@@ -444,7 +444,7 @@ void V_CalcIntermissionRefdef()
 
 void V_CalcRefdef()
 {
-	static float oldz = 0;
+	static f32 oldz = 0;
 	V_DriftPitch();
 	// ent is the player model (visible when out of body)
 	entity_t *ent = &cl_entities[cl.viewentity];
@@ -457,7 +457,7 @@ void V_CalcRefdef()
 	// the view dir
 	ent->angles[PITCH] = -cl.viewangles[PITCH]; // the model should face
 	// the view dir
-	float bob = V_CalcBob();
+	f32 bob = V_CalcBob();
 	// refresh position
 	VectorCopy(ent->origin, r_refdef.vieworg);
 	r_refdef.vieworg[2] += cl.viewheight + bob;
@@ -505,7 +505,7 @@ void V_CalcRefdef()
 	VectorAdd(r_refdef.viewangles, cl.punchangle, r_refdef.viewangles);
 	// smooth out stair step ups
 	if (cl.onground && ent->origin[2] - oldz > 0) {
-		float steptime;
+		f32 steptime;
 		steptime = cl.time - cl.oldtime;
 		if (steptime < 0)
 			steptime = 0;

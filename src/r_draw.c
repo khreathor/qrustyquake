@@ -18,22 +18,22 @@ s32 intsintable[SIN_BUFFER_SIZE];
 mvertex_t r_leftenter, r_leftexit;
 mvertex_t r_rightenter, r_rightexit;
 s32 r_emitted;
-float r_nearzi;
-float r_u1, r_v1, r_lzi1;
+f32 r_nearzi;
+f32 r_u1, r_v1, r_lzi1;
 s32 r_ceilv1;
 bool r_lastvertvalid;
 static bool makeleftedge, makerightedge;
-float winquake_surface_liquid_alpha;
-extern float cur_ent_alpha;
+f32 winquake_surface_liquid_alpha;
+extern f32 cur_ent_alpha;
 
 extern void R_EmitSkyBox();
 
 void R_EmitEdge(mvertex_t *pv0, mvertex_t *pv1)
 {
 	vec3_t local, transformed;
-	float *world;
+	f32 *world;
 	s64 v, v2, ceilv0;
-	float scale, lzi0, u0, v0;
+	f32 scale, lzi0, u0, v0;
 	if (r_lastvertvalid) {
 		u0 = r_u1;
 		v0 = r_v1;
@@ -100,21 +100,21 @@ void R_EmitEdge(mvertex_t *pv0, mvertex_t *pv1)
 	edge_t *edge = edge_p++;
 	edge->owner = r_pedge;
 	edge->nearzi = lzi0;
-	double u, u_step;
+	f64 u, u_step;
 	if (side == 0) { // trailing edge (go from p1 to p2)
 		v = ceilv0;
 		v2 = r_ceilv1 - 1;
 		edge->surfs[0] = surface_p - surfaces;
 		edge->surfs[1] = 0;
 		u_step = ((r_u1 - u0) / (r_v1 - v0));
-		u = u0 + ((float)v - v0) * u_step;
+		u = u0 + ((f32)v - v0) * u_step;
 	} else { // leading edge (go from p2 to p1)
 		v2 = ceilv0 - 1;
 		v = r_ceilv1;
 		edge->surfs[0] = 0;
 		edge->surfs[1] = surface_p - surfaces;
 		u_step = ((u0 - r_u1) / (v0 - r_v1));
-		u = r_u1 + ((float)v - r_v1) * u_step;
+		u = r_u1 + ((f32)v - r_v1) * u_step;
 	}
 	edge->u_step = u_step * 0x100000;
 	edge->u = u * 0x100000 + 0xFFFFF;
@@ -146,7 +146,7 @@ void R_EmitEdge(mvertex_t *pv0, mvertex_t *pv1)
 
 void R_ClipEdge(mvertex_t *pv0, mvertex_t *pv1, clipplane_t *clip)
 {
-	float d0, d1, f;
+	f32 d0, d1, f;
 	mvertex_t clipvert;
 	if (clip) {
 		do {
@@ -295,7 +295,7 @@ void R_RenderFace(msurface_t *fa, s32 clipflags)
 				}
 			}
 			// assume it's cacheable
-			cacheoffset = (byte *) edge_p - (byte *) r_edges;
+			cacheoffset = (u8 *) edge_p - (u8 *) r_edges;
 			r_leftclipped = r_rightclipped = false;
 			R_ClipEdge(&r_pcurrentvertbase[r_pedge->v[0]],
 					&r_pcurrentvertbase[r_pedge->v[1]], pclip);
@@ -327,7 +327,7 @@ void R_RenderFace(msurface_t *fa, s32 clipflags)
 				}
 			}
 			// assume it's cacheable
-			cacheoffset = (byte *) edge_p - (byte *) r_edges;
+			cacheoffset = (u8 *) edge_p - (u8 *) r_edges;
 			r_leftclipped = r_rightclipped = false;
 			R_ClipEdge(&r_pcurrentvertbase[r_pedge->v[1]],
 					&r_pcurrentvertbase[r_pedge->v[0]], pclip);
@@ -371,7 +371,7 @@ void R_RenderFace(msurface_t *fa, s32 clipflags)
 	vec3_t p_normal;
 	TransformVector(pplane->normal, p_normal);
 	// FIXME: cache this?
-	float distinv = 1.0/(pplane->dist-DotProduct(modelorg, pplane->normal));
+	f32 distinv = 1.0/(pplane->dist-DotProduct(modelorg, pplane->normal));
 	surface_p->d_zistepu = p_normal[0] * xscaleinv * distinv;
 	surface_p->d_zistepv = -p_normal[1] * yscaleinv * distinv;
 	surface_p->d_ziorigin = p_normal[2] * distinv -
@@ -448,7 +448,7 @@ void R_RenderBmodelFace(bedge_t *pedges, msurface_t *psurf)
 	vec3_t p_normal;
 	TransformVector(pplane->normal, p_normal);
 	// FIXME: cache this?
-	float distinv = 1.0/(pplane->dist-DotProduct(modelorg,pplane->normal));
+	f32 distinv = 1.0/(pplane->dist-DotProduct(modelorg,pplane->normal));
 	surface_p->d_zistepu = p_normal[0] * xscaleinv * distinv;
 	surface_p->d_zistepv = -p_normal[1] * yscaleinv * distinv;
 	surface_p->d_ziorigin = p_normal[2] * distinv -

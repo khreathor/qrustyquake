@@ -1,8 +1,8 @@
 #include "quakedef.h"
 
 bool mouse_avail;
-float mouse_x;
-float mouse_y;
+f32 mouse_x;
+f32 mouse_y;
 s32 mouse_oldbuttonstate;
 static s32 buttonremap[] = { K_MOUSE1, K_MOUSE3, K_MOUSE2, K_MOUSE4, K_MOUSE5 };
 

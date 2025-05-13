@@ -412,7 +412,7 @@ void Sbar_DrawInventoryBg()
 	}
 }
 
-static inline s32 Sbar_Flash(float time, s32 active)
+static inline s32 Sbar_Flash(f32 time, s32 active)
 {
 	s32 flash = (s32)(time * 10);
 	return flash >= 10 ? active : (flash % 5) + 2;

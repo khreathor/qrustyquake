@@ -24,8 +24,8 @@ void D_ViewChanged()
 	d_pix_min = r_refdef.vrect.width / 320;
 	if (d_pix_min < 1)
 		d_pix_min = 1;
-	d_pix_max = (s32)((float)r_refdef.vrect.width / (320.0 / 4.0) + 0.5);
-	d_pix_shift = 8 - (s32)((float)r_refdef.vrect.width / 320.0 + 0.5);
+	d_pix_max = (s32)((f32)r_refdef.vrect.width / (320.0 / 4.0) + 0.5);
+	d_pix_shift = 8 - (s32)((f32)r_refdef.vrect.width / 320.0 + 0.5);
 	if (d_pix_max < 1)
 		d_pix_max = 1;
 	if (pixelAspect > 1.4)

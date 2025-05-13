@@ -17,7 +17,7 @@ WSADATA winsockdata;
 #define __wsaerr_static		/* not static: used by net_wipx.c too */
 #include "wsaerror.h"
 #if !defined(_USE_WINSOCK2)
-static double blocktime;
+static f64 blocktime;
 
 static INT_PTR PASCAL FAR BlockingHook()
 {
@@ -258,7 +258,7 @@ sys_socket_t WINS_CheckNewConnections()
 	return INVALID_SOCKET;
 }
 
-s32 WINS_Read(sys_socket_t socketid, byte *buf, s32 len, struct qsockaddr *addr)
+s32 WINS_Read(sys_socket_t socketid, u8 *buf, s32 len, struct qsockaddr *addr)
 {
 	socklen_t addrlen = sizeof(struct qsockaddr);
 	s32 ret;
@@ -289,7 +289,7 @@ static s32 WINS_MakeSocketBroadcastCapable(sys_socket_t socketid)
 	return 0;
 }
 
-s32 WINS_Broadcast(sys_socket_t socketid, byte *buf, s32 len)
+s32 WINS_Broadcast(sys_socket_t socketid, u8 *buf, s32 len)
 {
 	s32 ret;
 	if (socketid != net_broadcastsocket) {
@@ -307,7 +307,7 @@ s32 WINS_Broadcast(sys_socket_t socketid, byte *buf, s32 len)
 			  (struct qsockaddr *)&broadcastaddr);
 }
 
-s32 WINS_Write(sys_socket_t socketid, byte *buf, s32 len,struct qsockaddr *addr)
+s32 WINS_Write(sys_socket_t socketid, u8 *buf, s32 len,struct qsockaddr *addr)
 {
 	s32 ret;
 	ret = sendto(socketid, (s8 *)buf, len, 0, (struct sockaddr *)addr,

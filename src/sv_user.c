@@ -12,9 +12,9 @@ edict_t	*sv_player;
 static	vec3_t		forward, right, up;
 
 // world
-float	*angles;
-float	*origin;
-float	*velocity;
+f32	*angles;
+f32	*origin;
+f32	*velocity;
 
 bool	onground;
 
@@ -27,10 +27,10 @@ SV_SetIdealPitch
 */
 void SV_SetIdealPitch (void)
 {
-	float	angleval, sinval, cosval;
+	f32	angleval, sinval, cosval;
 	trace_t	tr;
 	vec3_t	top, bottom;
-	float	z[MAX_FORWARD];
+	f32	z[MAX_FORWARD];
 	s32		i, j;
 	s32		step, dir, steps;
 
@@ -96,10 +96,10 @@ SV_UserFriction
 */
 void SV_UserFriction (void)
 {
-	float	*vel;
-	float	speed, newspeed, control;
+	f32	*vel;
+	f32	speed, newspeed, control;
 	vec3_t	start, stop;
-	float	friction;
+	f32	friction;
 	trace_t	trace;
 
 	vel = velocity;
@@ -139,10 +139,10 @@ void SV_UserFriction (void)
 SV_Accelerate
 ==============
 */
-void SV_Accelerate (float wishspeed, const vec3_t wishdir)
+void SV_Accelerate (f32 wishspeed, const vec3_t wishdir)
 {
 	s32			i;
-	float		addspeed, accelspeed, currentspeed;
+	f32		addspeed, accelspeed, currentspeed;
 
 	currentspeed = DotProduct (velocity, wishdir);
 	addspeed = wishspeed - currentspeed;
@@ -156,10 +156,10 @@ void SV_Accelerate (float wishspeed, const vec3_t wishdir)
 		velocity[i] += accelspeed*wishdir[i];
 }
 
-void SV_AirAccelerate (float wishspeed, vec3_t wishveloc)
+void SV_AirAccelerate (f32 wishspeed, vec3_t wishveloc)
 {
 	s32			i;
-	float		addspeed, wishspd, accelspeed, currentspeed;
+	f32		addspeed, wishspd, accelspeed, currentspeed;
 
 	wishspd = VectorNormalize (wishveloc);
 	if (wishspd > 30)
@@ -180,7 +180,7 @@ void SV_AirAccelerate (float wishspeed, vec3_t wishveloc)
 
 void DropPunchAngle (void)
 {
-	float	len;
+	f32	len;
 
 	len = VectorNormalize (sv_player->v.punchangle);
 
@@ -200,7 +200,7 @@ void SV_WaterMove (void)
 {
 	s32		i;
 	vec3_t	wishvel;
-	float	speed, newspeed, wishspeed, addspeed, accelspeed;
+	f32	speed, newspeed, wishspeed, addspeed, accelspeed;
 
 //
 // user intentions
@@ -300,8 +300,8 @@ void SV_AirMove (void)
 {
 	s32			i;
 	vec3_t		wishvel, wishdir;
-	float		wishspeed;
-	float		fmove, smove;
+	f32		wishspeed;
+	f32		fmove, smove;
 
 	AngleVectors (sv_player->v.angles, forward, right, up);
 

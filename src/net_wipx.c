@@ -17,7 +17,7 @@ extern WSADATA winsockdata;
 extern const s8 *__WSAE_StrError(s32);
 static sys_socket_t ipxsocket[IPXSOCKETS];
 static s32 sequence[IPXSOCKETS];
-static byte netpacketBuffer[NET_DATAGRAMSIZE + 4];
+static u8 netpacketBuffer[NET_DATAGRAMSIZE + 4];
 
 sys_socket_t WIPX_Init()
 {
@@ -167,7 +167,7 @@ sys_socket_t WIPX_CheckNewConnections()
 	return INVALID_SOCKET;
 }
 
-s32 WIPX_Read(sys_socket_t handle, byte *buf, s32 len, struct qsockaddr *addr)
+s32 WIPX_Read(sys_socket_t handle, u8 *buf, s32 len, struct qsockaddr *addr)
 {
 	socklen_t addrlen = sizeof(struct qsockaddr);
 	sys_socket_t socketid = ipxsocket[handle];
@@ -187,12 +187,12 @@ s32 WIPX_Read(sys_socket_t handle, byte *buf, s32 len, struct qsockaddr *addr)
 	return ret;
 }
 
-s32 WIPX_Broadcast(sys_socket_t handle, byte *buf, s32 len)
+s32 WIPX_Broadcast(sys_socket_t handle, u8 *buf, s32 len)
 {
 	return WIPX_Write(handle, buf, len, (struct qsockaddr *)&broadcastaddr);
 }
 
-s32 WIPX_Write(sys_socket_t handle, byte *buf, s32 len, struct qsockaddr *addr)
+s32 WIPX_Write(sys_socket_t handle, u8 *buf, s32 len, struct qsockaddr *addr)
 {
 	sys_socket_t socketid = ipxsocket[handle];
 	// build packet with sequence number

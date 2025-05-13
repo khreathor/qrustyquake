@@ -15,7 +15,7 @@ void R_Alias_clip_right(finalvert_t *pfv0, finalvert_t *pfv1, finalvert_t *out);
 
 void R_Alias_clip_z(finalvert_t *pfv0, finalvert_t *pfv1, finalvert_t *out)
 { // pfv0 is the unclipped vertex, pfv1 is the z-clipped vertex
-	float scale;
+	f32 scale;
 	auxvert_t *pav0, *pav1, avout;
 
 	pav0 = &av[pfv0 - &fv[0][0]];
@@ -59,18 +59,18 @@ void R_Alias_clip_z(finalvert_t *pfv0, finalvert_t *pfv1, finalvert_t *out)
 
 void R_Alias_clip_left(finalvert_t *pfv0, finalvert_t *pfv1, finalvert_t *out)
 {
-	float scale;
+	f32 scale;
 	s32 i;
 
 	if (pfv0->v[1] >= pfv1->v[1]) {
-		scale = (float)(r_refdef.aliasvrect.x - pfv0->v[0]) /
+		scale = (f32)(r_refdef.aliasvrect.x - pfv0->v[0]) /
 		    (pfv1->v[0] - pfv0->v[0]);
 		for (i = 0; i < 6; i++)
 			out->v[i] =
 			    pfv0->v[i] + (pfv1->v[i] - pfv0->v[i]) * scale +
 			    0.5;
 	} else {
-		scale = (float)(r_refdef.aliasvrect.x - pfv1->v[0]) /
+		scale = (f32)(r_refdef.aliasvrect.x - pfv1->v[0]) /
 		    (pfv0->v[0] - pfv1->v[0]);
 		for (i = 0; i < 6; i++)
 			out->v[i] =
@@ -81,18 +81,18 @@ void R_Alias_clip_left(finalvert_t *pfv0, finalvert_t *pfv1, finalvert_t *out)
 
 void R_Alias_clip_right(finalvert_t *pfv0, finalvert_t *pfv1, finalvert_t *out)
 {
-	float scale;
+	f32 scale;
 	s32 i;
 
 	if (pfv0->v[1] >= pfv1->v[1]) {
-		scale = (float)(r_refdef.aliasvrectright - pfv0->v[0]) /
+		scale = (f32)(r_refdef.aliasvrectright - pfv0->v[0]) /
 		    (pfv1->v[0] - pfv0->v[0]);
 		for (i = 0; i < 6; i++)
 			out->v[i] =
 			    pfv0->v[i] + (pfv1->v[i] - pfv0->v[i]) * scale +
 			    0.5;
 	} else {
-		scale = (float)(r_refdef.aliasvrectright - pfv1->v[0]) /
+		scale = (f32)(r_refdef.aliasvrectright - pfv1->v[0]) /
 		    (pfv0->v[0] - pfv1->v[0]);
 		for (i = 0; i < 6; i++)
 			out->v[i] =
@@ -103,18 +103,18 @@ void R_Alias_clip_right(finalvert_t *pfv0, finalvert_t *pfv1, finalvert_t *out)
 
 void R_Alias_clip_top(finalvert_t *pfv0, finalvert_t *pfv1, finalvert_t *out)
 {
-	float scale;
+	f32 scale;
 	s32 i;
 
 	if (pfv0->v[1] >= pfv1->v[1]) {
-		scale = (float)(r_refdef.aliasvrect.y - pfv0->v[1]) /
+		scale = (f32)(r_refdef.aliasvrect.y - pfv0->v[1]) /
 		    (pfv1->v[1] - pfv0->v[1]);
 		for (i = 0; i < 6; i++)
 			out->v[i] =
 			    pfv0->v[i] + (pfv1->v[i] - pfv0->v[i]) * scale +
 			    0.5;
 	} else {
-		scale = (float)(r_refdef.aliasvrect.y - pfv1->v[1]) /
+		scale = (f32)(r_refdef.aliasvrect.y - pfv1->v[1]) /
 		    (pfv0->v[1] - pfv1->v[1]);
 		for (i = 0; i < 6; i++)
 			out->v[i] =
@@ -125,11 +125,11 @@ void R_Alias_clip_top(finalvert_t *pfv0, finalvert_t *pfv1, finalvert_t *out)
 
 void R_Alias_clip_bottom(finalvert_t *pfv0, finalvert_t *pfv1, finalvert_t *out)
 {
-	float scale;
+	f32 scale;
 	s32 i;
 
 	if (pfv0->v[1] >= pfv1->v[1]) {
-		scale = (float)(r_refdef.aliasvrectbottom - pfv0->v[1]) /
+		scale = (f32)(r_refdef.aliasvrectbottom - pfv0->v[1]) /
 		    (pfv1->v[1] - pfv0->v[1]);
 
 		for (i = 0; i < 6; i++)
@@ -137,7 +137,7 @@ void R_Alias_clip_bottom(finalvert_t *pfv0, finalvert_t *pfv1, finalvert_t *out)
 			    pfv0->v[i] + (pfv1->v[i] - pfv0->v[i]) * scale +
 			    0.5;
 	} else {
-		scale = (float)(r_refdef.aliasvrectbottom - pfv1->v[1]) /
+		scale = (f32)(r_refdef.aliasvrectbottom - pfv1->v[1]) /
 		    (pfv0->v[1] - pfv1->v[1]);
 
 		for (i = 0; i < 6; i++)

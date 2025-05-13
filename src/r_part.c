@@ -6,9 +6,9 @@ s32 ramp1[8] = { 0x6f, 0x6d, 0x6b, 0x69, 0x67, 0x65, 0x63, 0x61 };
 s32 ramp2[8] = { 0x6f, 0x6e, 0x6d, 0x6c, 0x6b, 0x6a, 0x68, 0x66 };
 s32 ramp3[8] = { 0x6d, 0x6b, 6, 5, 4, 3 };
 vec3_t avelocity = { 23, 7, 3 };
-float beamlength = 16;
-float partstep = 0.01;
-float timescale = 0.01;
+f32 beamlength = 16;
+f32 partstep = 0.01;
+f32 timescale = 0.01;
 
 particle_t *active_particles, *free_particles;
 particle_t *particles;
@@ -16,7 +16,7 @@ s32 r_numparticles;
 vec3_t r_pright, r_pup, r_ppn;
 vec3_t avelocities[NUMVERTEXNORMALS];
 
-extern float r_avertexnormals[NUMVERTEXNORMALS][3];
+extern f32 r_avertexnormals[NUMVERTEXNORMALS][3];
 
 void R_InitParticles()
 {
@@ -33,7 +33,7 @@ void R_InitParticles()
 
 void R_EntityParticles(entity_t *ent)
 {
-	float dist = 64;
+	f32 dist = 64;
 	if (!avelocities[0][0]) {
 		for (s32 i = 0; i < NUMVERTEXNORMALS; i++) {
 			avelocities[i][0] = (rand() & 255) * 0.01;
@@ -42,12 +42,12 @@ void R_EntityParticles(entity_t *ent)
 		}
 	}
 	for (s32 i = 0; i < NUMVERTEXNORMALS; i++) {
-		float angle = cl.time * avelocities[i][0];
-		float sy = sin(angle);
-		float cy = cos(angle);
+		f32 angle = cl.time * avelocities[i][0];
+		f32 sy = sin(angle);
+		f32 cy = cos(angle);
 		angle = cl.time * avelocities[i][1];
-		float sp = sin(angle);
-		float cp = cos(angle);
+		f32 sp = sin(angle);
+		f32 cp = cos(angle);
 		angle = cl.time * avelocities[i][2];
 		vec3_t forward;
 		forward[0] = cp * cy;
@@ -269,7 +269,7 @@ void R_LavaSplash(vec3_t org)
 				p->org[1] = org[1] + dir[1];
 				p->org[2] = org[2] + (rand() & 63);
 				VectorNormalize(dir);
-				float vel = 50 + (rand() & 63);
+				f32 vel = 50 + (rand() & 63);
 				VectorScale(dir, vel, p->vel);
 			}
 }
@@ -296,7 +296,7 @@ void R_TeleportSplash(vec3_t org)
 				p->org[1] = org[1] + j + (rand() & 3);
 				p->org[2] = org[2] + k + (rand() & 3);
 				VectorNormalize(dir);
-				float vel = 50 + (rand() & 63);
+				f32 vel = 50 + (rand() & 63);
 				VectorScale(dir, vel, p->vel);
 			}
 }
@@ -306,7 +306,7 @@ void R_RocketTrail(vec3_t start, vec3_t end, s32 type)
 	static s32 tracercount;
 	vec3_t vec;
 	VectorSubtract(end, start, vec);
-	float len = VectorNormalize(vec);
+	f32 len = VectorNormalize(vec);
 	s32 dec;
 	if (type < 128)
 		dec = 3;
@@ -388,12 +388,12 @@ void R_DrawParticles()
 	VectorScale(vright, xscaleshrink, r_pright);
 	VectorScale(vup, yscaleshrink, r_pup);
 	VectorCopy(vpn, r_ppn);
-	float frametime = cl.time - cl.oldtime;
-	float time3 = frametime * 15;
-	float time2 = frametime * 10;
-	float time1 = frametime * 5;
-	float grav = frametime * sv_gravity.value * 0.05;
-	float dvel = 4 * frametime;
+	f32 frametime = cl.time - cl.oldtime;
+	f32 time3 = frametime * 15;
+	f32 time2 = frametime * 10;
+	f32 time1 = frametime * 5;
+	f32 grav = frametime * sv_gravity.value * 0.05;
+	f32 dvel = 4 * frametime;
 	particle_t *kill;
 	for (;;) {
 		kill = active_particles;

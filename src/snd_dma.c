@@ -396,7 +396,7 @@ void SND_Spatialize (channel_t *ch)
 // Start a sound effect
 // =======================================================================
 
-void S_StartSound (s32 entnum, s32 entchannel, sfx_t *sfx, vec3_t origin, float fvol, float attenuation)
+void S_StartSound (s32 entnum, s32 entchannel, sfx_t *sfx, vec3_t origin, f32 fvol, f32 attenuation)
 {
 	channel_t	*target_chan, *check;
 	sfxcache_t	*sc;
@@ -539,7 +539,7 @@ void S_ClearBuffer (void)
 S_StaticSound
 =================
 */
-void S_StaticSound (sfx_t *sfx, vec3_t origin, float vol, float attenuation)
+void S_StaticSound (sfx_t *sfx, vec3_t origin, f32 vol, f32 attenuation)
 {
 	channel_t	*ss;
 	sfxcache_t		*sc;
@@ -642,17 +642,17 @@ Expects data in signed 16 bit, or unsigned
 8 bit format.
 ===================
 */
-void S_RawSamples (s32 samples, s32 rate, s32 width, s32 channels, byte *data, float volume)
+void S_RawSamples (s32 samples, s32 rate, s32 width, s32 channels, u8 *data, f32 volume)
 {
 	s32 i;
 	s32 src, dst;
-	float scale;
+	f32 scale;
 	s32 intVolume;
 
 	if (s_rawend < paintedtime)
 		s_rawend = paintedtime;
 
-	scale = (float) rate / shm->speed;
+	scale = (f32) rate / shm->speed;
 	intVolume = (s32) (256 * volume);
 
 	if (channels == 2 && width == 2)
@@ -694,8 +694,8 @@ void S_RawSamples (s32 samples, s32 rate, s32 width, s32 channels, byte *data, f
 			s_rawend++;
 		//	s_rawsamples [dst].left = ((signed s8 *) data)[src * 2] * intVolume;
 		//	s_rawsamples [dst].right = ((signed s8 *) data)[src * 2 + 1] * intVolume;
-			s_rawsamples [dst].left = (((byte *) data)[src * 2] - 128) * intVolume;
-			s_rawsamples [dst].right = (((byte *) data)[src * 2 + 1] - 128) * intVolume;
+			s_rawsamples [dst].left = (((u8 *) data)[src * 2] - 128) * intVolume;
+			s_rawsamples [dst].right = (((u8 *) data)[src * 2 + 1] - 128) * intVolume;
 		}
 	}
 	else if (channels == 1 && width == 1)
@@ -711,8 +711,8 @@ void S_RawSamples (s32 samples, s32 rate, s32 width, s32 channels, byte *data, f
 			s_rawend++;
 		//	s_rawsamples [dst].left = ((signed s8 *) data)[src] * intVolume;
 		//	s_rawsamples [dst].right = ((signed s8 *) data)[src] * intVolume;
-			s_rawsamples [dst].left = (((byte *) data)[src] - 128) * intVolume;
-			s_rawsamples [dst].right = (((byte *) data)[src] - 128) * intVolume;
+			s_rawsamples [dst].left = (((u8 *) data)[src] - 128) * intVolume;
+			s_rawsamples [dst].right = (((u8 *) data)[src] - 128) * intVolume;
 		}
 	}
 }
@@ -945,7 +945,7 @@ static void S_PlayVol (void)
 {
 	static s32 hash = 543;
 	s32		i;
-	float	vol;
+	f32	vol;
 	s8	name[256];
 	sfx_t	*sfx;
 

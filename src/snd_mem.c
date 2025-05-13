@@ -11,11 +11,11 @@
 ResampleSfx
 ================
 */
-static void ResampleSfx (sfx_t *sfx, s32 inrate, s32 inwidth, byte *data)
+static void ResampleSfx (sfx_t *sfx, s32 inrate, s32 inwidth, u8 *data)
 {
 	s32		outcount;
 	s32		srcsample;
-	float	stepscale;
+	f32	stepscale;
 	s32		i;
 	s32		sample, fracstep;
 	sfxcache_t	*sc;
@@ -24,7 +24,7 @@ static void ResampleSfx (sfx_t *sfx, s32 inrate, s32 inwidth, byte *data)
 	if (!sc)
 		return;
 
-	stepscale = (float)inrate / shm->speed;	// this is usually 0.5, 1, or 2
+	stepscale = (f32)inrate / shm->speed;	// this is usually 0.5, 1, or 2
 
 	outcount = sc->length / stepscale;
 	sc->length = outcount;
@@ -78,12 +78,12 @@ S_LoadSound
 sfxcache_t *S_LoadSound (sfx_t *s)
 {
 	s8	namebuffer[256];
-	byte	*data;
+	u8	*data;
 	wavinfo_t	info;
 	s32		len;
-	float	stepscale;
+	f32	stepscale;
 	sfxcache_t	*sc;
-	byte	stackbuf[1*1024];		// avoid dirtying the cache heap
+	u8	stackbuf[1*1024];		// avoid dirtying the cache heap
 
 // see if still in memory
 	sc = (sfxcache_t *) Cache_Check (&s->cache);
@@ -119,7 +119,7 @@ sfxcache_t *S_LoadSound (sfx_t *s)
 		return NULL;
 	}
 
-	stepscale = (float)info.rate / shm->speed;
+	stepscale = (f32)info.rate / shm->speed;
 	len = info.samples / stepscale;
 
 	len = len * info.width * info.channels;
@@ -155,10 +155,10 @@ WAV loading
 ===============================================================================
 */
 
-static byte	*data_p;
-static byte	*iff_end;
-static byte	*last_chunk;
-static byte	*iff_data;
+static u8	*data_p;
+static u8	*iff_end;
+static u8	*last_chunk;
+static u8	*iff_data;
 static s32	iff_chunk_len;
 
 static s16 GetLittleShort (void)
@@ -236,7 +236,7 @@ static void DumpChunks (void)
 GetWavinfo
 ============
 */
-wavinfo_t GetWavinfo (const s8 *name, byte *wav, s32 wavlength)
+wavinfo_t GetWavinfo (const s8 *name, u8 *wav, s32 wavlength)
 {
 	wavinfo_t	info;
 	s32	i;

@@ -6,7 +6,7 @@
 cachepic_t menu_cachepics[MAX_CACHED_PICS];
 s32 menu_numcachepics;
 static rectdesc_t r_rectdesc;
-byte *draw_chars; // 8*8 graphic characters
+u8 *draw_chars; // 8*8 graphic characters
 qpic_t *draw_disc;
 qpic_t *draw_backtile;
 s32 drawlayer = 0;
@@ -63,7 +63,7 @@ void Draw_CharacterScaled(s32 x, s32 y, s32 num, s32 scale)
 		return; // don't draw past the bottom of the screen
 	s32 row = num >> 4;
 	s32 col = num & 15;
-	byte *source = draw_chars + (row << 10) + (col << 3);
+	u8 *source = draw_chars + (row << 10) + (col << 3);
 	s32 drawline;
 	if (y < 0) { // clipped TODO doesn't seem to work properly
 		drawline = 8 + y;
@@ -71,7 +71,7 @@ void Draw_CharacterScaled(s32 x, s32 y, s32 num, s32 scale)
 		y = 0;
 	} else
 		drawline = 8;
-	byte *dest = drawlayer == 1 ? screen1->pixels : screen->pixels;
+	u8 *dest = drawlayer == 1 ? screen1->pixels : screen->pixels;
 	dest += y * vid.width + x;
 	while (drawline--) {
 		for (s32 k = 0; k < scale; ++k) {
@@ -97,7 +97,7 @@ void Draw_StringScaled(s32 x, s32 y, s8 *str, s32 scale)
 
 void Draw_PicScaled(s32 x, s32 y, qpic_t *pic, s32 scale)
 {
-	byte *dest = vid.buffer + y * vid.width + x;
+	u8 *dest = vid.buffer + y * vid.width + x;
 	s32 maxwidth = pic->width;
 	if (x + pic->width * scale > vid.width)
 		maxwidth -= (x + pic->width * scale - vid.width) / scale;
@@ -107,11 +107,11 @@ void Draw_PicScaled(s32 x, s32 y, qpic_t *pic, s32 scale)
 	for (u32 v = 0; v < pic->height; v++) {
 		if (v * scale + y >= vid.height)
 			break;
-		byte *source = pic->data + v * pic->width;
+		u8 *source = pic->data + v * pic->width;
 		for (s32 k = 0; k < scale; k++) {
-			byte *dest_row = dest + k * rowinc;
+			u8 *dest_row = dest + k * rowinc;
 			for (u32 i = 0; i < maxwidth; i++) {
-				byte pixel = source[i];
+				u8 pixel = source[i];
 				for (s32 j = 0; j < scale; j++)
 					dest_row[(i*scale) + j] = pixel;
 			}
@@ -122,8 +122,8 @@ void Draw_PicScaled(s32 x, s32 y, qpic_t *pic, s32 scale)
 
 void Draw_PicScaledPartial(s32 x,s32 y,s32 l,s32 t,s32 w,s32 h,qpic_t *p,s32 s)
 {
-        byte *source = p->data;
-        byte *dest = vid.buffer + y * vid.width + x;
+        u8 *source = p->data;
+        u8 *dest = vid.buffer + y * vid.width + x;
         for (u32 v = 0; v < p->height; v++) {
                 if (v * s + y >= vid.height || v > h)
                         return;
@@ -145,14 +145,14 @@ void Draw_PicScaledPartial(s32 x,s32 y,s32 l,s32 t,s32 w,s32 h,qpic_t *p,s32 s)
 
 void Draw_TransPicScaled(s32 x, s32 y, qpic_t *pic, s32 scale)
 {
-	byte *source = pic->data;
-	byte *dest = vid.buffer + y * vid.width + x;
+	u8 *source = pic->data;
+	u8 *dest = vid.buffer + y * vid.width + x;
 	for (u32 v = 0; v < pic->height; v++) {
 		if (v * scale + y >= vid.height)
 			return;
 		for (s32 k = 0; k < scale; k++) {
 			for (u32 u = 0; u < pic->width; u++){
-				byte tbyte = source[u];
+				u8 tbyte = source[u];
 				if (tbyte == TRANSPARENT_COLOR)
 					continue;
 				for (s32 i = 0; i < scale; i++)
@@ -165,16 +165,16 @@ void Draw_TransPicScaled(s32 x, s32 y, qpic_t *pic, s32 scale)
 	}
 }
 
-void Draw_TransPicTranslateScaled(s32 x, s32 y, qpic_t *p, byte *tl, s32 scale)
+void Draw_TransPicTranslateScaled(s32 x, s32 y, qpic_t *p, u8 *tl, s32 scale)
 {
-	byte *source = p->data;
-	byte *dest = vid.buffer + y * vid.width + x;
+	u8 *source = p->data;
+	u8 *dest = vid.buffer + y * vid.width + x;
 	for (u32 v = 0; v < p->height; v++) {
 		if (v * scale + y >= vid.height)
 			return;
 		for (s32 k = 0; k < scale; k++) {
 			for (u32 u = 0; u < p->width; u++) {
-				byte tbyte = source[u];
+				u8 tbyte = source[u];
 				if (tbyte == TRANSPARENT_COLOR)
 					continue;
 				for (s32 i = 0; i < scale; i++)
@@ -187,11 +187,11 @@ void Draw_TransPicTranslateScaled(s32 x, s32 y, qpic_t *p, byte *tl, s32 scale)
 	}
 }
 
-void Draw_CharToConback(s32 num, byte *dest)
+void Draw_CharToConback(s32 num, u8 *dest)
 {
 	s32 row = num >> 4;
 	s32 col = num & 15;
-	byte *source = draw_chars + (row << 10) + (col << 3);
+	u8 *source = draw_chars + (row << 10) + (col << 3);
 	s32 drawline = 8;
 	while (drawline--) {
 		for (s32 x = 0; x < 8; x++)
@@ -202,11 +202,11 @@ void Draw_CharToConback(s32 num, byte *dest)
 	}
 }
 
-void Draw_CharToConbackScaled(s32 num, byte *dest, s32 scale, s32 width)
+void Draw_CharToConbackScaled(s32 num, u8 *dest, s32 scale, s32 width)
 {
 	s32 row = num >> 4;
 	s32 col = num & 15;
-	byte *source = draw_chars + (row << 10) + (col << 3);
+	u8 *source = draw_chars + (row << 10) + (col << 3);
 	s32 drawline = 8;
 	while (drawline--) {
 		for (s32 x = 0; x < 8*scale; x++)
@@ -223,16 +223,16 @@ void Draw_ConsoleBackground(s32 lines)
 	s8 ver[100];
 	qpic_t *conback = Draw_CachePic("gfx/conback.lmp");
 	// hack the version number directly into the pic
-	sprintf(ver, "(QrustyQuake) %4.2f", (float)VERSION);
+	sprintf(ver, "(QrustyQuake) %4.2f", (f32)VERSION);
 	s32 scale = conback->width / 320;
-	byte *dest = conback->data + conback->width*(conback->height-14*scale)
+	u8 *dest = conback->data + conback->width*(conback->height-14*scale)
 		+ conback->width - 11*scale - 8*scale * strlen(ver);
 	for (u64 x = 0; x < strlen(ver); x++)
 		Draw_CharToConbackScaled(ver[x], dest + x * 8 * scale, scale, conback->width);
 	dest = vid.buffer; // draw the pic
 	for (s32 y = 0; y < lines; y++, dest += vid.width) {
 		s32 v = (vid.height-lines+y)*conback->height/vid.height;
-		byte *src = conback->data + v * conback->width;
+		u8 *src = conback->data + v * conback->width;
 		if (vid.width == conback->width)
 			memcpy(dest, src, vid.width);
 		else {
@@ -252,16 +252,16 @@ void Draw_ConsoleBackground(s32 lines)
 	}
 }
 
-void R_DrawRect(vrect_t *prect, s32 rowbytes, byte *psrc, s32 transparent)
+void R_DrawRect(vrect_t *prect, s32 rowbytes, u8 *psrc, s32 transparent)
 {
-	byte *pdest = vid.buffer + (prect->y * vid.width) + prect->x;
+	u8 *pdest = vid.buffer + (prect->y * vid.width) + prect->x;
 	u64 maxdest = (u64)vid.buffer+vid.width*vid.height;
 	if (transparent) {
 		s32 srcdelta = rowbytes - prect->width;
 		s32 destdelta = vid.width - prect->width;
 		for (s32 i = 0; i < prect->height; i++) {
 			for (s32 j = 0; j < prect->width; j++) {
-				byte t = *psrc;
+				u8 t = *psrc;
 				if (t != TRANSPARENT_COLOR)
 					*pdest = t;
 				psrc++;
@@ -301,7 +301,7 @@ void Draw_TileClear(s32 x, s32 y, s32 w, s32 h) // This repeats a 64*64
 			vr.width = r_rectdesc.width - tileoffsetx;
 			if (vr.width > width)
 				vr.width = width;
-			byte *psrc = r_rectdesc.ptexbytes +
+			u8 *psrc = r_rectdesc.ptexbytes +
 			    (tileoffsety * r_rectdesc.rowbytes) + tileoffsetx;
 			R_DrawRect(&vr, r_rectdesc.rowbytes, psrc, 0);
 			vr.x += vr.width;
@@ -316,7 +316,7 @@ void Draw_TileClear(s32 x, s32 y, s32 w, s32 h) // This repeats a 64*64
 
 void Draw_Fill(s32 x, s32 y, s32 w, s32 h, s32 c)
 { // Fills a box of pixels with a single color
-	byte *dest = vid.buffer + y * vid.width + x;
+	u8 *dest = vid.buffer + y * vid.width + x;
 	for (s32 v = 0; v < h; v++, dest += vid.width)
 		memset(dest, c, w); // Fast horizontal fill
 }
@@ -325,7 +325,7 @@ void Draw_FadeScreen()
 {
 	for (u32 y = 0; y < vid.height / uiscale; y++)
 		for (u32 i = 0; i < uiscale; i++) {
-			byte *pbuf = (byte *) (vid.buffer + vid.width * y
+			u8 *pbuf = (u8 *) (vid.buffer + vid.width * y
 				* uiscale + vid.width * i);
 			u32 t = (y & 1) << 1;
 			for (u32 x = 0; x < vid.width / uiscale; x++)

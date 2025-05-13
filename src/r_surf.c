@@ -39,7 +39,7 @@ u32 blocklights_b[18 * 18];
 void R_AddDynamicLights()
 {
 	//johnfitz -- lit support via lordhavoc
-	float cred, cgreen, cblue, brightness;
+	f32 cred, cgreen, cblue, brightness;
 	//johnfitz
 	msurface_t *surf = r_drawsurf.surf;
 	s32 smax = (surf->extents[0] >> 4) + 1;
@@ -48,11 +48,11 @@ void R_AddDynamicLights()
 	for (s32 lnum = 0; lnum < MAX_DLIGHTS; lnum++) {
 		if (!(surf->dlightbits & (1 << lnum)))
 			continue; // not lit by this light
-		float rad = cl_dlights[lnum].radius;
-		float dist = DotProduct(cl_dlights[lnum].origin,
+		f32 rad = cl_dlights[lnum].radius;
+		f32 dist = DotProduct(cl_dlights[lnum].origin,
 				surf->plane->normal) - surf->plane->dist;
 		rad -= fabs(dist);
-		float minlight = cl_dlights[lnum].minlight;
+		f32 minlight = cl_dlights[lnum].minlight;
 		if (rad < minlight)
 			continue;
 		minlight = rad - minlight;
@@ -104,7 +104,7 @@ void R_BuildLightMap()
 	s32 smax = surf->extents[0] / 16 + 1;
 	s32 tmax = surf->extents[1] / 16 + 1;
 	s32 size = smax * tmax;
-	byte *lightmap = surf->samples;
+	u8 *lightmap = surf->samples;
 	if (r_fullbright.value || !cl.worldmodel->lightdata) {
 		memset(blocklights,   0, size * sizeof(*blocklights));
 		memset(blocklights_g, 0, size * sizeof(*blocklights_g));
@@ -173,7 +173,7 @@ void R_DrawSurface()
 	R_BuildLightMap(); // calculate the lightings
 	surfrowbytes = r_drawsurf.rowbytes;
 	texture_t *mt = r_drawsurf.texture;
-	r_source = (byte *) mt + mt->offsets[r_drawsurf.surfmip];
+	r_source = (u8 *) mt + mt->offsets[r_drawsurf.surfmip];
 	// the fractional light values should range from 0 to (VID_GRADES - 1)
 	// << 16 from a source range of 0 - 255
 	s32 texwidth = mt->width >> r_drawsurf.surfmip;
@@ -321,10 +321,10 @@ void R_DrawSurfaceBlockRGB(s32 miplvl)
 	}
 }
 
-void R_GenTurbTile(pixel_t *pbasetex, void *pdest)
+void R_GenTurbTile(u8 *pbasetex, void *pdest)
 {
 	s32 *turb = sintable + ((s32)(cl.time * SPEED) & (CYCLE - 1));
-	byte *pd = (byte *) pdest;
+	u8 *pd = (u8 *) pdest;
 	for (s32 i = 0; i < TILE_SIZE; i++) {
 		for (s32 j = 0; j < TILE_SIZE; j++) {
 			s32 s = (((j << 16) + turb[i & (CYCLE-1)]) >> 16) & 63;

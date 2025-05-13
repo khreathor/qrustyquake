@@ -33,7 +33,7 @@ void R_InitTextures()
 	r_notexture_mip->offsets[2] = r_notexture_mip->offsets[1] + 8 * 8;
 	r_notexture_mip->offsets[3] = r_notexture_mip->offsets[2] + 4 * 4;
 	for(s32 m = 0; m < 4; m++){
-		byte *dest = (byte *) r_notexture_mip
+		u8 *dest = (u8 *) r_notexture_mip
 			+ r_notexture_mip->offsets[m];
 		for(s32 y = 0; y < (16 >> m); y++)
 			for(s32 x = 0; x < (16 >> m); x++){
@@ -271,7 +271,7 @@ void R_MarkLeaves()
 		return;
 	r_visframecount++;
 	r_oldviewleaf = r_viewleaf;
-	byte *vis = Mod_LeafPVS(r_viewleaf, cl.worldmodel);
+	u8 *vis = Mod_LeafPVS(r_viewleaf, cl.worldmodel);
 	for(s32 i = 0; i < cl.worldmodel->numleafs; i++){
 		if(vis[i >> 3] & (1 << (i & 7))){
 			mnode_t *nd = (mnode_t *) & cl.worldmodel->leafs[i + 1];
@@ -548,7 +548,7 @@ void R_EdgeDrawing()
 
 void R_RenderView() // r_refdef must be set before the first call
 { // CyanBun96: three-pass rendering. consider *not* doing that, or doing it less sloppily
-	byte warpbuffer[WARP_WIDTH * WARP_HEIGHT];
+	u8 warpbuffer[WARP_WIDTH * WARP_HEIGHT];
 	r_warpbuffer = warpbuffer;
 	R_SetupFrame();
 	R_MarkLeaves(); // done here so we know if we're in water

@@ -13,14 +13,14 @@ void D_DrawParticle(particle_t *pparticle)
 	transformed[2] = DotProduct(local, r_ppn);
 	if (transformed[2] < PARTICLE_Z_CLIP)
 		return;
-	float zi = 1.0 / transformed[2]; // project the point
+	f32 zi = 1.0 / transformed[2]; // project the point
 	s32 u = (s32)(xcenter + zi * transformed[0] + 0.5); // FIXME: preadjust xcenter and ycenter
 	s32 v = (s32)(ycenter - zi * transformed[1] + 0.5);
 	if ((v > d_vrectbottom_particle) || (u > d_vrectright_particle)
 		|| (v < d_vrecty) || (u < d_vrectx)) 
 		return;
 	s16 *pz = d_pzbuffer + (d_zwidth * v) + u;
-	byte *pdest = d_viewbuffer + d_scantable[v] + u;
+	u8 *pdest = d_viewbuffer + d_scantable[v] + u;
 	s32 izi = (s32)(zi * 0x8000);
 	s32 pix = izi >> d_pix_shift;
 	if (pix < d_pix_min)

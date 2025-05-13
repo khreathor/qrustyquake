@@ -45,8 +45,8 @@ extern	s16	(*BigShort) (s16 l);
 extern	s16	(*LittleShort) (s16 l);
 extern	s32	(*BigLong) (s32 l);
 extern	s32	(*LittleLong) (s32 l);
-extern	float	(*BigFloat) (float l);
-extern	float	(*LittleFloat) (float l);
+extern	f32	(*BigFloat) (f32 l);
+extern	f32	(*LittleFloat) (f32 l);
 
 //============================================================================
 
@@ -54,11 +54,11 @@ void MSG_WriteChar (sizebuf_t *sb, s32 c);
 void MSG_WriteByte (sizebuf_t *sb, s32 c);
 void MSG_WriteShort (sizebuf_t *sb, s32 c);
 void MSG_WriteLong (sizebuf_t *sb, s32 c);
-void MSG_WriteFloat (sizebuf_t *sb, float f);
+void MSG_WriteFloat (sizebuf_t *sb, f32 f);
 void MSG_WriteString (sizebuf_t *sb, const s8 *s);
-void MSG_WriteCoord (sizebuf_t *sb, float f, u32 flags);
-void MSG_WriteAngle (sizebuf_t *sb, float f, u32 flags);
-void MSG_WriteAngle16 (sizebuf_t *sb, float f, u32 flags); //johnfitz
+void MSG_WriteCoord (sizebuf_t *sb, f32 f, u32 flags);
+void MSG_WriteAngle (sizebuf_t *sb, f32 f, u32 flags);
+void MSG_WriteAngle16 (sizebuf_t *sb, f32 f, u32 flags); //johnfitz
 
 extern	s32			msg_readcount;
 extern	bool	msg_badread;		// set if a read goes beyond end of message
@@ -68,12 +68,12 @@ s32 MSG_ReadChar (void);
 s32 MSG_ReadByte (void);
 s32 MSG_ReadShort (void);
 s32 MSG_ReadLong (void);
-float MSG_ReadFloat (void);
+f32 MSG_ReadFloat (void);
 const s8 *MSG_ReadString (void);
 
-float MSG_ReadCoord (u32 flags);
-float MSG_ReadAngle (u32 flags);
-float MSG_ReadAngle16 (u32 flags); //johnfitz
+f32 MSG_ReadCoord (u32 flags);
+f32 MSG_ReadAngle (u32 flags);
+f32 MSG_ReadAngle16 (u32 flags); //johnfitz
 
 //============================================================================
 
@@ -89,7 +89,7 @@ void Q_strcat (s8 *dest, const s8 *src);
 s32 Q_strcmp (const s8 *s1, const s8 *s2);
 s32 Q_strncmp (const s8 *s1, const s8 *s2, s32 count);
 s32	Q_atoi (const s8 *str);
-float Q_atof (const s8 *str);
+f32 Q_atof (const s8 *str);
 
 
 /* locale-insensitive strcasecmp replacement functions: */
@@ -183,36 +183,36 @@ void COM_CloseFile (s32 h);
 // these procedures open a file using COM_FindFile and loads it into a proper
 // buffer. the buffer is allocated with a total size of com_filesize + 1. the
 // procedures differ by their buffer allocation method.
-byte *COM_LoadStackFile (const s8 *path, void *buffer, s32 bufsize,
+u8 *COM_LoadStackFile (const s8 *path, void *buffer, s32 bufsize,
 						u32 *path_id);
 	// uses the specified stack stack buffer with the specified size
 	// of bufsize. if bufsize is too s16, uses temp hunk. the bufsize
 	// must include the +1
-byte *COM_LoadTempFile (const s8 *path, u32 *path_id);
+u8 *COM_LoadTempFile (const s8 *path, u32 *path_id);
 	// allocates the buffer on the temp hunk.
-byte *COM_LoadHunkFile (const s8 *path, u32 *path_id);
+u8 *COM_LoadHunkFile (const s8 *path, u32 *path_id);
 	// allocates the buffer on the hunk.
-byte *COM_LoadZoneFile (const s8 *path, u32 *path_id);
+u8 *COM_LoadZoneFile (const s8 *path, u32 *path_id);
 	// allocates the buffer on the zone.
 void COM_LoadCacheFile (const s8 *path, struct cache_user_s *cu,
 						u32 *path_id);
 	// uses cache mem for allocating the buffer.
-byte *COM_LoadMallocFile (const s8 *path, u32 *path_id);
+u8 *COM_LoadMallocFile (const s8 *path, u32 *path_id);
 	// allocates the buffer on the system mem (malloc).
 
 // Opens the given path directly, ignoring search paths.
 // Returns NULL on failure, or else a '\0'-terminated malloc'ed buffer.
 // Loads in "t" mode so CRLF to LF translation is performed on Windows.
-byte *COM_LoadMallocFile_TextMode_OSPath (const s8 *path, s64 *len_out);
+u8 *COM_LoadMallocFile_TextMode_OSPath (const s8 *path, s64 *len_out);
 
 // Attempts to parse an s32, followed by a newline.
 // Returns advanced buffer position.
 // Doesn't signal parsing failure, but this is not needed for savegame loading.
 const s8 *COM_ParseIntNewline(const s8 *buffer, s32 *value);
 
-// Attempts to parse a float followed by a newline.
+// Attempts to parse a f32 followed by a newline.
 // Returns advanced buffer position.
-const s8 *COM_ParseFloatNewline(const s8 *buffer, float *value);
+const s8 *COM_ParseFloatNewline(const s8 *buffer, f32 *value);
 
 // Parse a string of non-whitespace into com_token, then tries to consume a
 // newline. Returns advanced buffer position.

@@ -6,7 +6,7 @@
 #include "quakedef.h"
 
 s32 r_p0[6], r_p1[6], r_p2[6];
-byte *d_pcolormap;
+u8 *d_pcolormap;
 s32 d_aflatcolor;
 s32 d_xdenom;
 edgetable *pedgetable;
@@ -17,7 +17,7 @@ s32 r_zistepx, r_zistepy;
 s32 d_aspancount, d_countextrastep;
 spanpackage_t *a_spans;
 spanpackage_t *d_pedgespanpackage;
-byte *d_pdest, *d_ptex;
+u8 *d_pdest, *d_ptex;
 s16 *d_pz;
 s32 d_sfrac, d_tfrac, d_light, d_zi;
 s32 d_ptexextrastep, d_sfracextrastep;
@@ -26,11 +26,11 @@ s32 d_lightbasestep, d_pdestbasestep, d_ptexbasestep;
 s32 d_sfracbasestep, d_tfracbasestep;
 s32 d_ziextrastep, d_zibasestep;
 s32 d_pzextrastep, d_pzbasestep;
-byte *skintable[MAX_LBM_HEIGHT];
+u8 *skintable[MAX_LBM_HEIGHT];
 s32 skinwidth;
-byte *skinstart;
+u8 *skinstart;
 static s32 ystart;
-float cur_ent_alpha = 1;
+f32 cur_ent_alpha = 1;
 
 extern u8 color_mix_lut[256][256][FOG_LUT_LEVELS];
 extern s32 fog_lut_built;
@@ -109,9 +109,9 @@ void D_PolysetDrawFinalVerts(finalvert_t *fv, s32 numverts)
 			*zbuf = z;
 			pix = skintable[fv->v[3] >> 16][fv->v[2] >> 16];
 			if (!r_rgblighting.value || !colored_aliaslight)
-				pix = ((byte *) acolormap)[pix + (fv->v[4] & 0xFF00)];
+				pix = ((u8 *) acolormap)[pix + (fv->v[4] & 0xFF00)];
 			else {
-				pix = ((byte *) acolormap)[pix];
+				pix = ((u8 *) acolormap)[pix];
 				u8 tr = vid_curpal[pix * 3 + 0];
 				u8 tg = vid_curpal[pix * 3 + 1];
 				u8 tb = vid_curpal[pix * 3 + 2];
@@ -150,7 +150,7 @@ void D_DrawSubdiv()
 		if(((i0->v[1]-i1->v[1])*(i0->v[0]-i2->v[0])-(i0->v[0]-i1->v[0])
 					*(i0->v[1]-i2->v[1]))>=0)
 			continue;
-		d_pcolormap = &((byte *) acolormap)[i0->v[4] & 0xFF00];
+		d_pcolormap = &((u8 *) acolormap)[i0->v[4] & 0xFF00];
 		if (ptri[i].facesfront) {
 			D_PolysetRecursiveTriangle(i0->v, i1->v, i2->v);
 		} else {
@@ -308,7 +308,7 @@ void D_PolysetUpdateTables()
 			r_affinetridesc.pskin != skinstart) {
 		skinwidth = r_affinetridesc.skinwidth;
 		skinstart = r_affinetridesc.pskin;
-		byte *s = skinstart;
+		u8 *s = skinstart;
 		for (s32 i = 0; i < MAX_LBM_HEIGHT; i++, s += skinwidth)
 			skintable[i] = s;
 	}
@@ -363,8 +363,8 @@ void D_PolysetScanLeftEdge(s32 height)
 	} while (--height);
 }
 
-void D_PolysetSetUpForLineScan(fixed8_t startvertu, fixed8_t startvertv,
-		fixed8_t endvertu, fixed8_t endvertv)
+void D_PolysetSetUpForLineScan(s32 startvertu, s32 startvertv,
+		s32 endvertu, s32 endvertv)
 {
 	errorterm = -1;
 	s32 tm = endvertu - startvertu;
@@ -375,8 +375,8 @@ void D_PolysetSetUpForLineScan(fixed8_t startvertu, fixed8_t startvertv,
 		erroradjustup = ptemp->remainder;
 		erroradjustdown = tn;
 	} else {
-		double dm = (double)tm;
-		double dn = (double)tn;
+		f64 dm = (f64)tm;
+		f64 dn = (f64)tn;
 		FloorDivMod(dm, dn, &ubasestep, &erroradjustup);
 		erroradjustdown = dn;
 	}
@@ -384,17 +384,17 @@ void D_PolysetSetUpForLineScan(fixed8_t startvertu, fixed8_t startvertv,
 
 void D_PolysetCalcGradients(s32 skinwidth)
 {
-	float p00_minus_p20 = r_p0[0] - r_p2[0];
-	float p01_minus_p21 = r_p0[1] - r_p2[1];
-	float p10_minus_p20 = r_p1[0] - r_p2[0];
-	float p11_minus_p21 = r_p1[1] - r_p2[1];
-	float xstepdenominv = 1.0 / (float)d_xdenom;
-	float ystepdenominv = -xstepdenominv;
+	f32 p00_minus_p20 = r_p0[0] - r_p2[0];
+	f32 p01_minus_p21 = r_p0[1] - r_p2[1];
+	f32 p10_minus_p20 = r_p1[0] - r_p2[0];
+	f32 p11_minus_p21 = r_p1[1] - r_p2[1];
+	f32 xstepdenominv = 1.0 / (f32)d_xdenom;
+	f32 ystepdenominv = -xstepdenominv;
 	// ceil () for light so positive steps are exaggerated, negative steps
 	// diminished, pushing us away from underflow toward overflow. Underflow is
 	// very visible, overflow is very unlikely, because of ambient lighting
-	float t0 = r_p0[4] - r_p2[4];
-	float t1 = r_p1[4] - r_p2[4];
+	f32 t0 = r_p0[4] - r_p2[4];
+	f32 t1 = r_p1[4] - r_p2[4];
 	r_lstepx = (s32)ceil((t1*p01_minus_p21-t0*p11_minus_p21)*xstepdenominv);
 	r_lstepy = (s32)ceil((t1*p00_minus_p20-t0*p10_minus_p20)*ystepdenominv);
 	t0 = r_p0[2] - r_p2[2];
@@ -426,8 +426,8 @@ void D_PolysetDrawSpans8(spanpackage_t *pspanpackage)
 			d_aspancount += ubasestep;
 		}
 		if (lcount) {
-			byte *lpdest = pspanpackage->pdest;
-			byte *lptex = pspanpackage->ptex;
+			u8 *lpdest = pspanpackage->pdest;
+			u8 *lptex = pspanpackage->ptex;
 			s16 *lpz = pspanpackage->pz;
 			s32 lsfrac = pspanpackage->sfrac;
 			s32 ltfrac = pspanpackage->tfrac;
@@ -444,9 +444,9 @@ void D_PolysetDrawSpans8(spanpackage_t *pspanpackage)
 				if ((lzi >> 16) >= *lpz) {
 					s32 pix;
 					if (!r_rgblighting.value || !colored_aliaslight)
-						pix = ((byte*)acolormap)[*lptex + (llight & 0xFF00)];
+						pix = ((u8*)acolormap)[*lptex + (llight & 0xFF00)];
 					else {
-						pix = ((byte*)acolormap)[*lptex];
+						pix = ((u8*)acolormap)[*lptex];
 						u8 tr = vid_curpal[pix * 3 + 0];
 						u8 tg = vid_curpal[pix * 3 + 1];
 						u8 tb = vid_curpal[pix * 3 + 2];
@@ -505,13 +505,13 @@ void D_RasterizeAliasPolySmooth()
 	d_pedgespanpackage = a_spans;
 	ystart = plefttop[1];
 	d_aspancount = plefttop[0] - prighttop[0];
-	d_ptex = (byte *) r_affinetridesc.pskin + (plefttop[2] >> 16) +
+	d_ptex = (u8 *) r_affinetridesc.pskin + (plefttop[2] >> 16) +
 		(plefttop[3] >> 16) * r_affinetridesc.skinwidth;
 	d_sfrac = plefttop[2] & 0xFFFF;
 	d_tfrac = plefttop[3] & 0xFFFF;
 	d_light = plefttop[4];
 	d_zi = plefttop[5];
-	d_pdest = (byte *) d_viewbuffer + ystart * screenwidth + plefttop[0];
+	d_pdest = (u8 *) d_viewbuffer + ystart * screenwidth + plefttop[0];
 	d_pz = d_pzbuffer + ystart * d_zwidth + plefttop[0];
 	s32 working_lstepx, originalcount;
 	if (initialleftheight == 1) {
@@ -566,13 +566,13 @@ void D_RasterizeAliasPolySmooth()
 		//TODO make this a function; modularize this function in general
 		ystart = plefttop[1];
 		d_aspancount = plefttop[0] - prighttop[0];
-		d_ptex = (byte *) r_affinetridesc.pskin + (plefttop[2] >> 16) +
+		d_ptex = (u8 *) r_affinetridesc.pskin + (plefttop[2] >> 16) +
 			(plefttop[3] >> 16) * r_affinetridesc.skinwidth;
 		d_sfrac = 0;
 		d_tfrac = 0;
 		d_light = plefttop[4];
 		d_zi = plefttop[5];
-		d_pdest = (byte*)d_viewbuffer+ystart*screenwidth+plefttop[0];
+		d_pdest = (u8*)d_viewbuffer+ystart*screenwidth+plefttop[0];
 		d_pz = d_pzbuffer + ystart * d_zwidth + plefttop[0];
 		if (height == 1) {
 			d_pedgespanpackage->pdest = d_pdest;

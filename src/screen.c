@@ -15,19 +15,19 @@ u32 clearnotify;
 vrect_t scr_vrect;
 bool scr_disabled_for_loading;
 bool scr_drawloading;
-float scr_disabled_time;
+f32 scr_disabled_time;
 bool scr_skipupdate;
 bool block_drawing;
 void SCR_ScreenShot_f();
 s8 scr_centerstring[1024]; // center printing
-float scr_centertime_start; // for slow victory printing
-float scr_centertime_off;
+f32 scr_centertime_start; // for slow victory printing
+f32 scr_centertime_off;
 s32 scr_center_lines;
 s32 scr_erase_lines;
 u32 scr_erase_center;
-float scr_con_current;
-float scr_conlines; // lines of console to display
-float oldscreensize, oldfov;
+f32 scr_con_current;
+f32 scr_conlines; // lines of console to display
+f32 oldscreensize, oldfov;
 hudstyle_t hudstyle;
 extern s32 fog_initialized;
 extern s32 drawlayer;
@@ -99,7 +99,7 @@ void SCR_CheckDrawCenterString()
 	SCR_DrawCenterString();
 }
 
-float CalcFov(float fov_x, float width, float height)
+f32 CalcFov(f32 fov_x, f32 width, f32 height)
 {
 	if (fov_x < 1 || fov_x > 179)
 		Sys_Error("Bad fov: %f", fov_x);
@@ -124,7 +124,7 @@ static void SCR_CalcRefdef() // Must be called whenever vid changes
 	r_refdef.fov_x = scr_fov.value;
 	r_refdef.fov_y = CalcFov(r_refdef.fov_x,
 		r_refdef.vrect.width, r_refdef.vrect.height);
-	float size = cl.intermission ? 120 : scr_viewsize.value;
+	f32 size = cl.intermission ? 120 : scr_viewsize.value;
 	if (size >= 120 || hudstyle != HUD_CLASSIC)
 		sb_lines = 0; // no status bar at all
 	else if (size >= 110)
@@ -182,8 +182,8 @@ void SCR_Init()
 
 void SCR_DrawFPS()
 { // -- johnfitz
-	static double oldtime = 0;
-	static double lastfps = 0;
+	static f64 oldtime = 0;
+	static f64 lastfps = 0;
 	static s32 oldframecount = 0;
 	if (con_forcedup) {
 		oldtime = realtime;
@@ -191,7 +191,7 @@ void SCR_DrawFPS()
 		lastfps = 0;
 		return;
 	}
-	double elapsed_time = realtime - oldtime;
+	f64 elapsed_time = realtime - oldtime;
 	s32 frames = r_framecount - oldframecount;
 	if (elapsed_time < 0 || frames < 0) {
 		oldtime = realtime;
@@ -307,8 +307,8 @@ void SCR_DrawConsole()
 			Con_DrawNotify(); // only draw notify in game
 }
 
-void WritePCXfile(s8 *filename, byte *data, s32 width, s32 height,
-		  s32 rowbytes, byte *palette)
+void WritePCXfile(s8 *filename, u8 *data, s32 width, s32 height,
+		  s32 rowbytes, u8 *palette)
 {
 	pcx_t *pcx = Hunk_TempAlloc(width * height * 2 + 1000);
 	if (pcx == NULL) {
@@ -330,7 +330,7 @@ void WritePCXfile(s8 *filename, byte *data, s32 width, s32 height,
 	pcx->bytes_per_line = LittleShort((s16)width);
 	pcx->palette_type = LittleShort(2); // not a grey scale
 	Q_memset(pcx->filler, 0, sizeof(pcx->filler));
-	byte *pack = &pcx->data; // pack the image
+	u8 *pack = &pcx->data; // pack the image
 	for (s32 i = 0; i < height; i++) {
 		for (s32 j = 0; j < width; j++) {
 			if ((*data & 0xc0) != 0xc0)
@@ -342,10 +342,10 @@ void WritePCXfile(s8 *filename, byte *data, s32 width, s32 height,
 		}
 		data += rowbytes - width;
 	}
-	*pack++ = 0x0c; // palette ID byte
+	*pack++ = 0x0c; // palette ID u8
 	for (s32 i = 0; i < 768; i++) // write the palette
 		*pack++ = *palette++;
-	s32 length = pack - (byte *) pcx; // write output file 
+	s32 length = pack - (u8 *) pcx; // write output file 
 	COM_WriteFile(filename, pcx, length);
 }
 
@@ -443,7 +443,7 @@ s32 SCR_ModalMessage(s8 *text) // Displays a text string in the center
 
 void SCR_UpdateScreen() // This is called every frame,
 { // and can also be called explicitly to flush text to the screen.
-	static float oldscr_viewsize;
+	static f32 oldscr_viewsize;
 	if (scr_skipupdate || block_drawing)
 		return;
 	if (scr_disabled_for_loading) {

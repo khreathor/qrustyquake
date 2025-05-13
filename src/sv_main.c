@@ -18,7 +18,7 @@ extern bool pr_alpha_supported; //johnfitz
 extern s32 pr_effects_mask;
 
 
-byte *SV_FatPVS (vec3_t org, model_t *worldmodel); //johnfitz -- added worldmodel as a parameter
+u8 *SV_FatPVS (vec3_t org, model_t *worldmodel); //johnfitz -- added worldmodel as a parameter
  
 //============================================================================
 
@@ -161,7 +161,7 @@ Larger attenuations will drop off.  (max 4 attenuation)
 
 ==================
 */
-void SV_StartSound (edict_t *entity, s32 channel, const s8 *sample, s32 volume, float attenuation)
+void SV_StartSound (edict_t *entity, s32 channel, const s8 *sample, s32 volume, f32 attenuation)
 {
 	s32			sound_num, ent;
 	s32			i, field_mask;
@@ -374,7 +374,7 @@ void SV_ConnectClient (s32 clientnum)
 	s32				edictnum;
 	struct qsocket_s *netconnection;
 	s32				i;
-	float			spawn_parms[NUM_SPAWN_PARMS];
+	f32			spawn_parms[NUM_SPAWN_PARMS];
 
 	client = svs.clients + clientnum;
 
@@ -482,15 +482,15 @@ crosses a waterline.
 */
 
 static s32	fatbytes;
-static byte	*fatpvs;
+static u8	*fatpvs;
 static s32	fatpvs_capacity;
 
 void SV_AddToFatPVS (vec3_t org, mnode_t *node, model_t *worldmodel) //johnfitz -- added worldmodel as a parameter
 {
 	s32		i;
-	byte	*pvs;
+	u8	*pvs;
 	mplane_t	*plane;
-	float	d;
+	f32	d;
 
 	while (1)
 	{
@@ -528,13 +528,13 @@ Calculates a PVS that is the inclusive or of all leafs within 8 pixels of the
 given point.
 =============
 */
-byte *SV_FatPVS (vec3_t org, model_t *worldmodel) //johnfitz -- added worldmodel as a parameter
+u8 *SV_FatPVS (vec3_t org, model_t *worldmodel) //johnfitz -- added worldmodel as a parameter
 {
 	fatbytes = (worldmodel->numleafs+7)>>3; // ericw -- was +31, assumed to be a bug/typo
 	if (fatpvs == NULL || fatbytes > fatpvs_capacity)
 	{
 		fatpvs_capacity = fatbytes;
-		fatpvs = (byte *) realloc (fatpvs, fatpvs_capacity);
+		fatpvs = (u8 *) realloc (fatpvs, fatpvs_capacity);
 		if (!fatpvs)
 			Sys_Error ("SV_FatPVS: realloc() failed on %d bytes", fatpvs_capacity);
 	}
@@ -553,7 +553,7 @@ PVS test encapsulated in a nice function
 */
 bool SV_VisibleToClient (edict_t *client, edict_t *test, model_t *worldmodel)
 {
-	byte	*pvs;
+	u8	*pvs;
 	vec3_t	org;
 	s32		i;
 
@@ -578,9 +578,9 @@ void SV_WriteEntitiesToClient (edict_t	*clent, sizebuf_t *msg)
 {
 	s32		e, i;
 	s32		bits;
-	byte	*pvs;
+	u8	*pvs;
 	vec3_t	org;
-	float	miss;
+	f32	miss;
 	edict_t	*ent;
 	eval_t	*val;
 
@@ -619,7 +619,7 @@ void SV_WriteEntitiesToClient (edict_t	*clent, sizebuf_t *msg)
 
 		// johnfitz -- max size for protocol 15 is 18 bytes, not 16 as originally
 		// assumed here.  And, for protocol 85 the max size is actually 24 bytes.
-		// For float coords and angles the limit is 40.
+		// For f32 coords and angles the limit is 40.
 		// FIXME: Use tighter limit according to protocol flags and send bits.
 		if (msg->cursize + 40 > msg->maxsize)
 		{
@@ -763,14 +763,14 @@ void SV_WriteEntitiesToClient (edict_t	*clent, sizebuf_t *msg)
 		if (bits & U_MODEL2)
 			MSG_WriteByte(msg, (s32)ent->v.modelindex >> 8);
 		if (bits & U_LERPFINISH)
-			MSG_WriteByte(msg, (byte)(Q_rint((ent->v.nextthink-sv.time)*255)));
+			MSG_WriteByte(msg, (u8)(Q_rint((ent->v.nextthink-sv.time)*255)));
 		//johnfitz
 	}
 
 	//johnfitz -- devstats
 stats:
 	/*if (msg->cursize > 1024 && dev_peakstats.packetsize <= 1024)
-		Con_DWarning ("%i byte packet exceeds standard limit of 1024 (max = %d).\n", msg->cursize, msg->maxsize);
+		Con_DWarning ("%i u8 packet exceeds standard limit of 1024 (max = %d).\n", msg->cursize, msg->maxsize);
 	dev_stats.packetsize = msg->cursize;
 	dev_peakstats.packetsize = q_max(msg->cursize, dev_peakstats.packetsize);*/
 	//johnfitz
@@ -985,7 +985,7 @@ SV_SendClientDatagram
 */
 bool SV_SendClientDatagram (client_t *client)
 {
-	byte		buf[MAX_DATAGRAM];
+	u8		buf[MAX_DATAGRAM];
 	sizebuf_t	msg;
 
 	msg.data = buf;
@@ -1069,7 +1069,7 @@ message buffer
 void SV_SendNop (client_t *client)
 {
 	sizebuf_t	msg;
-	byte		buf[4];
+	u8		buf[4];
 
 	msg.data = buf;
 	msg.maxsize = sizeof(buf);
@@ -1208,7 +1208,7 @@ static void SV_AddSignonBuffer (void)
 		Host_Error ("SV_AddSignonBuffer overflow\n");
 
 	sb = (sizebuf_t *) Hunk_AllocName (sizeof (sizebuf_t) + SIGNON_SIZE, "signon");
-	sb->data = (byte *)(sb + 1);
+	sb->data = (u8 *)(sb + 1);
 	sb->maxsize = SIGNON_SIZE;
 	sv.signon_buffers[sv.num_signon_buffers++] = sb;
 	sv.signon = sb;
@@ -1377,7 +1377,7 @@ Tell all the clients that the server is changing levels
 */
 void SV_SendReconnect (void)
 {
-	byte	data[128];
+	u8	data[128];
 	sizebuf_t	msg;
 
 	msg.data = data;
@@ -1428,7 +1428,7 @@ SV_SpawnServer
 This is called at the start of each level
 ================
 */
-extern float		scr_centertime_off;
+extern f32		scr_centertime_off;
 void SV_SpawnServer (const s8 *server)
 {
 	static s8	dummy[8] = { 0,0,0,0,0,0,0,0 };
@@ -1462,7 +1462,7 @@ void SV_SpawnServer (const s8 *server)
 	if (current_skill > 3)
 		current_skill = 3;
 
-	Cvar_SetValue ("skill", (float)current_skill);
+	Cvar_SetValue ("skill", (f32)current_skill);
 
 //
 // set up the new server
@@ -1580,9 +1580,9 @@ void SV_SpawnServer (const s8 *server)
 	for (i = 0, signonsize = 0; i < sv.num_signon_buffers; i++)
 		signonsize += sv.signon_buffers[i]->cursize;
 	if (signonsize > 64000-2)
-		printf ("%i byte signon buffer exceeds QS limit of 63998.\n", signonsize);
+		printf ("%i u8 signon buffer exceeds QS limit of 63998.\n", signonsize);
 	else if (signonsize > 8000-2) //max size that will fit into 8000-sized client->message buffer with 2 extra bytes on the end
-		printf ("%i byte signon buffer exceeds standard limit of 7998.\n", signonsize);
+		printf ("%i u8 signon buffer exceeds standard limit of 7998.\n", signonsize);
 	//johnfitz
 
 // send serverinfo to all connected clients

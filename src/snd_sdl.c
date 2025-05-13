@@ -96,7 +96,7 @@ bool SNDDMA_Init (dma_t *dma)
 	/* Since we passed NULL as the 'obtained' spec to SDL_OpenAudio(),
 	 * SDL will convert to hardware format for us if needed, hence we
 	 * directly use the desired values here. */
-	shm->samplebits = (desired.format & 0xFF); /* first byte of format is bits */
+	shm->samplebits = (desired.format & 0xFF); /* first u8 of format is bits */
 	shm->signed8 = (desired.format == AUDIO_S8);
 	shm->speed = desired.freq;
 	shm->channels = desired.channels;

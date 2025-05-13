@@ -26,7 +26,7 @@ s32 r_currentkey;
 s32 r_bmodelactive;
 s32 current_iv;
 s64 edge_head_u_shift20, edge_tail_u_shift20;
-float fv;
+f32 fv;
 
 static void (*pdrawfunc)();
 void R_GenerateSpans();
@@ -263,15 +263,15 @@ void R_LeadingEdge (edge_t *edge)
 			if (surf->insubmodel && (surf->key == surf2->key))
 			{
 				// must be two bmodels in the same leaf; sort on 1/z
-				double fu = (float)(edge->u-0xFFFFF) * (1.0/0x100000);
-				double newzi = surf->d_ziorigin +
+				f64 fu = (f32)(edge->u-0xFFFFF) * (1.0/0x100000);
+				f64 newzi = surf->d_ziorigin +
 					fv*surf->d_zistepv + fu*surf->d_zistepu;
-				double newzibottom = newzi * 0.99;
-				double testzi = surf2->d_ziorigin +
+				f64 newzibottom = newzi * 0.99;
+				f64 testzi = surf2->d_ziorigin +
 					fv*surf2->d_zistepv+fu*surf2->d_zistepu;
 				if (newzibottom >= testzi)
 					goto newtop;
-				double newzitop = newzi * 1.01;
+				f64 newzitop = newzi * 1.01;
 				if (newzitop >= testzi &&
 					surf->d_zistepu >= surf2->d_zistepu)
 						goto newtop;
@@ -288,15 +288,15 @@ continue_search:
 				if (!surf->insubmodel)
 					goto continue_search;
 				// must be two bmodels in the same leaf; sort on 1/z
-				double fu = (float)(edge->u-0xFFFFF) * (1.0/0x100000);
-				double newzi = surf->d_ziorigin +
+				f64 fu = (f32)(edge->u-0xFFFFF) * (1.0/0x100000);
+				f64 newzi = surf->d_ziorigin +
 					fv*surf->d_zistepv + fu*surf->d_zistepu;
-				double newzibottom = newzi * 0.99;
-				double testzi = surf2->d_ziorigin +
+				f64 newzibottom = newzi * 0.99;
+				f64 testzi = surf2->d_ziorigin +
 					fv*surf2->d_zistepv+fu*surf2->d_zistepu;
 				if (newzibottom >= testzi)
 					goto gotposition;
-				double newzitop = newzi * 1.01;
+				f64 newzitop = newzi * 1.01;
 				if (newzitop >= testzi &&
 					surf->d_zistepu >= surf2->d_zistepu)
 						goto gotposition;
@@ -368,7 +368,7 @@ void R_GenerateSpansBackward()
 void R_ScanEdges()
 {
 	// Align the array itself to the cache size
-	byte basespans[MAXSPANS * sizeof(espan_t) + CACHE_SIZE]/*
+	u8 basespans[MAXSPANS * sizeof(espan_t) + CACHE_SIZE]/*
 			__attribute__((aligned(CACHE_SIZE)))*/;
 	// Pointer to the aligned base of the spans
 	espan_t *basespan_p = (espan_t *) basespans;
@@ -402,7 +402,7 @@ void R_ScanEdges()
 	s64 iv = r_refdef.vrect.y;
 	for (; iv < bottom; iv++) {
 		current_iv = iv;
-		fv = (float)iv;
+		fv = (f32)iv;
 		// mark that the head (background start) span is pre-included
 		surfaces[1].spanstate = 1;
 		if (newedges[iv])
@@ -424,7 +424,7 @@ void R_ScanEdges()
 	}
 	// do the last scan (no need to step or sort or remove on the last scan)
 	current_iv = iv;
-	fv = (float)iv;
+	fv = (f32)iv;
 	// mark that the head (background start) span is pre-included
 	surfaces[1].spanstate = 1;
 	if (newedges[iv])

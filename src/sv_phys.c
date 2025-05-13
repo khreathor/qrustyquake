@@ -91,7 +91,7 @@ Returns false if the entity removed itself.
 */
 bool SV_RunThink (edict_t *ent)
 {
-	float	thinktime;
+	f32	thinktime;
 
 	thinktime = ent->v.nextthink;
 	if (thinktime <= 0 || thinktime > sv.time + host_frametime)
@@ -157,10 +157,10 @@ returns the blocked flags (1 = floor, 2 = step / wall)
 ==================
 */
 
-s32 ClipVelocity (vec3_t in, vec3_t normal, vec3_t out, float overbounce)
+s32 ClipVelocity (vec3_t in, vec3_t normal, vec3_t out, f32 overbounce)
 {
-	float	backoff;
-	float	change;
+	f32	backoff;
+	f32	change;
 	s32		i, blocked;
 
 	blocked = 0;
@@ -195,18 +195,18 @@ Returns the clipflags if the velocity was modified (hit something solid)
 If steptrace is not NULL, the trace of any vertical wall hit will be stored
 ============
 */
-s32 SV_FlyMove (edict_t *ent, float time, trace_t *steptrace)
+s32 SV_FlyMove (edict_t *ent, f32 time, trace_t *steptrace)
 {
 	s32			bumpcount, numbumps;
 	vec3_t		dir;
-	float		d;
+	f32		d;
 	s32			numplanes;
 	vec3_t		planes[MAX_CLIP_PLANES];
 	vec3_t		primal_velocity, original_velocity, new_velocity;
 	s32			i, j;
 	trace_t		trace;
 	vec3_t		end;
-	float		time_left;
+	f32		time_left;
 	s32			blocked;
 
 	numbumps = 4;
@@ -339,7 +339,7 @@ SV_AddGravity
 */
 void SV_AddGravity (edict_t *ent)
 {
-	float	ent_gravity;
+	f32	ent_gravity;
 	eval_t	*val;
 
 	val = GetEdictFieldValue(ent, "gravity");
@@ -397,13 +397,13 @@ trace_t SV_PushEntity (edict_t *ent, vec3_t push)
 SV_PushMove
 ============
 */
-void SV_PushMove (edict_t *pusher, float movetime)
+void SV_PushMove (edict_t *pusher, f32 movetime)
 {
 	s32			i, e;
 	edict_t		*check, *block;
 	vec3_t		mins, maxs, move;
 	vec3_t		entorig, pushorig;
-	float		solid_backup;
+	f32		solid_backup;
 	s32			num_moved;
 	edict_t		**moved_edict; //johnfitz -- dynamically allocate
 	vec3_t		*moved_from; //johnfitz -- dynamically allocate
@@ -538,9 +538,9 @@ SV_Physics_Pusher
 */
 void SV_Physics_Pusher (edict_t *ent)
 {
-	float	thinktime;
-	float	oldltime;
-	float	movetime;
+	f32	thinktime;
+	f32	oldltime;
+	f32	movetime;
 
 	oldltime = ent->v.ltime;
 
@@ -675,7 +675,7 @@ SV_WallFriction
 void SV_WallFriction (edict_t *ent, trace_t *trace)
 {
 	vec3_t		forward, right, up;
-	float		d, i;
+	f32		d, i;
 	vec3_t		into, side;
 
 	AngleVectors (ent->v.v_angle, forward, right, up);
@@ -699,7 +699,7 @@ void SV_WallFriction (edict_t *ent, trace_t *trace)
 SV_TryUnstick
 
 Player has come to a dead stop, possibly due to the problem with limited
-float precision at some angle joins in the BSP hull.
+f32 precision at some angle joins in the BSP hull.
 
 Try fixing by pushing one pixel in each direction.
 
@@ -1023,7 +1023,7 @@ void SV_Physics_Toss (edict_t *ent)
 {
 	trace_t	trace;
 	vec3_t	move;
-	float	backoff;
+	f32	backoff;
 
 	// regular thinking
 	if (!SV_RunThink (ent))

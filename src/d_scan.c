@@ -5,7 +5,7 @@
 #include "quakedef.h"
 
 u8 *r_turb_pbase, *r_turb_pdest;
-fixed16_t r_turb_s, r_turb_t, r_turb_sstep, r_turb_tstep;
+s32 r_turb_s, r_turb_t, r_turb_sstep, r_turb_tstep;
 s32 *r_turb_turb;
 s32 r_turb_spancount;
 s16 *pz; // Manoel Kasimier - translucent water
@@ -18,7 +18,7 @@ extern s32 fog_lut_built;
 
 void D_DrawTurbulent8Span();
 
-s32 D_Dither(byte *pos)
+s32 D_Dither(u8 *pos)
 {
 	u64 d = pos - vid.buffer;
 	u64 x = d % vid.width;
@@ -38,21 +38,21 @@ void D_WarpScreen() // this performs a slight compression of the screen at the
 { // same time as the sine warp, to keep the edges from wrapping
 	s32 w = r_refdef.vrect.width;
 	s32 h = r_refdef.vrect.height;
-	float wratio = w / (float)scr_vrect.width;
-	float hratio = h / (float)scr_vrect.height;
-	byte *rowptr[MAXHEIGHT + (AMP2 * 2)];
+	f32 wratio = w / (f32)scr_vrect.width;
+	f32 hratio = h / (f32)scr_vrect.height;
+	u8 *rowptr[MAXHEIGHT + (AMP2 * 2)];
 	s32 column[MAXWIDTH + (AMP2 * 2)];
 	for (s32 v = 0; v < scr_vrect.height + AMP2 * 2; v++)
 		rowptr[v] = d_viewbuffer + (r_refdef.vrect.y * screenwidth) +
-		    screenwidth * (s32)((float)v * hratio * h / (h + AMP2 * 2));
+		    screenwidth * (s32)((f32)v * hratio * h / (h + AMP2 * 2));
 	for (s32 u = 0; u < scr_vrect.width + AMP2 * 2; u++)
-		column[u] = r_refdef.vrect.x + (s32)((float)u * wratio * w /
+		column[u] = r_refdef.vrect.x + (s32)((f32)u * wratio * w /
 						     (w + AMP2 * 2));
 	s32 *turb = intsintable + ((s32)(cl.time * SPEED) & (CYCLE - 1));
-	byte *dest = vid.buffer + scr_vrect.y * vid.width + scr_vrect.x;
+	u8 *dest = vid.buffer + scr_vrect.y * vid.width + scr_vrect.x;
 	for (s32 v = 0; v < scr_vrect.height; v++, dest += vid.width) {
 		s32 *col = &column[turb[v]];
-		byte **row = &rowptr[v];
+		u8 **row = &rowptr[v];
 		for (s32 u = 0; u < scr_vrect.width; u += 4) {
 			dest[u + 0] = row[turb[u + 0]][col[u + 0]];
 			dest[u + 1] = row[turb[u + 1]][col[u + 1]];
@@ -98,7 +98,7 @@ void D_DrawTurbulent8Span()
 	}
 }
 
-void D_DrawTurbulent8SpanAlpha (float opacity)
+void D_DrawTurbulent8SpanAlpha (f32 opacity)
 {
 	if (r_alphastyle.value == 0 && !lmonly) {
 		if (!fog_lut_built) build_color_mix_lut(0);
@@ -200,26 +200,26 @@ void D_DrawTurbulent8SpanAlpha (float opacity)
 	}
 }
 
-void Turbulent8(espan_t *pspan, float opacity)
+void Turbulent8(espan_t *pspan, f32 opacity)
 {
 	r_turb_turb = sintable + ((s32)(cl.time * SPEED) & (CYCLE - 1));
 	r_turb_sstep = 0; // keep compiler happy
 	r_turb_tstep = 0; // ditto
 	r_turb_pbase = (u8 *)cacheblock;
-	float sdivz16stepu = d_sdivzstepu * 16;
-	float tdivz16stepu = d_tdivzstepu * 16;
-	float zi16stepu = d_zistepu * 16;
+	f32 sdivz16stepu = d_sdivzstepu * 16;
+	f32 tdivz16stepu = d_tdivzstepu * 16;
+	f32 zi16stepu = d_zistepu * 16;
 	izistep = (s32)(d_zistepu * 0x8000 * 0x10000);
 	do {
-		r_turb_pdest = (byte *) ((byte *) d_viewbuffer + (screenwidth * pspan->v) + pspan->u);
+		r_turb_pdest = (u8 *) ((u8 *) d_viewbuffer + (screenwidth * pspan->v) + pspan->u);
 		pz = d_pzbuffer + (d_zwidth * pspan->v) + pspan->u; // Manoel Kasimier - translucent water
 		s32 count = pspan->count;
-		float du = (float)pspan->u; // calculate the initial s/z, t/z,
-		float dv = (float)pspan->v; // 1/z, s, and t and clamp
-		float sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
-		float tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
-		float zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
-		float z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
+		f32 du = (f32)pspan->u; // calculate the initial s/z, t/z,
+		f32 dv = (f32)pspan->v; // 1/z, s, and t and clamp
+		f32 sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
+		f32 tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
+		f32 zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
+		f32 z = (f32)0x10000 / zi; // prescale to 16.16 fixed-point
 		izi = (s32)(zi * 0x8000 * 0x10000); // Manoel Kasimier - translucent water
 		r_turb_s = (s32)(sdivz * z) + sadjust;
 		if (r_turb_s > bbextents)
@@ -236,14 +236,14 @@ void Turbulent8(espan_t *pspan, float opacity)
 			if (count >= 16) // at the far end of the span
 				r_turb_spancount = 16;
 			count -= r_turb_spancount;
-			fixed16_t snext, tnext;
+			s32 snext, tnext;
 			if (count) {
 				// calculate s/z, t/z, zi->fixed s and t at far end of span,
 				// calculate s and t steps across span by shifting
 				sdivz += sdivz16stepu;
 				tdivz += tdivz16stepu;
 				zi += zi16stepu;
-				z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
+				z = (f32)0x10000 / zi; // prescale to 16.16 fixed-point
 				snext = (s32)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
@@ -264,11 +264,11 @@ void Turbulent8(espan_t *pspan, float opacity)
 				// can't step off polygon), clamp, calculate s and t steps across
 				// span by division, biasing steps low so we don't run off the
 				// texture
-				float spancountminus1 = (float)(r_turb_spancount - 1);
+				f32 spancountminus1 = (f32)(r_turb_spancount - 1);
 				sdivz += d_sdivzstepu * spancountminus1;
 				tdivz += d_tdivzstepu * spancountminus1;
 				zi += d_zistepu * spancountminus1;
-				z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
+				z = (f32)0x10000 / zi; // prescale to 16.16 fixed-point
 				snext = (s32)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
@@ -303,34 +303,34 @@ void D_DrawSkyboxScans8(espan_t *pspan)
 	if(fog_density > 0 && !fog_lut_built) // for r_skyfog
 		build_color_mix_lut(0);
 	u8 *pbase = (u8 *)cacheblock;
-	float sdivz8stepu = d_sdivzstepu * 8;
-	float tdivz8stepu = d_tdivzstepu * 8;
-	float zi8stepu = d_zistepu * 8;
+	f32 sdivz8stepu = d_sdivzstepu * 8;
+	f32 tdivz8stepu = d_tdivzstepu * 8;
+	f32 zi8stepu = d_zistepu * 8;
 	do {
-		u8 *pdest = (u8 *)((byte *) d_viewbuffer +
+		u8 *pdest = (u8 *)((u8 *) d_viewbuffer +
 				      (screenwidth * pspan->v) + pspan->u);
 		s32 count = pspan->count;
-		float du = (float)pspan->u; // calculate the initial s/z, t/z,
-		float dv = (float)pspan->v; // 1/z, s, and t and clamp
-		float sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
-		float tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
-		float zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
-		float z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
-		fixed16_t s = (s32)(sdivz * z) + sadjust;
+		f32 du = (f32)pspan->u; // calculate the initial s/z, t/z,
+		f32 dv = (f32)pspan->v; // 1/z, s, and t and clamp
+		f32 sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
+		f32 tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
+		f32 zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
+		f32 z = (f32)0x10000 / zi; // prescale to 16.16 fixed-point
+		s32 s = (s32)(sdivz * z) + sadjust;
 		if (s > bbextents)
 			s = bbextents;
 		else if (s < 0)
 			s = 0;
-		fixed16_t t = (s32)(tdivz * z) + tadjust;
+		s32 t = (s32)(tdivz * z) + tadjust;
 		if (t > bbextentt)
 			t = bbextentt;
 		else if (t < 0)
 			t = 0;
 		do {
 			// calculate s and t at the far end of the span
-			fixed16_t snext, tnext;
-			fixed16_t sstep = 0; // keep compiler happy
-			fixed16_t tstep = 0; // ditto
+			s32 snext, tnext;
+			s32 sstep = 0; // keep compiler happy
+			s32 tstep = 0; // ditto
 			s32 spancount = count;
 			if (count >= 8)
 				spancount = 8;
@@ -341,7 +341,7 @@ void D_DrawSkyboxScans8(espan_t *pspan)
 				sdivz += sdivz8stepu;
 				tdivz += tdivz8stepu;
 				zi += zi8stepu;
-				z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
+				z = (f32)0x10000 / zi; // prescale to 16.16 fixed-point
 				snext = (s32)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
@@ -361,11 +361,11 @@ void D_DrawSkyboxScans8(espan_t *pspan)
 				// can't step off polygon), clamp, calculate s and t steps across
 				// span by division, biasing steps low so we don't run off the
 				// texture
-				float spancountminus1 = (float)(spancount - 1);
+				f32 spancountminus1 = (f32)(spancount - 1);
 				sdivz += d_sdivzstepu * spancountminus1;
 				tdivz += d_tdivzstepu * spancountminus1;
 				zi += d_zistepu * spancountminus1;
-				z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
+				z = (f32)0x10000 / zi; // prescale to 16.16 fixed-point
 				snext = (s32)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
@@ -405,42 +405,42 @@ void D_DrawSkyboxScans8(espan_t *pspan)
 void D_DrawSpans8(espan_t *pspan)
 {
 	u8 *pbase = (u8 *)cacheblock;
-	float sdivz8stepu = d_sdivzstepu * 8;
-	float tdivz8stepu = d_tdivzstepu * 8;
-	float zi8stepu = d_zistepu * 8;
+	f32 sdivz8stepu = d_sdivzstepu * 8;
+	f32 tdivz8stepu = d_tdivzstepu * 8;
+	f32 zi8stepu = d_zistepu * 8;
 	do {
-		u8 *pdest = (u8 *)((byte *) d_viewbuffer +
+		u8 *pdest = (u8 *)((u8 *) d_viewbuffer +
 				      (screenwidth * pspan->v) + pspan->u);
 		if (lmonly) {
 			if (!litwater_base) {
 				lwmark = Hunk_HighMark();
 				litwater_base = Hunk_HighAllocName(vid.width*vid.height, "waterlightmap");
 			}
-			pdest = (u8 *)((byte *) litwater_base +
+			pdest = (u8 *)((u8 *) litwater_base +
 				      (screenwidth * pspan->v) + pspan->u);
 		}
 		s32 count = pspan->count;
-		float du = (float)pspan->u; // calculate the initial s/z, t/z,
-		float dv = (float)pspan->v; // 1/z, s, and t and clamp
-		float sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
-		float tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
-		float zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
-		float z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
-		fixed16_t s = (s32)(sdivz * z) + sadjust;
+		f32 du = (f32)pspan->u; // calculate the initial s/z, t/z,
+		f32 dv = (f32)pspan->v; // 1/z, s, and t and clamp
+		f32 sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
+		f32 tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
+		f32 zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
+		f32 z = (f32)0x10000 / zi; // prescale to 16.16 fixed-point
+		s32 s = (s32)(sdivz * z) + sadjust;
 		if (s > bbextents)
 			s = bbextents;
 		else if (s < 0)
 			s = 0;
-		fixed16_t t = (s32)(tdivz * z) + tadjust;
+		s32 t = (s32)(tdivz * z) + tadjust;
 		if (t > bbextentt)
 			t = bbextentt;
 		else if (t < 0)
 			t = 0;
 		do {
 			// calculate s and t at the far end of the span
-			fixed16_t snext, tnext;
-			fixed16_t sstep = 0; // keep compiler happy
-			fixed16_t tstep = 0; // ditto
+			s32 snext, tnext;
+			s32 sstep = 0; // keep compiler happy
+			s32 tstep = 0; // ditto
 			s32 spancount = count;
 			if (count >= 8)
 				spancount = 8;
@@ -451,7 +451,7 @@ void D_DrawSpans8(espan_t *pspan)
 				sdivz += sdivz8stepu;
 				tdivz += tdivz8stepu;
 				zi += zi8stepu;
-				z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
+				z = (f32)0x10000 / zi; // prescale to 16.16 fixed-point
 				snext = (s32)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
@@ -471,11 +471,11 @@ void D_DrawSpans8(espan_t *pspan)
 				// can't step off polygon), clamp, calculate s and t steps across
 				// span by division, biasing steps low so we don't run off the
 				// texture
-				float spancountminus1 = (float)(spancount - 1);
+				f32 spancountminus1 = (f32)(spancount - 1);
 				sdivz += d_sdivzstepu * spancountminus1;
 				tdivz += d_tdivzstepu * spancountminus1;
 				zi += d_zistepu * spancountminus1;
-				z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
+				z = (f32)0x10000 / zi; // prescale to 16.16 fixed-point
 				snext = (s32)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
@@ -509,40 +509,40 @@ void D_DrawSpans8(espan_t *pspan)
 	} while ((pspan = pspan->pnext) != NULL);
 }
 
-void D_DrawTransSpans8(espan_t *pspan, float opacity)
+void D_DrawTransSpans8(espan_t *pspan, f32 opacity)
 { // CyanBun96: this is literally D_DrawSpans8 with a few extra lines. FIXME
 	u8 *pbase = (u8 *)cacheblock;
-	float sdivz8stepu = d_sdivzstepu * 8;
-	float tdivz8stepu = d_tdivzstepu * 8;
-	float zi8stepu = d_zistepu * 8;
+	f32 sdivz8stepu = d_sdivzstepu * 8;
+	f32 tdivz8stepu = d_tdivzstepu * 8;
+	f32 zi8stepu = d_zistepu * 8;
 	izistep = (s32)(d_zistepu * 0x8000 * 0x10000);
 	do {
-		u8 *pdest = (u8 *)((byte *) d_viewbuffer +
+		u8 *pdest = (u8 *)((u8 *) d_viewbuffer +
 				      (screenwidth * pspan->v) + pspan->u);
 		pz = d_pzbuffer + (d_zwidth * pspan->v) + pspan->u;
 		s32 count = pspan->count;
-		float du = (float)pspan->u; // calculate the initial s/z, t/z,
-		float dv = (float)pspan->v; // 1/z, s, and t and clamp
-		float sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
-		float tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
-		float zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
-		float z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
+		f32 du = (f32)pspan->u; // calculate the initial s/z, t/z,
+		f32 dv = (f32)pspan->v; // 1/z, s, and t and clamp
+		f32 sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
+		f32 tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
+		f32 zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
+		f32 z = (f32)0x10000 / zi; // prescale to 16.16 fixed-point
 		izi = (s32)(zi * 0x8000 * 0x10000);
-		fixed16_t s = (s32)(sdivz * z) + sadjust;
+		s32 s = (s32)(sdivz * z) + sadjust;
 		if (s > bbextents)
 			s = bbextents;
 		else if (s < 0)
 			s = 0;
-		fixed16_t t = (s32)(tdivz * z) + tadjust;
+		s32 t = (s32)(tdivz * z) + tadjust;
 		if (t > bbextentt)
 			t = bbextentt;
 		else if (t < 0)
 			t = 0;
 		do {
 			// calculate s and t at the far end of the span
-			fixed16_t snext, tnext;
-			fixed16_t sstep = 0; // keep compiler happy
-			fixed16_t tstep = 0; // ditto
+			s32 snext, tnext;
+			s32 sstep = 0; // keep compiler happy
+			s32 tstep = 0; // ditto
 			s32 spancount = count;
 			if (count >= 8)
 				spancount = 8;
@@ -553,7 +553,7 @@ void D_DrawTransSpans8(espan_t *pspan, float opacity)
 				sdivz += sdivz8stepu;
 				tdivz += tdivz8stepu;
 				zi += zi8stepu;
-				z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
+				z = (f32)0x10000 / zi; // prescale to 16.16 fixed-point
 				snext = (s32)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
@@ -573,11 +573,11 @@ void D_DrawTransSpans8(espan_t *pspan, float opacity)
 				// can't step off polygon), clamp, calculate s and t steps across
 				// span by division, biasing steps low so we don't run off the
 				// texture
-				float spancountminus1 = (float)(spancount - 1);
+				f32 spancountminus1 = (f32)(spancount - 1);
 				sdivz += d_sdivzstepu * spancountminus1;
 				tdivz += d_tdivzstepu * spancountminus1;
 				zi += d_zistepu * spancountminus1;
-				z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
+				z = (f32)0x10000 / zi; // prescale to 16.16 fixed-point
 				snext = (s32)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
@@ -641,9 +641,9 @@ void D_DrawZSpans(espan_t *pspan)
 	do {
 		s16 *pdest = d_pzbuffer + (d_zwidth * pspan->v) + pspan->u;
 		s32 count = pspan->count;
-		float du = (float)pspan->u; // calculate the initial 1/z
-		float dv = (float)pspan->v;
-		double zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
+		f32 du = (f32)pspan->u; // calculate the initial 1/z
+		f32 dv = (f32)pspan->v;
+		f64 zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
 		s32 izi = (s32)(zi * 0x8000 * 0x10000);
 		if ((intptr_t) pdest & 0x02) {
 			*pdest++ = (s16)(izi >> 16);

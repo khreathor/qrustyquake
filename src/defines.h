@@ -6,7 +6,7 @@
 #define	CLAMP(_minval, x, _maxval)		\
 	((x) < (_minval) ? (_minval) :		\
 	 (x) > (_maxval) ? (_maxval) : (x))
-#define	STRUCT_FROM_LINK(l,t,m) ((t *)((byte *)l - offsetof(t,m)))
+#define	STRUCT_FROM_LINK(l,t,m) ((t *)((u8 *)l - offsetof(t,m)))
 #define VEC_HEADER(v)			(((vec_header_t*)(v))[-1])
 #define VEC_PUSH(v,n)			do { Vec_Grow((void**)&(v), sizeof((v)[0]), 1); (v)[VEC_HEADER(v).size++] = (n); } while (0)
 #define VEC_SIZE(v)				((v) ? VEC_HEADER(v).size : 0)
@@ -19,13 +19,13 @@
 #define M_PI_DIV_180 (M_PI / 180.0) //johnfitz                      // mathlib.h
 #define Q_rint(x) ((x) > 0 ? (s32)((x) + 0.5) : (s32)((x) - 0.5)) // johnfitz -- from joequake
 #define DotProduct(x,y) (x[0]*y[0]+x[1]*y[1]+x[2]*y[2])
-#define DoublePrecisionDotProduct(x,y) ((double)(x)[0]*(y)[0]+(double)(x)[1]*(y)[1]+(double)(x)[2]*(y)[2])
+#define DoublePrecisionDotProduct(x,y) ((f64)(x)[0]*(y)[0]+(f64)(x)[1]*(y)[1]+(f64)(x)[2]*(y)[2])
 #define LERP(a, b, t) ((a) + ((b)-(a))*(t))
 #define IS_NAN(x) isnan(x)
 // johnfitz -- courtesy of lordhavoc
 #define VectorNormalizeFast(_v)                                           \
 {                                                                         \
-        float _y, _number;                                                \
+        f32 _y, _number;                                                \
         _number = DotProduct(_v, _v);                                     \
         if (_number != 0.0)                                               \
         {                                                                 \
@@ -43,20 +43,20 @@
 #define NUM_TYPE_SIZES 8                                              // progs.h
 #define	MAX_ENT_LEAFS	32
 #define	EDICT_FROM_AREA(l)	STRUCT_FROM_LINK(l,edict_t,area)
-#define	NEXT_EDICT(e)		((edict_t *)( (byte *)e + pr_edict_size))
-#define	EDICT_TO_PROG(e)	(s32)((byte *)e - (byte *)sv.edicts)
-#define PROG_TO_EDICT(e)	((edict_t *)((byte *)sv.edicts + e))
+#define	NEXT_EDICT(e)		((edict_t *)( (u8 *)e + pr_edict_size))
+#define	EDICT_TO_PROG(e)	(s32)((u8 *)e - (u8 *)sv.edicts)
+#define PROG_TO_EDICT(e)	((edict_t *)((u8 *)sv.edicts + e))
 #define	G_FLOAT(o)		(pr_globals[o])
 #define	G_INT(o)		(*(s32 *)&pr_globals[o])
-#define	G_EDICT(o)		((edict_t *)((byte *)sv.edicts+ *(s32 *)&pr_globals[o]))
+#define	G_EDICT(o)		((edict_t *)((u8 *)sv.edicts+ *(s32 *)&pr_globals[o]))
 #define G_EDICTNUM(o)		NUM_FOR_EDICT(G_EDICT(o))
 #define	G_VECTOR(o)		(&pr_globals[o])
 #define	G_STRING(o)		(PR_GetString(*(string_t *)&pr_globals[o]))
 #define	G_FUNCTION(o)		(*(func_t *)&pr_globals[o])
-#define	E_FLOAT(e,o)		(((float*)&e->v)[o])
-#define	E_INT(e,o)		(*(s32 *)&((float*)&e->v)[o])
-#define	E_VECTOR(e,o)		(&((float*)&e->v)[o])
-#define	E_STRING(e,o)		(PR_GetString(*(string_t *)&((float*)&e->v)[o]))
+#define	E_FLOAT(e,o)		(((f32*)&e->v)[o])
+#define	E_INT(e,o)		(*(s32 *)&((f32*)&e->v)[o])
+#define	E_VECTOR(e,o)		(&((f32*)&e->v)[o])
+#define	E_STRING(e,o)		(PR_GetString(*(string_t *)&((f32*)&e->v)[o]))
 #define PROGHEADER_CRC 5927
 
 #define Q_COUNTOF(x) (sizeof(x)/sizeof((x)[0])) // for array size  // q_stdinc.h
@@ -116,14 +116,14 @@
 #define	U_EFFECTS		(1<<13)
 #define	U_LONGENTITY	(1<<14)
 #define U_EXTEND1		(1<<15)
-#define U_ALPHA			(1<<16) // 1 byte, uses ENTALPHA_ENCODE, not sent if equal to baseline
-#define U_FRAME2		(1<<17) // 1 byte, this is .frame & 0xFF00 (second byte)
-#define U_MODEL2		(1<<18) // 1 byte, this is .modelindex & 0xFF00 (second byte)
-#define U_LERPFINISH	(1<<19) // 1 byte, 0.0-1.0 maps to 0-255, not sent if exactly 0.1, this is ent->v.nextthink - sv.time, used for lerping
-#define U_SCALE			(1<<20) // 1 byte, for PROTOCOL_RMQ PRFL_EDICTSCALE
+#define U_ALPHA			(1<<16) // 1 u8, uses ENTALPHA_ENCODE, not sent if equal to baseline
+#define U_FRAME2		(1<<17) // 1 u8, this is .frame & 0xFF00 (second u8)
+#define U_MODEL2		(1<<18) // 1 u8, this is .modelindex & 0xFF00 (second u8)
+#define U_LERPFINISH	(1<<19) // 1 u8, 0.0-1.0 maps to 0-255, not sent if exactly 0.1, this is ent->v.nextthink - sv.time, used for lerping
+#define U_SCALE			(1<<20) // 1 u8, for PROTOCOL_RMQ PRFL_EDICTSCALE
 #define U_UNUSED21		(1<<21)
 #define U_UNUSED22		(1<<22)
-#define U_EXTEND2		(1<<23) // another byte to follow, future expansion
+#define U_EXTEND2		(1<<23) // another u8 to follow, future expansion
 #define U_TRANS			(1<<15)
 #define	SU_VIEWHEIGHT	(1<<0)
 #define	SU_IDEALPITCH	(1<<1)
@@ -140,38 +140,38 @@
 #define	SU_WEAPONFRAME	(1<<12)
 #define	SU_ARMOR		(1<<13)
 #define	SU_WEAPON		(1<<14)
-#define SU_EXTEND1		(1<<15) // another byte to follow
-#define SU_WEAPON2		(1<<16) // 1 byte, this is .weaponmodel & 0xFF00 (second byte)
-#define SU_ARMOR2		(1<<17) // 1 byte, this is .armorvalue & 0xFF00 (second byte)
-#define SU_AMMO2		(1<<18) // 1 byte, this is .currentammo & 0xFF00 (second byte)
-#define SU_SHELLS2		(1<<19) // 1 byte, this is .ammo_shells & 0xFF00 (second byte)
-#define SU_NAILS2		(1<<20) // 1 byte, this is .ammo_nails & 0xFF00 (second byte)
-#define SU_ROCKETS2		(1<<21) // 1 byte, this is .ammo_rockets & 0xFF00 (second byte)
-#define SU_CELLS2		(1<<22) // 1 byte, this is .ammo_cells & 0xFF00 (second byte)
-#define SU_EXTEND2		(1<<23) // another byte to follow
-#define SU_WEAPONFRAME2	(1<<24) // 1 byte, this is .weaponframe & 0xFF00 (second byte)
-#define SU_WEAPONALPHA	(1<<25) // 1 byte, this is alpha for weaponmodel, uses ENTALPHA_ENCODE, not sent if ENTALPHA_DEFAULT
+#define SU_EXTEND1		(1<<15) // another u8 to follow
+#define SU_WEAPON2		(1<<16) // 1 u8, this is .weaponmodel & 0xFF00 (second u8)
+#define SU_ARMOR2		(1<<17) // 1 u8, this is .armorvalue & 0xFF00 (second u8)
+#define SU_AMMO2		(1<<18) // 1 u8, this is .currentammo & 0xFF00 (second u8)
+#define SU_SHELLS2		(1<<19) // 1 u8, this is .ammo_shells & 0xFF00 (second u8)
+#define SU_NAILS2		(1<<20) // 1 u8, this is .ammo_nails & 0xFF00 (second u8)
+#define SU_ROCKETS2		(1<<21) // 1 u8, this is .ammo_rockets & 0xFF00 (second u8)
+#define SU_CELLS2		(1<<22) // 1 u8, this is .ammo_cells & 0xFF00 (second u8)
+#define SU_EXTEND2		(1<<23) // another u8 to follow
+#define SU_WEAPONFRAME2	(1<<24) // 1 u8, this is .weaponframe & 0xFF00 (second u8)
+#define SU_WEAPONALPHA	(1<<25) // 1 u8, this is alpha for weaponmodel, uses ENTALPHA_ENCODE, not sent if ENTALPHA_DEFAULT
 #define SU_UNUSED26		(1<<26)
 #define SU_UNUSED27		(1<<27)
 #define SU_UNUSED28		(1<<28)
 #define SU_UNUSED29		(1<<29)
 #define SU_UNUSED30		(1<<30)
-#define SU_EXTEND3		(1<<31) // another byte to follow, future expansion
-#define	SND_VOLUME		(1<<0)	// a byte // a sound with no channel is a local only sound
-#define	SND_ATTENUATION		(1<<1)	// a byte
+#define SU_EXTEND3		(1<<31) // another u8 to follow, future expansion
+#define	SND_VOLUME		(1<<0)	// a u8 // a sound with no channel is a local only sound
+#define	SND_ATTENUATION		(1<<1)	// a u8
 #define	SND_LOOPING		(1<<2)	// a s64
 #define DEFAULT_SOUND_PACKET_VOLUME		255
 #define DEFAULT_SOUND_PACKET_ATTENUATION	1.0
-#define	SND_LARGEENTITY	(1<<3)	// a s16 + byte (instead of just a s16)
-#define	SND_LARGESOUND	(1<<4)	// a s16 soundindex (instead of a byte)
-#define B_LARGEMODEL	(1<<0)	// modelindex is s16 instead of byte
-#define B_LARGEFRAME	(1<<1)	// frame is s16 instead of byte
-#define B_ALPHA			(1<<2)	// 1 byte, uses ENTALPHA_ENCODE, not sent if ENTALPHA_DEFAULT
+#define	SND_LARGEENTITY	(1<<3)	// a s16 + u8 (instead of just a s16)
+#define	SND_LARGESOUND	(1<<4)	// a s16 soundindex (instead of a u8)
+#define B_LARGEMODEL	(1<<0)	// modelindex is s16 instead of u8
+#define B_LARGEFRAME	(1<<1)	// frame is s16 instead of u8
+#define B_ALPHA			(1<<2)	// 1 u8, uses ENTALPHA_ENCODE, not sent if ENTALPHA_DEFAULT
 #define B_SCALE			(1<<3)
 #define ENTALPHA_DEFAULT	0	//entity's alpha is "default" (i.e. water obeys r_wateralpha) -- must be zero so zeroed out memory works
 #define ENTALPHA_ZERO		1	//entity is invisible (lowest possible alpha)
 #define ENTALPHA_ONE		255 //entity is fully opaque (highest possible alpha)
-#define ENTSCALE_DEFAULT	16 // Equivalent to float 1.0f due to byte packing.
+#define ENTSCALE_DEFAULT	16 // Equivalent to f32 1.0f due to u8 packing.
 #define	DEFAULT_VIEWHEIGHT	22 // defaults for clientinfo messages
 #define	GAME_COOP			0 // game types sent by serverinfo
 #define	GAME_DEATHMATCH		1 // these determine which intermission screen plays
@@ -180,11 +180,11 @@
 #define	svc_bad					0 // server to client
 #define	svc_nop					1
 #define	svc_disconnect			2
-#define	svc_updatestat			3	// [byte] [s64]
+#define	svc_updatestat			3	// [u8] [s64]
 #define	svc_version				4	// [s64] server version
 #define	svc_setview				5	// [s16] entity number
 #define	svc_sound				6	// <see code>
-#define	svc_time				7	// [float] server time
+#define	svc_time				7	// [f32] server time
 #define	svc_print				8	// [string] null terminated string
 #define	svc_stufftext			9	// [string] stuffed into client's console buffer, \n terminated
 #define	svc_setangle			10	// [angle3] set the view angle to this absolute value
@@ -192,35 +192,35 @@
 									// [string] signon string
 									// [string]..[0]model cache
 									// [string]...[0]sounds cache
-#define	svc_lightstyle			12	// [byte] [string]
-#define	svc_updatename			13	// [byte] [string]
-#define	svc_updatefrags			14	// [byte] [s16]
+#define	svc_lightstyle			12	// [u8] [string]
+#define	svc_updatename			13	// [u8] [string]
+#define	svc_updatefrags			14	// [u8] [s16]
 #define	svc_clientdata			15	// <shortbits + data>
 #define	svc_stopsound			16	// <see code>
-#define	svc_updatecolors		17	// [byte] [byte]
+#define	svc_updatecolors		17	// [u8] [u8]
 #define	svc_particle			18	// [vec3] <variable>
 #define	svc_damage				19
 #define	svc_spawnstatic			20
 #define svc_spawnbinary		21
 #define	svc_spawnbaseline		22
 #define	svc_temp_entity			23
-#define	svc_setpause			24	// [byte] on / off
-#define	svc_signonnum			25	// [byte]  used for the signon sequence
+#define	svc_setpause			24	// [u8] on / off
+#define	svc_signonnum			25	// [u8]  used for the signon sequence
 #define	svc_centerprint			26	// [string] to put in center of the screen
 #define	svc_killedmonster		27
 #define	svc_foundsecret			28
-#define	svc_spawnstaticsound	29	// [coord3] [byte] samp [byte] vol [byte] aten
+#define	svc_spawnstaticsound	29	// [coord3] [u8] samp [u8] vol [u8] aten
 #define	svc_intermission		30	// [string] music
 #define	svc_finale				31	// [string] music [string] text
-#define	svc_cdtrack				32	// [byte] track [byte] looptrack
+#define	svc_cdtrack				32	// [u8] track [u8] looptrack
 #define svc_sellscreen			33
 #define svc_cutscene			34
 #define	svc_skybox			37	// [string] name // PROTOCOL_FITZQUAKE -- new server messages
 #define svc_bf					40
-#define svc_fog				41	// [byte] density [byte] red [byte] green [byte] blue [float] time
+#define svc_fog				41	// [u8] density [u8] red [u8] green [u8] blue [f32] time
 #define svc_spawnbaseline2		42  // support for large modelindex, large framenum, alpha, using flags
 #define svc_spawnstatic2		43	// support for large modelindex, large framenum, alpha, using flags
-#define	svc_spawnstaticsound2	44	// [coord3] [s16] samp [byte] vol [byte] aten
+#define	svc_spawnstaticsound2	44	// [coord3] [s16] samp [u8] vol [u8] aten
 #define svc_botchat		38 // 2021 re-release server messages - see:
 #define svc_setviews		45 // https://steamcommunity.com/sharedfiles/filedetails/?id=2679459726
 #define svc_updateping		46
@@ -253,11 +253,11 @@
 #define	TE_TELEPORT			11
 #define TE_EXPLOSION2		12
 #define TE_BEAM				13
-#define ENTALPHA_ENCODE(a)	(((a)==0)?ENTALPHA_DEFAULT:Q_rint(CLAMP(1.0f,(a)*254.0f+1,255.0f))) //server convert to byte to send to client
-#define ENTALPHA_DECODE(a)	(((a)==ENTALPHA_DEFAULT)?1.0f:((float)(a)-1)/(254)) //client convert to float for rendering
-#define ENTALPHA_TOSAVE(a)	(((a)==ENTALPHA_DEFAULT)?0.0f:(((a)==ENTALPHA_ZERO)?-1.0f:((float)(a)-1)/(254))) //server convert to float for savegame
-#define ENTSCALE_ENCODE(a)	((a) ? ((a) * ENTSCALE_DEFAULT) : ENTSCALE_DEFAULT) // Convert to byte
-#define ENTSCALE_DECODE(a)	((float)(a) / ENTSCALE_DEFAULT) // Convert to float for rendering
+#define ENTALPHA_ENCODE(a)	(((a)==0)?ENTALPHA_DEFAULT:Q_rint(CLAMP(1.0f,(a)*254.0f+1,255.0f))) //server convert to u8 to send to client
+#define ENTALPHA_DECODE(a)	(((a)==ENTALPHA_DEFAULT)?1.0f:((f32)(a)-1)/(254)) //client convert to f32 for rendering
+#define ENTALPHA_TOSAVE(a)	(((a)==ENTALPHA_DEFAULT)?0.0f:(((a)==ENTALPHA_ZERO)?-1.0f:((f32)(a)-1)/(254))) //server convert to f32 for savegame
+#define ENTSCALE_ENCODE(a)	((a) ? ((a) * ENTSCALE_DEFAULT) : ENTSCALE_DEFAULT) // Convert to u8
+#define ENTSCALE_DECODE(a)	((f32)(a) / ENTSCALE_DEFAULT) // Convert to f32 for rendering
 
 #define	CVAR_NONE		0                                      // cvar.h
 #define	CVAR_ARCHIVE		(1U << 0)	// if set, causes it to be saved to config

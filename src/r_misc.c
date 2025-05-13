@@ -2,11 +2,11 @@
 
 #include "quakedef.h"
 
-float map_fallbackalpha;
-float map_wateralpha;
-float map_lavaalpha;
-float map_telealpha;
-float map_slimealpha;
+f32 map_fallbackalpha;
+f32 map_wateralpha;
+f32 map_lavaalpha;
+f32 map_telealpha;
+f32 map_slimealpha;
 
 void R_ParseWorldspawn()
 {
@@ -75,7 +75,7 @@ void R_SetSlimealpha_f(cvar_t *var)
 	map_slimealpha = var->value;
 }
 
-float R_WaterAlphaForTextureType(textype_t type)
+f32 R_WaterAlphaForTextureType(textype_t type)
 {
 	if (type == TEXTYPE_LAVA)
 		return map_lavaalpha > 0 ? map_lavaalpha : map_fallbackalpha;
@@ -89,7 +89,7 @@ float R_WaterAlphaForTextureType(textype_t type)
 
 void R_CheckVariables()
 {
-	static float oldbright;
+	static f32 oldbright;
 	if (r_fullbright.value != oldbright) {
 		oldbright = r_fullbright.value;
 		D_FlushCaches(); // so all lighting changes
@@ -99,14 +99,14 @@ void R_CheckVariables()
 void R_TimeRefresh_f()
 { // For program optimization
 	s32 startangle = r_refdef.viewangles[1];
-	float start = Sys_FloatTime();
+	f32 start = Sys_FloatTime();
 	for (s32 i = 0; i < 128; i++) {
 		r_refdef.viewangles[1] = i / 128.0 * 360.0;
 		R_RenderView();
 		VID_Update();
 	}
-	float stop = Sys_FloatTime();
-	float time = stop - start;
+	f32 stop = Sys_FloatTime();
+	f32 time = stop - start;
 	Con_Printf("%f seconds (%f fps)\n", time, 128 / time);
 	r_refdef.viewangles[1] = startangle;
 }
@@ -116,7 +116,7 @@ void R_LineGraph(s32 x, s32 y, s32 h)
 // FIXME: should be disabled on no-buffer adapters, or should be in the driver
 	x += r_refdef.vrect.x;
 	y += r_refdef.vrect.y;
-	byte *dest = vid.buffer + vid.width * y + x;
+	u8 *dest = vid.buffer + vid.width * y + x;
 	s32 s = r_graphheight.value;
 	if (h > s)
 		h = s;
@@ -134,8 +134,8 @@ void R_LineGraph(s32 x, s32 y, s32 h)
 void R_TimeGraph()
 { // Performance monitoring tool
 	static s32 timex;
-	static byte r_timings[MAX_TIMINGS];
-	float r_time2 = Sys_FloatTime();
+	static u8 r_timings[MAX_TIMINGS];
+	f32 r_time2 = Sys_FloatTime();
 	s32 a = (r_time2 - r_time1) / 0.01;
 	r_timings[timex] = a;
 	a = timex;
@@ -159,8 +159,8 @@ void R_TimeGraph()
 
 void R_PrintTimes()
 {
-	float r_time2 = Sys_FloatTime();
-	float ms = 1000 * (r_time2 - r_time1);
+	f32 r_time2 = Sys_FloatTime();
+	f32 ms = 1000 * (r_time2 - r_time1);
 	Con_Printf("%5.1f ms %3i/%3i/%3i poly %3i surf\n",
 		   ms, c_faceclip, r_polycount, r_drawnpolycount, c_surf);
 	c_surf = 0;
@@ -168,14 +168,14 @@ void R_PrintTimes()
 
 void R_PrintDSpeeds()
 {
-	float r_time2 = Sys_FloatTime();
-	float dp_time = (dp_time2 - dp_time1) * 1000;
-	float rw_time = (rw_time2 - rw_time1) * 1000;
-	float db_time = (db_time2 - db_time1) * 1000;
-	float se_time = (se_time2 - se_time1) * 1000;
-	float de_time = (de_time2 - de_time1) * 1000;
-	float dv_time = (dv_time2 - dv_time1) * 1000;
-	float ms = (r_time2 - r_time1) * 1000;
+	f32 r_time2 = Sys_FloatTime();
+	f32 dp_time = (dp_time2 - dp_time1) * 1000;
+	f32 rw_time = (rw_time2 - rw_time1) * 1000;
+	f32 db_time = (db_time2 - db_time1) * 1000;
+	f32 se_time = (se_time2 - se_time1) * 1000;
+	f32 de_time = (de_time2 - de_time1) * 1000;
+	f32 dv_time = (dv_time2 - dv_time1) * 1000;
+	f32 ms = (r_time2 - r_time1) * 1000;
 	Con_Printf("%3i %4.1fp %3iw %4.1fb %3is %4.1fe %4.1fv\n",
 		   (s32)ms, dp_time, (s32)rw_time, db_time, (s32)se_time,
 		   de_time, dv_time);
@@ -278,23 +278,23 @@ void R_SetupFrame()
 				vrect.height = vid.height;
 				R_ViewChanged(&vrect, sb_lines, vid.aspect);
 			} else {
-				float w = vid.width;
-				float h = vid.height;
+				f32 w = vid.width;
+				f32 h = vid.height;
 				if (w > WARP_WIDTH) {
-					h *= (float)WARP_WIDTH / w;
+					h *= (f32)WARP_WIDTH / w;
 					w = WARP_WIDTH;
 				}
 				if (h > WARP_HEIGHT) {
 					h = WARP_HEIGHT;
-					w *= (float)WARP_HEIGHT / h;
+					w *= (f32)WARP_HEIGHT / h;
 				}
 				vrect.x = 0;
 				vrect.y = 0;
 				vrect.width = (s32)w;
 				vrect.height = (s32)h;
-				R_ViewChanged(&vrect, (s32)((float)sb_lines*
-					(h/(float)vid.height)),vid.aspect*(h/w)*
-					((float)vid.width/(float)vid.height));
+				R_ViewChanged(&vrect, (s32)((f32)sb_lines*
+					(h/(f32)vid.height)),vid.aspect*(h/w)*
+					((f32)vid.width/(f32)vid.height));
 			}
 		} else {
 			vrect.x = 0;

@@ -35,7 +35,7 @@ static inline s32 Buf_GetC(stdio_buffer_t *buf)
 
 s32 fgetLittleShort (FILE *f)
 {
-        byte    b1, b2;
+        u8    b1, b2;
 
         b1 = fgetc(f);
         b2 = fgetc(f);
@@ -43,12 +43,12 @@ s32 fgetLittleShort (FILE *f)
         return (s16)(b1 + b2*256);
 }
 
-byte *Image_LoadTGA (FILE *fin, s32 *width, s32 *height)
+u8 *Image_LoadTGA (FILE *fin, s32 *width, s32 *height)
 {
 	s32 columns, rows, numPixels;
-	byte *pixbuf;
+	u8 *pixbuf;
 	s32 row, column;
-	byte *targa_rgba;
+	u8 *targa_rgba;
 	s32 realrow; //johnfitz -- fix for upside-down targas
 	bool upside_down; //johnfitz -- fix for upside-down targas
 	stdio_buffer_t *buf;
@@ -87,7 +87,7 @@ byte *Image_LoadTGA (FILE *fin, s32 *width, s32 *height)
 	numPixels = columns * rows;
 	upside_down = !(targa_header.attributes & 0x20); //johnfitz -- fix for upside-down targas
 
-	targa_rgba = (byte *) Hunk_Alloc (numPixels*4);
+	targa_rgba = (u8 *) Hunk_Alloc (numPixels*4);
 
 	if (targa_header.id_length != 0)
 		fseek(fin, targa_header.id_length, SEEK_CUR); // skip TARGA image comment
@@ -96,7 +96,7 @@ byte *Image_LoadTGA (FILE *fin, s32 *width, s32 *height)
 
 	if (targa_header.image_type==1) // Uncompressed, paletted images
 	{
-		byte palette[256*4];
+		u8 palette[256*4];
 		s32 i;
 		//palette data comes first
 		for (i = 0; i < targa_header.colormap_length; i++)
@@ -269,7 +269,7 @@ breakOut:;
 	return targa_rgba;
 }
 
-byte *Image_LoadImage (const s8 *name, s32 *width, s32 *height)
+u8 *Image_LoadImage (const s8 *name, s32 *width, s32 *height)
 { // returns a pointer to hunk allocated RGBA data
 	FILE *f;
 	q_snprintf (loadfilename, sizeof(loadfilename), "%s.tga", name);

@@ -4,17 +4,17 @@
 
 extern s32 screenwidth;
 static s32 miplevel;
-float scale_for_mip;
+f32 scale_for_mip;
 s32 ubasestep, errorterm, erroradjustup, erroradjustdown;
 s32 vstartscan;
 vec3_t transformed_modelorg;
-extern float cur_ent_alpha;
+extern f32 cur_ent_alpha;
 
 // FIXME: should go away
 extern void R_RotateBmodel();
 extern void R_TransformFrustum();
 
-s32 D_MipLevelForScale(float scale)
+s32 D_MipLevelForScale(f32 scale)
 {
 	s32 lmiplevel;
 	if (scale >= d_scalemip[0])
@@ -34,33 +34,33 @@ void D_DrawSolidSurface(surf_t *surf, s32 color)
 { // FIXME: clean this up
 	s32 pix = (color << 24) | (color << 16) | (color << 8) | color;
 	for (espan_t *span = surf->spans; span; span = span->pnext) {
-		byte *pdest = (byte *) d_viewbuffer + screenwidth * span->v;
+		u8 *pdest = (u8 *) d_viewbuffer + screenwidth * span->v;
 		s32 u = span->u;
 		s32 u2 = span->u + span->count - 1;
-		((byte *) pdest)[u] = pix;
+		((u8 *) pdest)[u] = pix;
 		if (u2 - u < 8)
 			for (u++; u <= u2; u++)
-				((byte *) pdest)[u] = pix;
+				((u8 *) pdest)[u] = pix;
 		else {
 			for (u++; u & 3; u++)
-				((byte *) pdest)[u] = pix;
+				((u8 *) pdest)[u] = pix;
 			u2 -= 4;
 			for (; u <= u2; u += 4)
-				*(s32 *)((byte *) pdest + u) = pix;
+				*(s32 *)((u8 *) pdest + u) = pix;
 			u2 += 4;
 			for (; u <= u2; u++)
-				((byte *) pdest)[u] = pix;
+				((u8 *) pdest)[u] = pix;
 		}
 	}
 }
 
 void D_CalcGradients(msurface_t *pface)
 {
-	float mipscale = 1.0 / (float)(1 << miplevel);
+	f32 mipscale = 1.0 / (f32)(1 << miplevel);
 	vec3_t p_saxis, p_taxis;
 	TransformVector(pface->texinfo->vecs[0], p_saxis);
 	TransformVector(pface->texinfo->vecs[1], p_taxis);
-	float t = xscaleinv * mipscale;
+	f32 t = xscaleinv * mipscale;
 	d_sdivzstepu = p_saxis[0] * t;
 	d_tdivzstepu = p_taxis[0] * t;
 	t = yscaleinv * mipscale;
@@ -73,10 +73,10 @@ void D_CalcGradients(msurface_t *pface)
 	vec3_t p_temp1;
 	VectorScale(transformed_modelorg, mipscale, p_temp1);
 	t = 0x10000 * mipscale;
-	sadjust = ((fixed16_t) (DotProduct(p_temp1, p_saxis) * 0x10000 + 0.5)) -
+	sadjust = ((s32) (DotProduct(p_temp1, p_saxis) * 0x10000 + 0.5)) -
 				((pface->texturemins[0] << 16) >> miplevel)
 				+ pface->texinfo->vecs[0][3] * t;
-	tadjust = ((fixed16_t) (DotProduct(p_temp1, p_taxis) * 0x10000 + 0.5)) -
+	tadjust = ((s32) (DotProduct(p_temp1, p_taxis) * 0x10000 + 0.5)) -
 				((pface->texturemins[1] << 16) >> miplevel)
 				+ pface->texinfo->vecs[1][3] * t;
 	// -1 (-epsilon) so we never wander off the edge of the texture
@@ -132,7 +132,7 @@ void D_DrawSurfaces()
 			continue;
 		}
 		if (is_ent && s->entity->alpha && r_entalpha.value == 1)
-			winquake_surface_liquid_alpha = (float)s->entity->alpha / 255;
+			winquake_surface_liquid_alpha = (f32)s->entity->alpha / 255;
 		// Baker: Need to determine what kind of liquid we are
 		else if (s->flags & SURF_WINQUAKE_DRAWTRANSLUCENT) {
 			if (s->flags & SURF_DRAWLAVA)
@@ -158,9 +158,9 @@ void D_DrawSurfaces()
 			D_DrawZSpans(s->spans);
 		} else if (s->flags & SURF_DRAWSKYBOX) {
 			// Manoel Kasimier - hi-res skyboxes - edited
-			extern byte r_skypixels[6][SKYBOX_MAX_SIZE*SKYBOX_MAX_SIZE];
+			extern u8 r_skypixels[6][SKYBOX_MAX_SIZE*SKYBOX_MAX_SIZE];
 			miplevel = 0;
-			cacheblock = (byte *)(r_skypixels[pface->texinfo->texture->offsets[0]]);
+			cacheblock = (u8 *)(r_skypixels[pface->texinfo->texture->offsets[0]]);
 			// Manoel Kasimier - hi-res skyboxes - edited
 			cachewidth = pface->texinfo->texture->width;
 			d_zistepu = s->d_zistepu;
@@ -189,8 +189,8 @@ void D_DrawSurfaces()
 		} else if (s->flags & SURF_DRAWTURB && (!s->entity->model->haslitwater
 				|| !r_litwater.value)) {
 			miplevel = 0;
-			cacheblock = (pixel_t *)
-				((byte *) pface->texinfo->texture +
+			cacheblock = (u8 *)
+				((u8 *) pface->texinfo->texture +
 				pface->texinfo->texture->offsets[0]);
 			cachewidth = 64;
 			if (s->insubmodel) {
@@ -207,9 +207,9 @@ void D_DrawSurfaces()
 				// make entity passed in
 			}
 			D_CalcGradients(pface);
-			float opacity = 1;
+			f32 opacity = 1;
 			if (s->entity && s->entity->alpha && r_entalpha.value == 1)
-				opacity -= (float)s->entity->alpha/255;
+				opacity -= (f32)s->entity->alpha/255;
 			else if (s->flags & SURF_DRAWLAVA) opacity -= R_WaterAlphaForTextureType(TEXTYPE_LAVA);
 			else if (s->flags & SURF_DRAWSLIME) opacity -= R_WaterAlphaForTextureType(TEXTYPE_SLIME);
 			else if (s->flags & SURF_DRAWWATER) opacity -= R_WaterAlphaForTextureType(TEXTYPE_WATER);
@@ -249,10 +249,10 @@ void D_DrawSurfaces()
 			// FIXME: make this passed in to D_CacheSurface
 			surfcache_t *pcurrentcache =
 				D_CacheSurface(pface, miplevel);
-			cacheblock = (pixel_t *) pcurrentcache->data;
+			cacheblock = (u8 *) pcurrentcache->data;
 			cachewidth = pcurrentcache->width;
 			D_CalcGradients(pface);
-			float opacity = 1 - (float)s->entity->alpha / 255;
+			f32 opacity = 1 - (f32)s->entity->alpha / 255;
 			D_DrawTransSpans8(s->spans, opacity);
 			if (s->insubmodel) {
 				// restore the old drawing state
@@ -287,17 +287,17 @@ void D_DrawSurfaces()
 			lmonly = 1; // this is how we know it's lit water that we're drawing
 			surfcache_t *pcurrentcache =
 				D_CacheSurface(pface, miplevel);
-			cacheblock = (pixel_t *) pcurrentcache->data;
+			cacheblock = (u8 *) pcurrentcache->data;
 			cachewidth = pcurrentcache->width;
 			D_CalcGradients(pface);
 			D_DrawSpans8(s->spans); // draw the lightmap to a separate buffer
 			miplevel = 0;
-			cacheblock = (pixel_t *)
-				((byte *) pface->texinfo->texture +
+			cacheblock = (u8 *)
+				((u8 *) pface->texinfo->texture +
 				pface->texinfo->texture->offsets[0]);
 			cachewidth = 64;
 			D_CalcGradients(pface);
-			float opacity = 1 - (float)s->entity->alpha / 255;
+			f32 opacity = 1 - (f32)s->entity->alpha / 255;
 			if (s->flags & SURF_DRAWLAVA)
 				opacity = 1 - r_lavaalpha.value;
 			else if (s->flags & SURF_DRAWSLIME)
@@ -341,7 +341,7 @@ void D_DrawSurfaces()
 			// FIXME: make this passed in to D_CacheSurface
 			surfcache_t *pcurrentcache =
 				D_CacheSurface(pface, miplevel);
-			cacheblock = (pixel_t *) pcurrentcache->data;
+			cacheblock = (u8 *) pcurrentcache->data;
 			cachewidth = pcurrentcache->width;
 			D_CalcGradients(pface);
 			D_DrawSpans8(s->spans);

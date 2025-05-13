@@ -23,7 +23,7 @@ s32		pr_effects_mask; // only enable 2021 rerelease quad/penta dlights when appl
 
 dstatement_t	*pr_statements;
 globalvars_t	*pr_global_struct;
-float		*pr_globals;		// same as pr_global_struct
+f32		*pr_globals;		// same as pr_global_struct
 s32		pr_edict_size;		// in bytes
 
 u16	pr_crc;
@@ -775,7 +775,7 @@ static bool ED_ParseEpair (void *base, ddef_t *key, const s8 *s)
 		break;
 
 	case ev_float:
-		*(float *)d = atof (s);
+		*(f32 *)d = atof (s);
 		break;
 
 	case ev_vector:
@@ -786,11 +786,11 @@ static bool ED_ParseEpair (void *base, ddef_t *key, const s8 *s)
 
 		for (i = 0; i < 3 && (w <= end); i++) // ericw -- added (w <= end) check
 		{
-		// set v to the next space (or 0 byte), and change that s8 to a 0 byte
+		// set v to the next space (or 0 u8), and change that s8 to a 0 u8
 			while (*v && *v != ' ')
 				v++;
 			*v = 0;
-			((float *)d)[i] = atof (w);
+			((f32 *)d)[i] = atof (w);
 			w = v = v+1;
 		}
 		// ericw -- fill remaining elements to 0 in case we hit the end of string
@@ -799,7 +799,7 @@ static bool ED_ParseEpair (void *base, ddef_t *key, const s8 *s)
 		{
 			printf ("Avoided reading garbage for \"%s\" \"%s\"\n", PR_GetString(key->s_name), s);
 			for (; i < 3; i++)
-				((float *)d)[i] = 0.0f;
+				((f32 *)d)[i] = 0.0f;
 		}
 		break;
 
@@ -1053,7 +1053,7 @@ void ED_LoadFromFile (const s8 *data)
 PR_HasGlobal
 ===============
 */
-static bool PR_HasGlobal (const s8 *name, float value)
+static bool PR_HasGlobal (const s8 *name, f32 value)
 {
 	ddef_t *g = ED_FindGlobal (name);
 	return g && (g->type & ~DEF_SAVEGLOBAL) == ev_float && G_FLOAT (g->ofs) == value;
@@ -1156,9 +1156,9 @@ void PR_LoadProgs (void)
 	Con_DPrintf ("Programs occupy %iK.\n", com_filesize/1024);
 
 	for (i = 0; i < com_filesize; i++)
-		CRC_ProcessByte (&pr_crc, ((byte *)progs)[i]);
+		CRC_ProcessByte (&pr_crc, ((u8 *)progs)[i]);
 
-	// byte swap the header
+	// u8 swap the header
 	for (i = 0; i < (s32) sizeof(*progs) / 4; i++)
 		((s32 *)progs)[i] = LittleLong ( ((s32 *)progs)[i] );
 
@@ -1167,7 +1167,7 @@ void PR_LoadProgs (void)
 	if (progs->crc != PROGHEADER_CRC)
 		Host_Error ("progs.dat system vars have been modified, progdefs.h is out of date");
 
-	pr_functions = (dfunction_t *)((byte *)progs + progs->ofs_functions);
+	pr_functions = (dfunction_t *)((u8 *)progs + progs->ofs_functions);
 	pr_strings = (s8 *)progs + progs->ofs_strings;
 	if (progs->ofs_strings + progs->numstrings >= com_filesize)
 		Host_Error ("progs.dat strings go past end of file\n");
@@ -1181,14 +1181,14 @@ void PR_LoadProgs (void)
 	pr_knownstrings = NULL;
 	PR_SetEngineString("");
 
-	pr_globaldefs = (ddef_t *)((byte *)progs + progs->ofs_globaldefs);
-	pr_fielddefs = (ddef_t *)((byte *)progs + progs->ofs_fielddefs);
-	pr_statements = (dstatement_t *)((byte *)progs + progs->ofs_statements);
+	pr_globaldefs = (ddef_t *)((u8 *)progs + progs->ofs_globaldefs);
+	pr_fielddefs = (ddef_t *)((u8 *)progs + progs->ofs_fielddefs);
+	pr_statements = (dstatement_t *)((u8 *)progs + progs->ofs_statements);
 
-	pr_global_struct = (globalvars_t *)((byte *)progs + progs->ofs_globals);
-	pr_globals = (float *)pr_global_struct;
+	pr_global_struct = (globalvars_t *)((u8 *)progs + progs->ofs_globals);
+	pr_globals = (f32 *)pr_global_struct;
 
-	// byte swap the lumps
+	// u8 swap the lumps
 	for (i = 0; i < progs->numstatements; i++)
 	{
 		pr_statements[i].op = LittleShort(pr_statements[i].op);
@@ -1286,14 +1286,14 @@ edict_t *EDICT_NUM(s32 n)
 {
 	if (n < 0 || n >= sv.max_edicts)
 		Host_Error ("EDICT_NUM: bad number %i", n);
-	return (edict_t *)((byte *)sv.edicts + (n)*pr_edict_size);
+	return (edict_t *)((u8 *)sv.edicts + (n)*pr_edict_size);
 }
 
 s32 NUM_FOR_EDICT(edict_t *e)
 {
 	s32		b;
 
-	b = (byte *)e - (byte *)sv.edicts;
+	b = (u8 *)e - (u8 *)sv.edicts;
 	b = b / pr_edict_size;
 
 	if (b < 0 || b >= sv.num_edicts)

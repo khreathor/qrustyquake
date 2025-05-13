@@ -6,20 +6,20 @@
 
 #include "quakedef.h"
 
-extern byte *Image_LoadImage (const s8 *name, s32 *width, s32 *height);
+extern u8 *Image_LoadImage (const s8 *name, s32 *width, s32 *height);
 
 s32 iskyspeed = 8;
 s32 iskyspeed2 = 2;
-float skyspeed, skyspeed2;
-float skytime;
-byte *r_skysource;
+f32 skyspeed, skyspeed2;
+f32 skytime;
+u8 *r_skysource;
 s32 r_skymade;
-byte bottomsky[128 * 131];
-byte bottommask[128 * 131];
-byte newsky[128 * 256];	
+u8 bottomsky[128 * 131];
+u8 bottommask[128 * 131];
+u8 newsky[128 * 256];	
 // newsky and topsky both pack in here, 128 bytes of newsky on the left of each
 // scan, 128 bytes of topsky on the right, because the low-level drawers need
-// 256-byte scan widths
+// 256-u8 scan widths
 s8 skybox_name[1024]; // name of current skybox, or "" if no skybox
 
 // Manoel Kasimier - skyboxes - begin
@@ -28,7 +28,7 @@ s32                             r_skyframe;
 msurface_t              *r_skyfaces;
 mplane_t                r_skyplanes[6]; // Manoel Kasimier - edited
 mtexinfo_t              r_skytexinfo[6];
-byte         r_skypixels[6][SKYBOX_MAX_SIZE*SKYBOX_MAX_SIZE]; // Manoel Kasimier - edited
+u8         r_skypixels[6][SKYBOX_MAX_SIZE*SKYBOX_MAX_SIZE]; // Manoel Kasimier - edited
 mvertex_t               *r_skyverts;
 medge_t                 *r_skyedges;
 s32                             *r_skysurfedges;
@@ -59,18 +59,18 @@ vec3_t  box_bigbigvecs[6][2] = {
         {       {0,-4,0}, {4,0,0} }, { {4,0,0}, {0,0,-4} },
         { {0,-4,0}, {0,0,-4} }, { {-4,0,0}, {0,0,-4} }
 }; // Manoel Kasimier - hi-res skyboxes - end
-float   box_verts[8][3] = { {-1,-1,-1}, {-1,1,-1}, {1,1,-1}, {1,-1,-1},
+f32   box_verts[8][3] = { {-1,-1,-1}, {-1,1,-1}, {1,1,-1}, {1,-1,-1},
 				{-1,-1,1}, {-1,1,1}, {1,-1,1}, {1,1,1} };
 // Manoel Kasimier - skyboxes - end
 
-byte    *skyunderlay, *skyoverlay; // Manoel Kasimier - smooth sky
-byte    bottomalpha[128*131]; // Manoel Kasimier - translucent sky
+u8    *skyunderlay, *skyoverlay; // Manoel Kasimier - smooth sky
+u8    bottomalpha[128*131]; // Manoel Kasimier - translucent sky
 
 // Manoel Kasimier - skyboxes - begin
 // Code taken from the ToChriS engine - Author: Vic (vic@quakesrc.org) (http://hkitchen.quakesrc.org/)
 extern  mtexinfo_t              r_skytexinfo[6];
 //extern        cbool           r_drawskybox;
-byte                                    r_skypixels[6][SKYBOX_MAX_SIZE*SKYBOX_MAX_SIZE]; // Manoel Kasimier - edited
+u8                                    r_skypixels[6][SKYBOX_MAX_SIZE*SKYBOX_MAX_SIZE]; // Manoel Kasimier - edited
 texture_t                               r_skytextures[6];
 s8                                    last_skybox_name[1024];
 
@@ -80,7 +80,7 @@ void Sky_LoadTexture (texture_t *mt)
 	if (mt->width != 256 || mt->height != 128) // Leave this.
 		Con_Printf ("Standard sky texture %s expected to be 256 x 128 but is %d by %d ", mt->name, mt->width, mt->height);
 
-	skyoverlay = (byte *)mt + mt->offsets[0]; // Manoel Kasimier - smooth sky
+	skyoverlay = (u8 *)mt + mt->offsets[0]; // Manoel Kasimier - smooth sky
 	skyunderlay = skyoverlay+128; // Manoel Kasimier - smooth sky
 }
 
@@ -124,7 +124,7 @@ u8 fast_rgbtoi(u8 r, u8 g, u8 b)
     return rgb_lut[i];
 }
 
-byte *Upscale_NearestNeighbor(byte *src, s32 width, s32 height, s32 *new_width,
+u8 *Upscale_NearestNeighbor(u8 *src, s32 width, s32 height, s32 *new_width,
 	s32 *new_height) {
 	*new_width = (width < 256) ? 256 : width;
 	*new_height = (height < 256) ? 256 : height;
@@ -132,7 +132,7 @@ byte *Upscale_NearestNeighbor(byte *src, s32 width, s32 height, s32 *new_width,
 		return src;
 	s32 scale_x = *new_width / width;
 	s32 scale_y = *new_height / height;
-	byte *dest = malloc((*new_width) * (*new_height));
+	u8 *dest = malloc((*new_width) * (*new_height));
 	if (!dest) return 0;
 	for (s32 y = 0; y < *new_height; ++y) {
 		for (s32 x = 0; x < *new_width; ++x) {
@@ -158,7 +158,7 @@ s32 R_LoadSkybox (const s8 *name)
 		s32 r_skysideimage[6] = {5, 2, 4, 1, 0, 3};
 		q_snprintf (pathname, sizeof(pathname), "gfx/env/%s%s", name, suf[r_skysideimage[i]]);
 		s32 width, height;
-		byte *pic = Image_LoadImage (pathname, &width, &height);
+		u8 *pic = Image_LoadImage (pathname, &width, &height);
 		u8 *pdest = pic; // CyanBun96: palettize in place
 		u8 *psrc = pic; // with some noise dithering
 		if (!rgb_lut_built)
@@ -171,9 +171,9 @@ s32 R_LoadSkybox (const s8 *name)
 						CLAMP(0,g,255),
 						CLAMP(0,b,255));
 		}
-		byte *final_pic = Upscale_NearestNeighbor(pic,
+		u8 *final_pic = Upscale_NearestNeighbor(pic,
 				width, height, &width, &height);
-		byte *origpic = pic;
+		u8 *origpic = pic;
 		pic = final_pic;
 		if (!pic) {
 			Con_Printf ("Couldn't load %s", pathname);
@@ -382,7 +382,7 @@ void Sky_Init()
 
 void R_InitSky(texture_t *mt)
 { // A sky texture is 256*128, with the right side being a masked overlay
-	byte *src = (byte *) mt + mt->offsets[0];
+	u8 *src = (u8 *) mt + mt->offsets[0];
 	for (s32 i = 0; i < 128; i++)
 		for (s32 j = 0; j < 128; j++)
 			newsky[(i * 256) + j + 128] = src[i * 256 + j + 128];
@@ -414,10 +414,10 @@ void R_MakeSky()
 		s32 baseofs = ((y + yshift) & SKYMASK) * 131;
 		for (s32 x = 0; x < SKYSIZE; x++) {
 			s32 ofs = baseofs + ((x + xshift) & SKYMASK);
-			*(byte *) pnewsky = (*((byte *) pnewsky + 128) &
-					*(byte *) & bottommask[ofs]) |
-					*(byte *) & bottomsky[ofs];
-			pnewsky = (unsigned *)((byte *) pnewsky + 1);
+			*(u8 *) pnewsky = (*((u8 *) pnewsky + 128) &
+					*(u8 *) & bottommask[ofs]) |
+					*(u8 *) & bottomsky[ofs];
+			pnewsky = (unsigned *)((u8 *) pnewsky + 1);
 		}
 		pnewsky += 128 / sizeof(unsigned);
 	}
@@ -434,11 +434,11 @@ void R_GenSkyTile(void *pdest)
 		s32 baseofs = ((y + yshift) & SKYMASK) * 131;
 		for (s32 x = 0; x < SKYSIZE; x++) {
 			s32 ofs = baseofs + ((x + xshift) & SKYMASK);
-			*(byte *) pd = (*((byte *) pnewsky + 128) &
-					*(byte *) & bottommask[ofs]) |
-			    *(byte *) & bottomsky[ofs];
-			pnewsky = (u32 *)((byte *) pnewsky + 1);
-			pd = (u32 *)((byte *) pd + 1);
+			*(u8 *) pd = (*((u8 *) pnewsky + 128) &
+					*(u8 *) & bottommask[ofs]) |
+			    *(u8 *) & bottomsky[ofs];
+			pnewsky = (u32 *)((u8 *) pnewsky + 1);
+			pd = (u32 *)((u8 *) pd + 1);
 		}
 		pnewsky += 128 / sizeof(u32);
 	}
@@ -451,6 +451,6 @@ void R_SetSkyFrame ()
         s32 g = GreatestCommonDivisor (iskyspeed, iskyspeed2);
         s32 s1 = iskyspeed / g;
         s32 s2 = iskyspeed2 / g;
-        float temp = SKYSIZE * s1 * s2;
+        f32 temp = SKYSIZE * s1 * s2;
         skytime = cl.time - ((s32)(cl.time / temp) * temp);
 }

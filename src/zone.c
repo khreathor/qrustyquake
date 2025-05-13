@@ -57,7 +57,7 @@ void Z_Free (void *ptr)
 	if (!ptr)
 		Sys_Error ("Z_Free: NULL pointer");
 
-	block = (memblock_t *) ( (byte *)ptr - sizeof(memblock_t));
+	block = (memblock_t *) ( (u8 *)ptr - sizeof(memblock_t));
 	if (block->id != ZONEID)
 		Sys_Error ("Z_Free: freed a pointer without ZONEID");
 	if (block->tag == 0)
@@ -102,7 +102,7 @@ static void *Z_TagMalloc (s32 size, s32 tag)
 //
 	size += sizeof(memblock_t);	// account for size of block header
 	size += 4;					// space for memory trash tester
-	size = (size + 7) & ~7;		// align to 8-byte boundary
+	size = (size + 7) & ~7;		// align to 8-u8 boundary
 
 	base = rover = mainzone->rover;
 	start = base->prev;
@@ -123,7 +123,7 @@ static void *Z_TagMalloc (s32 size, s32 tag)
 	extra = base->size - size;
 	if (extra >  MINFRAGMENT)
 	{	// there will be a free fragment after the allocated block
-		newblock = (memblock_t *) ((byte *)base + size );
+		newblock = (memblock_t *) ((u8 *)base + size );
 		newblock->size = extra;
 		newblock->tag = 0;			// free block
 		newblock->prev = base;
@@ -141,9 +141,9 @@ static void *Z_TagMalloc (s32 size, s32 tag)
 	base->id = ZONEID;
 
 // marker for memory trash testing
-	*(s32 *)((byte *)base + base->size - 4) = ZONEID;
+	*(s32 *)((u8 *)base + base->size - 4) = ZONEID;
 
-	return (void *) ((byte *)base + sizeof(memblock_t));
+	return (void *) ((u8 *)base + sizeof(memblock_t));
 }
 
 /*
@@ -159,7 +159,7 @@ static void Z_CheckHeap (void)
 	{
 		if (block->next == &mainzone->blocklist)
 			break;			// all blocks have been hit
-		if ( (byte *)block + block->size != (byte *)block->next)
+		if ( (u8 *)block + block->size != (u8 *)block->next)
 			Sys_Error ("Z_CheckHeap: block size does not touch the next block");
 		if ( block->next->prev != block)
 			Sys_Error ("Z_CheckHeap: next block doesn't have proper back link");
@@ -201,7 +201,7 @@ void *Z_Realloc(void *ptr, s32 size)
 	if (!ptr)
 		return Z_Malloc (size);
 
-	block = (memblock_t *) ((byte *) ptr - sizeof (memblock_t));
+	block = (memblock_t *) ((u8 *) ptr - sizeof (memblock_t));
 	if (block->id != ZONEID)
 		Sys_Error ("Z_Realloc: realloced a pointer without ZONEID");
 	if (block->tag == 0)
@@ -219,7 +219,7 @@ void *Z_Realloc(void *ptr, s32 size)
 	if (ptr != old_ptr)
 		memmove (ptr, old_ptr, q_min(old_size, size));
 	if (old_size < size)
-		memset ((byte *)ptr + old_size, 0, size - old_size);
+		memset ((u8 *)ptr + old_size, 0, size - old_size);
 
 	return ptr;
 }
@@ -251,7 +251,7 @@ void Z_Print (memzone_t *zone)
 
 		if (block->next == &zone->blocklist)
 			break;			// all blocks have been hit
-		if ( (byte *)block + block->size != (byte *)block->next)
+		if ( (u8 *)block + block->size != (u8 *)block->next)
 			Con_Printf ("ERROR: block size does not touch the next block\n");
 		if ( block->next->prev != block)
 			Con_Printf ("ERROR: next block doesn't have proper back link\n");
@@ -264,7 +264,7 @@ void Z_Print (memzone_t *zone)
 //============================================================================
 
 
-byte	*hunk_base;
+u8	*hunk_base;
 s32		hunk_size;
 
 s32		hunk_low_used;
@@ -284,13 +284,13 @@ void Hunk_Check (void)
 {
 	hunk_t	*h;
 
-	for (h = (hunk_t *)hunk_base ; (byte *)h != hunk_base + hunk_low_used ; )
+	for (h = (hunk_t *)hunk_base ; (u8 *)h != hunk_base + hunk_low_used ; )
 	{
 		if (h->sentinel != HUNK_SENTINEL)
 			Sys_Error ("Hunk_Check: trashed sentinel");
-		if (h->size < (s32) sizeof(hunk_t) || h->size + (byte *)h - hunk_base > hunk_size)
+		if (h->size < (s32) sizeof(hunk_t) || h->size + (u8 *)h - hunk_base > hunk_size)
 			Sys_Error ("Hunk_Check: bad size");
-		h = (hunk_t *)((byte *)h+h->size);
+		h = (hunk_t *)((u8 *)h+h->size);
 	}
 }
 
@@ -345,10 +345,10 @@ void Hunk_Print (bool all)
 	//
 		if (h->sentinel != HUNK_SENTINEL)
 			Sys_Error ("Hunk_Check: trashed sentinel");
-		if (h->size < (s32) sizeof(hunk_t) || h->size + (byte *)h - hunk_base > hunk_size)
+		if (h->size < (s32) sizeof(hunk_t) || h->size + (u8 *)h - hunk_base > hunk_size)
 			Sys_Error ("Hunk_Check: bad size");
 
-		next = (hunk_t *)((byte *)h+h->size);
+		next = (hunk_t *)((u8 *)h+h->size);
 		count++;
 		totalblocks++;
 		sum += h->size;
@@ -606,7 +606,7 @@ void Cache_FreeLow (s32 new_low_hunk)
 		c = cache_head.next;
 		if (c == &cache_head)
 			return;		// nothing in cache at all
-		if ((byte *)c >= hunk_base + new_low_hunk)
+		if ((u8 *)c >= hunk_base + new_low_hunk)
 			return;		// there is space to grow the hunk
 		Cache_Move ( c );	// reclaim the space
 	}
@@ -629,7 +629,7 @@ void Cache_FreeHigh (s32 new_high_hunk)
 		c = cache_head.prev;
 		if (c == &cache_head)
 			return;		// nothing in cache at all
-		if ( (byte *)c + c->size <= hunk_base + hunk_size - new_high_hunk)
+		if ( (u8 *)c + c->size <= hunk_base + hunk_size - new_high_hunk)
 			return;		// there is space to grow the hunk
 		if (c == prev)
 			Cache_Free (c->user, true);	// didn't move out of the way //johnfitz -- added second argument
@@ -702,7 +702,7 @@ cache_system_t *Cache_TryAlloc (s32 size, bool nobottom)
 	{
 		if (!nobottom || cs != cache_head.next)
 		{
-			if ( (byte *)cs - (byte *)new_cs >= size)
+			if ( (u8 *)cs - (u8 *)new_cs >= size)
 			{	// found space
 				memset (new_cs, 0, sizeof(*new_cs));
 				new_cs->size = size;
@@ -719,13 +719,13 @@ cache_system_t *Cache_TryAlloc (s32 size, bool nobottom)
 		}
 
 	// continue looking
-		new_cs = (cache_system_t *)((byte *)cs + cs->size);
+		new_cs = (cache_system_t *)((u8 *)cs + cs->size);
 		cs = cs->next;
 
 	} while (cs != &cache_head);
 
 // try to allocate one at the very end
-	if ( hunk_base + hunk_size - hunk_high_used - (byte *)new_cs >= size)
+	if ( hunk_base + hunk_size - hunk_high_used - (u8 *)new_cs >= size)
 	{
 		memset (new_cs, 0, sizeof(*new_cs));
 		new_cs->size = size;
@@ -780,7 +780,7 @@ Cache_Report
 */
 void Cache_Report (void)
 {
-	Con_DPrintf ("%4.1f megabyte data cache\n", (hunk_size - hunk_high_used - hunk_low_used) / (float)(1024*1024) );
+	Con_DPrintf ("%4.1f megabyte data cache\n", (hunk_size - hunk_high_used - hunk_low_used) / (f32)(1024*1024) );
 }
 
 /*
@@ -901,7 +901,7 @@ static void Memory_InitZone (memzone_t *zone, s32 size)
 // set the entire zone to one free block
 
 	zone->blocklist.next = zone->blocklist.prev = block =
-		(memblock_t *)( (byte *)zone + sizeof(memzone_t) );
+		(memblock_t *)( (u8 *)zone + sizeof(memzone_t) );
 	zone->blocklist.tag = 1;	// in use block
 	zone->blocklist.id = 0;
 	zone->blocklist.size = 0;
@@ -923,7 +923,7 @@ void Memory_Init (void *buf, s32 size)
 	s32 p;
 	s32 zonesize = DYNAMIC_SIZE;
 
-	hunk_base = (byte *) buf;
+	hunk_base = (u8 *) buf;
 	hunk_size = size;
 	hunk_low_used = 0;
 	hunk_high_used = 0;

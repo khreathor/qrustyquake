@@ -135,7 +135,7 @@ void Host_Ping_f()
 	for (client_t *client = svs.clients; i < svs.maxclients; i++, client++){
 		if (!client->active)
 			continue;
-		float total = 0;
+		f32 total = 0;
 		for (s32 j = 0; j < NUM_PING_TIMES; j++)
 			total += client->ping_times[j];
 		total /= NUM_PING_TIMES;
@@ -345,7 +345,7 @@ void Host_Loadgame_f()
 	s8 name[MAX_OSPATH+2];
 	s8 mapname[MAX_QPATH];
 	s8 str[32768];
-	float spawn_parms[NUM_SPAWN_PARMS];
+	f32 spawn_parms[NUM_SPAWN_PARMS];
 	if (cmd_source != src_command)
 		return;
 	if (Cmd_Argc() != 2) {
@@ -375,13 +375,13 @@ void Host_Loadgame_f()
 	fscanf(f, "%s\n", str);
 	for (s32 i = 0; i < NUM_SPAWN_PARMS; i++)
 		fscanf(f, "%f\n", &spawn_parms[i]);
-	// this silliness is so we can load 1.06 save files, which have float skill values
-	float tfloat;
+	// this silliness is so we can load 1.06 save files, which have f32 skill values
+	f32 tfloat;
 	fscanf(f, "%f\n", &tfloat);
 	current_skill = (s32)(tfloat + 0.1);
-	Cvar_SetValue("skill", (float)current_skill);
+	Cvar_SetValue("skill", (f32)current_skill);
 	fscanf(f, "%s\n", mapname);
-	float time;
+	f32 time;
 	fscanf(f, "%f\n", &time);
 	CL_Disconnect_f();
 	SV_SpawnServer(mapname);

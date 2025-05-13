@@ -12,16 +12,16 @@ trivertx_t *r_apverts;
 mdl_t *pmdl;
 vec3_t r_plightvec;
 s32 r_ambientlight;
-float r_shadelight;
+f32 r_shadelight;
 aliashdr_t *paliashdr;
 finalvert_t *pfinalverts;
 auxvert_t *pauxverts;
 s32 r_amodels_drawn;
 s32 a_skinwidth;
 s32 r_anumverts;
-float aliastransform[3][4];
+f32 aliastransform[3][4];
 
-static float ziscale;
+static f32 ziscale;
 static model_t *pmodel;
 static vec3_t alias_forward, alias_right, alias_up;
 static maliasskindesc_t *pskindesc;
@@ -31,7 +31,7 @@ static aedge_t aedges[12] = {
 	{ 0, 5 }, { 1, 4 }, { 2, 7 }, { 3, 6 }
 };
 
-float r_avertexnormals[NUMVERTEXNORMALS][3] = {
+f32 r_avertexnormals[NUMVERTEXNORMALS][3] = {
 #include "anorms.h"
 };
 
@@ -48,7 +48,7 @@ bool R_AliasCheckBBox()
 	currententity->trivial_accept = 0;
 	pmodel = currententity->model;
 	aliashdr_t *pahdr = Mod_Extradata(pmodel);
-	pmdl = (mdl_t *) ((byte *) pahdr + pahdr->model);
+	pmdl = (mdl_t *) ((u8 *) pahdr + pahdr->model);
 	R_AliasSetUpTransform(0);
 	// construct the base bounding box for this frame
 	s32 frame = currententity->frame;
@@ -58,16 +58,16 @@ bool R_AliasCheckBBox()
 		frame = 0;
 	}
 	maliasframedesc_t *pframedesc = &pahdr->frames[frame];
-	float bp[8][3]; // basepts
+	f32 bp[8][3]; // basepts
 	// x worldspace coordinates
-	bp[0][0]=bp[1][0]=bp[2][0]=bp[3][0]=(float)pframedesc->bboxmin.v[0];
-	bp[4][0]=bp[5][0]=bp[6][0]=bp[7][0]=(float)pframedesc->bboxmax.v[0];
+	bp[0][0]=bp[1][0]=bp[2][0]=bp[3][0]=(f32)pframedesc->bboxmin.v[0];
+	bp[4][0]=bp[5][0]=bp[6][0]=bp[7][0]=(f32)pframedesc->bboxmax.v[0];
 	// y worldspace coordinates
-	bp[0][1]=bp[3][1]=bp[5][1]=bp[6][1]=(float)pframedesc->bboxmin.v[1];
-	bp[1][1]=bp[2][1]=bp[4][1]=bp[7][1]=(float)pframedesc->bboxmax.v[1];
+	bp[0][1]=bp[3][1]=bp[5][1]=bp[6][1]=(f32)pframedesc->bboxmin.v[1];
+	bp[1][1]=bp[2][1]=bp[4][1]=bp[7][1]=(f32)pframedesc->bboxmax.v[1];
 	// z worldspace coordinates
-	bp[0][2]=bp[1][2]=bp[4][2]=bp[5][2]=(float)pframedesc->bboxmin.v[2];
-	bp[2][2]=bp[3][2]=bp[6][2]=bp[7][2]=(float)pframedesc->bboxmax.v[2];
+	bp[0][2]=bp[1][2]=bp[4][2]=bp[5][2]=(f32)pframedesc->bboxmin.v[2];
+	bp[2][2]=bp[3][2]=bp[6][2]=bp[7][2]=(f32)pframedesc->bboxmax.v[2];
 	bool zclipped = false;
 	bool zfullyclipped = true;
 	s32 minz = 9999;
@@ -99,7 +99,7 @@ bool R_AliasCheckBBox()
 		// if one end is clipped and the other isn't, make a new point
 		if (!(pv0->flags ^ pv1->flags))
 			continue;
-		float f=(ALIAS_Z_CLIP_PLANE-pa0->fv[2])/(pa1->fv[2]-pa0->fv[2]);
+		f32 f=(ALIAS_Z_CLIP_PLANE-pa0->fv[2])/(pa1->fv[2]-pa0->fv[2]);
 		viewaux[numv].fv[0] = pa0->fv[0]+(pa1->fv[0]-pa0->fv[0])*f;
 		viewaux[numv].fv[1] = pa0->fv[1]+(pa1->fv[1]-pa0->fv[1])*f;
 		viewaux[numv].fv[2] = ALIAS_Z_CLIP_PLANE;
@@ -113,10 +113,10 @@ bool R_AliasCheckBBox()
 		// we don't need to bother with vertices that were z-clipped
 		if (viewpts[i].flags & ALIAS_Z_CLIP)
 			continue;
-		float zi = 1.0 / viewaux[i].fv[2];
-		// FIXME: do with chop mode in ASM, or convert to float
-		float v0 = (viewaux[i].fv[0] * xscale * zi) + xcenter;
-		float v1 = (viewaux[i].fv[1] * yscale * zi) + ycenter;
+		f32 zi = 1.0 / viewaux[i].fv[2];
+		// FIXME: do with chop mode in ASM, or convert to f32
+		f32 v0 = (viewaux[i].fv[0] * xscale * zi) + xcenter;
+		f32 v1 = (viewaux[i].fv[1] * yscale * zi) + ycenter;
 		s32 flags = 0;
 		if (v0 < r_refdef.fvrectx)
 			flags |= ALIAS_LEFT_CLIP;
@@ -147,7 +147,7 @@ void R_AliasTransformVector(vec3_t in, vec3_t out)
 
 void R_AliasPreparePoints()
 { // General clipped case
-	stvert_t *pstverts = (stvert_t*)((byte*)paliashdr + paliashdr->stverts);
+	stvert_t *pstverts = (stvert_t*)((u8*)paliashdr + paliashdr->stverts);
 	r_anumverts = pmdl->numverts;
 	finalvert_t *fv = pfinalverts;
 	auxvert_t *av = pauxverts;
@@ -168,7 +168,7 @@ void R_AliasPreparePoints()
 		}
 	}
 	r_affinetridesc.numtriangles = 1; // clip and draw all triangles
-	mtriangle_t *ptri = (mtriangle_t *) ((byte *) paliashdr + paliashdr->triangles);
+	mtriangle_t *ptri = (mtriangle_t *) ((u8 *) paliashdr + paliashdr->triangles);
 	finalvert_t *pfv[3];
 	for (s32 i = 0; i < pmdl->numtris; i++, ptri++) {
 		pfv[0] = &pfinalverts[ptri->vertindex[0]];
@@ -189,9 +189,9 @@ void R_AliasPreparePoints()
 
 void R_AliasSetUpTransform(s32 trivial_accept)
 {
-	float rotationmatrix[3][4], t2matrix[3][4];
-	static float tmatrix[3][4];
-	static float viewmatrix[3][4];
+	f32 rotationmatrix[3][4], t2matrix[3][4];
+	static f32 tmatrix[3][4];
+	static f32 viewmatrix[3][4];
 	vec3_t angles;
 	// TODO: should really be stored with the entity instead of being reconstructed
 	// TODO: should use a look-up table
@@ -231,9 +231,9 @@ void R_AliasSetUpTransform(s32 trivial_accept)
 	if (!trivial_accept) 
 		return;
 	for (s32 i = 0; i < 4; i++) {
-		aliastransform[0][i]*=aliasxscale*(1.0/((float)0x8000*0x10000));
-		aliastransform[1][i]*=aliasyscale*(1.0/((float)0x8000*0x10000));
-		aliastransform[2][i] *= 1.0 / ((float)0x8000 * 0x10000);
+		aliastransform[0][i]*=aliasxscale*(1.0/((f32)0x8000*0x10000));
+		aliastransform[1][i]*=aliasyscale*(1.0/((f32)0x8000*0x10000));
+		aliastransform[2][i] *= 1.0 / ((f32)0x8000 * 0x10000);
 	}
 }
 
@@ -247,8 +247,8 @@ void R_AliasTransformFinalVert(finalvert_t *fv, auxvert_t *av,
 	fv->v[3] = pstverts->t;
 	fv->flags = pstverts->onseam;
 	// lighting
-	float *plightnormal = r_avertexnormals[pverts->lightnormalindex];
-	float lightcos = DotProduct(plightnormal, r_plightvec);
+	f32 *plightnormal = r_avertexnormals[pverts->lightnormalindex];
+	f32 lightcos = DotProduct(plightnormal, r_plightvec);
 	s32 temp = r_ambientlight;
 	if (lightcos < 0) {
 		temp += (s32)(r_shadelight * lightcos);
@@ -265,7 +265,7 @@ void R_AliasTransformAndProjectFinalVerts(finalvert_t *fv, stvert_t *pstverts)
 	trivertx_t *pverts = r_apverts;
 	for (s32 i = 0; i < r_anumverts; i++, fv++, pverts++, pstverts++) {
 		// transform and project
-		float zi = 1.0 / (DotProduct(pverts->v, aliastransform[2]) + 
+		f32 zi = 1.0 / (DotProduct(pverts->v, aliastransform[2]) + 
 				aliastransform[2][3]);
 		// x, y, and z are scaled down by 1/2**31 in the transform, so
 		// 1/z is scaled up by 1/2**31, and the scaling cancels out for
@@ -279,8 +279,8 @@ void R_AliasTransformAndProjectFinalVerts(finalvert_t *fv, stvert_t *pstverts)
 		fv->v[3] = pstverts->t;
 		fv->flags = pstverts->onseam;
 		// lighting
-		float *plightnormal=r_avertexnormals[pverts->lightnormalindex];
-		float lightcos = DotProduct(plightnormal, r_plightvec);
+		f32 *plightnormal=r_avertexnormals[pverts->lightnormalindex];
+		f32 lightcos = DotProduct(plightnormal, r_plightvec);
 		s32 temp = r_ambientlight;
 		if (lightcos < 0) {
 			temp += (s32)(r_shadelight * lightcos);
@@ -295,7 +295,7 @@ void R_AliasTransformAndProjectFinalVerts(finalvert_t *fv, stvert_t *pstverts)
 
 void R_AliasProjectFinalVert(finalvert_t *fv, auxvert_t *av)
 {
-	float zi = 1.0 / av->fv[2]; // project points
+	f32 zi = 1.0 / av->fv[2]; // project points
 	fv->v[5] = zi * ziscale;
 	fv->v[0] = (av->fv[0] * aliasxscale * zi) + aliasxcenter;
 	fv->v[1] = (av->fv[1] * aliasyscale * zi) + aliasycenter;
@@ -303,7 +303,7 @@ void R_AliasProjectFinalVert(finalvert_t *fv, auxvert_t *av)
 
 void R_AliasPrepareUnclippedPoints()
 {
-	stvert_t *pstverts = (stvert_t*)((byte*)paliashdr + paliashdr->stverts);
+	stvert_t *pstverts = (stvert_t*)((u8*)paliashdr + paliashdr->stverts);
 	r_anumverts = pmdl->numverts;
 	// FIXME: just use pfinalverts directly?
 	finalvert_t *fv = pfinalverts;
@@ -312,7 +312,7 @@ void R_AliasPrepareUnclippedPoints()
 		D_PolysetDrawFinalVerts(fv, r_anumverts);
 	r_affinetridesc.pfinalverts = pfinalverts;
 	r_affinetridesc.ptriangles = (mtriangle_t *)
-		((byte *) paliashdr + paliashdr->triangles);
+		((u8 *) paliashdr + paliashdr->triangles);
 	r_affinetridesc.numtriangles = pmdl->numtris;
 	D_PolysetDraw();
 }
@@ -324,20 +324,20 @@ void R_AliasSetupSkin()
 		Con_DPrintf("R_AliasSetupSkin: no such skin # %d\n", skinnum);
 		skinnum = 0;
 	}
-	pskindesc = ((maliasskindesc_t *)((byte *) paliashdr +
+	pskindesc = ((maliasskindesc_t *)((u8 *) paliashdr +
 				paliashdr->skindesc)) + skinnum;
 	a_skinwidth = pmdl->skinwidth;
 	if (pskindesc->type == ALIAS_SKIN_GROUP) {
 		maliasskingroup_t *paliasskingroup = (maliasskingroup_t *)
-				((byte *) paliashdr + pskindesc->skin);
-		float *pskinintervals = (float *)((byte *) paliashdr
+				((u8 *) paliashdr + pskindesc->skin);
+		f32 *pskinintervals = (f32 *)((u8 *) paliashdr
 				+ paliasskingroup->intervals);
 		s32 numskins = paliasskingroup->numskins;
-		float fullskininterval = pskinintervals[numskins - 1];
-		float skintime = cl.time + currententity->syncbase;
+		f32 fullskininterval = pskinintervals[numskins - 1];
+		f32 skintime = cl.time + currententity->syncbase;
 		// when loading in Mod_LoadAliasSkinGroup, we guaranteed all interval
 		// values are positive, so we don't have to worry about division by 0
-		float skintargettime = skintime - ((s32)(skintime /
+		f32 skintargettime = skintime - ((s32)(skintime /
 					fullskininterval)) * fullskininterval;
 		s32 i = 0;
 		for (; i < (numskins - 1); i++) {
@@ -347,7 +347,7 @@ void R_AliasSetupSkin()
 		pskindesc = &paliasskingroup->skindescs[i];
 	}
 	r_affinetridesc.pskindesc = pskindesc;
-	r_affinetridesc.pskin = (void *)((byte *) paliashdr + pskindesc->skin);
+	r_affinetridesc.pskin = (void *)((u8 *) paliashdr + pskindesc->skin);
 	r_affinetridesc.skinwidth = a_skinwidth;
 	r_affinetridesc.seamfixupX16 = (a_skinwidth >> 1) << 16;
 	r_affinetridesc.skinheight = pmdl->skinheight;
@@ -382,23 +382,23 @@ void R_AliasSetupFrame()
 	}
 	if (paliashdr->frames[frame].type == ALIAS_SINGLE) {
 		r_apverts = (trivertx_t *)
-			((byte *) paliashdr + paliashdr->frames[frame].frame);
+			((u8 *) paliashdr + paliashdr->frames[frame].frame);
 		return;
 	}
-	maliasgroup_t *paliasgroup = (maliasgroup_t *) ((byte *) paliashdr +
+	maliasgroup_t *paliasgroup = (maliasgroup_t *) ((u8 *) paliashdr +
 			paliashdr->frames[frame].frame);
-	float *pintervals = (float *)((byte *)paliashdr+paliasgroup->intervals);
+	f32 *pintervals = (f32 *)((u8 *)paliashdr+paliasgroup->intervals);
 	s32 numframes = paliasgroup->numframes;
-	float fullinterval = pintervals[numframes - 1];
-	float time = cl.time + currententity->syncbase;
+	f32 fullinterval = pintervals[numframes - 1];
+	f32 time = cl.time + currententity->syncbase;
 	// when loading in Mod_LoadAliasGroup, we guaranteed all interval values
 	// are positive, so we don't have to worry about division by 0
-	float targettime = time - ((s32)(time / fullinterval)) * fullinterval;
+	f32 targettime = time - ((s32)(time / fullinterval)) * fullinterval;
 	s32 i = 0;
 	for (; i < (numframes - 1); i++)
 		if (pintervals[i] > targettime)
 			break;
-	r_apverts=(trivertx_t*)((byte*)paliashdr+paliasgroup->frames[i].frame);
+	r_apverts=(trivertx_t*)((u8*)paliashdr+paliasgroup->frames[i].frame);
 }
 
 void R_AliasDrawModel(alight_t *plighting)
@@ -412,7 +412,7 @@ void R_AliasDrawModel(alight_t *plighting)
 				+ CACHE_SIZE - 1) & ~(CACHE_SIZE - 1));
 	pauxverts = &auxverts[0];
 	paliashdr = (aliashdr_t *) Mod_Extradata(currententity->model);
-	pmdl = (mdl_t *) ((byte *) paliashdr + paliashdr->model);
+	pmdl = (mdl_t *) ((u8 *) paliashdr + paliashdr->model);
 	R_AliasSetupSkin();
 	R_AliasSetUpTransform(currententity->trivial_accept);
 	R_AliasSetupLighting(plighting);
@@ -423,8 +423,8 @@ void R_AliasDrawModel(alight_t *plighting)
 	if (r_affinetridesc.drawtype)
 		D_PolysetUpdateTables(); // FIXME: precalc...
 	acolormap = currententity->colormap;
-	ziscale = currententity != &cl.viewent ? (float)0x8000 * (float)0x10000
-		: (float)0x8000 * (float)0x10000 * 3.0;
+	ziscale = currententity != &cl.viewent ? (f32)0x8000 * (f32)0x10000
+		: (f32)0x8000 * (f32)0x10000 * 3.0;
 	if (currententity->trivial_accept)
 		R_AliasPrepareUnclippedPoints();
 	else

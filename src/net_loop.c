@@ -96,7 +96,7 @@ s32 Loop_GetMessage(qsocket_t *sock)
 		return 0;
 	s32 ret = sock->receiveMessage[0];
 	s32 length = sock->receiveMessage[1] + (sock->receiveMessage[2] << 8);
-	// alignment byte skipped here
+	// alignment u8 skipped here
 	SZ_Clear(&net_message);
 	SZ_Write(&net_message, &sock->receiveMessage[4], length);
 	length = IntAlign(length + 4);
@@ -116,7 +116,7 @@ s32 Loop_SendMessage(qsocket_t *sock, sizebuf_t *data)
 	s32 *bufferLength = &((qsocket_t *) sock->driverdata)->receiveMessageLength;
 	if ((*bufferLength + data->cursize + 4) > NET_MAXMESSAGE)
 		Sys_Error("Loop_SendMessage: overflow");
-	byte *buffer =
+	u8 *buffer =
 	    ((qsocket_t *) sock->driverdata)->receiveMessage + *bufferLength;
 	*buffer++ = 1; // message type
 	*buffer++ = data->cursize & 0xff; // length
@@ -134,10 +134,10 @@ s32 Loop_SendUnreliableMessage(qsocket_t *sock, sizebuf_t *data)
 		return -1;
 	s32 *bufferLength =
 		&((qsocket_t *) sock->driverdata)->receiveMessageLength;
-	if ((*bufferLength + data->cursize + sizeof(byte) + sizeof(s16)) >
+	if ((*bufferLength + data->cursize + sizeof(u8) + sizeof(s16)) >
 	    NET_MAXMESSAGE)
 		return 0;
-	byte *buffer =
+	u8 *buffer =
 	    ((qsocket_t *) sock->driverdata)->receiveMessage + *bufferLength;
 	*buffer++ = 2; // message type
 	*buffer++ = data->cursize & 0xff; // length

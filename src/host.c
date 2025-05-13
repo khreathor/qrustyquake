@@ -14,19 +14,19 @@ Memory is cleared / released when a server or client begins, not when they end.
 quakeparms_t host_parms;
 bool host_initialized; // true if into command execution
 bool isDedicated;
-double host_frametime;
-double host_rawframetime;
-float host_netinterval;
-double host_time;
-double realtime; // without any filtering or bounding
-double oldrealtime; // last frame run
+f64 host_frametime;
+f64 host_rawframetime;
+f32 host_netinterval;
+f64 host_time;
+f64 realtime; // without any filtering or bounding
+f64 oldrealtime; // last frame run
 s32 host_framecount;
 s32 host_hunklevel;
 s32 minimum_memory;
 client_t *host_client; // current client
 jmp_buf host_abortserver;
-byte *host_basepal;
-byte *host_colormap;
+u8 *host_basepal;
+u8 *host_colormap;
 
 extern void IN_MLookDown();
 extern void Cbuf_Waited();
@@ -267,7 +267,7 @@ void Host_ShutdownServer(bool crash)
 	if (cls.state == ca_connected) // stop all client sounds immediately
 		CL_Disconnect();
 	// flush any pending messages - like the score!!!
-	double start = Sys_FloatTime();
+	f64 start = Sys_FloatTime();
 	s32 count;
 	do {
 		count = 0;
@@ -324,10 +324,10 @@ void Host_ClearMemory()
 	memset(&cl, 0, sizeof(cl));
 }
 
-double Host_GetFrameInterval ()
+f64 Host_GetFrameInterval ()
 {
 	if ((host_maxfps.value || cls.state==ca_disconnected) && !cls.timedemo){
-		float maxfps;
+		f32 maxfps;
 		if (cls.state == ca_disconnected) {
 			maxfps = 60;//TODO vid.refreshrate ? vid.refreshrate : 60.f;
 			if (host_maxfps.value)
@@ -342,7 +342,7 @@ double Host_GetFrameInterval ()
 	return 0.0;
 }
 
-static void Host_AdvanceTime (double dt)
+static void Host_AdvanceTime (f64 dt)
 {
 	realtime += dt;
 	host_frametime = host_rawframetime = realtime - oldrealtime;
@@ -370,10 +370,10 @@ void Host_ServerFrame()
 	SV_SendClientMessages(); // send all messages to the clients
 }
 
-static void Host_PrintTimes (const double times[], const s8 *names[], s32 count, bool showtotal)
+static void Host_PrintTimes (const f64 times[], const s8 *names[], s32 count, bool showtotal)
 {
 	s8 line[1024];
-	double total = 0.0;
+	f64 total = 0.0;
 	s32 i, worst;
 	for (i = 0, worst = -1; i < count; i++) {
 		if (worst == -1 || times[i] > times[worst])
@@ -396,15 +396,15 @@ static void Host_PrintTimes (const double times[], const s8 *names[], s32 count,
 	Con_Printf ("%s\n", line);
 }
 
-void _Host_Frame(float time)
+void _Host_Frame(f32 time)
 { // Runs all active servers
-	static double accumtime = 0;
-	static double time1, time2, time3;
+	static f64 accumtime = 0;
+	static f64 time1, time2, time3;
 	bool ranserver = false;
 	if (setjmp(host_abortserver))
 		return;	// something bad happened, or the server disconnected
 	rand(); // keep the random time dependent
-	accumtime += host_netinterval?CLAMP(0.0, (double)time, 0.2):0.0; // for renderer/server isolation
+	accumtime += host_netinterval?CLAMP(0.0, (f64)time, 0.2):0.0; // for renderer/server isolation
 	Host_AdvanceTime (time);
 	Sys_SendKeyEvents(); // get new key events
 	Cbuf_Execute(); // process console commands
@@ -413,9 +413,9 @@ void _Host_Frame(float time)
 	// Run the server+networking (client->server->client), at a different 
 	// rate from everything else
 	if (accumtime >= host_netinterval) {
-		float realframetime = host_frametime;
+		f32 realframetime = host_frametime;
 		if (host_netinterval) {
-			host_frametime = q_max(accumtime, (double)host_netinterval);
+			host_frametime = q_max(accumtime, (f64)host_netinterval);
 			accumtime -= host_frametime;
 			if (host_timescale.value > 0)
 				host_frametime *= host_timescale.value;
@@ -445,8 +445,8 @@ void _Host_Frame(float time)
 		S_Update(vec3_origin, vec3_origin, vec3_origin, vec3_origin);
 	if (host_speeds.value)
 	{
-		static double pass[3] = {0.0, 0.0, 0.0};
-		static double elapsed = 0.0;
+		static f64 pass[3] = {0.0, 0.0, 0.0};
+		static f64 elapsed = 0.0;
 		static s32 numframes = 0;
 		static s32 numserverframes = 0;
 		time1 = time2 - time1;
@@ -473,17 +473,17 @@ void _Host_Frame(float time)
 	host_framecount++;
 }
 
-void Host_Frame(float time)
+void Host_Frame(f32 time)
 {
-	static double timetotal;
+	static f64 timetotal;
 	static s32 timecount;
 	if (!serverprofile.value) {
 		_Host_Frame(time);
 		return;
 	}
-	double time1 = Sys_FloatTime();
+	f64 time1 = Sys_FloatTime();
 	_Host_Frame(time);
-	double time2 = Sys_FloatTime();
+	f64 time2 = Sys_FloatTime();
 	timetotal += time2 - time1;
 	timecount++;
 	if (timecount < 1000)
@@ -527,14 +527,14 @@ void Host_Init()
 		if (!f) COM_FOpenFile ("gfx/palette.lmp", &f, NULL);
 		if (!f) Sys_Error ("Couldn't load gfx/palette.lmp");
 		s32 mark = Hunk_LowMark ();
-		host_basepal = (byte *) Hunk_AllocName (768, "basepal");
+		host_basepal = (u8 *) Hunk_AllocName (768, "basepal");
 		if (fread(host_basepal, 768, 1, f) != 1)
 			Sys_Error ("Failed reading gfx/palette.lmp");
 		fclose(f);
 		COM_FOpenFile ("gfx/customcolormap.lmp", &f, NULL);
 		if (!f) COM_FOpenFile ("gfx/colormap.lmp", &f, NULL);
 		if (!f) Sys_Error ("Couldn't load gfx/colormap.lmp");
-		host_colormap = (byte *) Hunk_AllocName (256 * 64, "colormap");
+		host_colormap = (u8 *) Hunk_AllocName (256 * 64, "colormap");
 		if (fread(host_colormap, 256 * 64, 1, f) != 1)
 			Sys_Error ("TexMgr_LoadPalette: colormap read error");
 		fclose(f); // Ironwail pasta end

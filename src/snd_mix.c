@@ -145,7 +145,7 @@ kernel has room for M+1 floats
 f_c is the filter cutoff frequency, as a fraction of the samplerate
 ==============
 */
-static void S_MakeBlackmanWindowKernel(float *kernel, s32 M, float f_c)
+static void S_MakeBlackmanWindowKernel(f32 *kernel, s32 M, f32 f_c)
 {
 	s32 i;
 	for (i = 0; i <= M; i++)
@@ -157,14 +157,14 @@ static void S_MakeBlackmanWindowKernel(float *kernel, s32 M, float f_c)
 		else
 		{
 			kernel[i] = ( sin(2 * M_PI * f_c * (i - M/2.0)) / (i - (M/2.0)) )
-				* (0.42 - 0.5*cos(2 * M_PI * i / (double)M)
-				   + 0.08*cos(4 * M_PI * i / (double)M) );
+				* (0.42 - 0.5*cos(2 * M_PI * i / (f64)M)
+				   + 0.08*cos(4 * M_PI * i / (f64)M) );
 		}
 	}
 
 // normalize the kernel so all of the values sum to 1
 	{
-		float sum = 0;
+		f32 sum = 0;
 		for (i = 0; i <= M; i++)
 		{
 			sum += kernel[i];
@@ -178,15 +178,15 @@ static void S_MakeBlackmanWindowKernel(float *kernel, s32 M, float f_c)
 }
 
 typedef struct {
-	float *memory;  // kernelsize floats
-	float *kernel;  // kernelsize floats
+	f32 *memory;  // kernelsize floats
+	f32 *kernel;  // kernelsize floats
 	s32 kernelsize; // M+1, rounded up to be a multiple of 16
 	s32 M;			// M value used to make kernel, even
 	s32 parity;		// 0-3
-	float f_c;		// cutoff frequency, [0..1], fraction of sample rate
+	f32 f_c;		// cutoff frequency, [0..1], fraction of sample rate
 } filter_t;
 
-static void S_UpdateFilter(filter_t *filter, s32 M, float f_c)
+static void S_UpdateFilter(filter_t *filter, s32 M, f32 f_c)
 {
 	if (filter->f_c != f_c || filter->M != M)
 	{
@@ -199,8 +199,8 @@ static void S_UpdateFilter(filter_t *filter, s32 M, float f_c)
 		filter->parity = 0;
 	// M + 1 rounded up to the next multiple of 16
 		filter->kernelsize = (M + 1) + 16 - ((M + 1) % 16);
-		filter->memory = (float *) calloc(filter->kernelsize, sizeof(float));
-		filter->kernel = (float *) calloc(filter->kernelsize, sizeof(float));
+		filter->memory = (f32 *) calloc(filter->kernelsize, sizeof(f32));
+		filter->kernel = (f32 *) calloc(filter->kernelsize, sizeof(f32));
 		
 		S_MakeBlackmanWindowKernel(filter->kernel, M, f_c);
 	}
@@ -221,16 +221,16 @@ known to be 0 and skip 3/4 of the filter kernel.
 static void S_ApplyFilter(filter_t *filter, s32 *data, s32 stride, s32 count)
 {
 	s32 i, j;
-	float *input;
+	f32 *input;
 	const s32 kernelsize = filter->kernelsize;
-	const float *kernel = filter->kernel;
+	const f32 *kernel = filter->kernel;
 	s32 parity;
 
-	input = (float *) malloc(sizeof(float) * (filter->kernelsize + count));
+	input = (f32 *) malloc(sizeof(f32) * (filter->kernelsize + count));
 
 // set up the input buffer
 // memory holds the previous filter->kernelsize samples of input.
-	memcpy(input, filter->memory, filter->kernelsize * sizeof(float));
+	memcpy(input, filter->memory, filter->kernelsize * sizeof(f32));
 
 	for (i=0; i<count; i++)
 	{
@@ -238,15 +238,15 @@ static void S_ApplyFilter(filter_t *filter, s32 *data, s32 stride, s32 count)
 	}
 
 // copy out the last filter->kernelsize samples to 'memory' for next time
-	memcpy(filter->memory, input + count, filter->kernelsize * sizeof(float));
+	memcpy(filter->memory, input + count, filter->kernelsize * sizeof(f32));
 
 // apply the filter
 	parity = filter->parity;
 
 	for (i=0; i<count; i++)
 	{
-		const float *input_plus_i = input + i;
-		float val[4] = {0, 0, 0, 0};
+		const f32 *input_plus_i = input + i;
+		f32 val[4] = {0, 0, 0, 0};
 
 		for (j = (4 - parity) % 4; j < kernelsize; j+=16)
 		{
@@ -282,7 +282,7 @@ static void S_LowpassFilter(s32 *data, s32 stride, s32 count,
 							filter_t *memory)
 {
 	s32 M;
-	float bw, f_c;
+	f32 bw, f_c;
 
 	switch ((s32)snd_filterquality.value)
 	{

@@ -21,9 +21,9 @@ vec_t VectorLength(vec3_t v) { return sqrt(DotProduct(v,v)); }
 
 void ProjectPointOnPlane(vec3_t dst, const vec3_t p, const vec3_t normal)
 {
-	float d;
+	f32 d;
 	vec3_t n;
-	float inv_denom;
+	f32 inv_denom;
 
 	inv_denom = 1.0F / DotProduct(normal, normal);
 
@@ -38,7 +38,7 @@ void ProjectPointOnPlane(vec3_t dst, const vec3_t p, const vec3_t normal)
 	dst[2] = p[2] - d * n[2];
 }
 
-float anglemod(float a)
+f32 anglemod(f32 a)
 {
 	a = (360.0 / 65536) * ((s32)(a * (65536 / 360.0)) & 65535);
 	return a;
@@ -47,7 +47,7 @@ float anglemod(float a)
 
 s32 BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, mplane_t *p)
 { // Returns 1, 2, or 1 + 2
-	float dist1 = 0, dist2 = 0;
+	f32 dist1 = 0, dist2 = 0;
 	switch (p->signbits) { // general case
 	case 0:
 	dist1=p->normal[0]*emaxs[0]+p->normal[1]*emaxs[1]+p->normal[2]*emaxs[2];
@@ -95,15 +95,15 @@ s32 BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, mplane_t *p)
 
 void AngleVectors(vec3_t angles, vec3_t forward, vec3_t right, vec3_t up)
 {
-	float angle = angles[YAW] * (M_PI * 2 / 360);
-	float sy = sin(angle);
-	float cy = cos(angle);
+	f32 angle = angles[YAW] * (M_PI * 2 / 360);
+	f32 sy = sin(angle);
+	f32 cy = cos(angle);
 	angle = angles[PITCH] * (M_PI * 2 / 360);
-	float sp = sin(angle);
-	float cp = cos(angle);
+	f32 sp = sin(angle);
+	f32 cp = cos(angle);
 	angle = angles[ROLL] * (M_PI * 2 / 360);
-	float sr = sin(angle);
-	float cr = cos(angle);
+	f32 sr = sin(angle);
+	f32 cr = cos(angle);
 	forward[0] = cp * cy;
 	forward[1] = cp * sy;
 	forward[2] = -sp;
@@ -115,7 +115,7 @@ void AngleVectors(vec3_t angles, vec3_t forward, vec3_t right, vec3_t up)
 	up[2] = cr * cp;
 }
 
-void VectorMA(vec3_t veca, float scale, vec3_t vecb, vec3_t vecc)
+void VectorMA(vec3_t veca, f32 scale, vec3_t vecb, vec3_t vecc)
 {
 	vecc[0] = veca[0] + scale * vecb[0];
 	vecc[1] = veca[1] + scale * vecb[1];
@@ -131,19 +131,19 @@ void CrossProduct(vec3_t v1, vec3_t v2, vec3_t cross)
 
 vec_t Length(vec3_t v)
 {
-	float length = 0;
+	f32 length = 0;
 	for (s32 i = 0; i < 3; i++)
 		length += v[i] * v[i];
 	length = sqrt(length); // FIXME
 	return length;
 }
 
-float VectorNormalize(vec3_t v)
+f32 VectorNormalize(vec3_t v)
 {
-	float length = v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
+	f32 length = v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
 	length = sqrt(length); // FIXME
 	if (length) {
-		float ilength = 1 / length;
+		f32 ilength = 1 / length;
 		v[0] *= ilength;
 		v[1] *= ilength;
 		v[2] *= ilength;
@@ -165,7 +165,7 @@ void VectorScale(vec3_t in, vec_t scale, vec3_t out)
 	out[2] = in[2] * scale;
 }
 
-void R_ConcatRotations(float in1[3][3], float in2[3][3], float out[3][3])
+void R_ConcatRotations(f32 in1[3][3], f32 in2[3][3], f32 out[3][3])
 {
 	out[0][0]=in1[0][0]*in2[0][0]+in1[0][1]*in2[1][0]+in1[0][2]*in2[2][0];
 	out[0][1]=in1[0][0]*in2[0][1]+in1[0][1]*in2[1][1]+in1[0][2]*in2[2][1];
@@ -178,7 +178,7 @@ void R_ConcatRotations(float in1[3][3], float in2[3][3], float out[3][3])
 	out[2][2]=in1[2][0]*in2[0][2]+in1[2][1]*in2[1][2]+in1[2][2]*in2[2][2];
 }
 
-void R_ConcatTransforms(float in1[3][4], float in2[3][4], float out[3][4])
+void R_ConcatTransforms(f32 in1[3][4], f32 in2[3][4], f32 out[3][4])
 {
 	out[0][0]=in1[0][0]*in2[0][0]+in1[0][1]*in2[1][0]+in1[0][2]*in2[2][0];
 	out[0][1]=in1[0][0]*in2[0][1]+in1[0][1]*in2[1][1]+in1[0][2]*in2[2][1];
@@ -197,15 +197,15 @@ void R_ConcatTransforms(float in1[3][4], float in2[3][4], float out[3][4])
 // Returns mathematically correct (floor-based) quotient and remainder for
 // numer and denom, both of which should contain no fractional part. The
 // quotient must fit in 32 bits.
-void FloorDivMod(double numer, double denom, s32 *quotient, s32 *rem)
+void FloorDivMod(f64 numer, f64 denom, s32 *quotient, s32 *rem)
 {
 	s32 q, r;
 	if (numer >= 0.0) {
-		double x = floor(numer / denom);
+		f64 x = floor(numer / denom);
 		q = (s32)x;
 		r = (s32)floor(numer - (x * denom));
 	} else { // perform operations with positive values, and fix mod
-		double x = floor(-numer / denom); // to make floor-based
+		f64 x = floor(-numer / denom); // to make floor-based
 		q = -(s32)x;
 		r = (s32)floor(-numer - (x * denom));
 		if (r != 0) {

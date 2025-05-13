@@ -207,7 +207,7 @@ sys_socket_t UDP_CheckNewConnections()
 	return INVALID_SOCKET;
 }
 
-s32 UDP_Read(sys_socket_t socketid, byte *buf, s32 len, struct qsockaddr *addr)
+s32 UDP_Read(sys_socket_t socketid, u8 *buf, s32 len, struct qsockaddr *addr)
 {
 	socklen_t addrlen = sizeof(struct qsockaddr);
 	s32 ret = recvfrom(socketid,buf,len,0,(struct sockaddr*)addr,&addrlen);
@@ -234,7 +234,7 @@ static s32 UDP_MakeSocketBroadcastCapable(sys_socket_t socketid)
 	return 0;
 }
 
-s32 UDP_Broadcast(sys_socket_t socketid, byte *buf, s32 len)
+s32 UDP_Broadcast(sys_socket_t socketid, u8 *buf, s32 len)
 {
 	if (socketid != net_broadcastsocket) {
 		if (net_broadcastsocket != 0)
@@ -250,7 +250,7 @@ s32 UDP_Broadcast(sys_socket_t socketid, byte *buf, s32 len)
 			 (struct qsockaddr *)&broadcastaddr);
 }
 
-s32 UDP_Write(sys_socket_t socketid, byte *buf, s32 len, struct qsockaddr *addr)
+s32 UDP_Write(sys_socket_t socketid, u8 *buf, s32 len, struct qsockaddr *addr)
 {
 	s32 ret = sendto(socketid, buf, len, 0, (struct sockaddr *)addr,
 		     sizeof(struct qsockaddr));

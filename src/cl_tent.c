@@ -278,10 +278,10 @@ void CL_UpdateTEnts (void)
 	s32			i, j; //johnfitz -- use j instead of using i twice, so we don't corrupt memory
 	beam_t		*b;
 	vec3_t		dist, org;
-	float		d;
+	f32		d;
 	entity_t	*ent;
-	float		yaw, pitch;
-	float		forward;
+	f32		yaw, pitch;
+	f32		forward;
 
 	num_temp_entities = 0;
 

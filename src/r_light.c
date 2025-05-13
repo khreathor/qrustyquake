@@ -9,7 +9,7 @@ vec3_t lightcolor; //johnfitz -- lit support via lordhavoc
 extern s32 colored_aliaslight;
 
 void R_AnimateLight() // light animations
-{ // 'm' is normal light, 'a' is no light, 'z' is double bright
+{ // 'm' is normal light, 'a' is no light, 'z' is f64 bright
 	s32 i = (s32)(cl.time * 10);
 	for (s32 j = 0; j < MAX_LIGHTSTYLES; j++) {
 		if (!cl_lightstyle[j].length) {
@@ -28,7 +28,7 @@ void R_MarkLights(dlight_t *light, s32 bit, mnode_t *node)
 	if (node->contents < 0)
 		return;
 	mplane_t *splitplane = node->plane;
-	float dist = DotProduct(light->origin, splitplane->normal)
+	f32 dist = DotProduct(light->origin, splitplane->normal)
 		- splitplane->dist;
 	if (dist > light->radius) {
 		R_MarkLights(light, bit, node->children[0]);
@@ -62,9 +62,9 @@ void R_PushDlights()
 	}
 }
 
-s32 RecursiveLightPoint (vec3_t color, mnode_t *node, vec3_t rayorg, vec3_t start, vec3_t end, float *maxdist)
+s32 RecursiveLightPoint (vec3_t color, mnode_t *node, vec3_t rayorg, vec3_t start, vec3_t end, f32 *maxdist)
 {
-	float		front, back, frac;
+	f32		front, back, frac;
 	vec3_t		mid;
 loc0:
 	if (node->contents < 0)
@@ -95,15 +95,15 @@ loc0:
 		surf = cl.worldmodel->surfaces + node->firstsurface;
 		for (i = 0;i < node->numsurfaces;i++, surf++)
 		{
-			float sfront, sback, dist;
+			f32 sfront, sback, dist;
 			vec3_t raydelta;
 			if (surf->flags & SURF_DRAWTILED)
 				continue;	// no lightmaps
-			// ericw -- added double casts to force 64-bit precision.
+			// ericw -- added f64 casts to force 64-bit precision.
 			// Without them the zombie at the start of jam3_ericw.bsp was
 			// incorrectly being lit up in SSE builds.
-			ds = (s32) ((double) DoublePrecisionDotProduct (mid, surf->texinfo->vecs[0]) + surf->texinfo->vecs[0][3]);
-			dt = (s32) ((double) DoublePrecisionDotProduct (mid, surf->texinfo->vecs[1]) + surf->texinfo->vecs[1][3]);
+			ds = (s32) ((f64) DoublePrecisionDotProduct (mid, surf->texinfo->vecs[0]) + surf->texinfo->vecs[0][3]);
+			dt = (s32) ((f64) DoublePrecisionDotProduct (mid, surf->texinfo->vecs[1]) + surf->texinfo->vecs[1][3]);
 			if (ds < surf->texturemins[0] || dt < surf->texturemins[1])
 				continue;
 			ds -= surf->texturemins[0];
@@ -125,30 +125,30 @@ loc0:
 				// Instead of just returning black, we'll keep looking for nearby surfaces that do have valid samples.
 				// This fixes occasional pitch-black models in otherwise well-lit areas in DOTM (e.g. mge1m1, mge4m1)
 				// caused by overlapping surfaces with mixed lighting data.
-				const float nearby = 8.f;
+				const f32 nearby = 8.f;
 				dist += nearby;
 				*maxdist = q_min(*maxdist, dist);
 				continue;
 			}
 			if (dist < *maxdist) {
 				// LordHavoc: enhanced to interpolate lighting
-				byte *lightmap;
+				u8 *lightmap;
 				s32 maps, line3, dsfrac = ds & 15, dtfrac = dt & 15, r00 = 0, g00 = 0, b00 = 0, r01 = 0, g01 = 0, b01 = 0, r10 = 0, g10 = 0, b10 = 0, r11 = 0, g11 = 0, b11 = 0;
-				float scale;
+				f32 scale;
 				line3 = ((surf->extents[0]>>4)+1)*3;
 				lightmap = surf->samples + ((dt>>4) * ((surf->extents[0]>>4)+1) + (ds>>4))*3; // LordHavoc: *3 for color
 				for (maps = 0;maps < MAXLIGHTMAPS && surf->styles[maps] != 255;maps++)
 				{
-					scale = (float) d_lightstylevalue[surf->styles[maps]] * 1.0 / 256.0;
-					r00 += (float) lightmap[      0] * scale;g00 += (float) lightmap[      1] * scale;b00 += (float) lightmap[2] * scale;
-					r01 += (float) lightmap[      3] * scale;g01 += (float) lightmap[      4] * scale;b01 += (float) lightmap[5] * scale;
-					r10 += (float) lightmap[line3+0] * scale;g10 += (float) lightmap[line3+1] * scale;b10 += (float) lightmap[line3+2] * scale;
-					r11 += (float) lightmap[line3+3] * scale;g11 += (float) lightmap[line3+4] * scale;b11 += (float) lightmap[line3+5] * scale;
+					scale = (f32) d_lightstylevalue[surf->styles[maps]] * 1.0 / 256.0;
+					r00 += (f32) lightmap[      0] * scale;g00 += (f32) lightmap[      1] * scale;b00 += (f32) lightmap[2] * scale;
+					r01 += (f32) lightmap[      3] * scale;g01 += (f32) lightmap[      4] * scale;b01 += (f32) lightmap[5] * scale;
+					r10 += (f32) lightmap[line3+0] * scale;g10 += (f32) lightmap[line3+1] * scale;b10 += (f32) lightmap[line3+2] * scale;
+					r11 += (f32) lightmap[line3+3] * scale;g11 += (f32) lightmap[line3+4] * scale;b11 += (f32) lightmap[line3+5] * scale;
 					lightmap += ((surf->extents[0]>>4)+1) * ((surf->extents[1]>>4)+1)*3; // LordHavoc: *3 for colored lighting
 				}
-				color[0] += (float) ((s32) ((((((((r11-r10) * dsfrac) >> 4) + r10)-((((r01-r00) * dsfrac) >> 4) + r00)) * dtfrac) >> 4) + ((((r01-r00) * dsfrac) >> 4) + r00)));
-				color[1] += (float) ((s32) ((((((((g11-g10) * dsfrac) >> 4) + g10)-((((g01-g00) * dsfrac) >> 4) + g00)) * dtfrac) >> 4) + ((((g01-g00) * dsfrac) >> 4) + g00)));
-				color[2] += (float) ((s32) ((((((((b11-b10) * dsfrac) >> 4) + b10)-((((b01-b00) * dsfrac) >> 4) + b00)) * dtfrac) >> 4) + ((((b01-b00) * dsfrac) >> 4) + b00)));
+				color[0] += (f32) ((s32) ((((((((r11-r10) * dsfrac) >> 4) + r10)-((((r01-r00) * dsfrac) >> 4) + r00)) * dtfrac) >> 4) + ((((r01-r00) * dsfrac) >> 4) + r00)));
+				color[1] += (f32) ((s32) ((((((((g11-g10) * dsfrac) >> 4) + g10)-((((g01-g00) * dsfrac) >> 4) + g00)) * dtfrac) >> 4) + ((((g01-g00) * dsfrac) >> 4) + g00)));
+				color[2] += (f32) ((s32) ((((((((b11-b10) * dsfrac) >> 4) + b10)-((((b01-b00) * dsfrac) >> 4) + b00)) * dtfrac) >> 4) + ((((b01-b00) * dsfrac) >> 4) + b00)));
 			}
 			return true; // success
 		}
@@ -162,7 +162,7 @@ s32 R_LightPoint(vec3_t p)
 		lightcolor[0] = lightcolor[1] = lightcolor[2] = 255;
 		return 255;
 	}
-	float maxdist = 8192; //johnfitz -- was 2048
+	f32 maxdist = 8192; //johnfitz -- was 2048
 	vec3_t end;
 	end[0] = p[0];
 	end[1] = p[1];

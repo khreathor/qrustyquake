@@ -4,7 +4,7 @@
 
 #include "quakedef.h"
 
-float surfscale;
+f32 surfscale;
 bool r_cache_thrash; // set if surface cache is thrashing
 u64 sc_size;
 surfcache_t *sc_rover, *sc_base;
@@ -26,9 +26,9 @@ s32 D_SurfaceCacheForRes(s32 width, s32 height)
 
 void D_ClearCacheGuard()
 {
-	byte *s = (byte *) sc_base + sc_size;
+	u8 *s = (u8 *) sc_base + sc_size;
 	for (s32 i = 0; i < GUARDSIZE; i++)
-		s[i] = (byte) i;
+		s[i] = (u8) i;
 }
 
 void D_InitCaches(void *buffer, s32 size)
@@ -69,7 +69,7 @@ surfcache_t *D_SCAlloc(s32 width, uintptr_t size)
 		Sys_Error("D_SCAlloc: %i > cache size", size);
 	// if there is not size bytes after the rover, reset to the start
 	bool wrapped_this_time = false;
-	if (!sc_rover || (u64)((byte *) sc_rover - (byte *) sc_base)
+	if (!sc_rover || (u64)((u8 *) sc_rover - (u8 *) sc_base)
 			> sc_size - size) {
 		if (sc_rover) {
 			wrapped_this_time = true;
@@ -91,7 +91,7 @@ surfcache_t *D_SCAlloc(s32 width, uintptr_t size)
 		new->next = sc_rover->next;
 	}
 	if (new->size - size > 256) { // create a fragment out of any leftovers
-		sc_rover = (surfcache_t *) ((byte *) new + size);
+		sc_rover = (surfcache_t *) ((u8 *) new + size);
 		sc_rover->size = new->size - size;
 		sc_rover->next = new->next;
 		sc_rover->width = 0;
@@ -143,7 +143,7 @@ surfcache_t *D_CacheSurface(msurface_t *surface, s32 miplevel)
 		cache->mipscale = surfscale;
 	}
 	cache->dlight = (surface->dlightframe == r_framecount);
-	r_drawsurf.surfdat = (pixel_t *) cache->data;
+	r_drawsurf.surfdat = (u8 *) cache->data;
 	cache->texture = r_drawsurf.texture;
 	cache->lightadj[0] = r_drawsurf.lightadj[0];
 	cache->lightadj[1] = r_drawsurf.lightadj[1];

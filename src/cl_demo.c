@@ -14,7 +14,7 @@ void CL_FinishTimeDemo()
 {
 	cls.timedemo = false; // the first frame didn't count
 	s32 frames = (host_framecount - cls.td_startframe) - 1;
-	float time = realtime - cls.td_starttime;
+	f32 time = realtime - cls.td_starttime;
 	if (!time)
 		time = 1;
 	Con_Printf("%i frames %5.1f seconds %5.1f fps\n", frames, time,
@@ -38,7 +38,7 @@ void CL_WriteDemoMessage()
 	s32 len = LittleLong(net_message.cursize);
 	fwrite(&len, 4, 1, cls.demofile);
 	for (s32 i = 0; i < 3; i++) {
-		float f = LittleFloat(cl.viewangles[i]);
+		f32 f = LittleFloat(cl.viewangles[i]);
 		fwrite(&f, 4, 1, cls.demofile);
 	}
 	fwrite(net_message.data, net_message.cursize, 1, cls.demofile);
@@ -66,7 +66,7 @@ s32 CL_GetMessage()
 		// get the next message
 		fread(&net_message.cursize, 4, 1, cls.demofile);
 		VectorCopy(cl.mviewangles[0], cl.mviewangles[1]);
-		float f;
+		f32 f;
 		for (s32 i = 0; i < 3; i++) {
 			fread(&f, 4, 1, cls.demofile);
 			cl.mviewangles[0][i] = LittleFloat(f);

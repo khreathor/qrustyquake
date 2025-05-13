@@ -333,7 +333,7 @@ void VID_AllocBuffers()
 	d_pzbuffer = Hunk_HighAllocName(chunk, "video");
 	if(d_pzbuffer == NULL)
 		Sys_Error("Not enough memory for video mode\n");
-	u8 *cache = (byte *) d_pzbuffer
+	u8 *cache = (u8 *) d_pzbuffer
 	    + vid.width * vid.height * sizeof(*d_pzbuffer);
 	D_InitCaches(cache, cachesize);
 }

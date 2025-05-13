@@ -7,7 +7,7 @@
 
 s32				wad_numlumps;
 lumpinfo_t		*wad_lumps;
-byte			*wad_base = NULL;
+u8			*wad_base = NULL;
 
 void SwapPic (qpic_t *pic);
 
@@ -340,7 +340,7 @@ lumpinfo_t *W_GetLumpinfoList (wad_t *wads, const s8 *name, wad_t **out_wad)
 /*
 =============================================================================
 
-automatic byte swapping
+automatic u8 swapping
 
 =============================================================================
 */

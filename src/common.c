@@ -171,7 +171,7 @@ void Vec_Append (void **pvec, size_t element_size, const void *data, size_t coun
 	if (!count)
 		return;
 	Vec_Grow (pvec, element_size, count);
-	memcpy ((byte *)*pvec + VEC_HEADER(*pvec).size * element_size, data, count * element_size);
+	memcpy ((u8 *)*pvec + VEC_HEADER(*pvec).size * element_size, data, count * element_size);
 	VEC_HEADER(*pvec).size += count;
 }
 
@@ -372,7 +372,7 @@ void Q_memset (void *dest, s32 fill, size_t count)
 	}
 	else
 		for (i = 0; i < count; i++)
-			((byte *)dest)[i] = fill;
+			((u8 *)dest)[i] = fill;
 }
 
 void Q_memmove (void *dest, const void *src, size_t count)
@@ -392,7 +392,7 @@ void Q_memcpy (void *dest, const void *src, size_t count)
 	}
 	else
 		for (i = 0; i < count; i++)
-			((byte *)dest)[i] = ((byte *)src)[i];
+			((u8 *)dest)[i] = ((u8 *)src)[i];
 }
 
 s32 Q_memcmp (const void *m1, const void *m2, size_t count)
@@ -400,7 +400,7 @@ s32 Q_memcmp (const void *m1, const void *m2, size_t count)
 	while(count)
 	{
 		count--;
-		if (((byte *)m1)[count] != ((byte *)m2)[count])
+		if (((u8 *)m1)[count] != ((u8 *)m2)[count])
 			return -1;
 	}
 	return 0;
@@ -548,9 +548,9 @@ s32 Q_atoi (const s8 *str)
 }
 
 
-float Q_atof (const s8 *str)
+f32 Q_atof (const s8 *str)
 {
-	double		val;
+	f64		val;
 	s32		sign;
 	s32		c;
 	s32	decimal, total;
@@ -640,12 +640,12 @@ s16	(*BigShort) (s16 l);
 s16	(*LittleShort) (s16 l);
 s32	(*BigLong) (s32 l);
 s32	(*LittleLong) (s32 l);
-float	(*BigFloat) (float l);
-float	(*LittleFloat) (float l);
+f32	(*BigFloat) (f32 l);
+f32	(*LittleFloat) (f32 l);
 
 s16 ShortSwap (s16 l)
 {
-	byte	b1, b2;
+	u8	b1, b2;
 
 	b1 = l&255;
 	b2 = (l>>8)&255;
@@ -660,7 +660,7 @@ s16 ShortNoSwap (s16 l)
 
 s32 LongSwap (s32 l)
 {
-	byte	b1, b2, b3, b4;
+	u8	b1, b2, b3, b4;
 
 	b1 = l&255;
 	b2 = (l>>8)&255;
@@ -675,12 +675,12 @@ s32 LongNoSwap (s32 l)
 	return l;
 }
 
-float FloatSwap (float f)
+f32 FloatSwap (f32 f)
 {
 	union
 	{
-		float	f;
-		byte	b[4];
+		f32	f;
+		u8	b[4];
 	} dat1, dat2;
 
 
@@ -692,7 +692,7 @@ float FloatSwap (float f)
 	return dat2.f;
 }
 
-float FloatNoSwap (float f)
+f32 FloatNoSwap (f32 f)
 {
 	return f;
 }
@@ -702,7 +702,7 @@ float FloatNoSwap (float f)
 
 			MESSAGE IO FUNCTIONS
 
-Handles byte ordering and avoids alignment errors
+Handles u8 ordering and avoids alignment errors
 ==============================================================================
 */
 
@@ -712,60 +712,60 @@ Handles byte ordering and avoids alignment errors
 
 void MSG_WriteChar (sizebuf_t *sb, s32 c)
 {
-	byte	*buf;
+	u8	*buf;
 
 #ifdef PARANOID
 	if (c < -128 || c > 127)
 		Sys_Error ("MSG_WriteChar: range error");
 #endif
 
-	buf = (byte *) SZ_GetSpace (sb, 1);
+	buf = (u8 *) SZ_GetSpace (sb, 1);
 	buf[0] = c;
 }
 
 void MSG_WriteByte (sizebuf_t *sb, s32 c)
 {
-	byte	*buf;
+	u8	*buf;
 
 #ifdef PARANOID
 	if (c < 0 || c > 255)
 		Sys_Error ("MSG_WriteByte: range error");
 #endif
 
-	buf = (byte *) SZ_GetSpace (sb, 1);
+	buf = (u8 *) SZ_GetSpace (sb, 1);
 	buf[0] = c;
 }
 
 void MSG_WriteShort (sizebuf_t *sb, s32 c)
 {
-	byte	*buf;
+	u8	*buf;
 
 #ifdef PARANOID
 	if (c < ((s16)0x8000) || c > (s16)0x7fff)
 		Sys_Error ("MSG_WriteShort: range error");
 #endif
 
-	buf = (byte *) SZ_GetSpace (sb, 2);
+	buf = (u8 *) SZ_GetSpace (sb, 2);
 	buf[0] = c&0xff;
 	buf[1] = c>>8;
 }
 
 void MSG_WriteLong (sizebuf_t *sb, s32 c)
 {
-	byte	*buf;
+	u8	*buf;
 
-	buf = (byte *) SZ_GetSpace (sb, 4);
+	buf = (u8 *) SZ_GetSpace (sb, 4);
 	buf[0] = c&0xff;
 	buf[1] = (c>>8)&0xff;
 	buf[2] = (c>>16)&0xff;
 	buf[3] = c>>24;
 }
 
-void MSG_WriteFloat (sizebuf_t *sb, float f)
+void MSG_WriteFloat (sizebuf_t *sb, f32 f)
 {
 	union
 	{
-		float	f;
+		f32	f;
 		s32	l;
 	} dat;
 
@@ -784,25 +784,25 @@ void MSG_WriteString (sizebuf_t *sb, const s8 *s)
 }
 
 //johnfitz -- original behavior, 13.3 fixed point coords, max range +-4096
-void MSG_WriteCoord16 (sizebuf_t *sb, float f)
+void MSG_WriteCoord16 (sizebuf_t *sb, f32 f)
 {
 	MSG_WriteShort (sb, Q_rint(f*8));
 }
 
 //johnfitz -- 16.8 fixed point coords, max range +-32768
-void MSG_WriteCoord24 (sizebuf_t *sb, float f)
+void MSG_WriteCoord24 (sizebuf_t *sb, f32 f)
 {
 	MSG_WriteShort (sb, f);
 	MSG_WriteByte (sb, (s32)(f*255)%255);
 }
 
-//johnfitz -- 32-bit float coords
-void MSG_WriteCoord32f (sizebuf_t *sb, float f)
+//johnfitz -- 32-bit f32 coords
+void MSG_WriteCoord32f (sizebuf_t *sb, f32 f)
 {
 	MSG_WriteFloat (sb, f);
 }
 
-void MSG_WriteCoord (sizebuf_t *sb, float f, u32 flags)
+void MSG_WriteCoord (sizebuf_t *sb, f32 f, u32 flags)
 {
 	if (flags & PRFL_FLOATCOORD)
 		MSG_WriteFloat (sb, f);
@@ -813,7 +813,7 @@ void MSG_WriteCoord (sizebuf_t *sb, float f, u32 flags)
 	else MSG_WriteCoord16 (sb, f);
 }
 
-void MSG_WriteAngle (sizebuf_t *sb, float f, u32 flags)
+void MSG_WriteAngle (sizebuf_t *sb, f32 f, u32 flags)
 {
 	if (flags & PRFL_FLOATANGLE)
 		MSG_WriteFloat (sb, f);
@@ -823,7 +823,7 @@ void MSG_WriteAngle (sizebuf_t *sb, float f, u32 flags)
 }
 
 //johnfitz -- for PROTOCOL_FITZQUAKE
-void MSG_WriteAngle16 (sizebuf_t *sb, float f, u32 flags)
+void MSG_WriteAngle16 (sizebuf_t *sb, f32 f, u32 flags)
 {
 	if (flags & PRFL_FLOATANGLE)
 		MSG_WriteFloat (sb, f);
@@ -914,12 +914,12 @@ s32 MSG_ReadLong (void)
 	return c;
 }
 
-float MSG_ReadFloat (void)
+f32 MSG_ReadFloat (void)
 {
 	union
 	{
-		byte	b[4];
-		float	f;
+		u8	b[4];
+		f32	f;
 		s32	l;
 	} dat;
 
@@ -956,24 +956,24 @@ const s8 *MSG_ReadString (void)
 }
 
 //johnfitz -- original behavior, 13.3 fixed point coords, max range +-4096
-float MSG_ReadCoord16 (void)
+f32 MSG_ReadCoord16 (void)
 {
 	return MSG_ReadShort() * (1.0/8);
 }
 
 //johnfitz -- 16.8 fixed point coords, max range +-32768
-float MSG_ReadCoord24 (void)
+f32 MSG_ReadCoord24 (void)
 {
 	return MSG_ReadShort() + MSG_ReadByte() * (1.0/255);
 }
 
-//johnfitz -- 32-bit float coords
-float MSG_ReadCoord32f (void)
+//johnfitz -- 32-bit f32 coords
+f32 MSG_ReadCoord32f (void)
 {
 	return MSG_ReadFloat();
 }
 
-float MSG_ReadCoord (u32 flags)
+f32 MSG_ReadCoord (u32 flags)
 {
 	if (flags & PRFL_FLOATCOORD)
 		return MSG_ReadFloat ();
@@ -984,7 +984,7 @@ float MSG_ReadCoord (u32 flags)
 	else return MSG_ReadCoord16 ();
 }
 
-float MSG_ReadAngle (u32 flags)
+f32 MSG_ReadAngle (u32 flags)
 {
 	if (flags & PRFL_FLOATANGLE)
 		return MSG_ReadFloat ();
@@ -994,7 +994,7 @@ float MSG_ReadAngle (u32 flags)
 }
 
 //johnfitz -- for PROTOCOL_FITZQUAKE
-float MSG_ReadAngle16 (u32 flags)
+f32 MSG_ReadAngle16 (u32 flags)
 {
 	if (flags & PRFL_FLOATANGLE)
 		return MSG_ReadFloat ();	// make sure
@@ -1008,7 +1008,7 @@ void SZ_Alloc (sizebuf_t *buf, s32 startsize)
 {
 	if (startsize < 256)
 		startsize = 256;
-	buf->data = (byte *) Hunk_AllocName (startsize, "sizebuf");
+	buf->data = (u8 *) Hunk_AllocName (startsize, "sizebuf");
 	buf->maxsize = startsize;
 	buf->cursize = 0;
 }
@@ -1061,11 +1061,11 @@ void SZ_Print (sizebuf_t *buf, const s8 *data)
 
 	if (buf->data[buf->cursize-1])
 	{	/* no trailing 0 */
-		Q_memcpy ((byte *)SZ_GetSpace(buf, len  )  , data, len);
+		Q_memcpy ((u8 *)SZ_GetSpace(buf, len  )  , data, len);
 	}
 	else
 	{	/* write over trailing 0 */
-		Q_memcpy ((byte *)SZ_GetSpace(buf, len-1)-1, data, len);
+		Q_memcpy ((u8 *)SZ_GetSpace(buf, len-1)-1, data, len);
 	}
 }
 
@@ -1843,18 +1843,18 @@ void COM_CloseFile (s32 h)
 COM_LoadFile
 
 Filename are reletive to the quake directory.
-Allways appends a 0 byte.
+Allways appends a 0 u8.
 ============
 */
 
-static byte	*loadbuf;
+static u8	*loadbuf;
 static cache_user_t *loadcache;
 static s32	loadsize;
 
-byte *COM_LoadFile (const s8 *path, s32 usehunk, u32 *path_id)
+u8 *COM_LoadFile (const s8 *path, s32 usehunk, u32 *path_id)
 {
 	s32		h;
-	byte	*buf;
+	u8	*buf;
 	s8	base[32];
 	s32	len, nread;
 
@@ -1871,25 +1871,25 @@ byte *COM_LoadFile (const s8 *path, s32 usehunk, u32 *path_id)
 	switch (usehunk)
 	{
 	case LOADFILE_HUNK:
-		buf = (byte *) Hunk_AllocName (len+1, base);
+		buf = (u8 *) Hunk_AllocName (len+1, base);
 		break;
 	case LOADFILE_TEMPHUNK:
-		buf = (byte *) Hunk_TempAlloc (len+1);
+		buf = (u8 *) Hunk_TempAlloc (len+1);
 		break;
 	case LOADFILE_ZONE:
-		buf = (byte *) Z_Malloc (len+1);
+		buf = (u8 *) Z_Malloc (len+1);
 		break;
 	case LOADFILE_CACHE:
-		buf = (byte *) Cache_Alloc (loadcache, len+1, base);
+		buf = (u8 *) Cache_Alloc (loadcache, len+1, base);
 		break;
 	case LOADFILE_STACK:
 		if (len < loadsize)
 			buf = loadbuf;
 		else
-			buf = (byte *) Hunk_TempAlloc (len+1);
+			buf = (u8 *) Hunk_TempAlloc (len+1);
 		break;
 	case LOADFILE_MALLOC:
-		buf = (byte *) malloc (len+1);
+		buf = (u8 *) malloc (len+1);
 		break;
 	default:
 		Sys_Error ("COM_LoadFile: bad usehunk");
@@ -1898,7 +1898,7 @@ byte *COM_LoadFile (const s8 *path, s32 usehunk, u32 *path_id)
 	if (!buf)
 		Sys_Error ("COM_LoadFile: not enough space for %s", path);
 
-	((byte *)buf)[len] = 0;
+	((u8 *)buf)[len] = 0;
 
 	nread = Sys_FileRead (h, buf, len);
 	COM_CloseFile (h);
@@ -1908,17 +1908,17 @@ byte *COM_LoadFile (const s8 *path, s32 usehunk, u32 *path_id)
 	return buf;
 }
 
-byte *COM_LoadHunkFile (const s8 *path, u32 *path_id)
+u8 *COM_LoadHunkFile (const s8 *path, u32 *path_id)
 {
 	return COM_LoadFile (path, LOADFILE_HUNK, path_id);
 }
 
-byte *COM_LoadZoneFile (const s8 *path, u32 *path_id)
+u8 *COM_LoadZoneFile (const s8 *path, u32 *path_id)
 {
 	return COM_LoadFile (path, LOADFILE_ZONE, path_id);
 }
 
-byte *COM_LoadTempFile (const s8 *path, u32 *path_id)
+u8 *COM_LoadTempFile (const s8 *path, u32 *path_id)
 {
 	return COM_LoadFile (path, LOADFILE_TEMPHUNK, path_id);
 }
@@ -1930,11 +1930,11 @@ void COM_LoadCacheFile (const s8 *path, struct cache_user_s *cu, u32 *path_id)
 }
 
 // uses temp hunk if larger than bufsize
-byte *COM_LoadStackFile (const s8 *path, void *buffer, s32 bufsize, u32 *path_id)
+u8 *COM_LoadStackFile (const s8 *path, void *buffer, s32 bufsize, u32 *path_id)
 {
-	byte	*buf;
+	u8	*buf;
 
-	loadbuf = (byte *)buffer;
+	loadbuf = (u8 *)buffer;
 	loadsize = bufsize;
 	buf = COM_LoadFile (path, LOADFILE_STACK, path_id);
 
@@ -1942,15 +1942,15 @@ byte *COM_LoadStackFile (const s8 *path, void *buffer, s32 bufsize, u32 *path_id
 }
 
 // returns malloc'd memory
-byte *COM_LoadMallocFile (const s8 *path, u32 *path_id)
+u8 *COM_LoadMallocFile (const s8 *path, u32 *path_id)
 {
 	return COM_LoadFile (path, LOADFILE_MALLOC, path_id);
 }
 
-byte *COM_LoadMallocFile_TextMode_OSPath (const s8 *path, s64 *len_out)
+u8 *COM_LoadMallocFile_TextMode_OSPath (const s8 *path, s64 *len_out)
 {
 	FILE	*f;
-	byte	*data;
+	u8	*data;
 	s64	len, actuallen;
 
 	// ericw -- this is used by Host_Loadgame_f. Translate CRLF to LF on load games,
@@ -1968,7 +1968,7 @@ byte *COM_LoadMallocFile_TextMode_OSPath (const s8 *path, s64 *len_out)
 		return NULL;
 	}
 
-	data = (byte *) malloc (len + 1);
+	data = (u8 *) malloc (len + 1);
 	if (data == NULL)
 	{
 		fclose (f);
@@ -1998,7 +1998,7 @@ const s8 *COM_ParseIntNewline(const s8 *buffer, s32 *value)
 	return buffer + consumed;
 }
 
-const s8 *COM_ParseFloatNewline(const s8 *buffer, float *value)
+const s8 *COM_ParseFloatNewline(const s8 *buffer, f32 *value)
 {
 	s32 consumed = 0;
 	sscanf (buffer, "%f\n%n", value, &consumed);
@@ -2072,7 +2072,7 @@ static pack_t *COM_LoadPackFile (const s8 *packfile)
 	// crc the directory to check for modifications
 	CRC_Init (&crc);
 	for (i = 0; i < header.dirlen; i++)
-		CRC_ProcessByte (&crc, ((byte *)info)[i]);
+		CRC_ProcessByte (&crc, ((u8 *)info)[i]);
 	if (crc != PAK0_CRC_V106 && crc != PAK0_CRC_V101 && crc != PAK0_CRC_V100)
 		com_modified = true;
 
@@ -2587,7 +2587,7 @@ Computes the FNV-1a hash of a memory block
 */
 unsigned COM_HashBlock (const void *data, size_t size)
 {
-    const byte *ptr = (const byte *)data;
+    const u8 *ptr = (const u8 *)data;
     unsigned hash = 0x811c9dc5u;
     while (size--)
     {

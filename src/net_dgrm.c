@@ -10,7 +10,7 @@
 static struct {
 	u32 length;
 	u32 sequence;
-	byte data[MAX_DATAGRAM];
+	u8 data[MAX_DATAGRAM];
 } packetBuffer;
 
 static s32 net_landriverlevel;
@@ -28,7 +28,7 @@ extern s8 m_return_reason[32];
 static s8 *StrAddr(struct qsockaddr *addr)
 {
 	static s8 buf[34];
-	byte *p = (byte *) addr;
+	u8 *p = (u8 *) addr;
 	s32 n;
 	for (n = 0; n < 16; n++)
 		sprintf(buf + n * 2, "%02x", *p++);
@@ -99,7 +99,7 @@ s32 Datagram_SendMessage(qsocket_t *sock, sizebuf_t *data)
 	Q_memcpy(packetBuffer.data, sock->sendMessage, dataLen);
 	sock->canSend = false;
 	if (sfunc.
-	    Write(sock->socket, (byte *) & packetBuffer, packetLen,
+	    Write(sock->socket, (u8 *) & packetBuffer, packetLen,
 		  &sock->addr) == -1)
 		return -1;
 	sock->lastSendTime = net_time;
@@ -125,7 +125,7 @@ static s32 SendMessageNext(qsocket_t *sock)
 	Q_memcpy(packetBuffer.data, sock->sendMessage, dataLen);
 	sock->sendNext = false;
 	if (sfunc.
-	    Write(sock->socket, (byte *) & packetBuffer, packetLen,
+	    Write(sock->socket, (u8 *) & packetBuffer, packetLen,
 		  &sock->addr) == -1)
 		return -1;
 	sock->lastSendTime = net_time;
@@ -151,7 +151,7 @@ static s32 ReSendMessage(qsocket_t *sock)
 	Q_memcpy(packetBuffer.data, sock->sendMessage, dataLen);
 	sock->sendNext = false;
 	if (sfunc.
-	    Write(sock->socket, (byte *) & packetBuffer, packetLen,
+	    Write(sock->socket, (u8 *) & packetBuffer, packetLen,
 		  &sock->addr) == -1)
 		return -1;
 	sock->lastSendTime = net_time;
@@ -180,7 +180,7 @@ s32 Datagram_SendUnreliableMessage(qsocket_t *sock, sizebuf_t *data)
 	packetBuffer.sequence = BigLong(sock->unreliableSendSequence++);
 	Q_memcpy(packetBuffer.data, data->data, data->cursize);
 	if (sfunc.
-	    Write(sock->socket, (byte *) & packetBuffer, packetLen,
+	    Write(sock->socket, (u8 *) & packetBuffer, packetLen,
 		  &sock->addr) == -1)
 		return -1;
 	packetsSent++;
@@ -201,7 +201,7 @@ s32 Datagram_GetMessage(qsocket_t *sock)
 	while (1) {
 		length =
 		    (u32)sfunc.Read(sock->socket,
-					     (byte *) & packetBuffer,
+					     (u8 *) & packetBuffer,
 					     NET_DATAGRAMSIZE, &readaddr);
 		//      if ((rand() & 255) > 220)
 		//              continue;
@@ -276,7 +276,7 @@ s32 Datagram_GetMessage(qsocket_t *sock)
 			packetBuffer.length =
 			    BigLong(NET_HEADERSIZE | NETFLAG_ACK);
 			packetBuffer.sequence = BigLong(sequence);
-			sfunc.Write(sock->socket, (byte *) & packetBuffer,
+			sfunc.Write(sock->socket, (u8 *) & packetBuffer,
 				    NET_HEADERSIZE, &readaddr);
 			if (sequence != sock->receiveSequence) {
 				receivedDuplicateCount++;
@@ -1019,7 +1019,7 @@ static qsocket_t *_Datagram_Connect(const s8 *host)
 	sys_socket_t newsock;
 	s32 ret;
 	s32 reps;
-	double start_time;
+	f64 start_time;
 	s32 control;
 	const s8 *reason;
 	// see if we can resolve the host name

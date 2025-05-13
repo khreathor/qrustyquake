@@ -7,8 +7,8 @@
 surfcache_t *d_initial_rover;
 bool d_roverwrapped;
 s32 d_minmip;
-float d_scalemip[NUM_MIPS - 1];
-static float basemip[NUM_MIPS - 1] = { 1.0, 0.5 * 0.8, 0.25 * 0.8 };
+f32 d_scalemip[NUM_MIPS - 1];
+static f32 basemip[NUM_MIPS - 1] = { 1.0, 0.5 * 0.8, 0.25 * 0.8 };
 extern s32 d_aflatcolor;
 
 void D_Init()

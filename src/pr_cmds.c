@@ -6,7 +6,7 @@
 #include "quakedef.h"
 
 static	s8	pr_string_temp[STRINGTEMP_BUFFERS][STRINGTEMP_LENGTH];
-static	byte	pr_string_tempindex = 0;
+static	u8	pr_string_tempindex = 0;
 
 static s8 *PR_GetTempString (void)
 {
@@ -157,7 +157,7 @@ setorigin (entity, origin)
 static void PF_setorigin (void)
 {
 	edict_t	*e;
-	float	*org;
+	f32	*org;
 
 	e = G_EDICT(OFS_PARM0);
 	org = G_VECTOR(OFS_PARM1);
@@ -166,13 +166,13 @@ static void PF_setorigin (void)
 }
 
 
-static void SetMinMaxSize (edict_t *e, float *minvec, float *maxvec, bool rotate)
+static void SetMinMaxSize (edict_t *e, f32 *minvec, f32 *maxvec, bool rotate)
 {
-	float	*angles;
+	f32	*angles;
 	vec3_t	rmin, rmax;
-	float	bounds[2][3];
-	float	xvector[2], yvector[2];
-	float	a;
+	f32	bounds[2][3];
+	f32	xvector[2], yvector[2];
+	f32	a;
 	vec3_t	base, transformed;
 	s32		i, j, k, l;
 
@@ -252,7 +252,7 @@ setsize (entity, minvector, maxvector)
 static void PF_setsize (void)
 {
 	edict_t	*e;
-	float	*minvec, *maxvec;
+	f32	*minvec, *maxvec;
 
 	e = G_EDICT(OFS_PARM0);
 	minvec = G_VECTOR(OFS_PARM1);
@@ -395,13 +395,13 @@ vector normalize(vector)
 */
 static void PF_normalize (void)
 {
-	float	*value1;
+	f32	*value1;
 	vec3_t	newvalue;
-	double	new_temp;
+	f64	new_temp;
 
 	value1 = G_VECTOR(OFS_PARM0);
 
-	new_temp = (double)value1[0] * value1[0] + (double)value1[1] * value1[1] + (double)value1[2]*value1[2];
+	new_temp = (f64)value1[0] * value1[0] + (f64)value1[1] * value1[1] + (f64)value1[2]*value1[2];
 	new_temp = sqrt (new_temp);
 
 	if (new_temp == 0)
@@ -426,12 +426,12 @@ scalar vlen(vector)
 */
 static void PF_vlen (void)
 {
-	float	*value1;
-	double	new_temp;
+	f32	*value1;
+	f64	new_temp;
 
 	value1 = G_VECTOR(OFS_PARM0);
 
-	new_temp = (double)value1[0] * value1[0] + (double)value1[1] * value1[1] + (double)value1[2]*value1[2];
+	new_temp = (f64)value1[0] * value1[0] + (f64)value1[1] * value1[1] + (f64)value1[2]*value1[2];
 	new_temp = sqrt(new_temp);
 
 	G_FLOAT(OFS_RETURN) = new_temp;
@@ -441,13 +441,13 @@ static void PF_vlen (void)
 =================
 PF_vectoyaw
 
-float vectoyaw(vector)
+f32 vectoyaw(vector)
 =================
 */
 static void PF_vectoyaw (void)
 {
-	float	*value1;
-	float	yaw;
+	f32	*value1;
+	f32	yaw;
 
 	value1 = G_VECTOR(OFS_PARM0);
 
@@ -473,9 +473,9 @@ vector vectoangles(vector)
 */
 static void PF_vectoangles (void)
 {
-	float	*value1;
-	float	forward;
-	float	yaw, pitch;
+	f32	*value1;
+	f32	forward;
+	f32	yaw, pitch;
 
 	value1 = G_VECTOR(OFS_PARM0);
 
@@ -515,9 +515,9 @@ random()
 */
 static void PF_random (void)
 {
-	float		num;
+	f32		num;
 
-	num = (rand() & 0x7fff) / ((float)0x7fff);
+	num = (rand() & 0x7fff) / ((f32)0x7fff);
 
 	G_FLOAT(OFS_RETURN) = num;
 }
@@ -531,9 +531,9 @@ particle(origin, color, count)
 */
 static void PF_particle (void)
 {
-	float		*org, *dir;
-	float		color;
-	float		count;
+	f32		*org, *dir;
+	f32		color;
+	f32		count;
 
 	org = G_VECTOR(OFS_PARM0);
 	dir = G_VECTOR(OFS_PARM1);
@@ -552,8 +552,8 @@ PF_ambientsound
 static void PF_ambientsound (void)
 {
 	const s8	*samp, **check;
-	float		*pos;
-	float		vol, attenuation;
+	f32		*pos;
+	f32		vol, attenuation;
 	s32		i, soundnum;
 	s32		large = false; //johnfitz -- PROTOCOL_FITZQUAKE
 
@@ -632,7 +632,7 @@ static void PF_sound (void)
 	s32		channel;
 	edict_t		*entity;
 	s32		volume;
-	float	attenuation;
+	f32	attenuation;
 
 	entity = G_EDICT(OFS_PARM0);
 	channel = G_FLOAT(OFS_PARM1);
@@ -670,7 +670,7 @@ traceline (vector1, vector2, tryents)
 */
 static void PF_traceline (void)
 {
-	float	*v1, *v2;
+	f32	*v1, *v2;
 	trace_t	trace;
 	s32	nomonsters;
 	edict_t	*ent;
@@ -728,13 +728,13 @@ static void PF_checkpos (void)
 
 //============================================================================
 
-static byte	*checkpvs;	//ericw -- changed to malloc
+static u8	*checkpvs;	//ericw -- changed to malloc
 static s32	checkpvs_capacity;
 
 static s32 PF_newcheckclient (s32 check)
 {
 	s32		i;
-	byte	*pvs;
+	u8	*pvs;
 	edict_t	*ent;
 	mleaf_t	*leaf;
 	vec3_t	org;
@@ -782,7 +782,7 @@ static s32 PF_newcheckclient (s32 check)
 	if (checkpvs == NULL || pvsbytes > checkpvs_capacity)
 	{
 		checkpvs_capacity = pvsbytes;
-		checkpvs = (byte *) realloc (checkpvs, checkpvs_capacity);
+		checkpvs = (u8 *) realloc (checkpvs, checkpvs_capacity);
 		if (!checkpvs)
 			Sys_Error ("PF_newcheckclient: realloc() failed on %d bytes", checkpvs_capacity);
 	}
@@ -896,7 +896,7 @@ static void PF_localcmd (void)
 =================
 PF_cvar
 
-float cvar (string)
+f32 cvar (string)
 =================
 */
 static void PF_cvar (void)
@@ -912,7 +912,7 @@ static void PF_cvar (void)
 =================
 PF_cvar_set
 
-float cvar (string)
+f32 cvar (string)
 =================
 */
 static void PF_cvar_set (void)
@@ -937,8 +937,8 @@ findradius (origin, radius)
 static void PF_findradius (void)
 {
 	edict_t	*ent, *chain;
-	float	rad;
-	float	*org;
+	f32	rad;
+	f32	*org;
 	s32		i;
 
 	chain = (edict_t *)sv.edicts;
@@ -950,7 +950,7 @@ static void PF_findradius (void)
 	ent = NEXT_EDICT(sv.edicts);
 	for (i = 1; i < sv.num_edicts; i++, ent = NEXT_EDICT(ent))
 	{
-		float d, lensq;
+		f32 d, lensq;
 		if (ent->free)
 			continue;
 		if (ent->v.solid == SOLID_NOT)
@@ -988,7 +988,7 @@ static void PF_dprint (void)
 
 static void PF_ftos (void)
 {
-	float	v;
+	f32	v;
 	s8	*s;
 
 	v = G_FLOAT(OFS_PARM0);
@@ -1002,7 +1002,7 @@ static void PF_ftos (void)
 
 static void PF_fabs (void)
 {
-	float	v;
+	f32	v;
 	v = G_FLOAT(OFS_PARM0);
 	G_FLOAT(OFS_RETURN) = fabs(v);
 }
@@ -1153,13 +1153,13 @@ static void PF_eprint (void)
 ===============
 PF_walkmove
 
-float(float yaw, float dist) walkmove
+f32(f32 yaw, f32 dist) walkmove
 ===============
 */
 static void PF_walkmove (void)
 {
 	edict_t	*ent;
-	float	yaw, dist;
+	f32	yaw, dist;
 	vec3_t	move;
 	dfunction_t	*oldf;
 	s32	oldself;
@@ -1228,7 +1228,7 @@ static void PF_droptofloor (void)
 ===============
 PF_lightstyle
 
-void(float style, string value) lightstyle
+void(f32 style, string value) lightstyle
 ===============
 */
 static void PF_lightstyle (void)
@@ -1268,7 +1268,7 @@ static void PF_lightstyle (void)
 
 static void PF_rint (void)
 {
-	float	f;
+	f32	f;
 	f = G_FLOAT(OFS_PARM0);
 	if (f > 0)
 		G_FLOAT(OFS_RETURN) = (s32)(f + 0.5);
@@ -1308,7 +1308,7 @@ PF_pointcontents
 */
 static void PF_pointcontents (void)
 {
-	float	*v;
+	f32	*v;
 
 	v = G_VECTOR(OFS_PARM0);
 
@@ -1359,8 +1359,8 @@ static void PF_aim (void)
 	vec3_t	start, dir, end, bestdir;
 	s32		i, j;
 	trace_t	tr;
-	float	dist, bestdist;
-	float	speed;
+	f32	dist, bestdist;
+	f32	speed;
 
 	ent = G_EDICT(OFS_PARM0);
 	speed = G_FLOAT(OFS_PARM1);
@@ -1434,7 +1434,7 @@ This was a major timewaster in progs, so it was converted to C
 void PF_changeyaw (void)
 {
 	edict_t		*ent;
-	float		ideal, current, move, speed;
+	f32		ideal, current, move, speed;
 
 	ent = PROG_TO_EDICT(pr_global_struct->self);
 	current = anglemod( ent->v.angles[1] );
@@ -1728,22 +1728,22 @@ static builtin_t pr_builtin[] =
 	PF_setsize,		// void(entity e, vector min, vector max) setsize	= #4
 	PF_Fixme,		// void(entity e, vector min, vector max) setabssize	= #5
 	PF_break,		// void() break				= #6
-	PF_random,		// float() random			= #7
-	PF_sound,		// void(entity e, float chan, string samp) sound	= #8
+	PF_random,		// f32() random			= #7
+	PF_sound,		// void(entity e, f32 chan, string samp) sound	= #8
 	PF_normalize,		// vector(vector v) normalize		= #9
 	PF_error,		// void(string e) error			= #10
 	PF_objerror,		// void(string e) objerror		= #11
-	PF_vlen,		// float(vector v) vlen			= #12
-	PF_vectoyaw,		// float(vector v) vectoyaw		= #13
+	PF_vlen,		// f32(vector v) vlen			= #12
+	PF_vectoyaw,		// f32(vector v) vectoyaw		= #13
 	PF_Spawn,		// entity() spawn			= #14
 	PF_Remove,		// void(entity e) remove		= #15
-	PF_traceline,		// float(vector v1, vector v2, float tryents) traceline	= #16
+	PF_traceline,		// f32(vector v1, vector v2, f32 tryents) traceline	= #16
 	PF_checkclient,		// entity() clientlist			= #17
 	PF_Find,		// entity(entity start, .string fld, string match) find	= #18
 	PF_precache_sound,	// void(string s) precache_sound	= #19
 	PF_precache_model,	// void(string s) precache_model	= #20
 	PF_stuffcmd,		// void(entity client, string s)stuffcmd	= #21
-	PF_findradius,		// entity(vector org, float rad) findradius	= #22
+	PF_findradius,		// entity(vector org, f32 rad) findradius	= #22
 	PF_bprint,		// void(string s) bprint		= #23
 	PF_sprint,		// void(entity client, string s) sprint	= #24
 	PF_dprint,		// void(string s) dprint		= #25
@@ -1753,8 +1753,8 @@ static builtin_t pr_builtin[] =
 	PF_traceon,
 	PF_traceoff,
 	PF_eprint,		// void(entity e) debug print an entire entity
-	PF_walkmove,		// float(float yaw, float dist) walkmove
-	PF_Fixme,		// float(float yaw, float dist) walkmove
+	PF_walkmove,		// f32(f32 yaw, f32 dist) walkmove
+	PF_Fixme,		// f32(f32 yaw, f32 dist) walkmove
 	PF_droptofloor,
 	PF_lightstyle,
 	PF_rint,
@@ -1810,17 +1810,17 @@ static builtin_t pr_builtin[] =
 	PF_setspawnparms,
 
 	// 2021 re-release
-	PF_finalefinished,	// float() finaleFinished = #79
+	PF_finalefinished,	// f32() finaleFinished = #79
 	PF_localsound,		// void localsound (entity client, string sample) = #80
-	PF_Fixme,		// void draw_point (vector point, float colormap, float lifetime, float depthtest) = #81
-	PF_Fixme,		// void draw_line (vector start, vector end, float colormap, float lifetime, float depthtest) = #82
-	PF_Fixme,		// void draw_arrow (vector start, vector end, float colormap, float size, float lifetime, float depthtest) = #83
-	PF_Fixme,		// void draw_ray (vector start, vector direction, float length, float colormap, float size, float lifetime, float depthtest) = #84
-	PF_Fixme,		// void draw_circle (vector origin, float radius, float colormap, float lifetime, float depthtest) = #85
-	PF_Fixme,		// void draw_bounds (vector min, vector max, float colormap, float lifetime, float depthtest) = #86
-	PF_Fixme,		// void draw_worldtext (string s, vector origin, float size, float lifetime, float depthtest) = #87
-	PF_Fixme,		// void draw_sphere (vector origin, float radius, float colormap, float lifetime, float depthtest) = #88
-	PF_Fixme,		// void draw_cylinder (vector origin, float halfHeight, float radius, float colormap, float lifetime, float depthtest) = #89
+	PF_Fixme,		// void draw_point (vector point, f32 colormap, f32 lifetime, f32 depthtest) = #81
+	PF_Fixme,		// void draw_line (vector start, vector end, f32 colormap, f32 lifetime, f32 depthtest) = #82
+	PF_Fixme,		// void draw_arrow (vector start, vector end, f32 colormap, f32 size, f32 lifetime, f32 depthtest) = #83
+	PF_Fixme,		// void draw_ray (vector start, vector direction, f32 length, f32 colormap, f32 size, f32 lifetime, f32 depthtest) = #84
+	PF_Fixme,		// void draw_circle (vector origin, f32 radius, f32 colormap, f32 lifetime, f32 depthtest) = #85
+	PF_Fixme,		// void draw_bounds (vector min, vector max, f32 colormap, f32 lifetime, f32 depthtest) = #86
+	PF_Fixme,		// void draw_worldtext (string s, vector origin, f32 size, f32 lifetime, f32 depthtest) = #87
+	PF_Fixme,		// void draw_sphere (vector origin, f32 radius, f32 colormap, f32 lifetime, f32 depthtest) = #88
+	PF_Fixme,		// void draw_cylinder (vector origin, f32 halfHeight, f32 radius, f32 colormap, f32 lifetime, f32 depthtest) = #89
 
 	PF_CheckPlayerEXFlags,
 	PF_walkpathtogoal,

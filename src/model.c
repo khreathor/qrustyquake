@@ -18,7 +18,7 @@ static s32 posenum;
 
 model_t*	loadmodel;
 static s8	loadname[32];	// for hunk tags
-static byte	*mod_base;
+static u8	*mod_base;
 
 static void Mod_LoadSpriteModel (model_t *mod, void *buffer);
 static void Mod_LoadBrushModel (model_t *mod, void *buffer);
@@ -27,10 +27,10 @@ static model_t *Mod_LoadModel (model_t *mod, bool crash);
 
 static void Mod_Print ();
 
-static byte	*mod_novis;
+static u8	*mod_novis;
 static s32	mod_novis_capacity;
 
-static byte	*mod_decompressed;
+static u8	*mod_decompressed;
 static s32	mod_decompressed_capacity;
 
 static model_t	mod_known[MAX_MOD_KNOWN];
@@ -76,23 +76,23 @@ mleaf_t *Mod_PointInLeaf (vec3_t p, model_t *model)
 		if (node->contents < 0)
 			return (mleaf_t *)node;
 		mplane_t *plane = node->plane;
-		float d = DotProduct (p,plane->normal) - plane->dist;
+		f32 d = DotProduct (p,plane->normal) - plane->dist;
 		node = node->children[d > 0 ? 0 : 1];
 	}
 	return NULL; // never reached
 }
 
-static byte *Mod_DecompressVis (byte *in, model_t *model)
+static u8 *Mod_DecompressVis (u8 *in, model_t *model)
 {
 	s32 row = (model->numleafs+7)>>3;
 	if (mod_decompressed == NULL || row > mod_decompressed_capacity) {
 		mod_decompressed_capacity = row;
-		mod_decompressed = (byte *) realloc (mod_decompressed, mod_decompressed_capacity);
+		mod_decompressed = (u8 *) realloc (mod_decompressed, mod_decompressed_capacity);
 		if (!mod_decompressed)
 			Sys_Error ("Mod_DecompressVis: realloc() failed on %d bytes", mod_decompressed_capacity);
 	}
-	byte *out = mod_decompressed;
-	byte *outend = mod_decompressed + row;
+	u8 *out = mod_decompressed;
+	u8 *outend = mod_decompressed + row;
 	if (!in) { // no vis info, so make all visible
 		while (row) {
 			*out++ = 0xff;
@@ -122,7 +122,7 @@ static byte *Mod_DecompressVis (byte *in, model_t *model)
 	return mod_decompressed;
 }
 
-byte *Mod_LeafPVS (mleaf_t *leaf, model_t *model)
+u8 *Mod_LeafPVS (mleaf_t *leaf, model_t *model)
 {
 	if (leaf == model->leafs)
 		return Mod_NoVisPVS (model);
@@ -130,12 +130,12 @@ byte *Mod_LeafPVS (mleaf_t *leaf, model_t *model)
 }
 
 
-byte *Mod_NoVisPVS (model_t *model)
+u8 *Mod_NoVisPVS (model_t *model)
 {
 	s32 pvsbytes = (model->numleafs+7)>>3;
 	if (mod_novis == NULL || pvsbytes > mod_novis_capacity) {
 		mod_novis_capacity = pvsbytes;
-		mod_novis = (byte *) realloc (mod_novis, mod_novis_capacity);
+		mod_novis = (u8 *) realloc (mod_novis, mod_novis_capacity);
 		if (!mod_novis)
 			Sys_Error ("Mod_NoVisPVS: realloc() failed on %d bytes", mod_novis_capacity);
 		memset(mod_novis, 0xff, mod_novis_capacity);
@@ -198,7 +198,7 @@ void Mod_TouchModel (const s8 *name)
 
 static model_t *Mod_LoadModel (model_t *mod, bool crash)
 { // Loads a model into the cache
-	byte stackbuf[1024]; // avoid dirtying the cache heap
+	u8 stackbuf[1024]; // avoid dirtying the cache heap
 	if (mod->type == mod_alias) {
 		if (Cache_Check (&mod->cache)) {
 			mod->needload = NL_PRESENT;
@@ -208,7 +208,7 @@ static model_t *Mod_LoadModel (model_t *mod, bool crash)
 	else if (mod->needload == NL_PRESENT)
 			return mod;
 	// because the world is so huge, load it one piece at a time
-	byte *buf = COM_LoadStackFile (mod->name, stackbuf, sizeof(stackbuf), &mod->path_id);
+	u8 *buf = COM_LoadStackFile (mod->name, stackbuf, sizeof(stackbuf), &mod->path_id);
 	if (!buf) {
 		if (crash) //johnfitz -- was "Mod_NumForName"
 			Host_Error ("Mod_LoadModel: %s not found", mod->name);
@@ -353,14 +353,14 @@ static texture_t *Mod_LoadWadTexture (model_t *mod, wad_t *wads, const s8 *name,
 	FS_fread (tx + 1, 1, pixels, &wad->fh);
 	if (pal && palette) {
 		FS_fseek (&wad->fh, palette_pos, SEEK_SET);
-		FS_fread ((byte *)(tx + 1) + pixels, 1, palette, &wad->fh);
+		FS_fread ((u8 *)(tx + 1) + pixels, 1, palette, &wad->fh);
 	}
 	*out_pal = pal;
 	*out_pixels = pixels;
 	return tx;
 }
 
-static bool Mod_CheckFullbrights (byte *pixels, s32 count)
+static bool Mod_CheckFullbrights (u8 *pixels, s32 count)
 { // -- johnfitz
 	for (s32 i = 0; i < count; i++) {
 		if (*pixels++ > 223)
@@ -369,7 +369,7 @@ static bool Mod_CheckFullbrights (byte *pixels, s32 count)
 	return false;
 }
 
-static bool Mod_CheckFullbrightsValve (s8 *name, byte *pixels, s32 count)
+static bool Mod_CheckFullbrightsValve (s8 *name, u8 *pixels, s32 count)
 {
 	if (name[0] == '~' || (name[2] == '~' && name[0] == '+'))
 		return Mod_CheckFullbrights (pixels, count);
@@ -403,7 +403,7 @@ void Mod_LoadTextures(lump_t *l)
                 m->dataofs[i] = LittleLong(m->dataofs[i]);
                 if (m->dataofs[i] == -1)
                         continue;
-                miptex_t *mt = (miptex_t *) ((byte *) m + m->dataofs[i]);
+                miptex_t *mt = (miptex_t *) ((u8 *) m + m->dataofs[i]);
                 mt->width = LittleLong(mt->width);
                 mt->height = LittleLong(mt->height);
                 for (s32 j = 0; j < MIPLEVELS; j++)
@@ -499,8 +499,8 @@ void Mod_LoadTextures(lump_t *l)
 static void Mod_LoadLighting (lump_t *l)
 { // johnfitz -- replaced with lit support code via lordhavoc
 	s32 i, mark;
-	byte *in, *out, *data;
-	byte d, q64_b0, q64_b1;
+	u8 *in, *out, *data;
+	u8 d, q64_b0, q64_b1;
 	s8 litfilename[MAX_OSPATH];
 	u32 path_id;
 
@@ -510,7 +510,7 @@ static void Mod_LoadLighting (lump_t *l)
 	COM_StripExtension(litfilename, litfilename, sizeof(litfilename));
 	q_strlcat(litfilename, ".lit", sizeof(litfilename));
 	mark = Hunk_LowMark();
-	data = (byte*) COM_LoadHunkFile (litfilename, &path_id);
+	data = (u8*) COM_LoadHunkFile (litfilename, &path_id);
 	if (data) {
 		// use lit file only from the same gamedir as the map
 		// itself or from a searchpath with higher priority.
@@ -547,7 +547,7 @@ static void Mod_LoadLighting (lump_t *l)
 		// RGB lightmap samples are packed in 16bits.
 		// RRRRR GGGGG BBBBBB
 
-		loadmodel->lightdata = (byte *) Hunk_AllocName ( (l->filelen / 2)*3, litfilename);
+		loadmodel->lightdata = (u8 *) Hunk_AllocName ( (l->filelen / 2)*3, litfilename);
 		in = mod_base + l->fileofs;
 		out = loadmodel->lightdata;
 
@@ -566,13 +566,13 @@ static void Mod_LoadLighting (lump_t *l)
 	if (loadmodel->bspversion == BSPVERSION_VALVE)
 	{
 		// lightmap samples are already stored as rgb
-		loadmodel->lightdata = (byte *)Hunk_AllocName (l->filelen, litfilename);
+		loadmodel->lightdata = (u8 *)Hunk_AllocName (l->filelen, litfilename);
 		memcpy (loadmodel->lightdata, mod_base + l->fileofs, l->filelen);
 		return;
 	}
 #endif
 
-	loadmodel->lightdata = (byte *) Hunk_AllocName ( l->filelen*3, litfilename);
+	loadmodel->lightdata = (u8 *) Hunk_AllocName ( l->filelen*3, litfilename);
 	in = loadmodel->lightdata + l->filelen*2; // place the file at the end, so it will not be overwritten until the very last write
 	out = loadmodel->lightdata;
 	memcpy (in, mod_base + l->fileofs, l->filelen);
@@ -593,7 +593,7 @@ static void Mod_LoadVisibility (lump_t *l)
 		loadmodel->visdata = NULL;
 		return;
 	}
-	loadmodel->visdata = (byte *) Hunk_AllocName (l->filelen, loadname);
+	loadmodel->visdata = (u8 *) Hunk_AllocName (l->filelen, loadname);
 	memcpy (loadmodel->visdata, mod_base + l->fileofs, l->filelen);
 }
 
@@ -718,8 +718,8 @@ static void Mod_LoadTexinfo(lump_t *l)
                 for (s32 k = 0; k < 2; k++)
                         for (s32 j = 0; j < 4; j++)
                                 out->vecs[k][j] = LittleFloat(in->vecs[k][j]);
-                float len1 = Length(out->vecs[0]);
-                float len2 = Length(out->vecs[1]);
+                f32 len1 = Length(out->vecs[0]);
+                f32 len2 = Length(out->vecs[1]);
                 len1 = (len1 + len2) / 2;
                 if (len1 < 0.32)
                         out->mipadjust = 4;
@@ -748,7 +748,7 @@ static void Mod_LoadTexinfo(lump_t *l)
 
 static void CalcSurfaceExtents (msurface_t *s)
 { // Fills in s->texturemins[] and s->extents[]
-	float	mins[2], maxs[2], val;
+	f32	mins[2], maxs[2], val;
 	s32		i,j, e;
 	mvertex_t	*v;
 	mtexinfo_t	*tex;
@@ -779,14 +779,14 @@ static void CalcSurfaceExtents (msurface_t *s)
 			// x87 floating point.  This means the multiplies and adds
 			// are done at 80-bit precision, and the result is rounded
 			// down to 32-bits and stored in val.
-			// Adding the casts to double seems to be good enough to fix
+			// Adding the casts to f64 seems to be good enough to fix
 			// lighting glitches when Quakespasm is compiled as x86_64
 			// and using SSE2 floating-point.  A potential trouble spot
 			// is the hallway at the beginning of mfxsp17.  -- ericw
-			val =	((double)v->position[0] * (double)tex->vecs[j][0]) +
-				((double)v->position[1] * (double)tex->vecs[j][1]) +
-				((double)v->position[2] * (double)tex->vecs[j][2]) +
-				(double)tex->vecs[j][3];
+			val =	((f64)v->position[0] * (f64)tex->vecs[j][0]) +
+				((f64)v->position[1] * (f64)tex->vecs[j][1]) +
+				((f64)v->position[2] * (f64)tex->vecs[j][2]) +
+				(f64)tex->vecs[j][3];
 
 			if (val < mins[j])
 				mins[j] = val;
@@ -820,16 +820,16 @@ static void Mod_PolyForUnlitSurface (msurface_t *fa)
 {/*TODO
 	const s32	numverts = fa->numedges;
 	s32		i, lindex;
-	float		*vec;
+	f32		*vec;
 	glpoly_t	*poly;
-	float		texscale;
+	f32		texscale;
 
 	if (fa->flags & (SURF_DRAWTURB | SURF_DRAWSKY))
 		texscale = (1.0f/128.0f); //warp animation repeats every 128
 	else
 		texscale = (1.0f/32.0f); //to match r_notexture_mip
 
-	poly = (glpoly_t *) Hunk_Alloc (sizeof(glpoly_t) + (numverts-4) * VERTEXSIZE*sizeof(float));
+	poly = (glpoly_t *) Hunk_Alloc (sizeof(glpoly_t) + (numverts-4) * VERTEXSIZE*sizeof(f32));
 	poly->next = NULL;
 	fa->polys = poly;
 	poly->numverts = numverts;
@@ -1272,7 +1272,7 @@ static void Mod_CheckWaterVis(void)
 	//leaf 0 has no pvs, and does not appear in other leafs either, so watch out for the biases.
 	for (i=0,leaf=loadmodel->leafs+1 ; i<numclusters ; i++, leaf++)
 	{
-		byte *vis;
+		u8 *vis;
 		if (leaf->contents < 0) //err... wtf?
 			hascontents |= 1u<<-leaf->contents;
 		if (leaf->contents == CONTENTS_WATER)
@@ -1526,7 +1526,7 @@ static void Mod_LoadPlanes (lump_t *l)
 	}
 }
 
-static float RadiusFromBounds (vec3_t min, vec3_t max)
+static f32 RadiusFromBounds (vec3_t min, vec3_t max)
 {
 	vec3_t corner;
 	for (s32 i = 0; i < 3; i++)
@@ -1614,14 +1614,14 @@ static FILE *Mod_FindVisibilityExternal()
 	return f;
 }
 
-static byte *Mod_LoadVisibilityExternal(FILE *f)
+static u8 *Mod_LoadVisibilityExternal(FILE *f)
 {
 	s32 filelen = 0;
 	if (!fread(&filelen, 4, 1, f)) return NULL;
 	filelen = LittleLong(filelen);
 	if (filelen <= 0) return NULL;
 	Con_DPrintf("...%d bytes visibility data\n", filelen);
-	byte *visdata = (byte *) Hunk_AllocName(filelen, "EXT_VIS");
+	u8 *visdata = (u8 *) Hunk_AllocName(filelen, "EXT_VIS");
 	if (!fread(visdata, filelen, 1, f))
 		return NULL;
 	return visdata;
@@ -1669,7 +1669,7 @@ static void Mod_LoadBrushModel (model_t *mod, void *buffer)
 		break;
 	}
 	// swap all the lumps
-	mod_base = (byte *)header;
+	mod_base = (u8 *)header;
 	for (s32 i = 0; i < (s32)sizeof(dheader_t) / 4; i++)
 		((s32 *)header)[i] = LittleLong ( ((s32 *)header)[i]);
 	// load into heap
@@ -1731,7 +1731,7 @@ visdone:
 		VectorCopy (bm->maxs, mod->maxs);
 		VectorCopy (bm->mins, mod->mins);
 		//johnfitz -- calculate rotate bounds and yaw bounds
-		float radius = RadiusFromBounds (mod->mins, mod->maxs);
+		f32 radius = RadiusFromBounds (mod->mins, mod->maxs);
 		mod->rmaxs[0] = mod->rmaxs[1] = mod->rmaxs[2] = mod->ymaxs[0] = mod->ymaxs[1] = mod->ymaxs[2] = radius;
 		mod->rmins[0] = mod->rmins[1] = mod->rmins[2] = mod->ymins[0] = mod->ymins[1] = mod->ymins[2] = -radius;
 		//johnfitz -- correct physics cullboxes so that outlying clip brushes on doors and stuff are handled right
@@ -1766,18 +1766,18 @@ void *Mod_LoadAliasFrame(void *pin, s32 *pframeindex, s32 numv,
                 frame->numposes = 1;
         }
         for (s32 i = 0; i < 3; i++) {
-                // these are byte values, so we don't have to worry about
+                // these are u8 values, so we don't have to worry about
                 // endianness
 		frame->bboxmin.v[i] = pdaliasframe->bboxmin.v[i];
                 frame->bboxmax.v[i] = pdaliasframe->bboxmax.v[i];
         }
         trivertx_t *pinframe = (trivertx_t *) (pdaliasframe + 1);
         trivertx_t *pframe = Hunk_AllocName(numv * sizeof(*pframe), loadname);
-        *pframeindex = (byte *) pframe - (byte *) pheader;
+        *pframeindex = (u8 *) pframe - (u8 *) pheader;
 	poseverts[posenum] = pinframe;
 	posenum++;
         for (s32 j = 0; j < numv; j++) {
-                // these are all byte values, so no need to deal with endianness
+                // these are all u8 values, so no need to deal with endianness
                 pframe[j].lightnormalindex = pinframe[j].lightnormalindex;
                 for (s32 k = 0; k < 3; k++) {
                         pframe[j].v[k] = pinframe[j].v[k];
@@ -1797,15 +1797,15 @@ void *Mod_LoadAliasGroup(void *pin, s32 *pframeindex, s32 numv,
         maliasgroup_t *paliasgroup = Hunk_AllocName(sizeof(maliasgroup_t) + (numframes - 1) * sizeof(paliasgroup->frames[0]), loadname);
         paliasgroup->numframes = frame->numposes = numframes;
         for (s32 i = 0; i < 3; i++) {
-                // these are byte values, so we don't have to worry about endianness
+                // these are u8 values, so we don't have to worry about endianness
 		frame->bboxmin.v[i] = pingroup->bboxmin.v[i];
                 frame->bboxmax.v[i] = pingroup->bboxmax.v[i];
         }
-        *pframeindex = (byte *) paliasgroup - (byte *) pheader;
+        *pframeindex = (u8 *) paliasgroup - (u8 *) pheader;
         daliasinterval_t *pin_intervals = (daliasinterval_t *) (pingroup + 1);
 	frame->interval = LittleFloat(pin_intervals->interval);
-        float *poutintervals = Hunk_AllocName(numframes*sizeof(float),loadname);
-        paliasgroup->intervals = (byte *) poutintervals - (byte *) pheader;
+        f32 *poutintervals = Hunk_AllocName(numframes*sizeof(f32),loadname);
+        paliasgroup->intervals = (u8 *) poutintervals - (u8 *) pheader;
         for (s32 i = 0; i < numframes; i++) {
                 *poutintervals = LittleFloat(pin_intervals->interval);
                 if (*poutintervals <= 0.0)
@@ -1827,8 +1827,8 @@ static void Mod_CalcAliasBounds (aliashdr_t *a) // johnfitz -- calculate bounds
 		loadmodel->mins[i] = loadmodel->ymins[i] = loadmodel->rmins[i] = 999999;
 		loadmodel->maxs[i] = loadmodel->ymaxs[i] = loadmodel->rmaxs[i] = -999999;
 	}
-	float radius = 0;
-	float yawradius = 0;
+	f32 radius = 0;
+	f32 yawradius = 0;
 	for (s32 i = 0; i < a->numposes; i++) //process verts
 		for (s32 j = 0; j < a->numverts; j++) {
 			vec3_t v;
@@ -1838,7 +1838,7 @@ static void Mod_CalcAliasBounds (aliashdr_t *a) // johnfitz -- calculate bounds
 				loadmodel->mins[k] = fmin(loadmodel->mins[k], v[k]);
 				loadmodel->maxs[k] = fmax(loadmodel->maxs[k], v[k]);
 			}
-			float dist = v[0] * v[0] + v[1] * v[1];
+			f32 dist = v[0] * v[0] + v[1] * v[1];
 			if (yawradius < dist)
 				yawradius = dist;
 			dist += v[2] * v[2];
@@ -1871,7 +1871,7 @@ void Mod_SetExtraFlags (model_t *mod)
 { // johnfitz -- set up extra flags that aren't in the mdl
 	if (!mod || mod->type != mod_alias)
 		return;
-	mod->flags &= (0xFF | MF_HOLEY); //only preserve first byte, plus MF_HOLEY
+	mod->flags &= (0xFF | MF_HOLEY); //only preserve first u8, plus MF_HOLEY
 	if (nameInList(r_nolerp_list.string, mod->name))
 		mod->flags |= MOD_NOLERP;
 	if (nameInList(r_noshadow_list.string, mod->name))
@@ -1886,9 +1886,9 @@ void Mod_SetExtraFlags (model_t *mod)
 void *Mod_LoadAliasSkin(void *pin, s32 *pskinindex, s32 skinsize,
 		aliashdr_t *pheader)
 {
-        byte *pskin = Hunk_AllocName (skinsize, loadname);
-        byte *pinskin = (byte *)pin;
-        *pskinindex = (byte *)pskin - (byte *)pheader;
+        u8 *pskin = Hunk_AllocName (skinsize, loadname);
+        u8 *pinskin = (u8 *)pin;
+        *pskinindex = (u8 *)pskin - (u8 *)pheader;
         memcpy (pskin, pinskin, skinsize);
         pinskin += skinsize;
         return ((void *)pinskin);
@@ -1903,12 +1903,12 @@ void *Mod_LoadAliasSkinGroup(void *pin, s32 *pskinindex, s32 skinsize,
                 Hunk_AllocName(sizeof(maliasskingroup_t) + (numskins - 1) *
 			sizeof(paliasskingroup->skindescs[0]), loadname);
         paliasskingroup->numskins = numskins;
-        *pskinindex = (byte *) paliasskingroup - (byte *) pheader;
+        *pskinindex = (u8 *) paliasskingroup - (u8 *) pheader;
         daliasskininterval_t *pinskinintervals =
                 (daliasskininterval_t *) (pinskingroup + 1);
-        float *poutskinintervals = Hunk_AllocName(numskins * sizeof(float),
+        f32 *poutskinintervals = Hunk_AllocName(numskins * sizeof(f32),
                                                         loadname);
-        paliasskingroup->intervals = (byte*)poutskinintervals - (byte*)pheader;
+        paliasskingroup->intervals = (u8*)poutskinintervals - (u8*)pheader;
         for (s32 i = 0; i < numskins; i++) {
                 *poutskinintervals = LittleFloat(pinskinintervals->interval);
                 if (*poutskinintervals <= 0)
@@ -1942,7 +1942,7 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
         start = Hunk_LowMark ();
 
         pinmodel = (mdl_t *)buffer;
-        mod_base = (byte *)buffer; //johnfitz
+        mod_base = (u8 *)buffer; //johnfitz
 
         version = LittleLong (pinmodel->version);
         if (version != ALIAS_VERSION)
@@ -1960,7 +1960,7 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
                         + LittleLong (pinmodel->numtris) * sizeof (mtriangle_t)
                                 ;
         pheader = (aliashdr_t *)Hunk_AllocName (size, loadname);
-        pmodel = (mdl_t *) ((byte *)&pheader[1] + (LittleLong (pinmodel->numframes) - 1) * sizeof (pheader->frames[0]));
+        pmodel = (mdl_t *) ((u8 *)&pheader[1] + (LittleLong (pinmodel->numframes) - 1) * sizeof (pheader->frames[0]));
 
 	pheader->flags = mod->flags = LittleLong(pinmodel->flags);
 //
@@ -2033,7 +2033,7 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
         if (pmodel->skinwidth & 0x03)
                 Host_Error ("Mod_LoadAliasModel: skinwidth not multiple of 4");
 
-        pheader->model = (byte *)pmodel - (byte *)pheader;
+        pheader->model = (u8 *)pmodel - (u8 *)pheader;
 
 //
 // load the skins
@@ -2046,7 +2046,7 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
         pskintype = (daliasskintype_t *)&pinmodel[1];
         pskindesc = Hunk_AllocName (numskins * sizeof (maliasskindesc_t), loadname);
 
-        pheader->skindesc = (byte *)pskindesc - (byte *)pheader;
+        pheader->skindesc = (u8 *)pskindesc - (u8 *)pheader;
 
         for (i=0 ; i<numskins ; i++)
         {
@@ -2075,7 +2075,7 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
         pstverts = (stvert_t *)&pmodel[1];
         pinstverts = (stvert_t *)pskintype;
 
-        pheader->stverts = (byte *)pstverts - (byte *)pheader;
+        pheader->stverts = (u8 *)pstverts - (u8 *)pheader;
 
         for (i=0 ; i<pheader->numverts ; i++)
         {
@@ -2093,7 +2093,7 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
         ptri = (mtriangle_t *)&pstverts[pmodel->numverts];
         pintriangles = (dtriangle_t *)&pinstverts[pmodel->numverts];
 
-        pheader->triangles = (byte *)ptri - (byte *)pheader;
+        pheader->triangles = (u8 *)ptri - (u8 *)pheader;
 
         for (i=0 ; i<pheader->numtris ; i++)
         {
@@ -2173,11 +2173,11 @@ void *Mod_LoadSpriteFrame(void *pin, mspriteframe_t **ppframe)
 	pspriteframe->left = origin[0];
 	pspriteframe->right = width + origin[0];
 	if (r_pixbytes == 1)
-		Q_memcpy(&pspriteframe->pixels[0], (byte *) (pinframe+1), size);
+		Q_memcpy(&pspriteframe->pixels[0], (u8 *) (pinframe+1), size);
 	else {
 		Sys_Error ("Mod_LoadSpriteFrame: driver set invalid r_pixbytes: %d\n", r_pixbytes);
 	}
-	return (void *)((byte *) pinframe + sizeof(dspriteframe_t) + size);
+	return (void *)((u8 *) pinframe + sizeof(dspriteframe_t) + size);
 }
 
 void *Mod_LoadSpriteGroup(void *pin, mspriteframe_t **ppframe)
@@ -2189,7 +2189,7 @@ void *Mod_LoadSpriteGroup(void *pin, mspriteframe_t **ppframe)
         pspritegroup->numframes = numframes;
         *ppframe = (mspriteframe_t *) pspritegroup;
         dspriteinterval_t *pin_intervals = (dspriteinterval_t *) (pingroup + 1);
-        float *poutintervals = Hunk_AllocName(numframes*sizeof(float),loadname);
+        f32 *poutintervals = Hunk_AllocName(numframes*sizeof(f32),loadname);
         pspritegroup->intervals = poutintervals;
         for (s32 i = 0; i < numframes; i++) {
                 *poutintervals = LittleFloat(pin_intervals->interval);

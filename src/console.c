@@ -9,12 +9,12 @@ s32 con_current; // where next message will be printed
 s32 con_x; // offset in current line for next print
 s8 *con_text = 0;
 s32 con_linewidth;
-float con_cursorspeed = 4;
+f32 con_cursorspeed = 4;
 s32 con_vislines;
 bool con_debuglog;
 bool con_initialized;
 s32 con_notifylines; // scan lines to clear for notify lines
-float con_times[NUM_CON_TIMES];	// realtime time the line was generated
+f32 con_times[NUM_CON_TIMES];	// realtime time the line was generated
 				// for transparent notify lines
 
 extern s8 key_lines[32][MAXCMDLINE];
@@ -305,7 +305,7 @@ void Con_DrawNotify()
 	for (s32 i = con_current - NUM_CON_TIMES + 1; i <= con_current; i++) {
 		if (i < 0)
 			continue;
-		float time = con_times[i % NUM_CON_TIMES];
+		f32 time = con_times[i % NUM_CON_TIMES];
 		if (time == 0)
 			continue;
 		time = realtime - time;

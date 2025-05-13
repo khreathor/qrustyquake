@@ -10,8 +10,8 @@ vec3_t chase_dest;
 vec3_t chase_dest_angles;
 
 extern void Cvar_RegisterVariable (cvar_t *variable);
-extern bool SV_RecursiveHullCheck(hull_t *hull, s32 num, float p1f,
-			float p2f, vec3_t p1, vec3_t p2, trace_t *trace);
+extern bool SV_RecursiveHullCheck(hull_t *hull, s32 num, f32 p1f,
+			f32 p2f, vec3_t p1, vec3_t p2, trace_t *trace);
 
 void Chase_Init()
 {
@@ -44,7 +44,7 @@ void Chase_Update()
 	TraceLine(r_refdef.vieworg, dest, stop);
 	// calculate pitch to look at the same spot from camera
 	VectorSubtract(stop, r_refdef.vieworg, stop);
-	float dist = DotProduct(stop, forward);
+	f32 dist = DotProduct(stop, forward);
 	if (dist < 1)
 		dist = 1;
 	r_refdef.viewangles[PITCH] = -atan(stop[2] / dist) / M_PI * 180;

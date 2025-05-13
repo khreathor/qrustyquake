@@ -150,9 +150,9 @@ Returns 0.25 if a key was pressed and released during the frame,
 1.0 if held for the entire time
 ===============
 */
-float CL_KeyState (kbutton_t *key)
+f32 CL_KeyState (kbutton_t *key)
 {
-	float		val;
+	f32		val;
 	bool	impulsedown, impulseup, down;
 
 	impulsedown = key->state & 2;
@@ -206,8 +206,8 @@ Moves the local angle positions
 */
 void CL_AdjustAngles (void)
 {
-	float	speed;
-	float	up, down;
+	f32	speed;
+	f32	up, down;
 
 	if ((in_speed.state & 1) ^ (cl_alwaysrun.value != 0.0))
 		speed = host_frametime * cl_anglespeedkey.value;
@@ -305,7 +305,7 @@ void CL_SendMove (const usercmd_t *cmd)
 	s32		i;
 	s32		bits;
 	sizebuf_t	buf;
-	byte	data[128];
+	u8	data[128];
 
 	buf.maxsize = 128;
 	buf.cursize = 0;

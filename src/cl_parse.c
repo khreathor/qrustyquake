@@ -15,7 +15,7 @@ s8 *svc_strings[] = {
 	"svc_version",		// [s64] server version
 	"svc_setview",		// [s16] entity number
 	"svc_sound",		// <see code>
-	"svc_time",		// [float] server time
+	"svc_time",		// [f32] server time
 	"svc_print",		// [string] null terminated string
 	"svc_stufftext",	// [string] stuffed into client's console buffer
 	// the string should be \n terminated
@@ -25,14 +25,14 @@ s8 *svc_strings[] = {
 	// [string] signon string
 	// [string]..[0]model cache [string]...[0]sounds cache
 	// [string]..[0]item cache
-	"svc_lightstyle",	// [byte] [string]
-	"svc_updatename",	// [byte] [string]
-	"svc_updatefrags",	// [byte] [s16]
+	"svc_lightstyle",	// [u8] [string]
+	"svc_updatename",	// [u8] [string]
+	"svc_updatefrags",	// [u8] [s16]
 	"svc_clientdata",	// <shortbits + data>
 	"svc_stopsound",	// <see code>
-	"svc_updatecolors",	// [byte] [byte]
+	"svc_updatecolors",	// [u8] [u8]
 	"svc_particle",		// [vec3] <variable>
-	"svc_damage",		// [byte] impact [byte] blood [vec3] from
+	"svc_damage",		// [u8] impact [u8] blood [vec3] from
 
 	"svc_spawnstatic",
 	"OBSOLETE svc_spawnbinary",
@@ -47,7 +47,7 @@ s8 *svc_strings[] = {
 	"svc_spawnstaticsound",
 	"svc_intermission",
 	"svc_finale",		// [string] music [string] text
-	"svc_cdtrack",		// [byte] track [byte] looptrack
+	"svc_cdtrack",		// [u8] track [u8] looptrack
 	"svc_sellscreen",
 	"svc_cutscene"
 };
@@ -91,7 +91,7 @@ void R_TranslatePlayerSkin (s32 playernum)
 
 void Fog_ParseServerMessage (void)
 {
-        float density, red, green, blue, time;
+        f32 density, red, green, blue, time;
 
         density = MSG_ReadByte() / 255.0;
         red = MSG_ReadByte() / 255.0;
@@ -133,7 +133,7 @@ void CL_ParseStartSoundPacket(void)
         s32     sound_num;
         s32     volume;
         s32     field_mask;
-        float   attenuation;
+        f32   attenuation;
         s32     i;
 
         field_mask = MSG_ReadByte();
@@ -193,14 +193,14 @@ void CL_ParseLocalSound(void)
         S_LocalSound (cl.sound_precache[sound_num]->name);
 }
 
-static byte     net_olddata[NET_MAXMESSAGE];
+static u8     net_olddata[NET_MAXMESSAGE];
 void CL_KeepaliveMessage (void)
 {
-        float   time;
-        static float lastmsg;
+        f32   time;
+        static f32 lastmsg;
         s32             ret;
         sizebuf_t       old;
-        byte    *olddata;
+        u8    *olddata;
 
         if (sv.active)
                 return;         // no need if server is local
@@ -582,7 +582,7 @@ void CL_ParseUpdate (s32 bits)
                         modnum = (modnum & 0x00FF) | (MSG_ReadByte() << 8);
                 if (bits & U_LERPFINISH)
                 {
-                        ent->lerpfinish = ent->msgtime + ((float)(MSG_ReadByte()) / 255);
+                        ent->lerpfinish = ent->msgtime + ((f32)(MSG_ReadByte()) / 255);
                         ent->lerpflags |= LERP_FINISH;
                 }
                 else
@@ -593,7 +593,7 @@ void CL_ParseUpdate (s32 bits)
                 //HACK: if this bit is set, assume this is PROTOCOL_NEHAHRA
                 if (bits & U_TRANS)
                 {
-                        float a, b;
+                        f32 a, b;
 
                         //if (warn_about_nehahra_protocol)
                         //{
@@ -623,7 +623,7 @@ void CL_ParseUpdate (s32 bits)
                 if (model)
                 {
                         if (model->synctype == ST_RAND)
-                                ent->syncbase = (float)(rand()&0x7fff) / 0x7fff;
+                                ent->syncbase = (f32)(rand()&0x7fff) / 0x7fff;
                         else
                                 ent->syncbase = 0.0;
                 }
@@ -811,7 +811,7 @@ void CL_NewTranslation (s32 slot)
 {
         s32             i, j;
         s32             top, bottom;
-        byte    *dest, *source;
+        u8    *dest, *source;
 
         if (slot > cl.maxclients)
                 Sys_Error ("CL_NewTranslation: slot > cl.maxclients");
@@ -951,7 +951,7 @@ void CL_ParseServerMessage ()
 						"END OF MESSAGE");
 			return; // end of message
 		}
-		// if the high bit of the command byte is set, it is a fast update
+		// if the high bit of the command u8 is set, it is a fast update
 		if (cmd & U_SIGNAL) //johnfitz -- was 128, changed for clarity
 		{
 			if(cl_shownet.value==2)
@@ -1131,9 +1131,9 @@ void CL_ParseServerMessage ()
 				cl.cdtrack = MSG_ReadByte ();
 				cl.looptrack = MSG_ReadByte ();
 				//FIXMEif ( (cls.demoplayback || cls.demorecording) && (cls.forcetrack != -1) )
-				//FIXME BGM_PlayCDtrack ((byte)cls.forcetrack, true);
+				//FIXME BGM_PlayCDtrack ((u8)cls.forcetrack, true);
 				//FIXMEelse
-				//FIXME BGM_PlayCDtrack ((byte)cl.cdtrack, true);
+				//FIXME BGM_PlayCDtrack ((u8)cl.cdtrack, true);
 				break;
 			case svc_intermission:
 				cl.intermission = 1;

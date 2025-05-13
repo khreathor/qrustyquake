@@ -9,7 +9,7 @@ entity_t *currententity;
 vec3_t modelorg, base_modelorg;
 vec3_t r_entorigin; // the currently rendering entity in world coordinates
 
-float entity_rotation[3][3];
+f32 entity_rotation[3][3];
 vec3_t r_worldmodelorg;
 s32 r_currentbkey;
 
@@ -36,11 +36,11 @@ void R_RotateBmodel()
 // TODO: should really be stored with the entity instead of being reconstructed
 // TODO: could cache lazily, stored in the entity
 // TODO: share work with R_SetUpAliasTransform
-	float temp1[3][3], temp2[3][3], temp3[3][3];
-	float angle = currententity->angles[YAW];
+	f32 temp1[3][3], temp2[3][3], temp3[3][3];
+	f32 angle = currententity->angles[YAW];
 	angle = angle * M_PI * 2 / 360;
-	float s = sin(angle);
-	float c = cos(angle);
+	f32 s = sin(angle);
+	f32 c = cos(angle);
 	temp1[0][0] = c;
 	temp1[0][1] = s;
 	temp1[0][2] = 0;
@@ -103,18 +103,18 @@ void R_RecursiveClipBPoly(bedge_t *pedges, mnode_t *pnode, msurface_t *psurf)
 		// set the status for the last point as the previous point
 		// FIXME: cache this stuff somehow?
 		mvertex_t *plastvert = pedges->v[0];
-		float lastdist = DotProduct(plastvert->position, tplane.normal)
+		f32 lastdist = DotProduct(plastvert->position, tplane.normal)
 			- tplane.dist;
 		s32 lastside = lastdist > 0 ? 0 : 1;
 		mvertex_t *pvert = pedges->v[1];
-		float dist = DotProduct(pvert->position, tplane.normal)
+		f32 dist = DotProduct(pvert->position, tplane.normal)
 			- tplane.dist;
 		s32 side = dist > 0 ? 0 : 1;
 		if (side != lastside) {
 			if (numbverts >= MAX_BMODEL_VERTS) // clipped
 				return;
 			// generate the clipped vertex
-			float frac = lastdist / (lastdist - dist);
+			f32 frac = lastdist / (lastdist - dist);
 			mvertex_t *ptvert = &pbverts[numbverts++];
 			ptvert->position[0] = plastvert->position[0] + frac *
 				(pvert->position[0] - plastvert->position[0]);
@@ -275,16 +275,16 @@ void R_RecursiveWorldNode(mnode_t *node, s32 clipflags)
 			// on the sign bit of the floating point values
 			s32 *pindex = pfrustum_indexes[i];
 			vec3_t acceptpt, rejectpt;
-			rejectpt[0] = (float)node->minmaxs[pindex[0]];
-			rejectpt[1] = (float)node->minmaxs[pindex[1]];
-			rejectpt[2] = (float)node->minmaxs[pindex[2]];
-			double d=DotProduct(rejectpt,view_clipplanes[i].normal);
+			rejectpt[0] = (f32)node->minmaxs[pindex[0]];
+			rejectpt[1] = (f32)node->minmaxs[pindex[1]];
+			rejectpt[2] = (f32)node->minmaxs[pindex[2]];
+			f64 d=DotProduct(rejectpt,view_clipplanes[i].normal);
 			d -= view_clipplanes[i].dist;
 			if (d <= 0)
 				return;
-			acceptpt[0] = (float)node->minmaxs[pindex[3 + 0]];
-			acceptpt[1] = (float)node->minmaxs[pindex[3 + 1]];
-			acceptpt[2] = (float)node->minmaxs[pindex[3 + 2]];
+			acceptpt[0] = (f32)node->minmaxs[pindex[3 + 0]];
+			acceptpt[1] = (f32)node->minmaxs[pindex[3 + 1]];
+			acceptpt[2] = (f32)node->minmaxs[pindex[3 + 2]];
 			d = DotProduct(acceptpt, view_clipplanes[i].normal);
 			d -= view_clipplanes[i].dist;
 			if (d >= 0) // node is entirely on screen
@@ -309,7 +309,7 @@ void R_RecursiveWorldNode(mnode_t *node, s32 clipflags)
 		// node is just a decision point so go down the apropriate sides
 		// find which side of the node we are on
 		mplane_t *plane = node->plane;
-		double dot;
+		f64 dot;
 		switch (plane->type) {
 		case PLANE_X: dot = modelorg[0] - plane->dist; break;
 		case PLANE_Y: dot = modelorg[1] - plane->dist; break;

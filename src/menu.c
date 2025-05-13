@@ -42,11 +42,11 @@ s32 startepisode;
 s32 startlevel;
 s32 maxplayers;
 bool m_serverInfoMessage = false;
-double m_serverInfoMessageTime;
+f64 m_serverInfoMessageTime;
 s32 gameoptions_cursor_table[] = { 40, 56, 64, 72, 80, 88, 96, 112, 120 };
 s32 gameoptions_cursor;
-byte identityTable[256];
-byte translationTable[256];
+u8 identityTable[256];
+u8 translationTable[256];
 s32 fpslimits[] = { 30,60,72,100,120,144,165,180,200,240,300,360,500,999999 };
 
 
@@ -257,7 +257,7 @@ void M_ServerList_Key(s32 key);
 void M_ConfigureNetSubsystem();
 s32 help_page;
 bool searchComplete = false;
-double searchCompleteTime;
+f64 searchCompleteTime;
 s32 slist_cursor;
 bool slist_sorted;
 bool m_entersound; // play after drawing a frame, so caching won't disrupt the sound
@@ -1040,7 +1040,7 @@ void M_AdjustSliders(s32 dir)
 	}
 }
 
-void M_DrawSlider(s32 x, s32 y, float range)
+void M_DrawSlider(s32 x, s32 y, f32 range)
 {
 	if (range < 0)
 		range = 0;
@@ -1068,7 +1068,7 @@ void M_Options_Draw()
 	M_Print(16, 40, "         Go to console");
 	M_Print(16, 48, "     Reset to defaults");
 	M_Print(16, 56, "           Screen size");
-	float r = (scr_viewsize.value - 30) / (120 - 30);
+	f32 r = (scr_viewsize.value - 30) / (120 - 30);
 	M_DrawSlider(220, 56, r);
 	M_Print(16, 64, "            Brightness");
 	r = (1.0 - v_gamma.value) / 0.5;

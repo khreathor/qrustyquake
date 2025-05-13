@@ -2,12 +2,12 @@
 
 #include "quakedef.h"
 
-void D_Sky_uv_To_st(s32 u, s32 v, fixed16_t *s, fixed16_t *t)
+void D_Sky_uv_To_st(s32 u, s32 v, s32 *s, s32 *t)
 {
-	float temp = r_refdef.vrect.width >= r_refdef.vrect.height ?
-		(float)r_refdef.vrect.width : (float)r_refdef.vrect.height;
-	float wu = 8192.0 * (float)(u - ((s32)vid.width >> 1)) / temp;
-	float wv = 8192.0 * (float)(((s32)vid.height >> 1) - v) / temp;
+	f32 temp = r_refdef.vrect.width >= r_refdef.vrect.height ?
+		(f32)r_refdef.vrect.width : (f32)r_refdef.vrect.height;
+	f32 wu = 8192.0 * (f32)(u - ((s32)vid.width >> 1)) / temp;
+	f32 wv = 8192.0 * (f32)(((s32)vid.height >> 1) - v) / temp;
 	vec3_t end;
 	end[0] = 4096 * vpn[0] + wu * vright[0] + wv * vup[0];
 	end[1] = 4096 * vpn[1] + wu * vright[1] + wv * vup[1];
@@ -22,19 +22,19 @@ void D_Sky_uv_To_st(s32 u, s32 v, fixed16_t *s, fixed16_t *t)
 void D_DrawSkyScans8(espan_t *pspan)
 {
 	do {
-		u8 *pdest = (u8 *)((byte *) d_viewbuffer +
+		u8 *pdest = (u8 *)((u8 *) d_viewbuffer +
 					  (screenwidth * pspan->v) + pspan->u);
 		s32 count = pspan->count;
 		s32 u = pspan->u; // calculate the initial s & t
 		s32 v = pspan->v;
-		fixed16_t s, t, snext = 0, tnext = 0;
+		s32 s, t, snext = 0, tnext = 0;
 		D_Sky_uv_To_st(u, v, &s, &t);
 		do {
 			s32 spancount = count >= SKY_SPAN_MAX ?
 				SKY_SPAN_MAX : count;
 			count -= spancount;
-			fixed16_t sstep = 0;
-			fixed16_t tstep = 0;
+			s32 sstep = 0;
+			s32 tstep = 0;
 			if (count) {
 				u += spancount;
 				// calculate s and t at far end of span,
@@ -45,7 +45,7 @@ void D_DrawSkyScans8(espan_t *pspan)
 			} else {
 				// calculate s and t at last pixel in span,
 				// calculate s and t steps across span by division
-				s32 spancountminus1 = (float)(spancount - 1);
+				s32 spancountminus1 = (f32)(spancount - 1);
 				if (spancountminus1 > 0) {
 					u += spancountminus1;
 					D_Sky_uv_To_st(u, v, &snext, &tnext);

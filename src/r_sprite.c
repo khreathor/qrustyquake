@@ -8,7 +8,7 @@ static s32 sprite_width, sprite_height;
 
 spritedesc_t r_spritedesc;
 
-void R_RotateSprite(float beamlength)
+void R_RotateSprite(f32 beamlength)
 {
 	vec3_t vec;
 
@@ -23,9 +23,9 @@ void R_RotateSprite(float beamlength)
 
 s32 R_ClipSpriteFace(s32 nump, clipplane_t *pclipplane) // Clips the winding at
 { // clip_verts[clip_current] and changes clip_current, throws out the back side
-	float clipdist = pclipplane->dist;
-	float *pclipnormal = pclipplane->normal;
-	float *in, *outstep;
+	f32 clipdist = pclipplane->dist;
+	f32 *pclipnormal = pclipplane->normal;
+	f32 *in, *outstep;
 	if (clip_current) { // calc dists
 		in = clip_verts[1][0];
 		outstep = clip_verts[0][0];
@@ -35,32 +35,32 @@ s32 R_ClipSpriteFace(s32 nump, clipplane_t *pclipplane) // Clips the winding at
 		outstep = clip_verts[1][0];
 		clip_current = 1;
 	}
-	float *instep = in;
-	float dists[MAXWORKINGVERTS + 1];
-	for (s32 i = 0; i < nump; i++, instep += sizeof(vec5_t) / sizeof(float))
+	f32 *instep = in;
+	f32 dists[MAXWORKINGVERTS + 1];
+	for (s32 i = 0; i < nump; i++, instep += sizeof(vec5_t) / sizeof(f32))
 		dists[i] = DotProduct(instep, pclipnormal) - clipdist;
 	dists[nump] = dists[0]; // handle wraparound case
 	Q_memcpy(instep, in, sizeof(vec5_t));
 	instep = in; // clip the winding
 	s32 outcount = 0;
-	for (s32 i = 0; i < nump; i++, instep += sizeof(vec5_t)/sizeof(float)) {
+	for (s32 i = 0; i < nump; i++, instep += sizeof(vec5_t)/sizeof(f32)) {
 		if (dists[i] >= 0) {
 			Q_memcpy(outstep, instep, sizeof(vec5_t));
-			outstep += sizeof(vec5_t) / sizeof(float);
+			outstep += sizeof(vec5_t) / sizeof(f32);
 			outcount++;
 		}
 		if (dists[i] == 0 || dists[i + 1] == 0
 			|| (dists[i] > 0) == (dists[i + 1] > 0))
 			continue;
 		// split it into a new vertex
-		float frac = dists[i] / (dists[i] - dists[i + 1]);
-		float *vert2 = instep + sizeof(vec5_t) / sizeof(float);
+		f32 frac = dists[i] / (dists[i] - dists[i + 1]);
+		f32 *vert2 = instep + sizeof(vec5_t) / sizeof(f32);
 		outstep[0] = instep[0] + frac * (vert2[0] - instep[0]);
 		outstep[1] = instep[1] + frac * (vert2[1] - instep[1]);
 		outstep[2] = instep[2] + frac * (vert2[2] - instep[2]);
 		outstep[3] = instep[3] + frac * (vert2[3] - instep[3]);
 		outstep[4] = instep[4] + frac * (vert2[4] - instep[4]);
-		outstep += sizeof(vec5_t) / sizeof(float);
+		outstep += sizeof(vec5_t) / sizeof(f32);
 		outcount++;
 	}
 	return outcount;
@@ -107,7 +107,7 @@ void R_SetupAndDrawSprite()
 			Sys_Error("R_SetupAndDrawSprite: too many points");
 	}
 	// transform vertices into viewspace and project
-	float *pv = &clip_verts[clip_current][0][0];
+	f32 *pv = &clip_verts[clip_current][0][0];
 	r_spritedesc.nearzi = -999999;
 	emitpoint_t outverts[MAXWORKINGVERTS + 1];
 	for (s32 i = 0; i < nump; i++) {
@@ -121,7 +121,7 @@ void R_SetupAndDrawSprite()
 			r_spritedesc.nearzi = pout->zi;
 		pout->s = pv[3];
 		pout->t = pv[4];
-		float scale = xscale * pout->zi;
+		f32 scale = xscale * pout->zi;
 		pout->u = (xcenter + scale * transformed[0]);
 		scale = yscale * pout->zi;
 		pout->v = (ycenter - scale * transformed[1]);
@@ -145,13 +145,13 @@ mspriteframe_t *R_GetSpriteframe(msprite_t *psprite)
 		pspriteframe = psprite->frames[frame].frameptr;
 	else {
 		pspritegroup = (mspritegroup_t*)psprite->frames[frame].frameptr;
-		float *pintervals = pspritegroup->intervals;
+		f32 *pintervals = pspritegroup->intervals;
 		s32 numframes = pspritegroup->numframes;
-		float fullinterval = pintervals[numframes - 1];
-		float time = cl.time + currententity->syncbase;
+		f32 fullinterval = pintervals[numframes - 1];
+		f32 time = cl.time + currententity->syncbase;
 		// when loading in Mod_LoadSpriteGroup, we guaranteed all interval values
 		// are positive, so we don't have to worry about division by 0
-		float targettime =
+		f32 targettime =
 			time - ((s32)(time / fullinterval)) * fullinterval;
 		s32 i = 0;
 		for (; i < (numframes - 1); i++)
@@ -181,7 +181,7 @@ void R_DrawSprite()
 		tvec[1] = -modelorg[1];
 		tvec[2] = -modelorg[2];
 		VectorNormalize(tvec);
-		float dot = tvec[2]; // same as DotProduct (tvec, r_spritedesc.vup) because
+		f32 dot = tvec[2]; // same as DotProduct (tvec, r_spritedesc.vup) because
 		// r_spritedesc.vup is 0, 0, 1
 		if ((dot > 0.999848) || (dot < -0.999848)) // cos(1 degree) = 0.999848
 			return;
@@ -209,7 +209,7 @@ void R_DrawSprite()
 			r_spritedesc.vpn[i] = vpn[i];
 		}
 	} else if (psprite->type == SPR_VP_PARALLEL_UPRIGHT) {
-		float dot = vpn[2];
+		f32 dot = vpn[2];
 		if ((dot > 0.999848) || (dot < -0.999848))
 			return;
 		r_spritedesc.vup[0] = 0;
@@ -230,9 +230,9 @@ void R_DrawSprite()
 		// generate the sprite's axes, parallel to the viewplane, but rotated in
 		// that plane around the center according to the sprite entity's roll
 		// angle. So vpn stays the same, but vright and vup rotate
-		float angle = currententity->angles[ROLL] * (M_PI * 2 / 360);
-		float sr = sin(angle);
-		float cr = cos(angle);
+		f32 angle = currententity->angles[ROLL] * (M_PI * 2 / 360);
+		f32 sr = sin(angle);
+		f32 cr = cos(angle);
 		for (s32 i = 0; i < 3; i++) {
 			r_spritedesc.vpn[i] = vpn[i];
 			r_spritedesc.vright[i] = vright[i] * cr + vup[i] * sr;

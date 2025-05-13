@@ -189,7 +189,7 @@ dlight_t *CL_AllocDlight (s32 key)
 
 void CL_DecayLights()
 {
-	float time = cl.time - cl.oldtime;
+	f32 time = cl.time - cl.oldtime;
 	dlight_t *dl = cl_dlights;
 	for (s32 i = 0; i < MAX_DLIGHTS; i++, dl++) {
 		if (dl->die < cl.time || !dl->radius)
@@ -201,9 +201,9 @@ void CL_DecayLights()
 }
 
 
-float CL_LerpPoint() // Determines the fraction between the last two messages
+f32 CL_LerpPoint() // Determines the fraction between the last two messages
 { // that the objects should be put at.
-	float f = cl.mtime[0] - cl.mtime[1];
+	f32 f = cl.mtime[0] - cl.mtime[1];
 	if (!f || cl_nolerp.value || cls.timedemo || sv.active) {
 		cl.time = cl.mtime[0];
 		return 1;
@@ -212,7 +212,7 @@ float CL_LerpPoint() // Determines the fraction between the last two messages
 		cl.mtime[1] = cl.mtime[0] - 0.1;
 		f = 0.1;
 	}
-	float frac = (cl.time - cl.mtime[1]) / f;
+	f32 frac = (cl.time - cl.mtime[1]) / f;
 	if (frac < 0) {
 		if (frac < -0.01)
 			cl.time = cl.mtime[1];
@@ -227,7 +227,7 @@ float CL_LerpPoint() // Determines the fraction between the last two messages
 
 void CL_RelinkEntities()
 {
-	float frac = CL_LerpPoint(); // determine partial update time
+	f32 frac = CL_LerpPoint(); // determine partial update time
 	cl_numvisedicts = 0;
 	for (s32 i = 0; i < 3; i++) // interpolate player info
 		cl.velocity[i] = cl.mvelocity[1][i] +
@@ -235,7 +235,7 @@ void CL_RelinkEntities()
 
 	if (cls.demoplayback) {
 		for (s32 j = 0; j < 3; j++) { // interpolate the angles
-			float d = cl.mviewangles[0][j] - cl.mviewangles[1][j];
+			f32 d = cl.mviewangles[0][j] - cl.mviewangles[1][j];
 			if (d > 180)
 				d -= 360;
 			else if (d < -180)
@@ -243,7 +243,7 @@ void CL_RelinkEntities()
 			cl.viewangles[j] = cl.mviewangles[1][j] + frac * d;
 		}
 	}
-	float bobjrotate = anglemod(100 * cl.time);
+	f32 bobjrotate = anglemod(100 * cl.time);
 	// start on the entity after the world
 	entity_t *ent = cl_entities + 1;
 	for (s32 i = 1; i < cl.num_entities; i++, ent++) {
@@ -264,7 +264,7 @@ void CL_RelinkEntities()
 			VectorCopy(ent->msg_origins[0], ent->origin);
 			VectorCopy(ent->msg_angles[0], ent->angles);
 		} else { // if the delta is large assume a teleport, don't lerp
-			float f = frac;
+			f32 f = frac;
 			vec3_t delta;
 			for (s32 j = 0; j < 3; j++) {
 				delta[j] =
@@ -277,7 +277,7 @@ void CL_RelinkEntities()
 			for (s32 j = 0; j < 3; j++) {
 				ent->origin[j] =
 				    ent->msg_origins[1][j] + f * delta[j];
-				float d = ent->msg_angles[0][j] -
+				f32 d = ent->msg_angles[0][j] -
 				    ent->msg_angles[1][j];
 				if (d > 180)
 					d -= 360;

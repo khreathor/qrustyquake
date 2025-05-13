@@ -8,7 +8,7 @@
 #define dfunc net_drivers[net_driverlevel]
 
 s32 net_driverlevel;
-double net_time;
+f64 net_time;
 s32 hostCacheCount = 0;
 hostcache_t hostcache[HOSTCACHESIZE];
 qsocket_t *net_activeSockets = NULL;
@@ -23,7 +23,7 @@ static bool listening = false;
 bool slistInProgress = false;
 bool slistSilent = false;
 bool slistLocal = true;
-static double slistStartTime;
+static f64 slistStartTime;
 static s32 slistLastShown;
 sizebuf_t net_message;
 s32 net_activeconnections = 0;
@@ -37,7 +37,7 @@ static void Slist_Poll(void *);
 static PollProcedure slistSendProcedure = { NULL, 0.0, Slist_Send, NULL };
 static PollProcedure slistPollProcedure = { NULL, 0.0, Slist_Poll, NULL };
 
-double SetNetTime()
+f64 SetNetTime()
 {
 	net_time = Sys_DoubleTime();
 	return net_time;
@@ -422,9 +422,9 @@ bool NET_CanSendMessage(qsocket_t *sock)
 	return sfunc.CanSendMessage(sock);
 }
 
-s32 NET_SendToAll(sizebuf_t *data, double blocktime)
+s32 NET_SendToAll(sizebuf_t *data, f64 blocktime)
 {
-	double start;
+	f64 start;
 	s32 i = 0;
 	s32 count = 0;
 	bool msg_init[MAX_SCOREBOARD];	/* did we write the message to the client's connection  */
@@ -570,7 +570,7 @@ void NET_Poll()
 	}
 }
 
-void SchedulePollProcedure(PollProcedure *proc, double timeOffset)
+void SchedulePollProcedure(PollProcedure *proc, f64 timeOffset)
 {
 	PollProcedure *pp, *prev;
 	proc->nextTime = Sys_DoubleTime() + timeOffset;

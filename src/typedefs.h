@@ -11,9 +11,6 @@ typedef int64_t  s64;
 typedef float    f32;
 typedef double   f64;
 
-typedef u8 byte; // TODO remove
-typedef u8 pixel_t; // TODO remove
-
 typedef struct { // specified by the host system                   // quakedef.h
 	s8 *basedir;
 	s8 *userdir;
@@ -28,14 +25,11 @@ typedef f32   vec_t;                                               // q_stdinc.h
 typedef vec_t vec3_t[3];
 typedef vec_t vec4_t[4];
 typedef vec_t vec5_t[5];
-typedef s32   fixed4_t;
-typedef s32   fixed8_t;
-typedef s32   fixed16_t;
 
 typedef struct sizebuf_s {                                           // common.h
 	bool allowoverflow; // if false, do a Sys_Error
 	bool overflowed;  // set to true if the buffer size failed
-	byte  *data;
+	u8  *data;
 	s32  maxsize;
 	s32  cursize;
 } sizebuf_t;
@@ -150,7 +144,7 @@ typedef struct {
 	s32 firstedge; // we must support > 64k edges
 	s16 numedges;
 	s16 texinfo;
-	byte styles[MAXLIGHTMAPS]; // lighting info
+	u8 styles[MAXLIGHTMAPS]; // lighting info
 	s32 lightofs; // start of [numstyles*surfsize] samples
 } dface_t;
 typedef struct {
@@ -160,7 +154,7 @@ typedef struct {
 	s32 numedges;
 	s32 texinfo;
 	// lighting info
-	byte styles[MAXLIGHTMAPS];
+	u8 styles[MAXLIGHTMAPS];
 	s32 lightofs; // start of [numstyles*surfsize] samples
 } dlface_t;
 typedef struct { // leaf 0 is the generic CONTENTS_SOLID leaf, used for all solid areas, all other leafs need visibility info
@@ -170,7 +164,7 @@ typedef struct { // leaf 0 is the generic CONTENTS_SOLID leaf, used for all soli
 	s16 maxs[3];
 	u16 firstmarksurface;
 	u16 nummarksurfaces;
-	byte ambient_level[NUM_AMBIENTS];
+	u8 ambient_level[NUM_AMBIENTS];
 } dleaf_t;
 typedef struct {
 	s32 contents;
@@ -179,7 +173,7 @@ typedef struct {
 	s16 maxs[3];
 	u32 firstmarksurface;
 	u32 nummarksurfaces;
-	byte ambient_level[NUM_AMBIENTS];
+	u8 ambient_level[NUM_AMBIENTS];
 } dl1leaf_t;
 typedef struct {
 	s32 contents;
@@ -188,7 +182,7 @@ typedef struct {
 	f32 maxs[3];
 	u32 firstmarksurface;
 	u32 nummarksurfaces;
-	byte ambient_level[NUM_AMBIENTS];
+	u8 ambient_level[NUM_AMBIENTS];
 } dl2leaf_t;
 
 typedef struct cvar_s cvar_t;                                          // cvar.h
@@ -197,7 +191,7 @@ struct cvar_s {
     const s8      *name;
     const s8      *string;
     u32    flags;
-    float           value;
+    f32           value;
     const s8      *default_string; //johnfitz -- remember defaults for reset function
     cvarcallback_t  callback;
     cvar_t          *next;
@@ -245,9 +239,9 @@ typedef struct {
 typedef struct mplane_s {
 	vec3_t normal;
 	f32 dist;
-	byte type; // for texture axis selection and fast side tests
-	byte signbits; // signx + signy<<1 + signz<<1
-	byte pad[2];
+	u8 type; // for texture axis selection and fast side tests
+	u8 signbits; // signx + signy<<1 + signz<<1
+	u8 pad[2];
 } mplane_t;
 typedef struct msurface_s {
 	s32 visframe; // should be drawn when node is crossed
@@ -266,17 +260,17 @@ typedef struct msurface_s {
 	s32 dlightframe;
 	s32 dlightbits;
 	s32 lightmaptexturenum;
-	byte styles[MAXLIGHTMAPS];
+	u8 styles[MAXLIGHTMAPS];
 	s32 cached_light[MAXLIGHTMAPS]; // values currently used in lightmap
 	bool cached_dlight; // true if dynamic light in cache
-	byte *samples; // [numstyles*surfsize]
+	u8 *samples; // [numstyles*surfsize]
 	struct surfcache_s *cachespots[MIPLEVELS]; // surface generation data
 } msurface_t;
 
 typedef struct { // viewmodel lighting                              // r_local.h
 	s32 ambientlight;
 	s32 shadelight;
-	float *plightvec;
+	f32 *plightvec;
 } alight_t;
 typedef struct bedge_s // clipped bmodel edges
 {
@@ -284,15 +278,15 @@ typedef struct bedge_s // clipped bmodel edges
 	struct bedge_s *pnext;
 } bedge_t;
 typedef struct {
-	float fv[3]; // viewspace x, y
+	f32 fv[3]; // viewspace x, y
 } auxvert_t;
 typedef struct clipplane_s {
 	vec3_t normal;
-	float dist;
+	f32 dist;
 	struct clipplane_s *next;
-	byte leftedge;
-	byte rightedge;
-	byte reserved[2];
+	u8 leftedge;
+	u8 rightedge;
+	u8 reserved[2];
 } clipplane_t;
 typedef struct btofpoly_s {
 	s32 clipflags;
@@ -342,8 +336,8 @@ typedef struct dtriangle_s {
 	s32 vertindex[3];
 } dtriangle_t;
 typedef struct { // This mirrors trivert_t in trilib.h, is present so Quake
-	byte v[3]; // knows how to load this data
-	byte lightnormalindex;
+	u8 v[3]; // knows how to load this data
+	u8 lightnormalindex;
 } trivertx_t;
 typedef struct {
 	trivertx_t bboxmin; // lightnormal isn't used
@@ -410,16 +404,16 @@ typedef struct {                                                   // protocol.h
 } entity_state_t;
 typedef struct {
 	vec3_t  viewangles;
-	float   forwardmove; // intended velocities
-	float   sidemove;
-	float   upmove;
+	f32   forwardmove; // intended velocities
+	f32   sidemove;
+	f32   upmove;
 } usercmd_t;
 
 typedef struct entity_s {                                            // render.h
 	bool forcelink; // model changed
 	s32 update_type;
 	entity_state_t baseline; // to fill in defaults in updates
-	double msgtime; // time of last update
+	f64 msgtime; // time of last update
 	vec3_t msg_origins[2]; // last two updates (0 is newest)
 	vec3_t origin;
 	vec3_t msg_angles[2]; // last two updates (0 is newest)
@@ -427,8 +421,8 @@ typedef struct entity_s {                                            // render.h
 	struct model_s *model; // NULL = no model
 	struct efrag_s *efrag; // linked list of efrags
 	s32 frame;
-	float syncbase; // for client-side animations
-	byte *colormap;
+	f32 syncbase; // for client-side animations
+	u8 *colormap;
 	s32 effects; // light, particles, etc
 	s32 skinnum; // for Alias models
 	s32 visframe; // last frame this entity was found in an active leaf
@@ -437,16 +431,16 @@ typedef struct entity_s {                                            // render.h
 	s32 trivial_accept;
 	struct mnode_s *topnode; // for bmodels, first world node that splits
 				 // bmodel, or NULL if not split
-	byte alpha; //johnfitz -- alpha
-	byte scale;
-	byte lerpflags; //johnfitz -- lerping
-	float lerpstart; //johnfitz -- animation lerping
-	float lerptime; //johnfitz -- animation lerping
-	float lerpfinish; //johnfitz -- lerping -- server sent us a more accurate interval, use it instead of 0.1
+	u8 alpha; //johnfitz -- alpha
+	u8 scale;
+	u8 lerpflags; //johnfitz -- lerping
+	f32 lerpstart; //johnfitz -- animation lerping
+	f32 lerptime; //johnfitz -- animation lerping
+	f32 lerpfinish; //johnfitz -- lerping -- server sent us a more accurate interval, use it instead of 0.1
 	s16 previouspose; //johnfitz -- animation lerping
 	s16 currentpose; //johnfitz -- animation lerping
 	s16 futurepose; //johnfitz -- animation lerping
-	float movelerpstart; //johnfitz -- transform lerping
+	f32 movelerpstart; //johnfitz -- transform lerping
 	vec3_t previousorigin; //johnfitz -- transform lerping
 	vec3_t currentorigin; //johnfitz -- transform lerping
 	vec3_t previousangles; //johnfitz -- transform lerping
@@ -463,25 +457,25 @@ typedef struct {
 	vrect_t aliasvrect; // scaled Alias version
 	s64 vrectright, vrectbottom; // right & bottom screen coords
 	s64 aliasvrectright, aliasvrectbottom; // scaled Alias versions
-	float vrectrightedge; // rightmost right edge we care about,
+	f32 vrectrightedge; // rightmost right edge we care about,
 			      // for use in edge list
-	float fvrectx, fvrecty; // for floating-point compares
-	float fvrectx_adj, fvrecty_adj; // left and top edges, for clamping
+	f32 fvrectx, fvrecty; // for floating-point compares
+	f32 fvrectx_adj, fvrecty_adj; // left and top edges, for clamping
 	s64 vrect_x_adj_shift20; //(vrect.x + 0.5 - epsilon) << 20
 	s64 vrectright_adj_shift20; //(vrectright + 0.5 - epsilon) << 20
-	float fvrectright_adj, fvrectbottom_adj; // right and bottom edges,
+	f32 fvrectright_adj, fvrectbottom_adj; // right and bottom edges,
 						 // for clamping
-	float fvrectright; // rightmost edge, for Alias clamping
-	float fvrectbottom; // bottommost edge, for Alias clamping
-	float horizontalFieldOfView; // at Z = 1.0, this many X is visible 
+	f32 fvrectright; // rightmost edge, for Alias clamping
+	f32 fvrectbottom; // bottommost edge, for Alias clamping
+	f32 horizontalFieldOfView; // at Z = 1.0, this many X is visible 
 				     // 2.0 = 90 degrees
-	float xOrigin; // should probably allways be 0.5
-	float yOrigin; // between be around 0.3 to 0.5
+	f32 xOrigin; // should probably allways be 0.5
+	f32 yOrigin; // between be around 0.3 to 0.5
 
 	vec3_t vieworg;
 	vec3_t viewangles;
 
-	float fov_x, fov_y;
+	f32 fov_x, fov_y;
 
 	s32 ambientlight;
 } refdef_t;
@@ -519,12 +513,12 @@ typedef struct mleaf_s {
 	s32 visframe; // node needs to be traversed if current
 	f32 minmaxs[6]; // for bounding box culling
 	struct mnode_s *parent;
-	byte *compressed_vis; // leaf specific
+	u8 *compressed_vis; // leaf specific
 	efrag_t *efrags;
 	msurface_t **firstmarksurface;
 	s32 nummarksurfaces;
 	s32 key; // BSP sequence number for leaf's contents
-	byte ambient_sound_level[NUM_AMBIENTS];
+	u8 ambient_sound_level[NUM_AMBIENTS];
 } mleaf_t;
 typedef struct mclipnode_s { //johnfitz -- for clipnodes>32k
 	s32 planenum;
@@ -550,7 +544,7 @@ typedef struct mspriteframe_s {
 	s32 width, height;
 	f32 up, down, left, right;
 	f32 smax, tmax; //johnfitz -- image might be padded
-	byte pixels[4];
+	u8 pixels[4];
 } mspriteframe_t;
 typedef struct {
 	s32 numframes;
@@ -576,7 +570,7 @@ typedef struct aliasmesh_s{//from RMQEngine, split out to keep vertex sizes down
 	u16 vertindex;
 } aliasmesh_t;
 typedef struct meshxyz_s {
-	byte xyz[4];
+	u8 xyz[4];
 	s8 normal[4];
 } meshxyz_t;
 typedef struct meshst_s {
@@ -680,8 +674,8 @@ typedef struct model_s {
 	hull_t hulls[MAX_MAP_HULLS];
 	s32 numtextures;
 	texture_t **textures;
-	byte *visdata;
-	byte *lightdata;
+	u8 *visdata;
+	u8 *lightdata;
 	s8 *entities;
 	bool viswarn; // for Mod_DecompressVis()
 	s32 bspversion;
@@ -711,9 +705,9 @@ typedef struct surf_s {
 	s32 flags; // currentface flags
 	void *data; // associated data like msurface_t
 	entity_t *entity;
-	float nearzi; // nearest 1/z on surface, for mipmapping
+	f32 nearzi; // nearest 1/z on surface, for mipmapping
 	bool insubmodel;
-	float d_ziorigin, d_zistepu, d_zistepv;
+	f32 d_ziorigin, d_zistepu, d_zistepv;
 	s32 pad[2]; // to 64 bytes
 } surf_t;
 typedef struct edge_s {
@@ -722,14 +716,14 @@ typedef struct edge_s {
 	struct edge_s *prev, *next;
 	u16 surfs[2];
 	struct edge_s *nextremove;
-	float nearzi;
+	f32 nearzi;
 	medge_t *owner;
 } edge_t;
 
 typedef struct {                                                    // d_iface.h
-	float u, v;
-	float s, t;
-	float zi;
+	f32 u, v;
+	f32 s, t;
+	f32 zi;
 } emitpoint_t;
 typedef enum {
 	pt_static, pt_grav, pt_slowgrav, pt_fire, pt_explode, pt_explode2, pt_blob, pt_blob2
@@ -737,27 +731,27 @@ typedef enum {
 typedef struct particle_s {
 	// driver-usable fields
 	vec3_t org;
-	float color;
+	f32 color;
 	// drivers never touch the following fields
 	struct particle_s *next;
 	vec3_t vel;
-	float ramp;
-	float die;
+	f32 ramp;
+	f32 die;
 	ptype_t type;
 } particle_t;
 typedef struct polyvert_s {
-	float u, v, zi, s, t;
+	f32 u, v, zi, s, t;
 } polyvert_t;
 typedef struct polydesc_s {
 	s32 numverts;
-	float nearzi;
+	f32 nearzi;
 	msurface_t *pcurrentface;
 	polyvert_t *pverts;
 } polydesc_t;
 typedef struct finalvert_s {
 	s32 v[6]; // u, v, s, t, l, 1/z
 	s32 flags;
-	float reserved;
+	f32 reserved;
 } finalvert_t;
 typedef struct {
 	void *pskin;
@@ -771,25 +765,25 @@ typedef struct {
 	s32 seamfixupX16;
 } affinetridesc_t;
 typedef struct {
-	float u, v, zi, color;
+	f32 u, v, zi, color;
 } screenpart_t;
 typedef struct {
 	s32 nump;
 	emitpoint_t *pverts; // there's room for an extra element at [nump], if the driver wants to duplicate element [0] at element [nump] to avoid dealing with wrapping
 	mspriteframe_t *pspriteframe;
 	vec3_t vup, vright, vpn; // in worldspace
-	float nearzi;
+	f32 nearzi;
 } spritedesc_t;
 typedef struct {
 	s32 u, v;
-	float zi;
+	f32 zi;
 	s32 color;
 } zpointdesc_t;
 typedef struct {
-	pixel_t *surfdat; // destination for generated surface
+	u8 *surfdat; // destination for generated surface
 	s32 rowbytes; // destination logical width in bytes
 	msurface_t *surf; // description for surface to generate
-	fixed8_t lightadj[MAXLIGHTMAPS];
+	s32 lightadj[MAXLIGHTMAPS];
 	// adjust for lightmap levels for dynamic lighting
 	texture_t *texture; // corrected for animating textures
 	s32 surfmip; // mipmapped ratio of surface texels / world pixels
@@ -813,9 +807,9 @@ struct qsockaddr {                                                 // net_defs.h
 };
 typedef struct qsocket_s {
 	struct qsocket_s *next;
-	double  connecttime;
-	double  lastMessageTime;
-	double  lastSendTime;
+	f64  connecttime;
+	f64  lastMessageTime;
+	f64  lastSendTime;
 	bool disconnected;
 	bool canSend;
 	bool sendNext;
@@ -827,11 +821,11 @@ typedef struct qsocket_s {
 	u32 sendSequence;
 	u32 unreliableSendSequence;
 	s32  sendMessageLength;
-	byte  sendMessage [NET_MAXMESSAGE];
+	u8  sendMessage [NET_MAXMESSAGE];
 	u32 receiveSequence;
 	u32 unreliableReceiveSequence;
 	s32  receiveMessageLength;
-	byte  receiveMessage [NET_MAXMESSAGE];
+	u8  receiveMessage [NET_MAXMESSAGE];
 	struct qsockaddr addr;
 	s8  address[NET_NAMELEN];
 
@@ -847,9 +841,9 @@ typedef struct {
 	s32  (*Close_Socket) (sys_socket_t socketid);
 	s32  (*Connect) (sys_socket_t socketid, struct qsockaddr *addr);
 	sys_socket_t (*CheckNewConnections) ();
-	s32  (*Read) (sys_socket_t socketid, byte *buf, s32 len, struct qsockaddr *addr);
-	s32  (*Write) (sys_socket_t socketid, byte *buf, s32 len, struct qsockaddr *addr);
-	s32  (*Broadcast) (sys_socket_t socketid, byte *buf, s32 len);
+	s32  (*Read) (sys_socket_t socketid, u8 *buf, s32 len, struct qsockaddr *addr);
+	s32  (*Write) (sys_socket_t socketid, u8 *buf, s32 len, struct qsockaddr *addr);
+	s32  (*Broadcast) (sys_socket_t socketid, u8 *buf, s32 len);
 	const s8 * (*AddrToString) (struct qsockaddr *addr);
 	s32  (*StringToAddr) (const s8 *string, struct qsockaddr *addr);
 	s32  (*GetSocketAddr) (sys_socket_t socketid, struct qsockaddr *addr);
@@ -887,7 +881,7 @@ typedef struct {
 } hostcache_t;
 typedef struct _PollProcedure {
 	struct _PollProcedure *next;
-	double    nextTime;
+	f64    nextTime;
 	void    (*procedure)(void *);
 	void    *arg;
 } PollProcedure;
@@ -902,7 +896,7 @@ typedef enum hudstyle_t {                                            // screen.h
 
 typedef struct {                                                        // wad.h
 	s32 width, height;
-	byte data[4]; // variably sized
+	u8 data[4]; // variably sized
 } qpic_t;
 typedef struct {
 	s8 identification[4]; // should be WAD2 or 2DAW
@@ -935,9 +929,9 @@ typedef struct surfcache_s {                                        // d_local.h
 	s32 size; // including header
 	unsigned width;
 	unsigned height; // DEBUG only needed for debug
-	float mipscale;
+	f32 mipscale;
 	struct texture_s *texture; // checked for animating textures
-	byte data[4]; // width*height elements
+	u8 data[4]; // width*height elements
 } surfcache_t;
 typedef struct sspan_s {
 	s32 u, v, count;
@@ -986,7 +980,7 @@ typedef struct {
 	s32 s_name;
 	s32 s_file; // source file defined in
 	s32 numparms;
-	byte parm_size[MAX_PARMS];
+	u8 parm_size[MAX_PARMS];
 } dfunction_t;
 typedef struct {
 	s32 version;
@@ -1011,46 +1005,46 @@ typedef struct {                                                   // progdefs.h
 	s32	self;
 	s32	other;
 	s32	world;
-	float	time;
-	float	frametime;
-	float	force_retouch;
+	f32	time;
+	f32	frametime;
+	f32	force_retouch;
 	string_t	mapname;
-	float	deathmatch;
-	float	coop;
-	float	teamplay;
-	float	serverflags;
-	float	total_secrets;
-	float	total_monsters;
-	float	found_secrets;
-	float	killed_monsters;
-	float	parm1;
-	float	parm2;
-	float	parm3;
-	float	parm4;
-	float	parm5;
-	float	parm6;
-	float	parm7;
-	float	parm8;
-	float	parm9;
-	float	parm10;
-	float	parm11;
-	float	parm12;
-	float	parm13;
-	float	parm14;
-	float	parm15;
-	float	parm16;
+	f32	deathmatch;
+	f32	coop;
+	f32	teamplay;
+	f32	serverflags;
+	f32	total_secrets;
+	f32	total_monsters;
+	f32	found_secrets;
+	f32	killed_monsters;
+	f32	parm1;
+	f32	parm2;
+	f32	parm3;
+	f32	parm4;
+	f32	parm5;
+	f32	parm6;
+	f32	parm7;
+	f32	parm8;
+	f32	parm9;
+	f32	parm10;
+	f32	parm11;
+	f32	parm12;
+	f32	parm13;
+	f32	parm14;
+	f32	parm15;
+	f32	parm16;
 	vec3_t	v_forward;
 	vec3_t	v_up;
 	vec3_t	v_right;
-	float	trace_allsolid;
-	float	trace_startsolid;
-	float	trace_fraction;
+	f32	trace_allsolid;
+	f32	trace_startsolid;
+	f32	trace_fraction;
 	vec3_t	trace_endpos;
 	vec3_t	trace_plane_normal;
-	float	trace_plane_dist;
+	f32	trace_plane_dist;
 	s32	trace_ent;
-	float	trace_inopen;
-	float	trace_inwater;
+	f32	trace_inopen;
+	f32	trace_inwater;
 	s32	msg_entity;
 	func_t	main;
 	func_t	StartFrame;
@@ -1064,12 +1058,12 @@ typedef struct {                                                   // progdefs.h
 	func_t	SetChangeParms;
 } globalvars_t;
 typedef struct {
-	float	modelindex;
+	f32	modelindex;
 	vec3_t	absmin;
 	vec3_t	absmax;
-	float	ltime;
-	float	movetype;
-	float	solid;
+	f32	ltime;
+	f32	movetype;
+	f32	solid;
 	vec3_t	origin;
 	vec3_t	oldorigin;
 	vec3_t	velocity;
@@ -1078,9 +1072,9 @@ typedef struct {
 	vec3_t	punchangle;
 	string_t	classname;
 	string_t	model;
-	float	frame;
-	float	skin;
-	float	effects;
+	f32	frame;
+	f32	skin;
+	f32	effects;
 	vec3_t	mins;
 	vec3_t	maxs;
 	vec3_t	size;
@@ -1088,55 +1082,55 @@ typedef struct {
 	func_t	use;
 	func_t	think;
 	func_t	blocked;
-	float	nextthink;
+	f32	nextthink;
 	s32	groundentity;
-	float	health;
-	float	frags;
-	float	weapon;
+	f32	health;
+	f32	frags;
+	f32	weapon;
 	string_t	weaponmodel;
-	float	weaponframe;
-	float	currentammo;
-	float	ammo_shells;
-	float	ammo_nails;
-	float	ammo_rockets;
-	float	ammo_cells;
-	float	items;
-	float	takedamage;
+	f32	weaponframe;
+	f32	currentammo;
+	f32	ammo_shells;
+	f32	ammo_nails;
+	f32	ammo_rockets;
+	f32	ammo_cells;
+	f32	items;
+	f32	takedamage;
 	s32	chain;
-	float	deadflag;
+	f32	deadflag;
 	vec3_t	view_ofs;
-	float	button0;
-	float	button1;
-	float	button2;
-	float	impulse;
-	float	fixangle;
+	f32	button0;
+	f32	button1;
+	f32	button2;
+	f32	impulse;
+	f32	fixangle;
 	vec3_t	v_angle;
-	float	idealpitch;
+	f32	idealpitch;
 	string_t	netname;
 	s32	enemy;
-	float	flags;
-	float	colormap;
-	float	team;
-	float	max_health;
-	float	teleport_time;
-	float	armortype;
-	float	armorvalue;
-	float	waterlevel;
-	float	watertype;
-	float	ideal_yaw;
-	float	yaw_speed;
+	f32	flags;
+	f32	colormap;
+	f32	team;
+	f32	max_health;
+	f32	teleport_time;
+	f32	armortype;
+	f32	armorvalue;
+	f32	waterlevel;
+	f32	watertype;
+	f32	ideal_yaw;
+	f32	yaw_speed;
 	s32	aiment;
 	s32	goalentity;
-	float	spawnflags;
+	f32	spawnflags;
 	string_t	target;
 	string_t	targetname;
-	float	dmg_take;
-	float	dmg_save;
+	f32	dmg_take;
+	f32	dmg_save;
 	s32	dmg_inflictor;
 	s32	owner;
 	vec3_t	movedir;
 	string_t	message;
-	float	sounds;
+	f32	sounds;
 	string_t	noise;
 	string_t	noise1;
 	string_t	noise2;
@@ -1145,8 +1139,8 @@ typedef struct {
 
 typedef union eval_s {                                                // progs.h
 	string_t string;
-	float _float;
-	float vector[3];
+	f32 _float;
+	f32 vector[3];
 	func_t function;
 	s32 _int;
 	s32 edict;
@@ -1160,9 +1154,9 @@ typedef struct edict_s {
 	u8 alpha;
 	u8 scale;
 	bool sendinterval;
-	float oldframe;
-	float oldthinktime;
-	float freetime;
+	f32 oldframe;
+	f32 oldthinktime;
+	f32 freetime;
 	entvars_t v;
 } edict_t;
 typedef struct {
@@ -1174,13 +1168,13 @@ typedef void (*builtin_t) (void);
 
 typedef struct {                                                      // world.h
 	vec3_t normal;
-	float dist;
+	f32 dist;
 } plane_t;
 typedef struct {
 	bool allsolid; // if true, plane is not valid
 	bool startsolid; // if true, the initial point was in a solid area
 	bool inopen, inwater;
-	float fraction; // time completed, 1.0 = didn't hit anything
+	f32 fraction; // time completed, 1.0 = didn't hit anything
 	vec3_t endpos; // final position
 	plane_t plane; // surface normal at impact
 	edict_t *ent; // entity the surface is on
@@ -1207,7 +1201,7 @@ typedef struct {
 	s32 speed;
 	s32 width;
 	s32 stereo;
-	byte data[1]; /* variable sized */
+	u8 data[1]; /* variable sized */
 } sfxcache_t;
 typedef struct {
 	s32 channels;
@@ -1249,10 +1243,10 @@ typedef struct {                                                     // client.h
 } lightstyle_t;
 typedef struct {
 	s8 name[MAX_SCOREBOARDNAME];
-	float entertime;
+	f32 entertime;
 	s32 frags;
 	s32 colors; // two 4 bit fields
-	byte translations[VID_GRADES*256];
+	u8 translations[VID_GRADES*256];
 } scoreboard_t;
 typedef struct {
 	s32 destcolor[3];
@@ -1260,17 +1254,17 @@ typedef struct {
 } cshift_t;
 typedef struct {
 	vec3_t origin;
-	float radius;
-	float die; // stop lighting after this time
-	float decay; // drop this each second
-	float minlight; // don't add when contributing less
+	f32 radius;
+	f32 die; // stop lighting after this time
+	f32 decay; // drop this each second
+	f32 minlight; // don't add when contributing less
 	s32 key;
 	vec3_t color; //johnfitz -- lit support via lordhavoc
 } dlight_t;
 typedef struct {
 	s32 entity;
 	struct model_s *model;
-	float endtime;
+	f32 endtime;
 	vec3_t start, end;
 } beam_t;
 typedef enum {
@@ -1291,7 +1285,7 @@ typedef struct {
 	FILE *demofile;
 	s32 td_lastframe; // to meter out one message a frame
 	s32 td_startframe; // host_framecount at start
-	float td_starttime; // realtime at second frame of timedemo
+	f32 td_starttime; // realtime at second frame of timedemo
 	s32 signon; // 0 to SIGNONS
 	struct qsocket_s *netcon;
 	sizebuf_t message; // writing buffer to send to server
@@ -1303,8 +1297,8 @@ typedef struct {
 	usercmd_t pendingcmd;
 	s32 stats[MAX_CL_STATS]; // health, etc
 	s32 items; // inventory bit flags
-	float item_gettime[32]; // cl.time of aquiring item, for blinking
-	float faceanimtime; // use anim frame if cl.time < this
+	f32 item_gettime[32]; // cl.time of aquiring item, for blinking
+	f32 faceanimtime; // use anim frame if cl.time < this
 	cshift_t cshifts[NUM_CSHIFTS]; // color shifts for damage, powerups
 	cshift_t prev_cshifts[NUM_CSHIFTS];
 	vec3_t mviewangles[2];
@@ -1312,22 +1306,22 @@ typedef struct {
 	vec3_t mvelocity[2];
 	vec3_t velocity; // lerped between mvelocity[0] and [1]
 	vec3_t punchangle; // temporary offset
-	float idealpitch;
-	float pitchvel;
+	f32 idealpitch;
+	f32 pitchvel;
 	bool nodrift;
-	float driftmove;
-	double laststop;
-	float viewheight;
-	float crouch; // local amount for smoothing stepups
+	f32 driftmove;
+	f64 laststop;
+	f32 viewheight;
+	f32 crouch; // local amount for smoothing stepups
 	bool paused; // send over by server
 	bool onground;
 	bool inwater;
 	s32 intermission; // don't change view angle, full screen, etc
 	s32 completed_time; // latched at intermission start
-	double mtime[2]; // the timestamp of last two messages
-	double time;
-	double oldtime;
-	float last_received_message;
+	f64 mtime[2]; // the timestamp of last two messages
+	f64 time;
+	f64 oldtime;
+	f32 last_received_message;
 	struct model_s *model_precache[MAX_MODELS];
 	struct sfx_s *sound_precache[MAX_SOUNDS];
 	s8 mapname[128];
@@ -1363,9 +1357,9 @@ typedef struct {
 	bool paused;
 	bool loadgame; // handle connections specially
 	bool nomonsters; // server started with 'nomonsters' cvar active
-	double time;
+	f64 time;
 	s32 lastcheck; // used by PF_checkclient
-	double lastchecktime;
+	f64 lastchecktime;
 	s8 name[64]; // map name
 	s8 modelname[64]; // maps/<name>.bsp, for model_precache[0]
 	struct model_s *worldmodel;
@@ -1378,9 +1372,9 @@ typedef struct {
 	edict_t *edicts;
 	server_state_t state; // some actions are only valid during load
 	sizebuf_t datagram;
-	byte datagram_buf[MAX_DATAGRAM];
+	u8 datagram_buf[MAX_DATAGRAM];
 	sizebuf_t reliable_datagram;
-	byte reliable_datagram_buf[MAX_DATAGRAM];
+	u8 reliable_datagram_buf[MAX_DATAGRAM];
 	sizebuf_t *signon;
 	s32 num_signon_buffers;
 	sizebuf_t *signon_buffers[MAX_SIGNON_BUFFERS];
@@ -1399,18 +1393,18 @@ typedef struct client_s {
 	bool dropasap; // has been told to go to another level
 	enum sendsignon_e sendsignon; // only valid before spawned
 	s32 signonidx;
-	double last_message; // reliable messages must be sent periodically
+	f64 last_message; // reliable messages must be sent periodically
 	struct qsocket_s *netconnection; // communications handle
 	usercmd_t cmd; // movement
 	vec3_t wishdir; // intended motion calced from cmd
 	sizebuf_t message;
-	byte msgbuf[MAX_MSGLEN];
+	u8 msgbuf[MAX_MSGLEN];
 	edict_t *edict; // EDICT_NUM(clientnum+1)
 	s8 name[32]; // for printing to other people
 	s32 colors;
-	float ping_times[NUM_PING_TIMES];
+	f32 ping_times[NUM_PING_TIMES];
 	s32 num_pings; // ping_times[num_pings%NUM_PING_TIMES]
-	float spawn_parms[NUM_SPAWN_PARMS];
+	f32 spawn_parms[NUM_SPAWN_PARMS];
 	s32 old_frags;
 } client_t;
 
@@ -1418,7 +1412,7 @@ typedef struct {                                                       // draw.c
 	vrect_t rect;
 	s32 width;
 	s32 height;
-	byte *ptexbytes;
+	u8 *ptexbytes;
 	s32 rowbytes;
 } rectdesc_t;
 typedef struct cachepic_s {
@@ -1427,7 +1421,7 @@ typedef struct cachepic_s {
 } cachepic_t;
 
 typedef struct {                                                     // r_draw.c
-	float u, v;
+	f32 u, v;
 	s32 ceilv;
 } evert_t;
 
@@ -1471,7 +1465,7 @@ typedef struct {
 	void *pdest;
 	s16 *pz;
 	s32 count;
-	byte *ptex;
+	u8 *ptex;
 	s32 sfrac, tfrac, light, zi;
 } spanpackage_t;
 typedef struct {
@@ -1549,16 +1543,16 @@ typedef struct targaheader_s {
 
 typedef struct {                                                      // world.c
 	vec3_t		boxmins, boxmaxs; // enclose the test object along entire move
-	float		*mins, *maxs;	// size of the moving object
+	f32		*mins, *maxs;	// size of the moving object
 	vec3_t		mins2, maxs2;	// size when clipping against mosnters
-	float		*start, *end;
+	f32		*start, *end;
 	trace_t		trace;
 	s32			type;
 	edict_t		*passedict;
 } moveclip_t;
 typedef struct areanode_s {
 	s32		axis;		// -1 = leaf node
-	float	dist;
+	f32	dist;
 	struct areanode_s	*children[2];
 	link_t	trigger_edicts;
 	link_t	solid_edicts;

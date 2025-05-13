@@ -300,7 +300,7 @@ void Cvar_UnlockAll (void)
 Cvar_VariableValue
 ============
 */
-float	Cvar_VariableValue (const s8 *var_name)
+f32	Cvar_VariableValue (const s8 *var_name)
 {
 	cvar_t	*var;
 
@@ -412,11 +412,11 @@ void Cvar_SetQuick (cvar_t *var, const s8 *value)
 		var->callback (var);
 }
 
-void Cvar_SetValueQuick (cvar_t *var, const float value)
+void Cvar_SetValueQuick (cvar_t *var, const f32 value)
 {
 	s8	val[32], *ptr = val;
 
-	if (value == (float)((s32)value))
+	if (value == (f32)((s32)value))
 		q_snprintf (val, sizeof(val), "%i", (s32)value);
 	else
 	{
@@ -455,11 +455,11 @@ void Cvar_Set (const s8 *var_name, const s8 *value)
 Cvar_SetValue
 ============
 */
-void Cvar_SetValue (const s8 *var_name, const float value)
+void Cvar_SetValue (const s8 *var_name, const f32 value)
 {
 	s8	val[32], *ptr = val;
 
-	if (value == (float)((s32)value))
+	if (value == (f32)((s32)value))
 		q_snprintf (val, sizeof(val), "%i", (s32)value);
 	else
 	{
@@ -495,7 +495,7 @@ void Cvar_SetROM (const s8 *var_name, const s8 *value)
 Cvar_SetValueROM
 ============
 */
-void Cvar_SetValueROM (const s8 *var_name, const float value)
+void Cvar_SetValueROM (const s8 *var_name, const f32 value)
 {
 	cvar_t *var = Cvar_FindVar (var_name);
 	if (var)
