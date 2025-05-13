@@ -2,58 +2,12 @@
 // Copyright (C) 2002-2009 John Fitzgibbons and others
 // Copyright (C) 2010-2014 QuakeSpasm developers
 // GPLv3 See LICENSE for details.
-
 // common.c -- misc functions used in client and server
-
 #include "quakedef.h"
-#include <errno.h>
-
 #include "miniz.h"
 
-static s8	*largv[MAX_NUM_ARGVS + 1];
-static s8	argvdummy[] = " ";
-
-s32		safemode;
-
-static bool		com_modified;	// set true if using non-id files
-
-bool		fitzmode;
-
-static void COM_Path_f (void);
-
-
-s8	com_token[1024];
-s32		com_argc;
-s8	**com_argv;
-s8	com_cmdline[CMDLINE_LENGTH];
-
-bool standard_quake = true, rogue, hipnotic;
-
-// this graphic needs to be in the pak file to use registered features
-static u16 pop[] =
-{
-	0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
-	0x0000,0x0000,0x6600,0x0000,0x0000,0x0000,0x6600,0x0000,
-	0x0000,0x0066,0x0000,0x0000,0x0000,0x0000,0x0067,0x0000,
-	0x0000,0x6665,0x0000,0x0000,0x0000,0x0000,0x0065,0x6600,
-	0x0063,0x6561,0x0000,0x0000,0x0000,0x0000,0x0061,0x6563,
-	0x0064,0x6561,0x0000,0x0000,0x0000,0x0000,0x0061,0x6564,
-	0x0064,0x6564,0x0000,0x6469,0x6969,0x6400,0x0064,0x6564,
-	0x0063,0x6568,0x6200,0x0064,0x6864,0x0000,0x6268,0x6563,
-	0x0000,0x6567,0x6963,0x0064,0x6764,0x0063,0x6967,0x6500,
-	0x0000,0x6266,0x6769,0x6a68,0x6768,0x6a69,0x6766,0x6200,
-	0x0000,0x0062,0x6566,0x6666,0x6666,0x6666,0x6562,0x0000,
-	0x0000,0x0000,0x0062,0x6364,0x6664,0x6362,0x0000,0x0000,
-	0x0000,0x0000,0x0000,0x0062,0x6662,0x0000,0x0000,0x0000,
-	0x0000,0x0000,0x0000,0x0061,0x6661,0x0000,0x0000,0x0000,
-	0x0000,0x0000,0x0000,0x0000,0x6500,0x0000,0x0000,0x0000,
-	0x0000,0x0000,0x0000,0x0000,0x6400,0x0000,0x0000,0x0000
-};
-
-/*
-
-All of Quake's data access is through a hierchal file system, but the contents
-of the file system can be transparently merged from several sources.
+/* All of Quake's data access is through a hierchal file system, but the
+contents of the file system can be transparently merged from several sources.
 
 The "base directory" is the path to the directory holding the quake.exe and all
 game directories.  The sys_* files pass this to host_init in quakeparms_t->basedir.
@@ -79,9 +33,35 @@ current command line arguments to allow different games to initialize startup
 parms differently.  This could be used to add a "-sspeed 22050" for the high
 quality sound edition.  Because they are added at the end, they will not
 override an explicit setting on the original command line.
-
 */
 
+static bool		com_modified;	// set true if using non-id files
+static s8	*largv[MAX_NUM_ARGVS + 1];
+static s8	argvdummy[] = " ";
+static void COM_Path_f (void);
+static u8	*loadbuf;
+static cache_user_t *loadcache;
+static s32	loadsize;
+static localization_t localization;
+static u16 pop[] =
+{ // this graphic needs to be in the pak file to use registered features
+	     0,     0,     0,     0,     0,     0,     0,     0,
+	     0,     0,0x6600,     0,     0,     0,0x6600,     0,
+	     0,0x0066,     0,     0,     0,     0,0x0067,     0,
+	     0,0x6665,     0,     0,     0,     0,0x0065,0x6600,
+	0x0063,0x6561,     0,     0,     0,     0,0x0061,0x6563,
+	0x0064,0x6561,     0,     0,     0,     0,0x0061,0x6564,
+	0x0064,0x6564,     0,0x6469,0x6969,0x6400,0x0064,0x6564,
+	0x0063,0x6568,0x6200,0x0064,0x6864,     0,0x6268,0x6563,
+	     0,0x6567,0x6963,0x0064,0x6764,0x0063,0x6967,0x6500,
+	     0,0x6266,0x6769,0x6a68,0x6768,0x6a69,0x6766,0x6200,
+	     0,0x0062,0x6566,0x6666,0x6666,0x6666,0x6562,     0,
+	     0,     0,0x0062,0x6364,0x6664,0x6362,     0,     0,
+	     0,     0,     0,0x0062,0x6662,     0,     0,     0,
+	     0,     0,     0,0x0061,0x6661,     0,     0,     0,
+	     0,     0,     0,     0,0x6500,     0,     0,     0,
+	     0,     0,     0,     0,0x6400,     0,     0,     0
+};
 //============================================================================
 
 static s32 q_islower(s32 c){return (c >= 'a' && c <= 'z');}
@@ -634,15 +614,6 @@ f32 Q_atof (const s8 *str)
 ============================================================================
 */
 
-bool	host_bigendian;
-
-s16	(*BigShort) (s16 l);
-s16	(*LittleShort) (s16 l);
-s32	(*BigLong) (s32 l);
-s32	(*LittleLong) (s32 l);
-f32	(*BigFloat) (f32 l);
-f32	(*LittleFloat) (f32 l);
-
 s16 ShortSwap (s16 l)
 {
 	u8	b1, b2;
@@ -834,8 +805,6 @@ void MSG_WriteAngle16 (sizebuf_t *sb, f32 f, u32 flags)
 //
 // reading functions
 //
-s32		msg_readcount;
-bool	msg_badread;
 
 void MSG_BeginReading (void)
 {
@@ -1572,18 +1541,6 @@ QUAKE FILESYSTEM
 =============================================================================
 */
 
-s32	com_filesize;
-
-
-
-
-s8	com_gamedir[MAX_OSPATH];
-s8	com_basedir[MAX_OSPATH];
-s32	file_from_pak;		// ZOID: global indicating that file came from a pak
-
-searchpath_t	*com_searchpaths;
-searchpath_t	*com_base_searchpaths;
-
 /*
 ============
 COM_Path_f
@@ -1846,10 +1803,6 @@ Filename are reletive to the quake directory.
 Allways appends a 0 u8.
 ============
 */
-
-static u8	*loadbuf;
-static cache_user_t *loadcache;
-static s32	loadsize;
 
 u8 *COM_LoadFile (const s8 *path, s32 usehunk, u32 *path_id)
 {
@@ -2558,9 +2511,6 @@ s64 FS_filelength (fshandle_t *fh)
 								LOCALIZATION
 ============================================================================
 */
-
-
-static localization_t localization;
 
 /*
 ================

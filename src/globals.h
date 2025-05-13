@@ -468,6 +468,7 @@ extern void TransformVector(vec3_t in, vec3_t out);
 extern void SetUpForLineScan(s32 startvertu, s32 startvertv,
 		s32 endvertu, s32 endvertv);
 extern void R_MakeSky();
+void Sky_LoadSkyBox (const s8 *name);
 extern void R_DrawLine(polyvert_t *polyvert0, polyvert_t *polyvert1);
 
 void SV_ClearWorld();                                                 // world.h
@@ -899,5 +900,111 @@ void SV_CheckForNewClients (void);
 void SV_RunClients (void);
 void SV_SaveSpawnparms (void);
 void SV_SpawnServer (const s8 *server);
+
+extern vec3_t chase_pos;                                              // chase.c
+extern vec3_t chase_angles;
+extern vec3_t chase_dest;
+extern vec3_t chase_dest_angles;
+extern void Cvar_RegisterVariable (cvar_t *variable);
+extern bool SV_RecursiveHullCheck(hull_t *hull, s32 num, f32 p1f,
+			f32 p2f, vec3_t p1, vec3_t p2, trace_t *trace);
+
+EX kbutton_t in_mlook, in_klook;                                   // cl_input.c
+EX kbutton_t in_left, in_right, in_forward, in_back;
+EX kbutton_t in_lookup, in_lookdown, in_moveleft, in_moveright;
+EX kbutton_t in_strafe, in_speed, in_use, in_jump, in_attack;
+EX kbutton_t in_up, in_down;
+EX s32 in_impulse;
+EX void CL_AdjustAngles();
+
+EX f32 v_dmg_time, v_dmg_roll, v_dmg_pitch;                            // view.c
+EX vec3_t forward, right, up;
+EX cshift_t cshift_empty;
+EX cshift_t cshift_water;
+EX cshift_t cshift_slime;
+EX cshift_t cshift_lava;
+EX u8 gammatable[256];
+EX s32 in_impulse;
+
+EX edict_t *sv_player;                                              // sv_user.c
+EX f32 *angles;
+EX f32 *origin;
+EX f32 *velocity;
+EX bool onground;
+EX usercmd_t cmd;
+
+EX client_static_t cls;                                             // cl_main.c
+EX client_state_t cl;
+EX efrag_t cl_efrags[MAX_EFRAGS];
+EX entity_t cl_entities[MAX_EDICTS];
+EX entity_t cl_static_entities[MAX_STATIC_ENTITIES];
+EX lightstyle_t cl_lightstyle[MAX_LIGHTSTYLES];
+EX dlight_t cl_dlights[MAX_DLIGHTS];
+EX s32 cl_numvisedicts;
+EX entity_t *cl_visedicts[MAX_VISEDICTS];
+
+EX s32 bitcounts[16];                                              // cl_parse.c
+EX s8 *svc_strings[];
+
+EX s32 num_temp_entities;                                           // cl_tent.c
+EX entity_t cl_temp_entities[MAX_TEMP_ENTITIES];
+EX beam_t cl_beams[MAX_BEAMS];
+EX sfx_t *cl_sfx_wizhit;
+EX sfx_t *cl_sfx_knighthit;
+EX sfx_t *cl_sfx_tink1;
+EX sfx_t *cl_sfx_ric1;
+EX sfx_t *cl_sfx_ric2;
+EX sfx_t *cl_sfx_ric3;
+EX sfx_t *cl_sfx_r_exp3;
+
+EX cmdalias_t *cmd_alias;                                               // cmd.c
+EX s32 trashtest;
+EX s32 *trashspot;
+EX bool cmd_wait;
+EX sizebuf_t cmd_text;
+EX cmd_source_t cmd_source;
+EX cmd_function_t *cmd_functions;
+
+EX s32 safemode;                                                     // common.c
+EX bool fitzmode;
+EX s8 com_token[1024];
+EX s32 com_argc;
+EX s8 **com_argv;
+EX s8 com_cmdline[CMDLINE_LENGTH];
+EX bool standard_quake;
+EX bool host_bigendian;
+EX s32 msg_readcount;
+EX bool msg_badread;
+EX s32 com_filesize;
+EX s8 com_gamedir[MAX_OSPATH];
+EX s8 com_basedir[MAX_OSPATH];
+EX s32 file_from_pak;
+EX searchpath_t *com_searchpaths;
+EX searchpath_t *com_base_searchpaths;
+EX s16 (*BigShort) (s16 l);
+EX s16 (*LittleShort) (s16 l);
+EX s32 (*BigLong) (s32 l);
+EX s32 (*LittleLong) (s32 l);
+EX f32 (*BigFloat) (f32 l);
+EX f32 (*LittleFloat) (f32 l);
+
+EX bool con_forcedup; // because no entities to refresh             // console.c
+EX s32 con_totallines; // total lines in console scrollback
+EX s32 con_backscroll; // lines up from bottom to display
+EX s32 con_current; // where next message will be printed
+EX s32 con_x; // offset in current line for next print
+EX s8 *con_text;
+EX s32 con_linewidth;
+EX f32 con_cursorspeed;
+EX s32 con_vislines;
+EX bool con_debuglog;
+EX bool con_initialized;
+EX s32 con_notifylines; // scan lines to clear for notify lines
+EX f32 con_times[NUM_CON_TIMES];
+EX s8 key_lines[32][MAXCMDLINE];
+EX s32 edit_line;
+EX s32 key_linepos;
+EX bool team_message;
+EX void M_Menu_Main_f();
 #undef EX
 #endif

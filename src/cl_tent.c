@@ -2,22 +2,8 @@
 // Copyright (C) 2002-2009 John Fitzgibbons and others
 // Copyright (C) 2010-2014 QuakeSpasm developers
 // GPLv3 See LICENSE for details.
-
 // cl_tent.c -- client side temporary entities
-
 #include "quakedef.h"
-
-s32			num_temp_entities;
-entity_t	cl_temp_entities[MAX_TEMP_ENTITIES];
-beam_t		cl_beams[MAX_BEAMS];
-
-sfx_t			*cl_sfx_wizhit;
-sfx_t			*cl_sfx_knighthit;
-sfx_t			*cl_sfx_tink1;
-sfx_t			*cl_sfx_ric1;
-sfx_t			*cl_sfx_ric2;
-sfx_t			*cl_sfx_ric3;
-sfx_t			*cl_sfx_r_exp3;
 
 /*
 =================

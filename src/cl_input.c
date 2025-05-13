@@ -5,9 +5,7 @@
 
 #include "quakedef.h"
 
-
-/*
-===============================================================================
+/*==============================================================================
 
 KEY BUTTONS
 
@@ -24,18 +22,7 @@ state bit 0 is the current state of the key
 state bit 1 is edge triggered on the up to down transition
 state bit 2 is edge triggered on the down to up transition
 
-===============================================================================
-*/
-
-
-kbutton_t	in_mlook, in_klook;
-kbutton_t	in_left, in_right, in_forward, in_back;
-kbutton_t	in_lookup, in_lookdown, in_moveleft, in_moveright;
-kbutton_t	in_strafe, in_speed, in_use, in_jump, in_attack;
-kbutton_t	in_up, in_down;
-
-s32			in_impulse;
-
+==============================================================================*/
 
 void KeyDown (kbutton_t *b)
 {

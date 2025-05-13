@@ -1,25 +1,6 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 // cl_main.c  -- client main loop
-
 #include "quakedef.h"
-
-// we need to declare some mouse variables here, because the menu system
-// references them even when on a unix system.
-
-client_static_t cls;
-client_state_t cl;
-// FIXME: put these on hunk?
-efrag_t cl_efrags[MAX_EFRAGS];
-entity_t cl_entities[MAX_EDICTS];
-entity_t cl_static_entities[MAX_STATIC_ENTITIES];
-lightstyle_t cl_lightstyle[MAX_LIGHTSTYLES];
-dlight_t cl_dlights[MAX_DLIGHTS];
-
-s32 cl_numvisedicts;
-entity_t *cl_visedicts[MAX_VISEDICTS];
-
-extern void CL_AdjustAngles();
 
 void CL_ClearState()
 {

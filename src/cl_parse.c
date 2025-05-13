@@ -1,60 +1,8 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
-// cl_parse.c  -- parse a message received from the server
-
+// cl_parse.c -- parse a message received from the server
 #include "quakedef.h"
 
-#define SHOWNET(x) 
-
-s32 bitcounts[16];
-s8 *svc_strings[] = {
-	"svc_bad",
-	"svc_nop",
-	"svc_disconnect",
-	"svc_updatestat",
-	"svc_version",		// [s64] server version
-	"svc_setview",		// [s16] entity number
-	"svc_sound",		// <see code>
-	"svc_time",		// [f32] server time
-	"svc_print",		// [string] null terminated string
-	"svc_stufftext",	// [string] stuffed into client's console buffer
-	// the string should be \n terminated
-	"svc_setangle",		// [vec3] set the view angle to this absolute value
-
-	"svc_serverinfo",	// [s64] version
-	// [string] signon string
-	// [string]..[0]model cache [string]...[0]sounds cache
-	// [string]..[0]item cache
-	"svc_lightstyle",	// [u8] [string]
-	"svc_updatename",	// [u8] [string]
-	"svc_updatefrags",	// [u8] [s16]
-	"svc_clientdata",	// <shortbits + data>
-	"svc_stopsound",	// <see code>
-	"svc_updatecolors",	// [u8] [u8]
-	"svc_particle",		// [vec3] <variable>
-	"svc_damage",		// [u8] impact [u8] blood [vec3] from
-
-	"svc_spawnstatic",
-	"OBSOLETE svc_spawnbinary",
-	"svc_spawnbaseline",
-
-	"svc_temp_entity",	// <variable>
-	"svc_setpause",
-	"svc_signonnum",
-	"svc_centerprint",
-	"svc_killedmonster",
-	"svc_foundsecret",
-	"svc_spawnstaticsound",
-	"svc_intermission",
-	"svc_finale",		// [string] music [string] text
-	"svc_cdtrack",		// [u8] track [u8] looptrack
-	"svc_sellscreen",
-	"svc_cutscene"
-};
-
 static const s8 *suf[6] = {"rt", "bk", "lf", "ft", "up", "dn"};
-
-void Sky_LoadSkyBox (const s8 *name);
 
 void V_RestoreAngles (void)
 {
@@ -960,7 +908,7 @@ void CL_ParseServerMessage ()
 			CL_ParseUpdate (cmd&127);
 			continue;
 		}
-		if (cmd < (s32)Q_COUNTOF(svc_strings)) {
+		if (cmd < (s32)Q_COUNTOF((char*)svc_strings)) {
 			if(cl_shownet.value==2)
 				Con_Printf("%3i:%s\n",msg_readcount-1,
 						svc_strings[cmd]);

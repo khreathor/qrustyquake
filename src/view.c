@@ -1,25 +1,11 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 // view.c -- player eye positioning
-
 #include "quakedef.h"
 
 // The view is allowed to move slightly from it's true position for bobbing,
 // but if it exceeds 8 pixels linear distance (spherical, not box), the list of
 // entities sent from the server may not include everything in the pvs,
 // especially when crossing a water boudnary.
-
-f32 v_dmg_time, v_dmg_roll, v_dmg_pitch;
-vec3_t forward, right, up;
-extern s32 in_forward, in_forward2, in_back;
-extern vrect_t scr_vrect;
-
-// Palette flashes 
-cshift_t cshift_empty = { { 130, 80, 50 }, 0 };
-cshift_t cshift_water = { { 130, 80, 50 }, 128 };
-cshift_t cshift_slime = { { 0, 25, 5 }, 150 };
-cshift_t cshift_lava = { { 255, 80, 0 }, 150 };
-u8 gammatable[256]; // palette is sent through this
 
 f32 V_CalcRoll(vec3_t angles, vec3_t velocity)
 { // Used by view and sv_user

@@ -2,23 +2,10 @@
 // Copyright (C) 2002-2009 John Fitzgibbons and others
 // Copyright (C) 2010-2014 QuakeSpasm developers
 // GPLv3 See LICENSE for details.
-
 // sv_user.c -- server code for moving users
-
 #include "quakedef.h"
 
-edict_t	*sv_player;
-
-static	vec3_t		forward, right, up;
-
-// world
-f32	*angles;
-f32	*origin;
-f32	*velocity;
-
-bool	onground;
-
-usercmd_t	cmd;
+static vec3_t sv_fwd, sv_rgt, sv_up;
 
 /*
 ===============
@@ -205,10 +192,10 @@ void SV_WaterMove (void)
 //
 // user intentions
 //
-	AngleVectors (sv_player->v.v_angle, forward, right, up);
+	AngleVectors (sv_player->v.v_angle, sv_fwd, sv_rgt, sv_up);
 
 	for (i=0 ; i<3 ; i++)
-		wishvel[i] = forward[i]*cmd.forwardmove + right[i]*cmd.sidemove;
+		wishvel[i] = sv_fwd[i]*cmd.forwardmove + sv_rgt[i]*cmd.sidemove;
 
 	if (!cmd.forwardmove && !cmd.sidemove && !cmd.upmove)
 		wishvel[2] -= 60;		// drift towards bottom
@@ -277,11 +264,11 @@ new, alternate noclip. old noclip is still handled in SV_AirMove
 */
 void SV_NoclipMove (void)
 {
-	AngleVectors (sv_player->v.v_angle, forward, right, up);
+	AngleVectors (sv_player->v.v_angle, sv_fwd, sv_rgt, sv_up);
 
-	velocity[0] = forward[0]*cmd.forwardmove + right[0]*cmd.sidemove;
-	velocity[1] = forward[1]*cmd.forwardmove + right[1]*cmd.sidemove;
-	velocity[2] = forward[2]*cmd.forwardmove + right[2]*cmd.sidemove;
+	velocity[0] = sv_fwd[0]*cmd.forwardmove + sv_rgt[0]*cmd.sidemove;
+	velocity[1] = sv_fwd[1]*cmd.forwardmove + sv_rgt[1]*cmd.sidemove;
+	velocity[2] = sv_fwd[2]*cmd.forwardmove + sv_rgt[2]*cmd.sidemove;
 	velocity[2] += cmd.upmove*2; //doubled to match running speed
 
 	if (VectorLength (velocity) > sv_maxspeed.value)
@@ -303,7 +290,7 @@ void SV_AirMove (void)
 	f32		wishspeed;
 	f32		fmove, smove;
 
-	AngleVectors (sv_player->v.angles, forward, right, up);
+	AngleVectors (sv_player->v.angles, sv_fwd, sv_rgt, sv_up);
 
 	fmove = cmd.forwardmove;
 	smove = cmd.sidemove;
@@ -313,7 +300,7 @@ void SV_AirMove (void)
 		fmove = 0;
 
 	for (i=0 ; i<3 ; i++)
-		wishvel[i] = forward[i]*fmove + right[i]*smove;
+		wishvel[i] = sv_fwd[i]*fmove + sv_rgt[i]*smove;
 
 	if ( (s32)sv_player->v.movetype != MOVETYPE_WALK)
 		wishvel[2] = cmd.upmove;

@@ -2,13 +2,11 @@
 // Copyright (C) 2002-2005 John Fitzgibbons and others
 // Copyright (C) 2007-2008 Kristian Duske
 // GPLv3 See LICENSE for details.
-
-#include "quakedef.h"
-
 // When a demo is playing back, all NET_SendMessages are skipped, and
 // NET_GetMessages are read from the demo file.
 // Whenever cl.time gets past the last received message, another message is
 // read from the demo file.
+#include "quakedef.h"
 
 void CL_FinishTimeDemo()
 {

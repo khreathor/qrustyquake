@@ -2,24 +2,13 @@
 // Copyright (C) 2002-2009 John Fitzgibbons and others
 // Copyright (C) 2007-2008 Kristian Duske
 // GPLv3 See LICENSE for details.
-
 // cmd.c -- Quake script command processing module
-
 #include "quakedef.h"
 
-cmdalias_t *cmd_alias;
-s32 trashtest;
-s32 *trashspot;
-bool cmd_wait;
-sizebuf_t cmd_text;
 static s32 cmd_argc;
 static s8 *cmd_argv[MAX_ARGS];
 static s8 *cmd_null_string = "";
 static s8 *cmd_args = NULL;
-cmd_source_t cmd_source;
-//johnfitz -- better tab completion
-cmd_function_t *cmd_functions; // possible commands to execute
-
 
 void Cmd_ForwardToServer();
 

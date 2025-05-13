@@ -1,15 +1,12 @@
 // Copyright (C) 1996-2001 Id Software, Inc.
 // Copyright (C) 2002-2009 John Fitzgibbons and others
 // GPLv3 See LICENSE for details.
-
 #include "quakedef.h"
 
 // this is a 16 bit, non-reflected CRC using the polynomial 0x1021
 // and the initial and final xor values shown below...  in other words, the
 // CCITT standard CRC used by XMODEM
-
-static const u16 crctable[256] =
-{
+static const u16 crctable[256] = {
 	0x0000,	0x1021,	0x2042,	0x3063,	0x4084,	0x50a5,	0x60c6,	0x70e7,
 	0x8108,	0x9129,	0xa14a,	0xb16b,	0xc18c,	0xd1ad,	0xe1ce,	0xf1ef,
 	0x1231,	0x0210,	0x3273,	0x2252,	0x52b5,	0x4294,	0x72f7,	0x62d6,
@@ -43,30 +40,17 @@ static const u16 crctable[256] =
 	0xef1f,	0xff3e,	0xcf5d,	0xdf7c,	0xaf9b,	0xbfba,	0x8fd9,	0x9ff8,
 	0x6e17,	0x7e36,	0x4e55,	0x5e74,	0x2e93,	0x3eb2,	0x0ed1,	0x1ef0
 };
-
 void CRC_Init(u16 *crcvalue)
-{
-	*crcvalue = CRC_INIT_VALUE;
-}
-
+{ *crcvalue = CRC_INIT_VALUE; }
 void CRC_ProcessByte(u16 *crcvalue, u8 data)
-{
-	*crcvalue = (*crcvalue << 8) ^ crctable[(*crcvalue >> 8) ^ data];
-}
-
+{ *crcvalue = (*crcvalue << 8) ^ crctable[(*crcvalue >> 8) ^ data]; }
 u16 CRC_Value(u16 crcvalue)
-{
-	return crcvalue ^ CRC_XOR_VALUE;
-}
-
-//johnfitz -- texture crc
+{ return crcvalue ^ CRC_XOR_VALUE; }
 u16 CRC_Block (const u8 *start, s32 count)
-{
-	u16	crc;
-
+{ // johnfitz -- texture crc
+	u16 crc;
 	CRC_Init (&crc);
 	while (count--)
 		crc = (crc << 8) ^ crctable[(crc >> 8) ^ *start++];
-
 	return crc;
 }

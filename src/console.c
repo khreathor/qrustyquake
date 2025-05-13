@@ -2,27 +2,6 @@
 
 #include "quakedef.h"
 
-bool con_forcedup; // because no entities to refresh
-s32 con_totallines; // total lines in console scrollback
-s32 con_backscroll; // lines up from bottom to display
-s32 con_current; // where next message will be printed
-s32 con_x; // offset in current line for next print
-s8 *con_text = 0;
-s32 con_linewidth;
-f32 con_cursorspeed = 4;
-s32 con_vislines;
-bool con_debuglog;
-bool con_initialized;
-s32 con_notifylines; // scan lines to clear for notify lines
-f32 con_times[NUM_CON_TIMES];	// realtime time the line was generated
-				// for transparent notify lines
-
-extern s8 key_lines[32][MAXCMDLINE];
-extern s32 edit_line;
-extern s32 key_linepos;
-extern bool team_message;
-extern void M_Menu_Main_f();
-
 void Con_ToggleConsole_f()
 {
 	if (key_dest == key_console) {

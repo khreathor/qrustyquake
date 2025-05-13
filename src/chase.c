@@ -1,17 +1,6 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 // chase.c -- chase camera code
-
 #include "quakedef.h"
-
-vec3_t chase_pos;
-vec3_t chase_angles;
-vec3_t chase_dest;
-vec3_t chase_dest_angles;
-
-extern void Cvar_RegisterVariable (cvar_t *variable);
-extern bool SV_RecursiveHullCheck(hull_t *hull, s32 num, f32 p1f,
-			f32 p2f, vec3_t p1, vec3_t p2, trace_t *trace);
 
 void Chase_Init()
 {
