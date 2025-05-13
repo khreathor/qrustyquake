@@ -29,24 +29,24 @@ qpic_t *rsb_teambord; // PGM 01/19/97 - team color border
       //MED 01/04/97 added two more weapons + 3 alternates for grenade launcher
 qpic_t *hsb_weapons[7][5]; // 0 is active, 1 is owned, 2-5 are flashes
 bool sb_showscores;
-int sb_lines; // scan lines to draw
-int hipweapons[4] = //MED 01/04/97 added array to simplify weapon parsing
+s32 sb_lines; // scan lines to draw
+s32 hipweapons[4] = //MED 01/04/97 added array to simplify weapon parsing
 { HIT_LASER_CANNON_BIT, HIT_MJOLNIR_BIT, 4, HIT_PROXIMITY_GUN_BIT };
 qpic_t *hsb_items[2]; //MED 01/04/97 added hipnotic items array
-unsigned int sb_updates; // if >= vid.numpages, no update needed
-int fragsort[MAX_SCOREBOARD];
-char scoreboardtext[MAX_SCOREBOARD][20];
-int scoreboardtop[MAX_SCOREBOARD];
-int scoreboardbottom[MAX_SCOREBOARD];
-int scoreboardcount[MAX_SCOREBOARD];
-int scoreboardlines;
-int npos[4][2]; // ammo count num
-int wpos[9][2]; // weapons
-int kpos[2][2]; // keys
-int iposx[12]; // classic items
-int iposy;
+u32 sb_updates; // if >= vid.numpages, no update needed
+s32 fragsort[MAX_SCOREBOARD];
+s8 scoreboardtext[MAX_SCOREBOARD][20];
+s32 scoreboardtop[MAX_SCOREBOARD];
+s32 scoreboardbottom[MAX_SCOREBOARD];
+s32 scoreboardcount[MAX_SCOREBOARD];
+s32 scoreboardlines;
+s32 npos[4][2]; // ammo count num
+s32 wpos[9][2]; // weapons
+s32 kpos[2][2]; // keys
+s32 iposx[12]; // classic items
+s32 iposy;
 
-inline static int Sbar_ColorForMap(int m)
+inline static s32 Sbar_ColorForMap(s32 m)
 { return m < 128 ? m + 8 : m + 8; }
 inline static void Sbar_ShowScores() // Tab key down
 { if (sb_showscores) return; sb_showscores = true; sb_updates = 0; }
@@ -57,7 +57,7 @@ void Sbar_Changed() // update next frame
 
 void Sbar_Init()
 {
-	for (int i = 0; i < 10; i++) {
+	for (s32 i = 0; i < 10; i++) {
 		sb_nums[0][i] = Draw_PicFromWad(va("num_%i", i));
 		sb_nums[1][i] = Draw_PicFromWad(va("anum_%i", i));
 	}
@@ -79,7 +79,7 @@ void Sbar_Init()
 	sb_weapons[1][4] = Draw_PicFromWad("inv2_rlaunch");
 	sb_weapons[1][5] = Draw_PicFromWad("inv2_srlaunch");
 	sb_weapons[1][6] = Draw_PicFromWad("inv2_lightng");
-	for (int i = 0; i < 5; i++) {
+	for (s32 i = 0; i < 5; i++) {
 		sb_weapons[2+i][0] = Draw_PicFromWad(va("inva%i_shotgun",i+1));
 		sb_weapons[2+i][1] = Draw_PicFromWad(va("inva%i_sshotgun",i+1));
 		sb_weapons[2+i][2] = Draw_PicFromWad(va("inva%i_nailgun",i+1));
@@ -136,7 +136,7 @@ void Sbar_Init()
 		hsb_items[0] = Draw_PicFromWad("sb_wsuit");
 		hsb_items[1] = Draw_PicFromWad("sb_eshld");
 	}
-	for (int i = 0; hipnotic && i < 5; i++) {
+	for (s32 i = 0; hipnotic && i < 5; i++) {
 		hsb_weapons[2+i][0]=Draw_PicFromWad(va("inva%i_laser",i+1));
 		hsb_weapons[2+i][1]=Draw_PicFromWad(va("inva%i_mjolnir",i+1));
 		hsb_weapons[2+i][2]=Draw_PicFromWad(va("inva%i_gren_prox",i+1));
@@ -164,18 +164,18 @@ void Sbar_Init()
 	Cvar_RegisterVariable(&scr_sidescore);
 }
 
-int Sbar_itoa(int num, char *buf)
+s32 Sbar_itoa(s32 num, s8 *buf)
 {
-	char *str = buf;
+	s8 *str = buf;
 	if (num < 0) {
 		*str++ = '-';
 		num = -num;
 	}
-	int pow10 = 10;
+	s32 pow10 = 10;
 	for (; num >= pow10; pow10 *= 10);
 	do {
 		pow10 /= 10;
-		int dig = num / pow10;
+		s32 dig = num / pow10;
 		*str++ = '0' + dig;
 		num -= dig * pow10;
 	} while (pow10 != 1);
@@ -183,26 +183,26 @@ int Sbar_itoa(int num, char *buf)
 	return str - buf;
 }
 
-void Sbar_DrawNum(int x, int y, int num, int digits, int color)
+void Sbar_DrawNum(s32 x, s32 y, s32 num, s32 digits, s32 color)
 {
-	char str[12];
-	int l = Sbar_itoa(num, str);
-	char *ptr = str;
+	s8 str[12];
+	s32 l = Sbar_itoa(num, str);
+	s8 *ptr = str;
 	if (l > digits)
 		ptr += (l - digits);
 	if (l < digits)
 		x += (digits - l) * 24*SCL;
 	while (*ptr) {
-		int frame = *ptr == '-' ? 10 : *ptr - '0'; // 10 = '-' char
+		s32 frame = *ptr == '-' ? 10 : *ptr - '0'; // 10 = '-' s8
 		Draw_TransPicScaled(x, y, sb_nums[color][frame], SCL);
 		x += 24*SCL;
 		ptr++;
 	}
 }
 
-void Sbar_DrawNumSmall(int x, int y, int num, int color)
+void Sbar_DrawNumSmall(s32 x, s32 y, s32 num, s32 color)
 {
-	char buf[6];
+	s8 buf[6];
 	sprintf(buf, "%3i", num);
 	if (buf[0] != ' ')
 		Draw_CharacterScaled(x       , y, (color?18:48)+buf[0]-'0',SCL);
@@ -215,17 +215,17 @@ void Sbar_DrawNumSmall(int x, int y, int num, int color)
 void Sbar_SortFrags()
 {
 	scoreboardlines = 0; // sort by frags
-	for (int i = 0; i < cl.maxclients; i++) {
+	for (s32 i = 0; i < cl.maxclients; i++) {
 		if (cl.scores[i].name[0]) {
 			fragsort[scoreboardlines] = i;
 			scoreboardlines++;
 		}
 	}
-	for (int i = 0; i < scoreboardlines; i++)
-		for (int j = 0; j < scoreboardlines - 1 - i; j++)
+	for (s32 i = 0; i < scoreboardlines; i++)
+		for (s32 j = 0; j < scoreboardlines - 1 - i; j++)
 			if (cl.scores[fragsort[j]].frags <
 					cl.scores[fragsort[j + 1]].frags) {
-				int k = fragsort[j];
+				s32 k = fragsort[j];
 				fragsort[j] = fragsort[j + 1];
 				fragsort[j + 1] = k;
 			}
@@ -233,17 +233,17 @@ void Sbar_SortFrags()
 
 void Sbar_SoloScoreboard()
 {
-	char str[80];
+	s8 str[80];
 	sprintf(str, "Monsters:%3i /%3i", cl.stats[STAT_MONSTERS],
 			cl.stats[STAT_TOTALMONSTERS]);
 	Draw_StringScaled(WW/2-152*SCL, HH-20*SCL, str, SCL);
 	sprintf(str, "Secrets :%3i /%3i", cl.stats[STAT_SECRETS],
 			cl.stats[STAT_TOTALSECRETS]);
 	Draw_StringScaled(WW/2-152*SCL, HH-12*SCL, str, SCL);
-	int minutes = cl.time / 60;
-	int seconds = cl.time - 60 * minutes;
-	int tens = seconds / 10;
-	int units = seconds - 10 * tens;
+	s32 minutes = cl.time / 60;
+	s32 seconds = cl.time - 60 * minutes;
+	s32 tens = seconds / 10;
+	s32 units = seconds - 10 * tens;
 	sprintf(str, "Time :%3i:%i%i", minutes, tens, units);
 	Draw_StringScaled(WW/2+24*SCL, HH-20*SCL, str, SCL);
 	Draw_StringScaled(WW/2+24*SCL, HH-12*SCL, cl.levelname, SCL);
@@ -251,40 +251,40 @@ void Sbar_SoloScoreboard()
 
 void Sbar_CalcPos()
 {
-	for (int i = 0; i < 8; i++) // items classic
+	for (s32 i = 0; i < 8; i++) // items classic
 		iposx[i] = WW / 2 + 32*SCL + i*16*SCL;
-	for (int i = 8; i < 12; i++)
+	for (s32 i = 8; i < 12; i++)
 		iposx[i] = WW / 2 + 64*SCL + i*8*SCL;
 	iposy = HH - 40*SCL;
-	switch ((int)(hipnotic&&scr_hudstyle.value==3?2:scr_hudstyle.value)) {
+	switch ((s32)(hipnotic&&scr_hudstyle.value==3?2:scr_hudstyle.value)) {
 	default: // ammo counters
 	case 0: // classic
-		for (int i = 0; i < 4; i++) {
+		for (s32 i = 0; i < 4; i++) {
 			npos[i][0] = WW / 2 - 150*SCL + i*48*SCL;
 			npos[i][1] = HH - 48*SCL;
 		}
 		break;
 	case 1: // bottom center, 4x1
-		for (int i = 0; i < 4; i++) {
+		for (s32 i = 0; i < 4; i++) {
 			npos[i][0] = WW / 2 - 88*SCL + i*48*SCL;
 			npos[i][1] = HH - 8 * SCL;
 		}
 		break;
 	case 2: // right side, 2x2
-		for (int i = 0; i < 4; i++) {
+		for (s32 i = 0; i < 4; i++) {
 			npos[i][0] = WW - (scr_hudstyle.value==3?88:96)
 				*SCL + 48*SCL*(i&1);
 			npos[i][1] = HH - 47*SCL - 9*SCL*(i>>1);
 		}
 		break;
 	case 3: // right side, 1x4
-		for (int i = 0; i < 4; i++) {
+		for (s32 i = 0; i < 4; i++) {
 			npos[i][0] = WW - 48*SCL + 8*SCL;
 			npos[i][1] = HH - 78*SCL + i * 9*SCL;
 		}
 		break;
 	}
-	for (int i = 0; !scr_hudstyle.value && i < 9; i++) { // weapons classic
+	for (s32 i = 0; !scr_hudstyle.value && i < 9; i++) { // weapons classic
 		wpos[i][0] = WW / 2 - 160*SCL + i*24*SCL;	
 		wpos[i][1] = HH - 40*SCL;
 		if (i == 9) {
@@ -292,46 +292,46 @@ void Sbar_CalcPos()
 			wpos[8][0] += 8*SCL;
 		}
 	}
-	for (int i = 0; scr_hudstyle.value && i < 9; i++) { // weapons modern
+	for (s32 i = 0; scr_hudstyle.value && i < 9; i++) { // weapons modern
 		wpos[i][0] = WW - 18*SCL;	
 		wpos[i][1] = HH- 16*SCL*(6+i) + hipnotic*24*SCL;
 	}
-	switch ((int)scr_hudstyle.value + 0x10*hipnotic) { // keys
+	switch ((s32)scr_hudstyle.value + 0x10*hipnotic) { // keys
 	default:
 	case 0:
 	case 3:
-		for (int i = 0; i < 2; i++) { // classic, qw
+		for (s32 i = 0; i < 2; i++) { // classic, qw
 			kpos[i][0] = WW / 2 + 32*SCL + i*16*SCL;
 			kpos[i][1] = HH - 40*SCL;
 		}
 		break;
 	case 1:
-		for (int i = 0; i < 2; i++) { // side, vertical
+		for (s32 i = 0; i < 2; i++) { // side, vertical
 			kpos[i][0] = WW - 28*SCL;
 			kpos[i][1] = HH - 52*SCL - i*16*SCL;
 		}
 		break;
 	case 2:
-		for (int i = 0; i < 2; i++) { // side, horizontal
+		for (s32 i = 0; i < 2; i++) { // side, horizontal
 			kpos[i][0] = WW - 24*SCL - i*16*SCL;
 			kpos[i][1] = HH - 75*SCL;
 		}
 		break;
 	case 0x10: // hipnotic
 	case 0x13:
-		for (int i = 0; i < 2; i++) { // classic, qw
+		for (s32 i = 0; i < 2; i++) { // classic, qw
 			kpos[i][0] = WW / 2 + 48*SCL;
 			kpos[i][1] = HH - 21*SCL + i*8*SCL;
 		}
 		break;
 	case 0x11:
-		for (int i = 0; i < 2; i++) { // side, vertical
+		for (s32 i = 0; i < 2; i++) { // side, vertical
 			kpos[i][0] = WW - 28*SCL;
 			kpos[i][1] = HH - 44*SCL - i*8*SCL;
 		}
 		break;
 	case 0x12:
-		for (int i = 0; i < 2; i++) { // side, horizontal
+		for (s32 i = 0; i < 2; i++) { // side, horizontal
 			kpos[i][0] = WW - 40*SCL - i*16*SCL;
 			kpos[i][1] = HH - 68*SCL;
 		}
@@ -341,37 +341,37 @@ void Sbar_CalcPos()
 
 void Sbar_ItemsClassic()
 {
-	for (int i = 2; i < 6; i++)
+	for (s32 i = 2; i < 6; i++)
 		if (cl.items & (1 << (17 + i))) 
 			Draw_TransPicScaled(iposx[i],iposy,sb_items[i],SCL);
-	for (int i = 0; hipnotic && i < 2; i++)
+	for (s32 i = 0; hipnotic && i < 2; i++)
 		if (cl.items & (1 << (24 + i)))
 			Draw_TransPicScaled(iposx[i+6],iposy,hsb_items[i],SCL);
-	for (int i = 0; rogue && i < 2; i++)
+	for (s32 i = 0; rogue && i < 2; i++)
 		if (cl.items & (1 << (29 + i)))
 			Draw_TransPicScaled(iposx[i+6],iposy,rsb_items[i],SCL);
-	for (int i = 0; !rogue && i < 4; i++) // sigils
+	for (s32 i = 0; !rogue && i < 4; i++) // sigils
 		if (cl.items & (1 << (28 + i)))
 			Draw_TransPicScaled(iposx[8+i], iposy, sb_sigil[i], SCL);
 }
 
 void Sbar_ItemsModern()
 {
-	int x = 12 * SCL;
-	int y = HH - 48 * SCL;
+	s32 x = 12 * SCL;
+	s32 y = HH - 48 * SCL;
 	if (cl.items & IT_INVULNERABILITY || cl.stats[STAT_ARMOR] > 0)
 		y -= 24*SCL; // armor is visible, start above it
-	for (int i = 2; i < 6; i++)
+	for (s32 i = 2; i < 6; i++)
 		if ((cl.items & (1<<(17+i))) && (!hipnotic || (i > 1))) {
 			Draw_TransPicScaled(x, y, sb_items[i], SCL);
 			y -= 16*SCL;
 		}
-	for (int i = 0; hipnotic && i < 2; i++)
+	for (s32 i = 0; hipnotic && i < 2; i++)
 		if (cl.items & (1<<(24+i))) {
 			Draw_TransPicScaled(x, y, hsb_items[i], SCL);
 			y -= 16*SCL;
 		}
-	for (int i = 0; rogue && i < 2; i++)
+	for (s32 i = 0; rogue && i < 2; i++)
 		if (cl.items & (1<<(29+i))) {
 			Draw_TransPicScaled(x, y, rsb_items[i], SCL);
 			y -= 16*SCL;
@@ -383,8 +383,8 @@ void Sbar_DrawInventoryBg()
 	qpic_t *pic = rogue ?
 		rsb_invbar[cl.stats[STAT_ACTIVEWEAPON] < RIT_LAVA_NAILGUN] :
 		sb_ibar;
-	int x, y;
-	switch ((int)(hipnotic&&scr_hudstyle.value==3?2:scr_hudstyle.value)) {
+	s32 x, y;
+	switch ((s32)(hipnotic&&scr_hudstyle.value==3?2:scr_hudstyle.value)) {
 	default:
 	case 0: // classic
 		x = WW / 2 - 160*SCL;
@@ -405,26 +405,26 @@ void Sbar_DrawInventoryBg()
 	case 3: // right side, 1x4
 		x = WW - 48*SCL;
 		y = HH - 78*SCL;
-		for (int i = 0; i < 4; i++)
+		for (s32 i = 0; i < 4; i++)
 			Draw_PicScaledPartial(x - 48*SCL*i, y + 9*SCL*i,
 					i*48, 0, (i+1)*48, 8, pic, SCL);
 		break;
 	}
 }
 
-static inline int Sbar_Flash(float time, int active)
+static inline s32 Sbar_Flash(float time, s32 active)
 {
-	int flash = (int)(time * 10);
+	s32 flash = (s32)(time * 10);
 	return flash >= 10 ? active : (flash % 5) + 2;
 }
 
 void Sbar_DrawWeapons()
 {
-	for (int i = 0; i < 7; i++) {
+	for (s32 i = 0; i < 7; i++) {
 		if ((hipnotic && i==IT_GRENADE_LAUNCHER) || !(cl.items&(1<<i)))
 			continue;
-		int active = (cl.stats[STAT_ACTIVEWEAPON] == (1 << i));
-		int flashon = Sbar_Flash(cl.time - cl.item_gettime[i], active);
+		s32 active = (cl.stats[STAT_ACTIVEWEAPON] == (1 << i));
+		s32 flashon = Sbar_Flash(cl.time - cl.item_gettime[i], active);
 		qpic_t *pic = sb_weapons[flashon][i];
 		// Check for rogue's powered up weapon condition.
 		if (rogue && i >= 2 && cl.stats[STAT_ACTIVEWEAPON] ==
@@ -437,16 +437,16 @@ void Sbar_DrawWeapons()
 		if (flashon > 1)
 			sb_updates = 0; // force update to remove flash
 	}
-	int grenadeflashing = 0;
-	for (int i = 0; hipnotic && i < 4; i++) {
+	s32 grenadeflashing = 0;
+	for (s32 i = 0; hipnotic && i < 4; i++) {
 		if (!(cl.items & (1 << hipweapons[i])))
 			continue;
-		int active = (cl.stats[STAT_ACTIVEWEAPON]==(1<<hipweapons[i]));
-		int flashon = Sbar_Flash(cl.time-cl.item_gettime[hipweapons[i]],
+		s32 active = (cl.stats[STAT_ACTIVEWEAPON]==(1<<hipweapons[i]));
+		s32 flashon = Sbar_Flash(cl.time-cl.item_gettime[hipweapons[i]],
 			active);
 		active = scr_hudstyle.value ? active * 6 * SCL : 0;
-		int x = wpos[4][0] - active;
-		int y = wpos[4][1];
+		s32 x = wpos[4][0] - active;
+		s32 y = wpos[4][1];
 		qpic_t *pic = NULL;
 		if (i == 2) { 
 			if (cl.items & HIT_PROXIMITY_GUN && flashon) {
@@ -477,14 +477,14 @@ void Sbar_DrawInventory()
 {
 	Sbar_DrawInventoryBg();
 	Sbar_DrawWeapons();
-	for (int i = 0; i < 4; i++) // ammo counters
+	for (s32 i = 0; i < 4; i++) // ammo counters
 		Sbar_DrawNumSmall(npos[i][0], npos[i][1], cl.stats[6 + i], 1);
-	for (int i = 0; i < 2; i++) { // keys
+	for (s32 i = 0; i < 2; i++) { // keys
 		if (!(cl.items & (1<<(17+i))))
 			continue;
 		Draw_TransPicScaled(kpos[i][0], kpos[i][1], sb_items[i], SCL);
 	}
-	switch ((int)scr_hudstyle.value) {
+	switch ((s32)scr_hudstyle.value) {
 	default: case 0: case 3: Sbar_ItemsClassic(); break;
 	         case 1: case 2: Sbar_ItemsModern();  break;
 	}
@@ -492,8 +492,8 @@ void Sbar_DrawInventory()
 
 void Sbar_DrawFace()
 {
-	int x = WW / 2 - 24*SCL; // classic, qw
-	int y = HH - 24*SCL;
+	s32 x = WW / 2 - 24*SCL; // classic, qw
+	s32 y = HH - 24*SCL;
 	if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
 		x = 32*SCL;
 		y = HH - 32*SCL;
@@ -508,8 +508,8 @@ void Sbar_DrawFace()
 	if (rogue && cl.maxclients!=1 && teamplay.value>3 && teamplay.value<7
 			&& (!scr_hudstyle.value || scr_hudstyle.value == 3)) {
 		scoreboard_t *s = &cl.scores[cl.viewentity - 1];
-		int top = Sbar_ColorForMap(s->colors & 0xf0);
-		int bottom = Sbar_ColorForMap((s->colors & 0x0f) << 4);
+		s32 top = Sbar_ColorForMap(s->colors & 0xf0);
+		s32 bottom = Sbar_ColorForMap((s->colors & 0x0f) << 4);
 		Draw_TransPicScaled(x, y, rsb_teambord, SCL);
 		Draw_Fill(WW/2 - 47*SCL, HH - 21*SCL, 22*SCL, 9*SCL, top);
 		Draw_Fill(WW/2 - 47*SCL, HH - 12*SCL, 22*SCL, 9*SCL, bottom);
@@ -533,8 +533,8 @@ void Sbar_DrawFace()
 		Draw_TransPicScaled(x, y, sb_face_invuln, SCL);
 		return;
 	}
-	int f = cl.stats[STAT_HEALTH] >= 100 ? 4 : cl.stats[STAT_HEALTH] / 20;
-	int anim = 0;
+	s32 f = cl.stats[STAT_HEALTH] >= 100 ? 4 : cl.stats[STAT_HEALTH] / 20;
+	s32 anim = 0;
 	if (cl.time <= cl.faceanimtime) {
 		anim = 1;
 		sb_updates = 0; // make sure the anim gets drawn over
@@ -544,8 +544,8 @@ void Sbar_DrawFace()
 
 void Sbar_DrawArmor()
 {
-	int x = WW / 2 - 160*SCL; // classic, qw
-	int y = HH - 24*SCL;
+	s32 x = WW / 2 - 160*SCL; // classic, qw
+	s32 y = HH - 24*SCL;
 	if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
 		x = 8 * SCL;
 		y = HH - 56 * SCL;
@@ -580,8 +580,8 @@ void Sbar_DrawArmor()
 
 void Sbar_DrawAmmo()
 {
-	int x = WW / 2 + 64*SCL; // classic, qw
-	int y = HH - 24*SCL;
+	s32 x = WW / 2 + 64*SCL; // classic, qw
+	s32 y = HH - 24*SCL;
 	if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
 		x = WW - 32*SCL;
 		y = HH - 32*SCL;
@@ -620,10 +620,10 @@ void Sbar_DrawAmmo()
 	Sbar_DrawNum(x, y, cl.stats[STAT_AMMO], 3, cl.stats[STAT_AMMO] <= 10);
 }
 
-static inline void Sbar_PlayerScoreBox(int x, int y, scoreboard_t *s, int k)
+static inline void Sbar_PlayerScoreBox(s32 x, s32 y, scoreboard_t *s, s32 k)
 {
-	int top = Sbar_ColorForMap(s->colors & 0xf0);
-	int bottom = Sbar_ColorForMap((s->colors & 0x0f) << 4);
+	s32 top = Sbar_ColorForMap(s->colors & 0xf0);
+	s32 bottom = Sbar_ColorForMap((s->colors & 0x0f) << 4);
 	Draw_Fill(x, y, 30*SCL, 4*SCL, top);
 	Draw_Fill(x, y+4*SCL, 30*SCL, 3*SCL, bottom);
 	Sbar_DrawNumSmall(x+3*SCL, y-1*SCL, s->frags, 0);
@@ -636,16 +636,16 @@ static inline void Sbar_PlayerScoreBox(int x, int y, scoreboard_t *s, int k)
 void Sbar_DeathmatchOverlay()
 {
 	Sbar_SortFrags();
-	int x = !scr_hudstyle.value ? WW/2 + 168*SCL : 4*SCL;
-	int y = !scr_hudstyle.value ? HH - 48*SCL : 40*SCL;
+	s32 x = !scr_hudstyle.value ? WW/2 + 168*SCL : 4*SCL;
+	s32 y = !scr_hudstyle.value ? HH - 48*SCL : 40*SCL;
 	if (sb_showscores) {
 		qpic_t *pic = Draw_CachePic("gfx/ranking.lmp");
 		Draw_TransPicScaled((WW-pic->width*SCL)/2, 8*SCL, pic, SCL);
 		x = WW/2 - 80*SCL;
 		y = 40*SCL;
 	}
-	for (int i = 0; i < scoreboardlines; i++) {
-		int k = fragsort[i];
+	for (s32 i = 0; i < scoreboardlines; i++) {
+		s32 k = fragsort[i];
 		scoreboard_t *s = &cl.scores[k];
 		if (!s->name[0])
 			continue;
@@ -658,9 +658,9 @@ void Sbar_DeathmatchOverlay()
 void Sbar_DrawFrags()
 {
 	Sbar_SortFrags();
-	int x = WW/2 + 33*SCL;
-	for (int i = 0; i < (scoreboardlines<=4?scoreboardlines:4); i++) {
-		int k = fragsort[i];
+	s32 x = WW/2 + 33*SCL;
+	for (s32 i = 0; i < (scoreboardlines<=4?scoreboardlines:4); i++) {
+		s32 k = fragsort[i];
 		scoreboard_t *s = &cl.scores[k];
 		if (!s->name[0])
 			continue;
@@ -678,12 +678,12 @@ void Sbar_IntermissionOverlay()
 	}
 	qpic_t *pic = Draw_CachePic("gfx/complete.lmp"); // plaque is 192px wide
 	Draw_TransPicScaled(WW/2 - 96*SCL, 24*SCL,pic,SCL);
-	int p = WW/2 - 160*SCL; // padding for scaling
+	s32 p = WW/2 - 160*SCL; // padding for scaling
 	pic = Draw_CachePic("gfx/inter.lmp");
 	Draw_TransPicScaled(p, 56*SCL, pic, SCL);
-	int dig = cl.completed_time / 60;
+	s32 dig = cl.completed_time / 60;
 	Sbar_DrawNum(WW / 2, 64*SCL, dig, 3, 0);
-	int num = cl.completed_time - dig * 60;
+	s32 num = cl.completed_time - dig * 60;
 	Draw_TransPicScaled(WW-p-86*SCL, 64*SCL, sb_colon, SCL);
 	Draw_TransPicScaled(WW-p-74*SCL, 64*SCL, sb_nums[0][num/10], SCL);
 	Draw_TransPicScaled(WW-p-54*SCL, 64*SCL, sb_nums[0][num%10], SCL);

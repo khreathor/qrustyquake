@@ -14,22 +14,22 @@ void D_DrawParticle(particle_t *pparticle)
 	if (transformed[2] < PARTICLE_Z_CLIP)
 		return;
 	float zi = 1.0 / transformed[2]; // project the point
-	int u = (int)(xcenter + zi * transformed[0] + 0.5); // FIXME: preadjust xcenter and ycenter
-	int v = (int)(ycenter - zi * transformed[1] + 0.5);
+	s32 u = (s32)(xcenter + zi * transformed[0] + 0.5); // FIXME: preadjust xcenter and ycenter
+	s32 v = (s32)(ycenter - zi * transformed[1] + 0.5);
 	if ((v > d_vrectbottom_particle) || (u > d_vrectright_particle)
 		|| (v < d_vrecty) || (u < d_vrectx)) 
 		return;
-	short *pz = d_pzbuffer + (d_zwidth * v) + u;
+	s16 *pz = d_pzbuffer + (d_zwidth * v) + u;
 	byte *pdest = d_viewbuffer + d_scantable[v] + u;
-	int izi = (int)(zi * 0x8000);
-	int pix = izi >> d_pix_shift;
+	s32 izi = (s32)(zi * 0x8000);
+	s32 pix = izi >> d_pix_shift;
 	if (pix < d_pix_min)
 		pix = d_pix_min;
 	else if (pix > d_pix_max)
 		pix = d_pix_max;
 	switch (pix) {
 	case 1:
-		for (int count = 1 << d_y_aspect_shift; count;
+		for (s32 count = 1 << d_y_aspect_shift; count;
 				count--, pz += d_zwidth, pdest += screenwidth)
 			if (pz[0] <= izi) {
 				pz[0] = izi;
@@ -37,7 +37,7 @@ void D_DrawParticle(particle_t *pparticle)
 			}
 		break;
 	case 2:
-		for (int count = 2 << d_y_aspect_shift; count;
+		for (s32 count = 2 << d_y_aspect_shift; count;
 				count--, pz += d_zwidth, pdest += screenwidth) {
 			if (pz[0] <= izi) {
 				pz[0] = izi;
@@ -50,7 +50,7 @@ void D_DrawParticle(particle_t *pparticle)
 		}
 		break;
 	case 3:
-		for (int count = 3 << d_y_aspect_shift; count;
+		for (s32 count = 3 << d_y_aspect_shift; count;
 				count--, pz += d_zwidth, pdest += screenwidth) {
 			if (pz[0] <= izi) {
 				pz[0] = izi;
@@ -67,7 +67,7 @@ void D_DrawParticle(particle_t *pparticle)
 		}
 		break;
 	case 4:
-		for (int count = 4 << d_y_aspect_shift; count;
+		for (s32 count = 4 << d_y_aspect_shift; count;
 				count--, pz += d_zwidth, pdest += screenwidth) {
 			if (pz[0] <= izi) {
 				pz[0] = izi;
@@ -88,9 +88,9 @@ void D_DrawParticle(particle_t *pparticle)
 		}
 		break;
 	default:
-		for (int count = pix << d_y_aspect_shift; count;
+		for (s32 count = pix << d_y_aspect_shift; count;
 				count--, pz += d_zwidth, pdest += screenwidth) {
-			for (int i = 0; i < pix; i++) {
+			for (s32 i = 0; i < pix; i++) {
 				if (pz[i] <= izi) {
 					pz[i] = izi;
 					pdest[i] = pparticle->color;

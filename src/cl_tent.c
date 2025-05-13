@@ -7,7 +7,7 @@
 
 #include "quakedef.h"
 
-int			num_temp_entities;
+s32			num_temp_entities;
 entity_t	cl_temp_entities[MAX_TEMP_ENTITIES];
 beam_t		cl_beams[MAX_BEAMS];
 
@@ -42,10 +42,10 @@ CL_ParseBeam
 */
 void CL_ParseBeam (model_t *m)
 {
-	int		ent;
+	s32		ent;
 	vec3_t	start, end;
 	beam_t	*b;
-	int		i;
+	s32		i;
 
 	ent = MSG_ReadShort ();
 
@@ -99,11 +99,11 @@ CL_ParseTEnt
 */
 void CL_ParseTEnt (void)
 {
-	int		type;
+	s32		type;
 	vec3_t	pos;
 	dlight_t	*dl;
-	int		rnd;
-	int		colorStart, colorLength;
+	s32		rnd;
+	s32		colorStart, colorLength;
 
 	type = MSG_ReadByte ();
 	switch (type)
@@ -275,7 +275,7 @@ CL_UpdateTEnts
 */
 void CL_UpdateTEnts (void)
 {
-	int			i, j; //johnfitz -- use j instead of using i twice, so we don't corrupt memory
+	s32			i, j; //johnfitz -- use j instead of using i twice, so we don't corrupt memory
 	beam_t		*b;
 	vec3_t		dist, org;
 	float		d;
@@ -285,7 +285,7 @@ void CL_UpdateTEnts (void)
 
 	num_temp_entities = 0;
 
-	srand ((int) (cl.time * 1000)); //johnfitz -- freeze beams when paused
+	srand ((s32) (cl.time * 1000)); //johnfitz -- freeze beams when paused
 
 // update lightning
 	for (i=0, b=cl_beams ; i< MAX_BEAMS ; i++, b++)
@@ -312,12 +312,12 @@ void CL_UpdateTEnts (void)
 		}
 		else
 		{
-			yaw = (int) (atan2(dist[1], dist[0]) * 180 / M_PI);
+			yaw = (s32) (atan2(dist[1], dist[0]) * 180 / M_PI);
 			if (yaw < 0)
 				yaw += 360;
 
 			forward = sqrt (dist[0]*dist[0] + dist[1]*dist[1]);
-			pitch = (int) (atan2(dist[2], forward) * 180 / M_PI);
+			pitch = (s32) (atan2(dist[2], forward) * 180 / M_PI);
 			if (pitch < 0)
 				pitch += 360;
 		}

@@ -2,28 +2,28 @@
 
 #include "quakedef.h"
 
-unsigned int r_dlightframecount;
+u32 r_dlightframecount;
 vec3_t lightspot;
 vec3_t lightcolor; //johnfitz -- lit support via lordhavoc
 
-extern int colored_aliaslight;
+extern s32 colored_aliaslight;
 
 void R_AnimateLight() // light animations
 { // 'm' is normal light, 'a' is no light, 'z' is double bright
-	int i = (int)(cl.time * 10);
-	for (int j = 0; j < MAX_LIGHTSTYLES; j++) {
+	s32 i = (s32)(cl.time * 10);
+	for (s32 j = 0; j < MAX_LIGHTSTYLES; j++) {
 		if (!cl_lightstyle[j].length) {
 			d_lightstylevalue[j] = 256;
 			continue;
 		}
-		int k = i % cl_lightstyle[j].length;
+		s32 k = i % cl_lightstyle[j].length;
 		k = cl_lightstyle[j].map[k] - 'a';
 		k = k * 22;
 		d_lightstylevalue[j] = k;
 	}
 }
 
-void R_MarkLights(dlight_t *light, int bit, mnode_t *node)
+void R_MarkLights(dlight_t *light, s32 bit, mnode_t *node)
 {
 	if (node->contents < 0)
 		return;
@@ -39,7 +39,7 @@ void R_MarkLights(dlight_t *light, int bit, mnode_t *node)
 		return;
 	}
 	msurface_t *surf = cl.worldmodel->surfaces + node->firstsurface; // mark the polygons
-	for (int i = 0; i < node->numsurfaces; i++, surf++) {
+	for (s32 i = 0; i < node->numsurfaces; i++, surf++) {
 		if (surf->dlightframe != r_dlightframecount) {
 			surf->dlightbits = 0;
 			surf->dlightframe = r_dlightframecount;
@@ -55,14 +55,14 @@ void R_PushDlights()
 	r_dlightframecount = r_framecount + 1; // because the count hasn't
 					       // advanced yet for this frame
 	dlight_t *l = cl_dlights;
-	for (int i = 0; i < MAX_DLIGHTS; i++, l++) {
+	for (s32 i = 0; i < MAX_DLIGHTS; i++, l++) {
 		if (l->die < cl.time || !l->radius)
 			continue;
 		R_MarkLights(l, 1 << i, cl.worldmodel->nodes);
 	}
 }
 
-int RecursiveLightPoint (vec3_t color, mnode_t *node, vec3_t rayorg, vec3_t start, vec3_t end, float *maxdist)
+s32 RecursiveLightPoint (vec3_t color, mnode_t *node, vec3_t rayorg, vec3_t start, vec3_t end, float *maxdist)
 {
 	float		front, back, frac;
 	vec3_t		mid;
@@ -89,7 +89,7 @@ loc0:
 	if (RecursiveLightPoint (color, node->children[front < 0], rayorg, start, mid, maxdist))
 		return true;	// hit something
 	else {
-		int i, ds, dt;
+		s32 i, ds, dt;
 		msurface_t *surf;
 		VectorCopy (mid, lightspot); // check for impact on this node
 		surf = cl.worldmodel->surfaces + node->firstsurface;
@@ -102,8 +102,8 @@ loc0:
 			// ericw -- added double casts to force 64-bit precision.
 			// Without them the zombie at the start of jam3_ericw.bsp was
 			// incorrectly being lit up in SSE builds.
-			ds = (int) ((double) DoublePrecisionDotProduct (mid, surf->texinfo->vecs[0]) + surf->texinfo->vecs[0][3]);
-			dt = (int) ((double) DoublePrecisionDotProduct (mid, surf->texinfo->vecs[1]) + surf->texinfo->vecs[1][3]);
+			ds = (s32) ((double) DoublePrecisionDotProduct (mid, surf->texinfo->vecs[0]) + surf->texinfo->vecs[0][3]);
+			dt = (s32) ((double) DoublePrecisionDotProduct (mid, surf->texinfo->vecs[1]) + surf->texinfo->vecs[1][3]);
 			if (ds < surf->texturemins[0] || dt < surf->texturemins[1])
 				continue;
 			ds -= surf->texturemins[0];
@@ -133,7 +133,7 @@ loc0:
 			if (dist < *maxdist) {
 				// LordHavoc: enhanced to interpolate lighting
 				byte *lightmap;
-				int maps, line3, dsfrac = ds & 15, dtfrac = dt & 15, r00 = 0, g00 = 0, b00 = 0, r01 = 0, g01 = 0, b01 = 0, r10 = 0, g10 = 0, b10 = 0, r11 = 0, g11 = 0, b11 = 0;
+				s32 maps, line3, dsfrac = ds & 15, dtfrac = dt & 15, r00 = 0, g00 = 0, b00 = 0, r01 = 0, g01 = 0, b01 = 0, r10 = 0, g10 = 0, b10 = 0, r11 = 0, g11 = 0, b11 = 0;
 				float scale;
 				line3 = ((surf->extents[0]>>4)+1)*3;
 				lightmap = surf->samples + ((dt>>4) * ((surf->extents[0]>>4)+1) + (ds>>4))*3; // LordHavoc: *3 for color
@@ -146,9 +146,9 @@ loc0:
 					r11 += (float) lightmap[line3+3] * scale;g11 += (float) lightmap[line3+4] * scale;b11 += (float) lightmap[line3+5] * scale;
 					lightmap += ((surf->extents[0]>>4)+1) * ((surf->extents[1]>>4)+1)*3; // LordHavoc: *3 for colored lighting
 				}
-				color[0] += (float) ((int) ((((((((r11-r10) * dsfrac) >> 4) + r10)-((((r01-r00) * dsfrac) >> 4) + r00)) * dtfrac) >> 4) + ((((r01-r00) * dsfrac) >> 4) + r00)));
-				color[1] += (float) ((int) ((((((((g11-g10) * dsfrac) >> 4) + g10)-((((g01-g00) * dsfrac) >> 4) + g00)) * dtfrac) >> 4) + ((((g01-g00) * dsfrac) >> 4) + g00)));
-				color[2] += (float) ((int) ((((((((b11-b10) * dsfrac) >> 4) + b10)-((((b01-b00) * dsfrac) >> 4) + b00)) * dtfrac) >> 4) + ((((b01-b00) * dsfrac) >> 4) + b00)));
+				color[0] += (float) ((s32) ((((((((r11-r10) * dsfrac) >> 4) + r10)-((((r01-r00) * dsfrac) >> 4) + r00)) * dtfrac) >> 4) + ((((r01-r00) * dsfrac) >> 4) + r00)));
+				color[1] += (float) ((s32) ((((((((g11-g10) * dsfrac) >> 4) + g10)-((((g01-g00) * dsfrac) >> 4) + g00)) * dtfrac) >> 4) + ((((g01-g00) * dsfrac) >> 4) + g00)));
+				color[2] += (float) ((s32) ((((((((b11-b10) * dsfrac) >> 4) + b10)-((((b01-b00) * dsfrac) >> 4) + b00)) * dtfrac) >> 4) + ((((b01-b00) * dsfrac) >> 4) + b00)));
 			}
 			return true; // success
 		}
@@ -156,7 +156,7 @@ loc0:
 	}
 }
 
-int R_LightPoint(vec3_t p)
+s32 R_LightPoint(vec3_t p)
 {
 	if (!cl.worldmodel->lightdata) {
 		lightcolor[0] = lightcolor[1] = lightcolor[2] = 255;

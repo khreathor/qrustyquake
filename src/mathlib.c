@@ -8,7 +8,7 @@
 #include "quakedef.h"
 
 vec3_t vec3_origin = { 0, 0, 0 };
-int nanmask = 255 << 23;
+s32 nanmask = 255 << 23;
 
 void VectorSubtract(const vec3_t a, const vec3_t b, vec3_t c)
 { c[0] = a[0] - b[0]; c[1] = a[1] - b[1]; c[2] = a[2] - b[2]; }
@@ -40,12 +40,12 @@ void ProjectPointOnPlane(vec3_t dst, const vec3_t p, const vec3_t normal)
 
 float anglemod(float a)
 {
-	a = (360.0 / 65536) * ((int)(a * (65536 / 360.0)) & 65535);
+	a = (360.0 / 65536) * ((s32)(a * (65536 / 360.0)) & 65535);
 	return a;
 }
 
 
-int BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, mplane_t *p)
+s32 BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, mplane_t *p)
 { // Returns 1, 2, or 1 + 2
 	float dist1 = 0, dist2 = 0;
 	switch (p->signbits) { // general case
@@ -85,7 +85,7 @@ int BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, mplane_t *p)
 		Sys_Error("BoxOnPlaneSide:  Bad signbits");
 		break;
 	}
-	int sides = 0;
+	s32 sides = 0;
 	if (dist1 >= p->dist)
 		sides = 1;
 	if (dist2 < p->dist)
@@ -132,7 +132,7 @@ void CrossProduct(vec3_t v1, vec3_t v2, vec3_t cross)
 vec_t Length(vec3_t v)
 {
 	float length = 0;
-	for (int i = 0; i < 3; i++)
+	for (s32 i = 0; i < 3; i++)
 		length += v[i] * v[i];
 	length = sqrt(length); // FIXME
 	return length;
@@ -197,27 +197,27 @@ void R_ConcatTransforms(float in1[3][4], float in2[3][4], float out[3][4])
 // Returns mathematically correct (floor-based) quotient and remainder for
 // numer and denom, both of which should contain no fractional part. The
 // quotient must fit in 32 bits.
-void FloorDivMod(double numer, double denom, int *quotient, int *rem)
+void FloorDivMod(double numer, double denom, s32 *quotient, s32 *rem)
 {
-	int q, r;
+	s32 q, r;
 	if (numer >= 0.0) {
 		double x = floor(numer / denom);
-		q = (int)x;
-		r = (int)floor(numer - (x * denom));
+		q = (s32)x;
+		r = (s32)floor(numer - (x * denom));
 	} else { // perform operations with positive values, and fix mod
 		double x = floor(-numer / denom); // to make floor-based
-		q = -(int)x;
-		r = (int)floor(-numer - (x * denom));
+		q = -(s32)x;
+		r = (s32)floor(-numer - (x * denom));
 		if (r != 0) {
 			q--;
-			r = (int)denom - r;
+			r = (s32)denom - r;
 		}
 	}
 	*quotient = q;
 	*rem = r;
 }
 
-int GreatestCommonDivisor(int i1, int i2)
+s32 GreatestCommonDivisor(s32 i1, s32 i2)
 {
 	if (i1 > i2) {
 		if (i2 == 0)

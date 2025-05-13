@@ -13,7 +13,7 @@
 void CL_FinishTimeDemo()
 {
 	cls.timedemo = false; // the first frame didn't count
-	int frames = (host_framecount - cls.td_startframe) - 1;
+	s32 frames = (host_framecount - cls.td_startframe) - 1;
 	float time = realtime - cls.td_starttime;
 	if (!time)
 		time = 1;
@@ -35,9 +35,9 @@ void CL_StopPlayback()
 
 void CL_WriteDemoMessage()
 { // Dumps the current net message, prefixed by the length and view angles
-	int len = LittleLong(net_message.cursize);
+	s32 len = LittleLong(net_message.cursize);
 	fwrite(&len, 4, 1, cls.demofile);
-	for (int i = 0; i < 3; i++) {
+	for (s32 i = 0; i < 3; i++) {
 		float f = LittleFloat(cl.viewangles[i]);
 		fwrite(&f, 4, 1, cls.demofile);
 	}
@@ -45,7 +45,7 @@ void CL_WriteDemoMessage()
 	fflush(cls.demofile);
 }
 
-int CL_GetMessage()
+s32 CL_GetMessage()
 { // Handles recording and playback of demos, on top of NET_ code
 	if (cls.demoplayback) {
 		// decide if it is time to grab the next message
@@ -67,7 +67,7 @@ int CL_GetMessage()
 		fread(&net_message.cursize, 4, 1, cls.demofile);
 		VectorCopy(cl.mviewangles[0], cl.mviewangles[1]);
 		float f;
-		for (int i = 0; i < 3; i++) {
+		for (s32 i = 0; i < 3; i++) {
 			fread(&f, 4, 1, cls.demofile);
 			cl.mviewangles[0][i] = LittleFloat(f);
 		}
@@ -81,7 +81,7 @@ int CL_GetMessage()
 		}
 		return 1;
 	}
-	int r;
+	s32 r;
 	while (1) {
 		r = NET_GetMessage(cls.netcon);
 		if (r != 1 && r != 2)
@@ -119,7 +119,7 @@ void CL_Record_f()
 { // record <demoname> <map> [cd track]
 	if (cmd_source != src_command)
 		return;
-	int c = Cmd_Argc();
+	s32 c = Cmd_Argc();
 	if (c != 2 && c != 3 && c != 4) {
 		Con_Printf("record <demoname> [<map> [cd track]]\n");
 		return;
@@ -133,12 +133,12 @@ void CL_Record_f()
 		    ("Can not record - already connected to server\nClient demo recording must be started before connecting\n");
 		return;
 	}
-	int track = -1; // write the forced cd track number, or -1
+	s32 track = -1; // write the forced cd track number, or -1
 	if (c == 4) {
 		track = atoi(Cmd_Argv(3));
 		Con_Printf("Forcing CD track to %i\n", cls.forcetrack);
 	}
-	char name[MAX_OSPATH+2];
+	s8 name[MAX_OSPATH+2];
 	sprintf(name, "%s/%s", com_gamedir, Cmd_Argv(1));
 	if (c > 2) // start the map up
 		Cmd_ExecuteString(va("map %s", Cmd_Argv(2)), src_command);
@@ -166,7 +166,7 @@ void CL_PlayDemo_f()
 	if (key_dest == key_console) // withdraw console/menu
 		key_dest = key_game;
 	CL_Disconnect(); // disconnect from server
-	char name[256];
+	s8 name[256];
 	strcpy(name, Cmd_Argv(1)); // open the demo file
 	COM_AddExtension (name, ".dem", sizeof(name));
 	Con_Printf("Playing demo from %s.\n", name);
@@ -179,7 +179,7 @@ void CL_PlayDemo_f()
 	cls.demoplayback = true;
 	cls.state = ca_connected;
 	cls.forcetrack = 0;
-	int c;
+	s32 c;
 	bool neg = false;
 	while ((c = getc(cls.demofile)) != '\n')
 		if (c == '-')

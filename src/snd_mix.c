@@ -8,43 +8,43 @@
 #include "quakedef.h"
 
 portable_samplepair_t paintbuffer[PAINTBUFFER_SIZE];
-int		snd_scaletable[32][256];
-int		*snd_p, snd_linear_count;
-short		*snd_out;
+s32		snd_scaletable[32][256];
+s32		*snd_p, snd_linear_count;
+s16		*snd_out;
 
-static int	snd_vol;
+static s32	snd_vol;
 
 static void Snd_WriteLinearBlastStereo16 (void)
 {
-	int		i;
-	int		val;
+	s32		i;
+	s32		val;
 
 	for (i = 0; i < snd_linear_count; i += 2)
 	{
 		val = snd_p[i] / 256;
 		if (val > 0x7fff)
 			snd_out[i] = 0x7fff;
-		else if (val < (short)0x8000)
-			snd_out[i] = (short)0x8000;
+		else if (val < (s16)0x8000)
+			snd_out[i] = (s16)0x8000;
 		else
 			snd_out[i] = val;
 
 		val = snd_p[i+1] / 256;
 		if (val > 0x7fff)
 			snd_out[i+1] = 0x7fff;
-		else if (val < (short)0x8000)
-			snd_out[i+1] = (short)0x8000;
+		else if (val < (s16)0x8000)
+			snd_out[i+1] = (s16)0x8000;
 		else
 			snd_out[i+1] = val;
 	}
 }
 
-static void S_TransferStereo16 (int endtime)
+static void S_TransferStereo16 (s32 endtime)
 {
-	int		lpos;
-	int		lpaintedtime;
+	s32		lpos;
+	s32		lpaintedtime;
 
-	snd_p = (int *) paintbuffer;
+	snd_p = (s32 *) paintbuffer;
 	lpaintedtime = paintedtime;
 
 	while (lpaintedtime < endtime)
@@ -52,7 +52,7 @@ static void S_TransferStereo16 (int endtime)
 	// handle recirculating buffer issues
 		lpos = lpaintedtime & ((shm->samples >> 1) - 1);
 
-		snd_out = (short *)shm->buffer + (lpos << 1);
+		snd_out = (s16 *)shm->buffer + (lpos << 1);
 
 		snd_linear_count = (shm->samples >> 1) - lpos;
 		if (lpaintedtime + snd_linear_count > endtime)
@@ -68,11 +68,11 @@ static void S_TransferStereo16 (int endtime)
 	}
 }
 
-static void S_TransferPaintBuffer (int endtime)
+static void S_TransferPaintBuffer (s32 endtime)
 {
-	int	out_idx, out_mask;
-	int	count, step, val;
-	int	*p;
+	s32	out_idx, out_mask;
+	s32	count, step, val;
+	s32	*p;
 
 	if (shm->samplebits == 16 && shm->channels == 2)
 	{
@@ -80,7 +80,7 @@ static void S_TransferPaintBuffer (int endtime)
 		return;
 	}
 
-	p = (int *) paintbuffer;
+	p = (s32 *) paintbuffer;
 	count = (endtime - paintedtime) * shm->channels;
 	out_mask = shm->samples - 1;
 	out_idx = paintedtime * shm->channels & out_mask;
@@ -88,45 +88,45 @@ static void S_TransferPaintBuffer (int endtime)
 
 	if (shm->samplebits == 16)
 	{
-		short *out = (short *)shm->buffer;
+		s16 *out = (s16 *)shm->buffer;
 		while (count--)
 		{
 			val = *p / 256;
 			p+= step;
 			if (val > 0x7fff)
 				val = 0x7fff;
-			else if (val < (short)0x8000)
-				val = (short)0x8000;
+			else if (val < (s16)0x8000)
+				val = (s16)0x8000;
 			out[out_idx] = val;
 			out_idx = (out_idx + 1) & out_mask;
 		}
 	}
 	else if (shm->samplebits == 8 && !shm->signed8)
 	{
-		unsigned char *out = shm->buffer;
+		u8 *out = shm->buffer;
 		while (count--)
 		{
 			val = *p / 256;
 			p+= step;
 			if (val > 0x7fff)
 				val = 0x7fff;
-			else if (val < (short)0x8000)
-				val = (short)0x8000;
+			else if (val < (s16)0x8000)
+				val = (s16)0x8000;
 			out[out_idx] = (val / 256) + 128;
 			out_idx = (out_idx + 1) & out_mask;
 		}
 	}
 	else if (shm->samplebits == 8)	/* S8 format, e.g. with Amiga AHI */
 	{
-		signed char *out = (signed char *) shm->buffer;
+		s8 *out = (s8 *) shm->buffer;
 		while (count--)
 		{
 			val = *p / 256;
 			p+= step;
 			if (val > 0x7fff)
 				val = 0x7fff;
-			else if (val < (short)0x8000)
-				val = (short)0x8000;
+			else if (val < (s16)0x8000)
+				val = (s16)0x8000;
 			out[out_idx] = (val / 256);
 			out_idx = (out_idx + 1) & out_mask;
 		}
@@ -145,9 +145,9 @@ kernel has room for M+1 floats
 f_c is the filter cutoff frequency, as a fraction of the samplerate
 ==============
 */
-static void S_MakeBlackmanWindowKernel(float *kernel, int M, float f_c)
+static void S_MakeBlackmanWindowKernel(float *kernel, s32 M, float f_c)
 {
-	int i;
+	s32 i;
 	for (i = 0; i <= M; i++)
 	{
 		if (i == M/2)
@@ -180,13 +180,13 @@ static void S_MakeBlackmanWindowKernel(float *kernel, int M, float f_c)
 typedef struct {
 	float *memory;  // kernelsize floats
 	float *kernel;  // kernelsize floats
-	int kernelsize; // M+1, rounded up to be a multiple of 16
-	int M;			// M value used to make kernel, even
-	int parity;		// 0-3
+	s32 kernelsize; // M+1, rounded up to be a multiple of 16
+	s32 M;			// M value used to make kernel, even
+	s32 parity;		// 0-3
 	float f_c;		// cutoff frequency, [0..1], fraction of sample rate
 } filter_t;
 
-static void S_UpdateFilter(filter_t *filter, int M, float f_c)
+static void S_UpdateFilter(filter_t *filter, s32 M, float f_c)
 {
 	if (filter->f_c != f_c || filter->M != M)
 	{
@@ -218,13 +218,13 @@ kernel is 4x faster, because we can skip 3/4 of the input samples that are
 known to be 0 and skip 3/4 of the filter kernel.
 ==============
 */
-static void S_ApplyFilter(filter_t *filter, int *data, int stride, int count)
+static void S_ApplyFilter(filter_t *filter, s32 *data, s32 stride, s32 count)
 {
-	int i, j;
+	s32 i, j;
 	float *input;
-	const int kernelsize = filter->kernelsize;
+	const s32 kernelsize = filter->kernelsize;
 	const float *kernel = filter->kernel;
-	int parity;
+	s32 parity;
 
 	input = (float *) malloc(sizeof(float) * (filter->kernelsize + count));
 
@@ -278,13 +278,13 @@ assumes 44100Hz sample rate, and lowpasses at around 5kHz
 memory should be a zero-filled filter_t struct
 ==============
 */
-static void S_LowpassFilter(int *data, int stride, int count,
+static void S_LowpassFilter(s32 *data, s32 stride, s32 count,
 							filter_t *memory)
 {
-	int M;
+	s32 M;
 	float bw, f_c;
 
-	switch ((int)snd_filterquality.value)
+	switch ((s32)snd_filterquality.value)
 	{
 	case 1:
 		M = 126; bw = 0.900; break;
@@ -313,13 +313,13 @@ CHANNEL MIXING
 ===============================================================================
 */
 
-static void SND_PaintChannelFrom8 (channel_t *ch, sfxcache_t *sc, int endtime, int paintbufferstart);
-static void SND_PaintChannelFrom16 (channel_t *ch, sfxcache_t *sc, int endtime, int paintbufferstart);
+static void SND_PaintChannelFrom8 (channel_t *ch, sfxcache_t *sc, s32 endtime, s32 paintbufferstart);
+static void SND_PaintChannelFrom16 (channel_t *ch, sfxcache_t *sc, s32 endtime, s32 paintbufferstart);
 
-void S_PaintChannels (int endtime)
+void S_PaintChannels (s32 endtime)
 {
-	int		i;
-	int		end, ltime, count;
+	s32		i;
+	s32		end, ltime, count;
 	channel_t	*ch;
 	sfxcache_t	*sc;
 
@@ -398,15 +398,15 @@ void S_PaintChannels (int endtime)
 		if (sndspeed.value == 11025 && shm->speed == 44100)
 		{
 			static filter_t memory_l, memory_r;
-			S_LowpassFilter((int *)paintbuffer,       2, end - paintedtime, &memory_l);
-			S_LowpassFilter(((int *)paintbuffer) + 1, 2, end - paintedtime, &memory_r);
+			S_LowpassFilter((s32 *)paintbuffer,       2, end - paintedtime, &memory_l);
+			S_LowpassFilter(((s32 *)paintbuffer) + 1, 2, end - paintedtime, &memory_r);
 		}
 
 	// paint in the music
 		if (s_rawend >= paintedtime)
 		{	// copy from the streaming sound source
-			int		s;
-			int		stop;
+			s32		s;
+			s32		stop;
 
 			stop = (end < s_rawend) ? end : s_rawend;
 
@@ -431,8 +431,8 @@ void S_PaintChannels (int endtime)
 
 void SND_InitScaletable (void)
 {
-	int		i, j;
-	int		scale;
+	s32		i, j;
+	s32		scale;
 
 	for (i = 0; i < 32; i++)
 	{
@@ -440,24 +440,24 @@ void SND_InitScaletable (void)
 		for (j = 0; j < 256; j++)
 		{
 		/* When compiling with gcc-4.1.0 at optimisations O1 and
-		   higher, the tricky signed char type conversion is not
+		   higher, the tricky signed s8 type conversion is not
 		   guaranteed. Therefore we explicity calculate the signed
 		   value from the index as required. From Kevin Shanahan.
 		   See: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=26719
 		*/
-		//	snd_scaletable[i][j] = ((signed char)j) * scale;
+		//	snd_scaletable[i][j] = ((s8)j) * scale;
 			snd_scaletable[i][j] = ((j < 128) ?  j : j - 256) * scale;
 		}
 	}
 }
 
 
-static void SND_PaintChannelFrom8 (channel_t *ch, sfxcache_t *sc, int count, int paintbufferstart)
+static void SND_PaintChannelFrom8 (channel_t *ch, sfxcache_t *sc, s32 count, s32 paintbufferstart)
 {
-	int	data;
-	int		*lscale, *rscale;
-	unsigned char	*sfx;
-	int		i;
+	s32	data;
+	s32		*lscale, *rscale;
+	u8	*sfx;
+	s32		i;
 
 	if (ch->leftvol > 255)
 		ch->leftvol = 255;
@@ -466,7 +466,7 @@ static void SND_PaintChannelFrom8 (channel_t *ch, sfxcache_t *sc, int count, int
 
 	lscale = snd_scaletable[ch->leftvol >> 3];
 	rscale = snd_scaletable[ch->rightvol >> 3];
-	sfx = (unsigned char *)sc->data + ch->pos;
+	sfx = (u8 *)sc->data + ch->pos;
 
 	for (i = 0; i < count; i++)
 	{
@@ -478,19 +478,19 @@ static void SND_PaintChannelFrom8 (channel_t *ch, sfxcache_t *sc, int count, int
 	ch->pos += count;
 }
 
-static void SND_PaintChannelFrom16 (channel_t *ch, sfxcache_t *sc, int count, int paintbufferstart)
+static void SND_PaintChannelFrom16 (channel_t *ch, sfxcache_t *sc, s32 count, s32 paintbufferstart)
 {
-	int	data;
-	int	left, right;
-	int	leftvol, rightvol;
-	signed short	*sfx;
-	int	i;
+	s32	data;
+	s32	left, right;
+	s32	leftvol, rightvol;
+	s16	*sfx;
+	s32	i;
 
 	leftvol = ch->leftvol * snd_vol;
 	rightvol = ch->rightvol * snd_vol;
 	leftvol /= 256;
 	rightvol /= 256;
-	sfx = (signed short *)sc->data + ch->pos;
+	sfx = (s16 *)sc->data + ch->pos;
 
 	for (i = 0; i < count; i++)
 	{

@@ -2,9 +2,9 @@
 
 #include "quakedef.h"
 
-static int clip_current;
+static s32 clip_current;
 static vec5_t clip_verts[2][MAXWORKINGVERTS];
-static int sprite_width, sprite_height;
+static s32 sprite_width, sprite_height;
 
 spritedesc_t r_spritedesc;
 
@@ -21,7 +21,7 @@ void R_RotateSprite(float beamlength)
 }
 
 
-int R_ClipSpriteFace(int nump, clipplane_t *pclipplane) // Clips the winding at
+s32 R_ClipSpriteFace(s32 nump, clipplane_t *pclipplane) // Clips the winding at
 { // clip_verts[clip_current] and changes clip_current, throws out the back side
 	float clipdist = pclipplane->dist;
 	float *pclipnormal = pclipplane->normal;
@@ -37,13 +37,13 @@ int R_ClipSpriteFace(int nump, clipplane_t *pclipplane) // Clips the winding at
 	}
 	float *instep = in;
 	float dists[MAXWORKINGVERTS + 1];
-	for (int i = 0; i < nump; i++, instep += sizeof(vec5_t) / sizeof(float))
+	for (s32 i = 0; i < nump; i++, instep += sizeof(vec5_t) / sizeof(float))
 		dists[i] = DotProduct(instep, pclipnormal) - clipdist;
 	dists[nump] = dists[0]; // handle wraparound case
 	Q_memcpy(instep, in, sizeof(vec5_t));
 	instep = in; // clip the winding
-	int outcount = 0;
-	for (int i = 0; i < nump; i++, instep += sizeof(vec5_t)/sizeof(float)) {
+	s32 outcount = 0;
+	for (s32 i = 0; i < nump; i++, instep += sizeof(vec5_t)/sizeof(float)) {
 		if (dists[i] >= 0) {
 			Q_memcpy(outstep, instep, sizeof(vec5_t));
 			outstep += sizeof(vec5_t) / sizeof(float);
@@ -97,9 +97,9 @@ void R_SetupAndDrawSprite()
 	pverts[3][2] = r_entorigin[2] + down[2] + left[2];
 	pverts[3][3] = 0;
 	pverts[3][4] = sprite_height;
-	int nump = 4; // clip to the frustum in worldspace
+	s32 nump = 4; // clip to the frustum in worldspace
 	clip_current = 0;
-	for (int i = 0; i < 4; i++) {
+	for (s32 i = 0; i < 4; i++) {
 		nump = R_ClipSpriteFace(nump, &view_clipplanes[i]);
 		if (nump < 3)
 			return;
@@ -110,7 +110,7 @@ void R_SetupAndDrawSprite()
 	float *pv = &clip_verts[clip_current][0][0];
 	r_spritedesc.nearzi = -999999;
 	emitpoint_t outverts[MAXWORKINGVERTS + 1];
-	for (int i = 0; i < nump; i++) {
+	for (s32 i = 0; i < nump; i++) {
 		VectorSubtract(pv, r_origin, local);
 		TransformVector(local, transformed);
 		if (transformed[2] < NEAR_CLIP)
@@ -134,7 +134,7 @@ void R_SetupAndDrawSprite()
 
 mspriteframe_t *R_GetSpriteframe(msprite_t *psprite)
 {
-	int frame = currententity->frame;
+	s32 frame = currententity->frame;
 	if ((frame >= psprite->numframes) || (frame < 0)) {
 		Con_Printf("R_DrawSprite: no such frame %d\n", frame);
 		frame = 0;
@@ -146,14 +146,14 @@ mspriteframe_t *R_GetSpriteframe(msprite_t *psprite)
 	else {
 		pspritegroup = (mspritegroup_t*)psprite->frames[frame].frameptr;
 		float *pintervals = pspritegroup->intervals;
-		int numframes = pspritegroup->numframes;
+		s32 numframes = pspritegroup->numframes;
 		float fullinterval = pintervals[numframes - 1];
 		float time = cl.time + currententity->syncbase;
 		// when loading in Mod_LoadSpriteGroup, we guaranteed all interval values
 		// are positive, so we don't have to worry about division by 0
 		float targettime =
-			time - ((int)(time / fullinterval)) * fullinterval;
-		int i = 0;
+			time - ((s32)(time / fullinterval)) * fullinterval;
+		s32 i = 0;
 		for (; i < (numframes - 1); i++)
 			if (pintervals[i] > targettime)
 				break;
@@ -203,7 +203,7 @@ void R_DrawSprite()
 		// generate the sprite's axes, completely parallel to the viewplane. There
 		// are no problem situations, because the sprite is always in the same
 		// position relative to the viewer
-		for (int i = 0; i < 3; i++) {
+		for (s32 i = 0; i < 3; i++) {
 			r_spritedesc.vup[i] = vup[i];
 			r_spritedesc.vright[i] = vright[i];
 			r_spritedesc.vpn[i] = vpn[i];
@@ -233,7 +233,7 @@ void R_DrawSprite()
 		float angle = currententity->angles[ROLL] * (M_PI * 2 / 360);
 		float sr = sin(angle);
 		float cr = cos(angle);
-		for (int i = 0; i < 3; i++) {
+		for (s32 i = 0; i < 3; i++) {
 			r_spritedesc.vpn[i] = vpn[i];
 			r_spritedesc.vright[i] = vright[i] * cr + vup[i] * sr;
 			r_spritedesc.vup[i] = vright[i] * -sr + vup[i] * cr;

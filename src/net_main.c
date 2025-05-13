@@ -7,30 +7,30 @@
 #define sfunc net_drivers[sock->driver] // readability macros
 #define dfunc net_drivers[net_driverlevel]
 
-int net_driverlevel;
+s32 net_driverlevel;
 double net_time;
-int hostCacheCount = 0;
+s32 hostCacheCount = 0;
 hostcache_t hostcache[HOSTCACHESIZE];
 qsocket_t *net_activeSockets = NULL;
 qsocket_t *net_freeSockets = NULL;
-int net_numsockets = 0;
+s32 net_numsockets = 0;
 bool tcpipAvailable = false;
-int net_hostport;
-int DEFAULTnet_hostport = 26000;
-char my_ipx_address[NET_NAMELEN];
-char my_tcpip_address[NET_NAMELEN];
+s32 net_hostport;
+s32 DEFAULTnet_hostport = 26000;
+s8 my_ipx_address[NET_NAMELEN];
+s8 my_tcpip_address[NET_NAMELEN];
 static bool listening = false;
 bool slistInProgress = false;
 bool slistSilent = false;
 bool slistLocal = true;
 static double slistStartTime;
-static int slistLastShown;
+static s32 slistLastShown;
 sizebuf_t net_message;
-int net_activeconnections = 0;
-int messagesSent = 0;
-int messagesReceived = 0;
-int unreliableMessagesSent = 0;
-int unreliableMessagesReceived = 0;
+s32 net_activeconnections = 0;
+s32 messagesSent = 0;
+s32 messagesReceived = 0;
+s32 unreliableMessagesSent = 0;
+s32 unreliableMessagesReceived = 0;
 static PollProcedure *pollProcedureList = NULL;
 static void Slist_Send(void *);
 static void Slist_Poll(void *);
@@ -116,7 +116,7 @@ static void NET_Listen_f()
 
 static void MaxPlayers_f()
 {
-	int n;
+	s32 n;
 	if (Cmd_Argc() != 2) {
 		Con_Printf("\"maxplayers\" is \"%d\"\n", svs.maxclients);
 		return;
@@ -146,7 +146,7 @@ static void MaxPlayers_f()
 
 static void NET_Port_f()
 {
-	int n;
+	s32 n;
 	if (Cmd_Argc() != 2) {
 		Con_Printf("\"port\" is \"%d\"\n", net_hostport);
 		return;
@@ -174,7 +174,7 @@ static void PrintSlistHeader()
 
 static void PrintSlist()
 {
-	int n;
+	s32 n;
 	for (n = slistLastShown; n < hostCacheCount; n++) {
 		if (hostcache[n].maxusers)
 			Con_Printf("%-15.15s %-15.15s %2u/%2u\n",
@@ -249,11 +249,11 @@ static void Slist_Poll(void *unused)
 	slistLocal = true;
 }
 
-qsocket_t *NET_Connect(const char *host)
+qsocket_t *NET_Connect(const s8 *host)
 {
 	qsocket_t *ret;
-	int n;
-	int numdrivers = net_numdrivers;
+	s32 n;
+	s32 numdrivers = net_numdrivers;
 	SetNetTime();
 	if (host && *host == 0)
 		host = NULL;
@@ -343,9 +343,9 @@ void NET_Close(qsocket_t *sock)
 // returns 0 if no data is waiting
 // returns 1 if a message was received
 // returns -1 if connection is invalid
-int NET_GetMessage(qsocket_t *sock)
+s32 NET_GetMessage(qsocket_t *sock)
 {
-	int ret;
+	s32 ret;
 	if (!sock)
 		return -1;
 	if (sock->disconnected) {
@@ -378,9 +378,9 @@ int NET_GetMessage(qsocket_t *sock)
 // 		is still considered valid
 // returns 1 if the message was sent properly
 // returns -1 if the connection died
-int NET_SendMessage(qsocket_t *sock, sizebuf_t *data)
+s32 NET_SendMessage(qsocket_t *sock, sizebuf_t *data)
 {
-	int r;
+	s32 r;
 	if (!sock)
 		return -1;
 	if (sock->disconnected) {
@@ -394,9 +394,9 @@ int NET_SendMessage(qsocket_t *sock, sizebuf_t *data)
 	return r;
 }
 
-int NET_SendUnreliableMessage(qsocket_t *sock, sizebuf_t *data)
+s32 NET_SendUnreliableMessage(qsocket_t *sock, sizebuf_t *data)
 {
-	int r;
+	s32 r;
 	if (!sock)
 		return -1;
 	if (sock->disconnected) {
@@ -422,11 +422,11 @@ bool NET_CanSendMessage(qsocket_t *sock)
 	return sfunc.CanSendMessage(sock);
 }
 
-int NET_SendToAll(sizebuf_t *data, double blocktime)
+s32 NET_SendToAll(sizebuf_t *data, double blocktime)
 {
 	double start;
-	int i = 0;
-	int count = 0;
+	s32 i = 0;
+	s32 count = 0;
 	bool msg_init[MAX_SCOREBOARD];	/* did we write the message to the client's connection  */
 	bool msg_sent[MAX_SCOREBOARD];	/* did the msg arrive its destination (canSend state).  */
 	for (host_client = svs.clients; i < svs.maxclients; i++, host_client++){
@@ -484,7 +484,7 @@ int NET_SendToAll(sizebuf_t *data, double blocktime)
 
 void NET_Init()
 {
-	int i;
+	s32 i;
 	qsocket_t *s;
 	i = COM_CheckParm("-port");
 	if (!i)

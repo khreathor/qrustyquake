@@ -11,14 +11,14 @@ trivertx_t *r_apverts;
 // TODO: these probably will go away with optimized rasterization
 mdl_t *pmdl;
 vec3_t r_plightvec;
-int r_ambientlight;
+s32 r_ambientlight;
 float r_shadelight;
 aliashdr_t *paliashdr;
 finalvert_t *pfinalverts;
 auxvert_t *pauxverts;
-int r_amodels_drawn;
-int a_skinwidth;
-int r_anumverts;
+s32 r_amodels_drawn;
+s32 a_skinwidth;
+s32 r_anumverts;
 float aliastransform[3][4];
 
 static float ziscale;
@@ -36,7 +36,7 @@ float r_avertexnormals[NUMVERTEXNORMALS][3] = {
 };
 
 void R_AliasTransformAndProjectFinalVerts(finalvert_t *fv, stvert_t *pstverts);
-void R_AliasSetUpTransform(int trivial_accept);
+void R_AliasSetUpTransform(s32 trivial_accept);
 void R_AliasTransformVector(vec3_t in, vec3_t out);
 void R_AliasTransformFinalVert(finalvert_t *fv, auxvert_t *av,
 				trivertx_t *pverts, stvert_t *pstverts);
@@ -51,7 +51,7 @@ bool R_AliasCheckBBox()
 	pmdl = (mdl_t *) ((byte *) pahdr + pahdr->model);
 	R_AliasSetUpTransform(0);
 	// construct the base bounding box for this frame
-	int frame = currententity->frame;
+	s32 frame = currententity->frame;
 	// TODO: don't repeat this check when drawing?
 	if ((frame >= pmdl->numframes) || (frame < 0)) {
 		Con_DPrintf("No such frame %d %s\n", frame, pmodel->name);
@@ -70,10 +70,10 @@ bool R_AliasCheckBBox()
 	bp[2][2]=bp[3][2]=bp[6][2]=bp[7][2]=(float)pframedesc->bboxmax.v[2];
 	bool zclipped = false;
 	bool zfullyclipped = true;
-	int minz = 9999;
+	s32 minz = 9999;
 	finalvert_t *pv0, *pv1, viewpts[16];
 	auxvert_t *pa0, *pa1, viewaux[16];
-	for (int i = 0; i < 8; i++) {
+	for (s32 i = 0; i < 8; i++) {
 		R_AliasTransformVector(&bp[i][0], &viewaux[i].fv[0]);
 		if (viewaux[i].fv[2] < ALIAS_Z_CLIP_PLANE) {
 		// we must clip points that are closer than the near clip plane
@@ -88,9 +88,9 @@ bool R_AliasCheckBBox()
 	}
 	if (zfullyclipped)
 		return false; // everything was near-z-clipped
-	int numv = 8;
+	s32 numv = 8;
 	// organize points by edges, use edges to get new points
-	for (int i = 0; zclipped && i < 12; i++) { // (possible trivial reject)
+	for (s32 i = 0; zclipped && i < 12; i++) { // (possible trivial reject)
 		// edge endpoints
 		pv0 = &viewpts[aedges[i].index0];
 		pv1 = &viewpts[aedges[i].index1];
@@ -107,9 +107,9 @@ bool R_AliasCheckBBox()
 		numv++;
 	}
 	// project the vertices that remain after clipping
-	unsigned int anyclip = 0;
-	unsigned int allclip = ALIAS_XY_CLIP_MASK;
-	for (int i = 0; i < numv; i++) {
+	u32 anyclip = 0;
+	u32 allclip = ALIAS_XY_CLIP_MASK;
+	for (s32 i = 0; i < numv; i++) {
 		// we don't need to bother with vertices that were z-clipped
 		if (viewpts[i].flags & ALIAS_Z_CLIP)
 			continue;
@@ -117,7 +117,7 @@ bool R_AliasCheckBBox()
 		// FIXME: do with chop mode in ASM, or convert to float
 		float v0 = (viewaux[i].fv[0] * xscale * zi) + xcenter;
 		float v1 = (viewaux[i].fv[1] * yscale * zi) + ycenter;
-		int flags = 0;
+		s32 flags = 0;
 		if (v0 < r_refdef.fvrectx)
 			flags |= ALIAS_LEFT_CLIP;
 		if (v1 < r_refdef.fvrecty)
@@ -151,7 +151,7 @@ void R_AliasPreparePoints()
 	r_anumverts = pmdl->numverts;
 	finalvert_t *fv = pfinalverts;
 	auxvert_t *av = pauxverts;
-	for (int i = 0; i < r_anumverts; i++,fv++,av++,r_apverts++,pstverts++) {
+	for (s32 i = 0; i < r_anumverts; i++,fv++,av++,r_apverts++,pstverts++) {
 		R_AliasTransformFinalVert(fv, av, r_apverts, pstverts);
 		if (av->fv[2] < ALIAS_Z_CLIP_PLANE)
 			fv->flags |= ALIAS_Z_CLIP;
@@ -170,7 +170,7 @@ void R_AliasPreparePoints()
 	r_affinetridesc.numtriangles = 1; // clip and draw all triangles
 	mtriangle_t *ptri = (mtriangle_t *) ((byte *) paliashdr + paliashdr->triangles);
 	finalvert_t *pfv[3];
-	for (int i = 0; i < pmdl->numtris; i++, ptri++) {
+	for (s32 i = 0; i < pmdl->numtris; i++, ptri++) {
 		pfv[0] = &pfinalverts[ptri->vertindex[0]];
 		pfv[1] = &pfinalverts[ptri->vertindex[1]];
 		pfv[2] = &pfinalverts[ptri->vertindex[2]];
@@ -187,7 +187,7 @@ void R_AliasPreparePoints()
 	}
 }
 
-void R_AliasSetUpTransform(int trivial_accept)
+void R_AliasSetUpTransform(s32 trivial_accept)
 {
 	float rotationmatrix[3][4], t2matrix[3][4];
 	static float tmatrix[3][4];
@@ -207,7 +207,7 @@ void R_AliasSetUpTransform(int trivial_accept)
 	tmatrix[1][3] = pmdl->scale_origin[1];
 	tmatrix[2][3] = pmdl->scale_origin[2];
 	// TODO: can do this with simple matrix rearrangement
-	for (int i = 0; i < 3; i++) {
+	for (s32 i = 0; i < 3; i++) {
 		t2matrix[i][0] = alias_forward[i];
 		t2matrix[i][1] = -alias_right[i];
 		t2matrix[i][2] = alias_up[i];
@@ -230,7 +230,7 @@ void R_AliasSetUpTransform(int trivial_accept)
 	// FIXME: make this work for clipped case too?
 	if (!trivial_accept) 
 		return;
-	for (int i = 0; i < 4; i++) {
+	for (s32 i = 0; i < 4; i++) {
 		aliastransform[0][i]*=aliasxscale*(1.0/((float)0x8000*0x10000));
 		aliastransform[1][i]*=aliasyscale*(1.0/((float)0x8000*0x10000));
 		aliastransform[2][i] *= 1.0 / ((float)0x8000 * 0x10000);
@@ -249,9 +249,9 @@ void R_AliasTransformFinalVert(finalvert_t *fv, auxvert_t *av,
 	// lighting
 	float *plightnormal = r_avertexnormals[pverts->lightnormalindex];
 	float lightcos = DotProduct(plightnormal, r_plightvec);
-	int temp = r_ambientlight;
+	s32 temp = r_ambientlight;
 	if (lightcos < 0) {
-		temp += (int)(r_shadelight * lightcos);
+		temp += (s32)(r_shadelight * lightcos);
 		// because we limited the minimum ambient and shading light, we
 		// don't have to clamp low light, just bright
 		if (temp < 0)
@@ -263,7 +263,7 @@ void R_AliasTransformFinalVert(finalvert_t *fv, auxvert_t *av,
 void R_AliasTransformAndProjectFinalVerts(finalvert_t *fv, stvert_t *pstverts)
 {
 	trivertx_t *pverts = r_apverts;
-	for (int i = 0; i < r_anumverts; i++, fv++, pverts++, pstverts++) {
+	for (s32 i = 0; i < r_anumverts; i++, fv++, pverts++, pstverts++) {
 		// transform and project
 		float zi = 1.0 / (DotProduct(pverts->v, aliastransform[2]) + 
 				aliastransform[2][3]);
@@ -281,9 +281,9 @@ void R_AliasTransformAndProjectFinalVerts(finalvert_t *fv, stvert_t *pstverts)
 		// lighting
 		float *plightnormal=r_avertexnormals[pverts->lightnormalindex];
 		float lightcos = DotProduct(plightnormal, r_plightvec);
-		int temp = r_ambientlight;
+		s32 temp = r_ambientlight;
 		if (lightcos < 0) {
-			temp += (int)(r_shadelight * lightcos);
+			temp += (s32)(r_shadelight * lightcos);
 			// because we limited the minimum ambient and shading
 			// light, we don't have to clamp low light, just bright
 			if (temp < 0)
@@ -319,7 +319,7 @@ void R_AliasPrepareUnclippedPoints()
 
 void R_AliasSetupSkin()
 {
-	int skinnum = currententity->skinnum;
+	s32 skinnum = currententity->skinnum;
 	if ((skinnum >= pmdl->numskins) || (skinnum < 0)) {
 		Con_DPrintf("R_AliasSetupSkin: no such skin # %d\n", skinnum);
 		skinnum = 0;
@@ -332,14 +332,14 @@ void R_AliasSetupSkin()
 				((byte *) paliashdr + pskindesc->skin);
 		float *pskinintervals = (float *)((byte *) paliashdr
 				+ paliasskingroup->intervals);
-		int numskins = paliasskingroup->numskins;
+		s32 numskins = paliasskingroup->numskins;
 		float fullskininterval = pskinintervals[numskins - 1];
 		float skintime = cl.time + currententity->syncbase;
 		// when loading in Mod_LoadAliasSkinGroup, we guaranteed all interval
 		// values are positive, so we don't have to worry about division by 0
-		float skintargettime = skintime - ((int)(skintime /
+		float skintargettime = skintime - ((s32)(skintime /
 					fullskininterval)) * fullskininterval;
-		int i = 0;
+		s32 i = 0;
 		for (; i < (numskins - 1); i++) {
 			if (pskinintervals[i] > skintargettime)
 				break;
@@ -375,7 +375,7 @@ void R_AliasSetupLighting(alight_t *plighting)
 
 void R_AliasSetupFrame()
 { // set r_apverts
-	int frame = currententity->frame;
+	s32 frame = currententity->frame;
 	if ((frame >= pmdl->numframes) || (frame < 0)) {
 		Con_DPrintf("R_AliasSetupFrame: no such frame %d\n", frame);
 		frame = 0;
@@ -388,13 +388,13 @@ void R_AliasSetupFrame()
 	maliasgroup_t *paliasgroup = (maliasgroup_t *) ((byte *) paliashdr +
 			paliashdr->frames[frame].frame);
 	float *pintervals = (float *)((byte *)paliashdr+paliasgroup->intervals);
-	int numframes = paliasgroup->numframes;
+	s32 numframes = paliasgroup->numframes;
 	float fullinterval = pintervals[numframes - 1];
 	float time = cl.time + currententity->syncbase;
 	// when loading in Mod_LoadAliasGroup, we guaranteed all interval values
 	// are positive, so we don't have to worry about division by 0
-	float targettime = time - ((int)(time / fullinterval)) * fullinterval;
-	int i = 0;
+	float targettime = time - ((s32)(time / fullinterval)) * fullinterval;
+	s32 i = 0;
 	for (; i < (numframes - 1); i++)
 		if (pintervals[i] > targettime)
 			break;

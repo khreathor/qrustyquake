@@ -60,7 +60,7 @@ void R_Alias_clip_z(finalvert_t *pfv0, finalvert_t *pfv1, finalvert_t *out)
 void R_Alias_clip_left(finalvert_t *pfv0, finalvert_t *pfv1, finalvert_t *out)
 {
 	float scale;
-	int i;
+	s32 i;
 
 	if (pfv0->v[1] >= pfv1->v[1]) {
 		scale = (float)(r_refdef.aliasvrect.x - pfv0->v[0]) /
@@ -82,7 +82,7 @@ void R_Alias_clip_left(finalvert_t *pfv0, finalvert_t *pfv1, finalvert_t *out)
 void R_Alias_clip_right(finalvert_t *pfv0, finalvert_t *pfv1, finalvert_t *out)
 {
 	float scale;
-	int i;
+	s32 i;
 
 	if (pfv0->v[1] >= pfv1->v[1]) {
 		scale = (float)(r_refdef.aliasvrectright - pfv0->v[0]) /
@@ -104,7 +104,7 @@ void R_Alias_clip_right(finalvert_t *pfv0, finalvert_t *pfv1, finalvert_t *out)
 void R_Alias_clip_top(finalvert_t *pfv0, finalvert_t *pfv1, finalvert_t *out)
 {
 	float scale;
-	int i;
+	s32 i;
 
 	if (pfv0->v[1] >= pfv1->v[1]) {
 		scale = (float)(r_refdef.aliasvrect.y - pfv0->v[1]) /
@@ -126,7 +126,7 @@ void R_Alias_clip_top(finalvert_t *pfv0, finalvert_t *pfv1, finalvert_t *out)
 void R_Alias_clip_bottom(finalvert_t *pfv0, finalvert_t *pfv1, finalvert_t *out)
 {
 	float scale;
-	int i;
+	s32 i;
 
 	if (pfv0->v[1] >= pfv1->v[1]) {
 		scale = (float)(r_refdef.aliasvrectbottom - pfv0->v[1]) /
@@ -147,14 +147,14 @@ void R_Alias_clip_bottom(finalvert_t *pfv0, finalvert_t *pfv1, finalvert_t *out)
 	}
 }
 
-int R_AliasClip(finalvert_t *in, finalvert_t *out, int flag, int count,
+s32 R_AliasClip(finalvert_t *in, finalvert_t *out, s32 flag, s32 count,
 	void (*clip)(finalvert_t *pfv0, finalvert_t *pfv1, finalvert_t *out))
 {
-	int j = count - 1;
-	int k = 0;
-	for (int i = 0; i < count; j = i, i++) {
-		int oldflags = in[j].flags & flag;
-		int flags = in[i].flags & flag;
+	s32 j = count - 1;
+	s32 k = 0;
+	for (s32 i = 0; i < count; j = i, i++) {
+		s32 oldflags = in[j].flags & flag;
+		s32 flags = in[i].flags & flag;
 		if (flags && oldflags)
 			continue;
 		if (oldflags ^ flags) {
@@ -185,18 +185,18 @@ void R_AliasClipTriangle(mtriangle_t *ptri)
 		fv[0][1] = pfinalverts[ptri->vertindex[1]];
 		fv[0][2] = pfinalverts[ptri->vertindex[2]];
 	} else {
-		for (int i = 0; i < 3; i++) {
+		for (s32 i = 0; i < 3; i++) {
 			fv[0][i] = pfinalverts[ptri->vertindex[i]];
 			if (!ptri->facesfront
 			    && (fv[0][i].flags & ALIAS_ONSEAM))
 				fv[0][i].v[2] += r_affinetridesc.seamfixupX16;
 		}
 	}
-	unsigned int clipflags = 
+	u32 clipflags = 
 		fv[0][0].flags | fv[0][1].flags | fv[0][2].flags; // clip
-	int k, pingpong;
+	s32 k, pingpong;
 	if (clipflags & ALIAS_Z_CLIP) {
-		for (int i = 0; i < 3; i++)
+		for (s32 i = 0; i < 3; i++)
 			av[i] = pauxverts[ptri->vertindex[i]];
 		k = R_AliasClip(fv[0], fv[1], ALIAS_Z_CLIP, 3, R_Alias_clip_z);
 		pingpong = 1;
@@ -229,7 +229,7 @@ void R_AliasClipTriangle(mtriangle_t *ptri)
 		if (k == 0) return;
 		pingpong ^= 1;
 	}
-	for (int i = 0; i < k; i++) {
+	for (s32 i = 0; i < k; i++) {
 		if (fv[pingpong][i].v[0] < r_refdef.aliasvrect.x)
 			fv[pingpong][i].v[0] = r_refdef.aliasvrect.x;
 		else if (fv[pingpong][i].v[0] > r_refdef.aliasvrectright)
@@ -245,7 +245,7 @@ void R_AliasClipTriangle(mtriangle_t *ptri)
 	r_affinetridesc.ptriangles = &mtri;
 	r_affinetridesc.pfinalverts = fv[pingpong];
 	mtri.vertindex[0] = 0; // FIXME: do all at once as trifan?
-	for (int i = 1; i < k - 1; i++) {
+	for (s32 i = 1; i < k - 1; i++) {
 		mtri.vertindex[1] = i;
 		mtri.vertindex[2] = i + 1;
 		D_PolysetDraw();

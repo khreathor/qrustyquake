@@ -7,8 +7,8 @@ s32 color_conv_initialized = 0;
 lab_t lab_palette[256];
 u8 lit_lut[LIT_LUT_RES*LIT_LUT_RES*LIT_LUT_RES];
 u8 lit_lut_initialized = 0;
-unsigned char rgb_lut[RGB_LUT_SIZE];
-int rgb_lut_built = 0;
+u8 rgb_lut[RGB_LUT_SIZE];
+s32 rgb_lut_built = 0;
 
 s32 fog_initialized = 0;                                              // d_fog.c
 u32 lfsr = 0x1337; // non-zero seed
@@ -111,8 +111,8 @@ float d_sdivzstepv, d_tdivzstepv, d_zistepv;
 float d_sdivzorigin, d_tdivzorigin, d_ziorigin;
 fixed16_t sadjust, tadjust, bbextents, bbextentt;
 pixel_t *cacheblock;
-int cachewidth;
+s32 cachewidth;
 pixel_t *d_viewbuffer;
-short *d_pzbuffer;
-unsigned int d_zrowbytes;
-unsigned int d_zwidth;
+s16 *d_pzbuffer;
+u32 d_zrowbytes;
+u32 d_zwidth;

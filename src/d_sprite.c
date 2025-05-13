@@ -4,8 +4,8 @@
 
 #include "quakedef.h"
 
-static int sprite_height;
-static int minindex, maxindex;
+static s32 sprite_height;
+static s32 minindex, maxindex;
 static sspan_t *sprite_spans;
 sspan_t spans[MAXHEIGHT + 1];
 
@@ -16,11 +16,11 @@ void D_SpriteDrawSpans(sspan_t *pspan)
 	float tdivz8stepu = d_tdivzstepu * 8;
 	float zi8stepu = d_zistepu * 8;
 	// we count on FP exceptions being turned off to avoid range problems
-	int izistep = (int)(d_zistepu * 0x8000 * 0x10000);
+	s32 izistep = (s32)(d_zistepu * 0x8000 * 0x10000);
 	do {
 		byte *pdest = d_viewbuffer + (screenwidth*pspan->v) + pspan->u;
-		short *pz = d_pzbuffer + (d_zwidth * pspan->v) + pspan->u;
-		int count = pspan->count;
+		s16 *pz = d_pzbuffer + (d_zwidth * pspan->v) + pspan->u;
+		s32 count = pspan->count;
 		if (count <= 0)
 			goto NextSpan;
 		// calculate the initial s/z, t/z, 1/z, s, and t and clamp
@@ -31,20 +31,20 @@ void D_SpriteDrawSpans(sspan_t *pspan)
 		float zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
 		float z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
 					       // we count on FP exceptions being off to avoid range problems
-		int izi = (int)(zi * 0x8000 * 0x10000);
-		fixed16_t s = (int)(sdivz * z) + sadjust;
+		s32 izi = (s32)(zi * 0x8000 * 0x10000);
+		fixed16_t s = (s32)(sdivz * z) + sadjust;
 		if (s > bbextents)
 			s = bbextents;
 		else if (s < 0)
 			s = 0;
-		fixed16_t t = (int)(tdivz * z) + tadjust;
+		fixed16_t t = (s32)(tdivz * z) + tadjust;
 		if (t > bbextentt)
 			t = bbextentt;
 		else if (t < 0)
 			t = 0;
 		do {
 			// calculate s and t at the far end of the span
-			int spancount = count >= 8 ? 8 : count;
+			s32 spancount = count >= 8 ? 8 : count;
 			count -= spancount;
 			fixed16_t sstep = 0, tstep = 0, snext = 0, tnext = 0;
 			if (count) {
@@ -55,14 +55,14 @@ void D_SpriteDrawSpans(sspan_t *pspan)
 				zi += zi8stepu;
 				z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
 
-				snext = (int)(sdivz * z) + sadjust;
+				snext = (s32)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
 				else if (snext < 8)
 					snext = 8; // prevent round-off error on
 						   // <0 steps from causing overstepping &
 						   // running off the edge of the texture
-				tnext = (int)(tdivz * z) + tadjust;
+				tnext = (s32)(tdivz * z) + tadjust;
 				if (tnext > bbextentt)
 					tnext = bbextentt;
 				else if (tnext < 8)
@@ -79,14 +79,14 @@ void D_SpriteDrawSpans(sspan_t *pspan)
 				tdivz += d_tdivzstepu * spancountminus1;
 				zi += d_zistepu * spancountminus1;
 				z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
-				snext = (int)(sdivz * z) + sadjust;
+				snext = (s32)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
 				else if (snext < 8)
 					snext = 8; // prevent round-off error on <0 steps from
 						   // from causing overstepping & running off the
 						   // edge of the texture
-				tnext = (int)(tdivz * z) + tadjust;
+				tnext = (s32)(tdivz * z) + tadjust;
 				if (tnext > bbextentt)
 					tnext = bbextentt;
 				else if (tnext < 8)
@@ -121,10 +121,10 @@ NextSpan:
 void D_SpriteScanLeftEdge()
 { 
 	sspan_t *pspan = sprite_spans;
-	int i = minindex;
+	s32 i = minindex;
 	if (i == 0)
 		i = r_spritedesc.nump;
-	int lmaxindex = maxindex;
+	s32 lmaxindex = maxindex;
 	if (lmaxindex == 0)
 		lmaxindex = r_spritedesc.nump;
 	float vtop = ceil(r_spritedesc.pverts[i].v);
@@ -136,13 +136,13 @@ void D_SpriteScanLeftEdge()
 			float du = pnext->u - pvert->u;
 			float dv = pnext->v - pvert->v;
 			float slope = du / dv;
-			fixed16_t u_step = (int)(slope * 0x10000);
+			fixed16_t u_step = (s32)(slope * 0x10000);
 			// adjust u to ceil the integer portion
-			fixed16_t u = (int)((pvert->u + (slope *
+			fixed16_t u = (s32)((pvert->u + (slope *
 				(vtop - pvert->v))) * 0x10000) + (0x10000 - 1);
-			int itop = (int)vtop;
-			int ibottom = (int)vbottom;
-			for (int v = itop; v < ibottom; v++) {
+			s32 itop = (s32)vtop;
+			s32 ibottom = (s32)vbottom;
+			for (s32 v = itop; v < ibottom; v++) {
 				pspan->u = u >> 16;
 				pspan->v = v;
 				u += u_step;
@@ -159,7 +159,7 @@ void D_SpriteScanLeftEdge()
 void D_SpriteScanRightEdge(void)
 {
 	sspan_t *pspan = sprite_spans;
-	int i = minindex;
+	s32 i = minindex;
 	float vvert = r_spritedesc.pverts[i].v;
 	if (vvert < r_refdef.fvrecty_adj)
 		vvert = r_refdef.fvrecty_adj;
@@ -189,13 +189,13 @@ void D_SpriteScanRightEdge(void)
 			float du = unext - uvert;
 			float dv = vnext - vvert;
 			float slope = du / dv;
-			fixed16_t u_step = (int)(slope * 0x10000);
+			fixed16_t u_step = (s32)(slope * 0x10000);
 			// adjust u to ceil the integer portion
-			fixed16_t u = (int)((uvert + (slope * (vtop - vvert)))
+			fixed16_t u = (s32)((uvert + (slope * (vtop - vvert)))
 					* 0x10000)+ (0x10000 - 1);
-			int itop = (int)vtop;
-			int ibottom = (int)vbottom;
-			for (int v = itop; v < ibottom; v++) {
+			s32 itop = (s32)vtop;
+			s32 ibottom = (s32)vbottom;
+			for (s32 v = itop; v < ibottom; v++) {
 				pspan->count = (u >> 16) - pspan->u;
 				u += u_step;
 				pspan++;
@@ -243,7 +243,7 @@ void D_DrawSprite()
 	float ymin = 999999.9; // find the top and bottom vertices, and make
 	float ymax = -999999.9; // sure there's at least one scan to draw
 	emitpoint_t *pverts = r_spritedesc.pverts;
-	for (int i = 0; i < r_spritedesc.nump; i++) {
+	for (s32 i = 0; i < r_spritedesc.nump; i++) {
 		if (pverts->v < ymin) {
 			ymin = pverts->v;
 			minindex = i;
@@ -261,7 +261,7 @@ void D_DrawSprite()
 	cachewidth = r_spritedesc.pspriteframe->width;
 	sprite_height = r_spritedesc.pspriteframe->height;
 	cacheblock = (byte *) & r_spritedesc.pspriteframe->pixels[0];
-	int nump = r_spritedesc.nump; // copy the first vertex to the last vertex,
+	s32 nump = r_spritedesc.nump; // copy the first vertex to the last vertex,
 	pverts = r_spritedesc.pverts; // so we don't have to deal with wrapping
 	pverts[nump] = pverts[0];
 	D_SpriteCalculateGradients();

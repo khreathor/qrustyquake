@@ -8,13 +8,13 @@
 
 #include "quakedef.h"
 
-static int	buffersize;
+static s32	buffersize;
 
 
-static void SDLCALL paint_audio (void *unused, Uint8 *stream, int len)
+static void SDLCALL paint_audio (void *unused, Uint8 *stream, s32 len)
 {
-	int	pos, tobufend;
-	int	len1, len2;
+	s32	pos, tobufend;
+	s32	len1, len2;
 
 	if (!shm)
 	{	/* shouldn't happen, but just in case */
@@ -55,8 +55,8 @@ static void SDLCALL paint_audio (void *unused, Uint8 *stream, int len)
 bool SNDDMA_Init (dma_t *dma)
 {
 	SDL_AudioSpec desired;
-	int		tmp, val;
-	char	drivername[128];
+	s32		tmp, val;
+	s8	drivername[128];
 
 	if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0)
 	{
@@ -115,15 +115,15 @@ bool SNDDMA_Init (dma_t *dma)
 
 	Con_Printf ("SDL audio spec  : %d Hz, %d samples, %d channels\n",
 			desired.freq, desired.samples, desired.channels);
-	const char *driver = SDL_GetCurrentAudioDriver();
-	const char *device = SDL_GetAudioDeviceName(0, SDL_FALSE);
+	const s8 *driver = SDL_GetCurrentAudioDriver();
+	const s8 *device = SDL_GetAudioDeviceName(0, SDL_FALSE);
 	q_snprintf(drivername, sizeof(drivername), "%s - %s",
-			driver != NULL ? driver : "(UNKNOWN)",
-			device != NULL ? device : "(UNKNOWN)");
+			driver != NULL ? driver : (s8*)"(UNKNOWN)",
+			device != NULL ? device : (s8*)"(UNKNOWN)");
 	buffersize = shm->samples * (shm->samplebits / 8);
 	Con_Printf ("SDL audio driver: %s, %d bytes buffer\n", drivername, buffersize);
 
-	shm->buffer = (unsigned char *) calloc (1, buffersize);
+	shm->buffer = (u8 *) calloc (1, buffersize);
 	if (!shm->buffer)
 	{
 		SDL_CloseAudio();
@@ -138,7 +138,7 @@ bool SNDDMA_Init (dma_t *dma)
 	return true;
 }
 
-int SNDDMA_GetDMAPos (void)
+s32 SNDDMA_GetDMAPos (void)
 {
 	return shm->samplepos;
 }

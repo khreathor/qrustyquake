@@ -33,7 +33,7 @@ net_driver_t net_drivers[] = {
 	 Datagram_Close,
 	 Datagram_Shutdown }
 };
-const int net_numdrivers = Q_COUNTOF(net_drivers);
+const s32 net_numdrivers = Q_COUNTOF(net_drivers);
 net_landriver_t net_landrivers[] = {
 	{ "UDP",
 	 0,
@@ -57,4 +57,4 @@ net_landriver_t net_landrivers[] = {
 	 UDP_GetSocketPort,
 	 UDP_SetSocketPort }
 };
-const int net_numlandrivers = Q_COUNTOF(net_landrivers);
+const s32 net_numlandrivers = Q_COUNTOF(net_landrivers);

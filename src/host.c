@@ -20,9 +20,9 @@ float host_netinterval;
 double host_time;
 double realtime; // without any filtering or bounding
 double oldrealtime; // last frame run
-int host_framecount;
-int host_hunklevel;
-int minimum_memory;
+s32 host_framecount;
+s32 host_hunklevel;
+s32 minimum_memory;
 client_t *host_client; // current client
 jmp_buf host_abortserver;
 byte *host_basepal;
@@ -48,10 +48,10 @@ static void Max_Fps_f (cvar_t *var)
 	}
 }
 
-void Host_EndGame(char *message, ...)
+void Host_EndGame(s8 *message, ...)
 {
 	va_list argptr;
-	char string[1024];
+	s8 string[1024];
 	va_start(argptr, message);
 	vsprintf(string, message, argptr);
 	va_end(argptr);
@@ -64,10 +64,10 @@ void Host_EndGame(char *message, ...)
 	longjmp(host_abortserver, 1);
 }
 
-void Host_Error(char *error, ...)
+void Host_Error(s8 *error, ...)
 {
 	va_list argptr;
-	char string[1024];
+	s8 string[1024];
 	static bool inerror = false;
 	if (inerror)
 		Sys_Error("Host_Error: recursively entered");
@@ -90,7 +90,7 @@ void Host_Error(char *error, ...)
 void Host_FindMaxClients()
 {
 	svs.maxclients = 1;
-	int i = COM_CheckParm("-dedicated");
+	s32 i = COM_CheckParm("-dedicated");
 	if (i) {
 		cls.state = ca_dedicated;
 		if (i != (com_argc - 1)) {
@@ -173,10 +173,10 @@ void Host_WriteConfiguration()
 	}
 }
 
-void SV_ClientPrintf(const char *fmt, ...) // Sends text across to be displayed 
+void SV_ClientPrintf(const s8 *fmt, ...) // Sends text across to be displayed 
 { // FIXME: make this just a stuffed echo?
 	va_list argptr;
-	char string[1024];
+	s8 string[1024];
 	va_start(argptr, fmt);
 	vsprintf(string, fmt, argptr);
 	va_end(argptr);
@@ -184,24 +184,24 @@ void SV_ClientPrintf(const char *fmt, ...) // Sends text across to be displayed
 	MSG_WriteString(&host_client->message, string);
 }
 
-void SV_BroadcastPrintf(const char *fmt, ...)
+void SV_BroadcastPrintf(const s8 *fmt, ...)
 { // Sends text to all active clients
 	va_list argptr;
-	char string[1024];
+	s8 string[1024];
 	va_start(argptr, fmt);
 	vsprintf(string, fmt, argptr);
 	va_end(argptr);
-	for (int i = 0; i < svs.maxclients; i++)
+	for (s32 i = 0; i < svs.maxclients; i++)
 		if (svs.clients[i].active && svs.clients[i].spawned) {
 			MSG_WriteByte(&svs.clients[i].message, svc_print);
 			MSG_WriteString(&svs.clients[i].message, string);
 		}
 }
 
-void Host_ClientCommands(char *fmt, ...)
+void Host_ClientCommands(s8 *fmt, ...)
 { // Send text over to the client to be executed
 	va_list argptr;
-	char string[1024];
+	s8 string[1024];
 	va_start(argptr, fmt);
 	vsprintf(string, fmt, argptr);
 	va_end(argptr);
@@ -213,7 +213,7 @@ void Host_ClientCommands(char *fmt, ...)
 void SV_DropClient(bool crash)
 { // Called when the player is getting totally kicked off the host
   // if (crash = true), don't bother sending signofs
-	int i;
+	s32 i;
 	client_t *client;
 	if (!crash) {
 		// send any final messages (don't check for errors)
@@ -225,7 +225,7 @@ void SV_DropClient(bool crash)
 		if (host_client->edict && host_client->spawned) {
 			// call the prog function for removing a client
 			// this will set the body to a dead frame, among other things
-			int saveSelf = pr_global_struct->self;
+			s32 saveSelf = pr_global_struct->self;
 			pr_global_struct->self =
 			    EDICT_TO_PROG(host_client->edict);
 			PR_ExecuteProgram(pr_global_struct->ClientDisconnect);
@@ -259,8 +259,8 @@ void SV_DropClient(bool crash)
 
 void Host_ShutdownServer(bool crash)
 { // This only happens at the end of a game, not between levels
-	unsigned char message[4];
-	int i;
+	u8 message[4];
+	s32 i;
 	if (!sv.active)
 		return;
 	sv.active = false;
@@ -268,7 +268,7 @@ void Host_ShutdownServer(bool crash)
 		CL_Disconnect();
 	// flush any pending messages - like the score!!!
 	double start = Sys_FloatTime();
-	int count;
+	s32 count;
 	do {
 		count = 0;
 		for (i = 0, host_client = svs.clients; i < svs.maxclients;
@@ -353,7 +353,7 @@ static void Host_AdvanceTime (double dt)
 	//johnfitz
 	else if (host_framerate.value > 0)
 		host_frametime = host_framerate.value;
-	else if (host_maxfps.value)// don't allow really long or short frames
+	else if (host_maxfps.value)// don't allow really s64 or s16 frames
 		host_frametime = CLAMP (0.0001, host_frametime, 0.1); //johnfitz -- use CLAMP
 }
 
@@ -370,11 +370,11 @@ void Host_ServerFrame()
 	SV_SendClientMessages(); // send all messages to the clients
 }
 
-static void Host_PrintTimes (const double times[], const char *names[], int count, bool showtotal)
+static void Host_PrintTimes (const double times[], const s8 *names[], s32 count, bool showtotal)
 {
-	char line[1024];
+	s8 line[1024];
 	double total = 0.0;
-	int i, worst;
+	s32 i, worst;
 	for (i = 0, worst = -1; i < count; i++) {
 		if (worst == -1 || times[i] > times[worst])
 			worst = i;
@@ -385,7 +385,7 @@ static void Host_PrintTimes (const double times[], const char *names[], int coun
 	else
 		line[0] = '\0';
 	for (i = 0; i < count; i++) {
-		char entry[256];
+		s8 entry[256];
 		q_snprintf (entry, sizeof (entry), "%5.2f %s", times[i] * 1000.0, names[i]);
 		//if (i == worst)
 		//    COM_TintString (entry, entry, sizeof (entry));
@@ -447,8 +447,8 @@ void _Host_Frame(float time)
 	{
 		static double pass[3] = {0.0, 0.0, 0.0};
 		static double elapsed = 0.0;
-		static int numframes = 0;
-		static int numserverframes = 0;
+		static s32 numframes = 0;
+		static s32 numserverframes = 0;
 		time1 = time2 - time1;
 		time2 = time3 - time2;
 		time3 = Sys_DoubleTime () - time3;
@@ -461,7 +461,7 @@ void _Host_Frame(float time)
 		pass[2] += time3;
 		elapsed += time;
 		if (elapsed >= host_speeds.value * 0.375) {
-			const char *names[3] = {"server", "gfx", "snd"};
+			const s8 *names[3] = {"server", "gfx", "snd"};
 			pass[0] /= q_max (numserverframes, 1);
 			pass[1] /= numframes;
 			pass[2] /= numframes;
@@ -476,7 +476,7 @@ void _Host_Frame(float time)
 void Host_Frame(float time)
 {
 	static double timetotal;
-	static int timecount;
+	static s32 timecount;
 	if (!serverprofile.value) {
 		_Host_Frame(time);
 		return;
@@ -488,11 +488,11 @@ void Host_Frame(float time)
 	timecount++;
 	if (timecount < 1000)
 		return;
-	int m = timetotal * 1000 / timecount;
+	s32 m = timetotal * 1000 / timecount;
 	timecount = 0;
 	timetotal = 0;
-	int c = 0;
-	for (int i = 0; i < svs.maxclients; i++)
+	s32 c = 0;
+	for (s32 i = 0; i < svs.maxclients; i++)
 		if (svs.clients[i].active)
 			c++;
 	Con_Printf("serverprofile: %2i clients %2i msec\n", c, m);
@@ -501,7 +501,7 @@ void Host_Frame(float time)
 void Host_Init()
 {
 	com_argc = host_parms.argc;
-	com_argv = (char **)host_parms.argv;
+	com_argv = (s8 **)host_parms.argv;
 	Memory_Init(host_parms.membase, host_parms.memsize);
 	Cbuf_Init();
 	Cmd_Init();
@@ -526,7 +526,7 @@ void Host_Init()
 		COM_FOpenFile ("gfx/custompalette.lmp", &f, NULL);
 		if (!f) COM_FOpenFile ("gfx/palette.lmp", &f, NULL);
 		if (!f) Sys_Error ("Couldn't load gfx/palette.lmp");
-		int mark = Hunk_LowMark ();
+		s32 mark = Hunk_LowMark ();
 		host_basepal = (byte *) Hunk_AllocName (768, "basepal");
 		if (fread(host_basepal, 768, 1, f) != 1)
 			Sys_Error ("Failed reading gfx/palette.lmp");

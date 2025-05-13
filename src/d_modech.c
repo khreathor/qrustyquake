@@ -4,14 +4,14 @@
 
 #include "quakedef.h"
 
-int d_vrectx, d_vrecty, d_vrectright_particle, d_vrectbottom_particle;
-int d_y_aspect_shift, d_pix_min, d_pix_max, d_pix_shift;
-int d_scantable[MAXHEIGHT];
-short *zspantable[MAXHEIGHT];
+s32 d_vrectx, d_vrecty, d_vrectright_particle, d_vrectbottom_particle;
+s32 d_y_aspect_shift, d_pix_min, d_pix_max, d_pix_shift;
+s32 d_scantable[MAXHEIGHT];
+s16 *zspantable[MAXHEIGHT];
 
 void D_ViewChanged()
 {
-	int rowbytes;
+	s32 rowbytes;
 	if (r_dowarp)
 		rowbytes = WARP_WIDTH;
 	else
@@ -24,8 +24,8 @@ void D_ViewChanged()
 	d_pix_min = r_refdef.vrect.width / 320;
 	if (d_pix_min < 1)
 		d_pix_min = 1;
-	d_pix_max = (int)((float)r_refdef.vrect.width / (320.0 / 4.0) + 0.5);
-	d_pix_shift = 8 - (int)((float)r_refdef.vrect.width / 320.0 + 0.5);
+	d_pix_max = (s32)((float)r_refdef.vrect.width / (320.0 / 4.0) + 0.5);
+	d_pix_shift = 8 - (s32)((float)r_refdef.vrect.width / 320.0 + 0.5);
 	if (d_pix_max < 1)
 		d_pix_max = 1;
 	if (pixelAspect > 1.4)
@@ -37,7 +37,7 @@ void D_ViewChanged()
 	d_vrectright_particle = r_refdef.vrectright - d_pix_max;
 	d_vrectbottom_particle =
 	    r_refdef.vrectbottom - (d_pix_max << d_y_aspect_shift);
-	for (unsigned int i = 0; i < vid.height; i++) {
+	for (u32 i = 0; i < vid.height; i++) {
 		d_scantable[i] = i * rowbytes;
 		zspantable[i] = d_pzbuffer + i * d_zwidth;
 	}

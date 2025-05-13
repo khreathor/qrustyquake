@@ -2,8 +2,8 @@
 
 #include "quakedef.h"
 
-unsigned int cacheoffset;
-int c_faceclip; // number of faces clipped
+u32 cacheoffset;
+s32 c_faceclip; // number of faces clipped
 zpointdesc_t r_zpointdesc;
 polydesc_t r_polydesc;
 clipplane_t *entity_clipplanes;
@@ -13,14 +13,14 @@ medge_t tedge;
 medge_t *r_pedge;
 bool r_leftclipped, r_rightclipped;
 bool r_nearzionly;
-int sintable[SIN_BUFFER_SIZE];
-int intsintable[SIN_BUFFER_SIZE];
+s32 sintable[SIN_BUFFER_SIZE];
+s32 intsintable[SIN_BUFFER_SIZE];
 mvertex_t r_leftenter, r_leftexit;
 mvertex_t r_rightenter, r_rightexit;
-int r_emitted;
+s32 r_emitted;
 float r_nearzi;
 float r_u1, r_v1, r_lzi1;
-int r_ceilv1;
+s32 r_ceilv1;
 bool r_lastvertvalid;
 static bool makeleftedge, makerightedge;
 float winquake_surface_liquid_alpha;
@@ -32,7 +32,7 @@ void R_EmitEdge(mvertex_t *pv0, mvertex_t *pv1)
 {
 	vec3_t local, transformed;
 	float *world;
-	long v, v2, ceilv0;
+	s64 v, v2, ceilv0;
 	float scale, lzi0, u0, v0;
 	if (r_lastvertvalid) {
 		u0 = r_u1;
@@ -59,7 +59,7 @@ void R_EmitEdge(mvertex_t *pv0, mvertex_t *pv1)
 			v0 = r_refdef.fvrecty_adj;
 		if (v0 > r_refdef.fvrectbottom_adj)
 			v0 = r_refdef.fvrectbottom_adj;
-		ceilv0 = (int)ceil(v0);
+		ceilv0 = (s32)ceil(v0);
 	}
 	world = &pv1->position[0];
 	VectorSubtract(world, modelorg, local); // transform and project
@@ -87,7 +87,7 @@ void R_EmitEdge(mvertex_t *pv0, mvertex_t *pv1)
 	if (r_nearzionly)
 		return;
 	r_emitted = 1;
-	r_ceilv1 = (int)ceil(r_v1);
+	r_ceilv1 = (s32)ceil(r_v1);
 	if (ceilv0 == r_ceilv1) { // create the edge
 		// we cache unclipped horizontal edges as fully clipped
 		if (cacheoffset != 0x7FFFFFFF) {
@@ -96,7 +96,7 @@ void R_EmitEdge(mvertex_t *pv0, mvertex_t *pv1)
 		}
 		return; // horizontal edge
 	}
-	long side = ceilv0 > r_ceilv1;
+	s64 side = ceilv0 > r_ceilv1;
 	edge_t *edge = edge_p++;
 	edge->owner = r_pedge;
 	edge->nearzi = lzi0;
@@ -127,7 +127,7 @@ void R_EmitEdge(mvertex_t *pv0, mvertex_t *pv1)
 		edge->u = r_refdef.vrect_x_adj_shift20;
 	if (edge->u > r_refdef.vrectright_adj_shift20)
 		edge->u = r_refdef.vrectright_adj_shift20;
-	long u_check = edge->u; // sort the edge in normally
+	s64 u_check = edge->u; // sort the edge in normally
 	if (edge->surfs[0])
 		u_check++; // sort trailers after leaders
 	if (!newedges[v] || newedges[v]->u >= u_check) {
@@ -216,7 +216,7 @@ void R_EmitCachedEdge()
 	r_emitted = 1;
 }
 
-void R_RenderFace(msurface_t *fa, int clipflags)
+void R_RenderFace(msurface_t *fa, s32 clipflags)
 {
 	// Manoel Kasimier - skyboxes - begin
 	// Code taken from the ToChriS engine - Author: Vic
@@ -258,8 +258,8 @@ void R_RenderFace(msurface_t *fa, int clipflags)
 	}
 	c_faceclip++;
 	clipplane_t *pclip = NULL; // set up clip planes
-	int i = 3;
-	unsigned int mask = 0x08;
+	s32 i = 3;
+	u32 mask = 0x08;
 	for (; i >= 0; i--, mask >>= 1) {
 		if (clipflags & mask) {
 			view_clipplanes[i].next = pclip;
@@ -274,7 +274,7 @@ void R_RenderFace(msurface_t *fa, int clipflags)
 	pedges = currententity->model->edges;
 	r_lastvertvalid = false;
 	for (i = 0; i < fa->numedges; i++) {
-		int lindex = currententity->model->surfedges[fa->firstedge + i];
+		s32 lindex = currententity->model->surfedges[fa->firstedge + i];
 		if (lindex > 0) {
 			r_pedge = &pedges[lindex];
 			// if the edge is cached, we can just reuse the edge
@@ -394,8 +394,8 @@ void R_RenderBmodelFace(bedge_t *pedges, msurface_t *psurf)
 	// this is a dummy to give the caching mechanism someplace to write to
 	r_pedge = &tedge;
 	clipplane_t *pclip = NULL; // set up clip planes
-	int i = 3; 
-	unsigned int mask = 0x08;
+	s32 i = 3; 
+	u32 mask = 0x08;
 	for (; i >= 0; i--, mask >>= 1) {
 		if (r_clipflags & mask) {
 			view_clipplanes[i].next = pclip;

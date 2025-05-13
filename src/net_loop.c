@@ -8,7 +8,7 @@ static bool localconnectpending = false;
 static qsocket_t *loop_client = NULL;
 static qsocket_t *loop_server = NULL;
 
-int Loop_Init()
+s32 Loop_Init()
 {
 	if (cls.state == ca_dedicated)
 		return -1;
@@ -41,7 +41,7 @@ void Loop_SearchForHosts(bool xmit)
 	Q_strcpy(hostcache[0].cname, "local");
 }
 
-qsocket_t *Loop_Connect(const char *host)
+qsocket_t *Loop_Connect(const s8 *host)
 {
 	if (Q_strcmp(host, "local") != 0)
 		return NULL;
@@ -85,17 +85,17 @@ qsocket_t *Loop_CheckNewConnections()
 	return loop_server;
 }
 
-static int IntAlign(int value)
+static s32 IntAlign(s32 value)
 {
-	return (value + (sizeof(int) - 1)) & (~(sizeof(int) - 1));
+	return (value + (sizeof(s32) - 1)) & (~(sizeof(s32) - 1));
 }
 
-int Loop_GetMessage(qsocket_t *sock)
+s32 Loop_GetMessage(qsocket_t *sock)
 {
 	if (sock->receiveMessageLength == 0)
 		return 0;
-	int ret = sock->receiveMessage[0];
-	int length = sock->receiveMessage[1] + (sock->receiveMessage[2] << 8);
+	s32 ret = sock->receiveMessage[0];
+	s32 length = sock->receiveMessage[1] + (sock->receiveMessage[2] << 8);
 	// alignment byte skipped here
 	SZ_Clear(&net_message);
 	SZ_Write(&net_message, &sock->receiveMessage[4], length);
@@ -109,11 +109,11 @@ int Loop_GetMessage(qsocket_t *sock)
 	return ret;
 }
 
-int Loop_SendMessage(qsocket_t *sock, sizebuf_t *data)
+s32 Loop_SendMessage(qsocket_t *sock, sizebuf_t *data)
 {
 	if (!sock->driverdata)
 		return -1;
-	int *bufferLength = &((qsocket_t *) sock->driverdata)->receiveMessageLength;
+	s32 *bufferLength = &((qsocket_t *) sock->driverdata)->receiveMessageLength;
 	if ((*bufferLength + data->cursize + 4) > NET_MAXMESSAGE)
 		Sys_Error("Loop_SendMessage: overflow");
 	byte *buffer =
@@ -128,13 +128,13 @@ int Loop_SendMessage(qsocket_t *sock, sizebuf_t *data)
 	return 1;
 }
 
-int Loop_SendUnreliableMessage(qsocket_t *sock, sizebuf_t *data)
+s32 Loop_SendUnreliableMessage(qsocket_t *sock, sizebuf_t *data)
 {
 	if (!sock->driverdata)
 		return -1;
-	int *bufferLength =
+	s32 *bufferLength =
 		&((qsocket_t *) sock->driverdata)->receiveMessageLength;
-	if ((*bufferLength + data->cursize + sizeof(byte) + sizeof(short)) >
+	if ((*bufferLength + data->cursize + sizeof(byte) + sizeof(s16)) >
 	    NET_MAXMESSAGE)
 		return 0;
 	byte *buffer =

@@ -6,14 +6,14 @@
 
 #define SHOWNET(x) 
 
-int bitcounts[16];
-char *svc_strings[] = {
+s32 bitcounts[16];
+s8 *svc_strings[] = {
 	"svc_bad",
 	"svc_nop",
 	"svc_disconnect",
 	"svc_updatestat",
-	"svc_version",		// [long] server version
-	"svc_setview",		// [short] entity number
+	"svc_version",		// [s64] server version
+	"svc_setview",		// [s16] entity number
 	"svc_sound",		// <see code>
 	"svc_time",		// [float] server time
 	"svc_print",		// [string] null terminated string
@@ -21,13 +21,13 @@ char *svc_strings[] = {
 	// the string should be \n terminated
 	"svc_setangle",		// [vec3] set the view angle to this absolute value
 
-	"svc_serverinfo",	// [long] version
+	"svc_serverinfo",	// [s64] version
 	// [string] signon string
 	// [string]..[0]model cache [string]...[0]sounds cache
 	// [string]..[0]item cache
 	"svc_lightstyle",	// [byte] [string]
 	"svc_updatename",	// [byte] [string]
-	"svc_updatefrags",	// [byte] [short]
+	"svc_updatefrags",	// [byte] [s16]
 	"svc_clientdata",	// <shortbits + data>
 	"svc_stopsound",	// <see code>
 	"svc_updatecolors",	// [byte] [byte]
@@ -52,9 +52,9 @@ char *svc_strings[] = {
 	"svc_cutscene"
 };
 
-static const char *suf[6] = {"rt", "bk", "lf", "ft", "up", "dn"};
+static const s8 *suf[6] = {"rt", "bk", "lf", "ft", "up", "dn"};
 
-void Sky_LoadSkyBox (const char *name);
+void Sky_LoadSkyBox (const s8 *name);
 
 void V_RestoreAngles (void)
 {
@@ -74,9 +74,9 @@ void R_CheckEfrags (void)
         //FIXMEdev_peakstats.efrags = q_max(cl.num_efrags, dev_peakstats.efrags);
 }
 
-void R_TranslatePlayerSkin (int playernum)
+void R_TranslatePlayerSkin (s32 playernum)
 {
-        int                     top, bottom;
+        s32                     top, bottom;
 
         top = (cl.scores[playernum].colors & 0xf0)>>4;
         bottom = cl.scores[playernum].colors &15;
@@ -103,7 +103,7 @@ void Fog_ParseServerMessage (void)
         //TODO Fog_Update (density, red, green, blue, time);
 }
 
-entity_t        *CL_EntityNum (int num)
+entity_t        *CL_EntityNum (s32 num)
 {
         //johnfitz -- check minimum number too
         if (num < 0)
@@ -129,12 +129,12 @@ entity_t        *CL_EntityNum (int num)
 void CL_ParseStartSoundPacket(void)
 {
         vec3_t  pos;
-        int     channel, ent;
-        int     sound_num;
-        int     volume;
-        int     field_mask;
+        s32     channel, ent;
+        s32     sound_num;
+        s32     volume;
+        s32     field_mask;
         float   attenuation;
-        int     i;
+        s32     i;
 
         field_mask = MSG_ReadByte();
 
@@ -151,18 +151,18 @@ void CL_ParseStartSoundPacket(void)
         //johnfitz -- PROTOCOL_FITZQUAKE
         if (field_mask & SND_LARGEENTITY)
         {
-                ent = (unsigned short) MSG_ReadShort ();
+                ent = (u16) MSG_ReadShort ();
                 channel = MSG_ReadByte ();
         }
         else
         {
-                channel = (unsigned short) MSG_ReadShort ();
+                channel = (u16) MSG_ReadShort ();
                 ent = channel >> 3;
                 channel &= 7;
         }
 
         if (field_mask & SND_LARGESOUND)
-                sound_num = (unsigned short) MSG_ReadShort ();
+                sound_num = (u16) MSG_ReadShort ();
         else
                 sound_num = MSG_ReadByte ();
         //johnfitz
@@ -183,7 +183,7 @@ void CL_ParseStartSoundPacket(void)
 
 void CL_ParseLocalSound(void)
 {
-        int field_mask, sound_num;
+        s32 field_mask, sound_num;
 
         field_mask = MSG_ReadByte();
         sound_num = (field_mask&SND_LARGESOUND) ? MSG_ReadShort() : MSG_ReadByte();
@@ -198,7 +198,7 @@ void CL_KeepaliveMessage (void)
 {
         float   time;
         static float lastmsg;
-        int             ret;
+        s32             ret;
         sizebuf_t       old;
         byte    *olddata;
 
@@ -248,14 +248,14 @@ void CL_KeepaliveMessage (void)
         SZ_Clear (&cls.message);
 }
 
-char    model_precache[MAX_MODELS][MAX_QPATH];
-char    sound_precache[MAX_SOUNDS][MAX_QPATH];
+s8    model_precache[MAX_MODELS][MAX_QPATH];
+s8    sound_precache[MAX_SOUNDS][MAX_QPATH];
 
 void CL_ParseServerInfo()
 {
-        const char      *str;
-        int             i;
-        int             nummodels, numsounds;
+        const s8      *str;
+        s32             i;
+        s32             nummodels, numsounds;
 
         Con_DPrintf ("Serverinfo packet received.\n");
 
@@ -281,10 +281,10 @@ void CL_ParseServerInfo()
 
         if (cl.protocol == PROTOCOL_RMQ)
         {
-                const unsigned int supportedflags = (PRFL_SHORTANGLE | PRFL_FLOATANGLE | PRFL_24BITCOORD | PRFL_FLOATCOORD | PRFL_EDICTSCALE | PRFL_INT32COORD);
+                const u32 supportedflags = (PRFL_SHORTANGLE | PRFL_FLOATANGLE | PRFL_24BITCOORD | PRFL_FLOATCOORD | PRFL_EDICTSCALE | PRFL_INT32COORD);
 
                 // mh - read protocol flags from server so that we know what protocol features to expect
-                cl.protocolflags = (unsigned int) MSG_ReadLong ();
+                cl.protocolflags = (u32) MSG_ReadLong ();
 
                 if (0 != (cl.protocolflags & (~supportedflags)))
                 {
@@ -406,10 +406,10 @@ void CL_ParseServerInfo()
         //FIXMEmemset(&dev_overflows, 0, sizeof(dev_overflows));
 }
 
-void CL_ParseBaseline (entity_t *ent, int version) //johnfitz -- added argument
+void CL_ParseBaseline (entity_t *ent, s32 version) //johnfitz -- added argument
 {
-        int     i;
-        int bits; //johnfitz
+        s32     i;
+        s32 bits; //johnfitz
 
         //johnfitz -- PROTOCOL_FITZQUAKE
         bits = (version == 2) ? MSG_ReadByte() : 0;
@@ -432,15 +432,15 @@ void CL_ParseBaseline (entity_t *ent, int version) //johnfitz -- added argument
 // Parse an entity update message from the server
 // If an entities model or origin changes from frame to frame, it must be
 // relinked. Other attributes can change without relinking.
-void CL_ParseUpdate (int bits)
+void CL_ParseUpdate (s32 bits)
 {
-        int             i;
+        s32             i;
         model_t        *model;
-        int             modnum;
+        s32             modnum;
         bool        forcelink;
         entity_t        *ent;
-        int             num;
-        int             skin;
+        s32             num;
+        s32             skin;
 
         if (cls.signon == SIGNONS - 1)
         {       // first update is the final signon stage
@@ -648,10 +648,10 @@ void CL_ParseUpdate (int bits)
 
 void CL_ParseClientdata (void)
 {
-	int             i, j;
-	int             bits; //johnfitz
+	s32             i, j;
+	s32             bits; //johnfitz
 
-	bits = (unsigned short)MSG_ReadShort (); //johnfitz -- read bits here isntead of in CL_ParseServerMessage()
+	bits = (u16)MSG_ReadShort (); //johnfitz -- read bits here isntead of in CL_ParseServerMessage()
 
 	//johnfitz -- PROTOCOL_FITZQUAKE
 	if (bits & SU_EXTEND1)
@@ -807,10 +807,10 @@ void CL_ParseClientdata (void)
 	//johnfitz
 }
 
-void CL_NewTranslation (int slot)
+void CL_NewTranslation (s32 slot)
 {
-        int             i, j;
-        int             top, bottom;
+        s32             i, j;
+        s32             top, bottom;
         byte    *dest, *source;
 
         if (slot > cl.maxclients)
@@ -842,10 +842,10 @@ void CL_NewTranslation (int slot)
         }
 }
 
-void CL_ParseStatic (int version) //johnfitz -- added a parameter
+void CL_ParseStatic (s32 version) //johnfitz -- added a parameter
 {
         entity_t *ent;
-        int             i;
+        s32             i;
 
         i = cl.num_statics;
         if (i >= MAX_STATIC_ENTITIES)
@@ -873,8 +873,8 @@ void CL_ParseStatic (int version) //johnfitz -- added a parameter
 
 static void CL_DumpPacket (void)
 {
-        int                     i, pos;
-        unsigned char   *packet = net_message.data;
+        s32                     i, pos;
+        u8   *packet = net_message.data;
 
         Con_Printf("CL_DumpPacket, BEGIN:\n");
         pos = 0;
@@ -904,11 +904,11 @@ static void CL_DumpPacket (void)
         Con_Printf("CL_DumpPacket, --- END ---\n");
 }
 
-void CL_ParseStaticSound (int version) //johnfitz -- added argument
+void CL_ParseStaticSound (s32 version) //johnfitz -- added argument
 {
         vec3_t          org;
-        int                     sound_num, vol, atten;
-        int                     i;
+        s32                     sound_num, vol, atten;
+        s32                     i;
 
         for (i = 0; i < 3; i++)
                 org[i] = MSG_ReadCoord (cl.protocolflags);
@@ -928,10 +928,10 @@ void CL_ParseStaticSound (int version) //johnfitz -- added argument
 
 void CL_ParseServerMessage ()
 {
-	int cmd;
-	int i;
-	const char *str; //johnfitz
-	int total, j, lastcmd; //johnfitz
+	s32 cmd;
+	s32 i;
+	const s8 *str; //johnfitz
+	s32 total, j, lastcmd; //johnfitz
 	// if recording demos, copy the message out
 	if (cl_shownet.value == 1)
 		Con_Printf ("%i ",net_message.cursize);
@@ -960,7 +960,7 @@ void CL_ParseServerMessage ()
 			CL_ParseUpdate (cmd&127);
 			continue;
 		}
-		if (cmd < (int)Q_COUNTOF(svc_strings)) {
+		if (cmd < (s32)Q_COUNTOF(svc_strings)) {
 			if(cl_shownet.value==2)
 				Con_Printf("%3i:%s\n",msg_readcount-1,
 						svc_strings[cmd]);

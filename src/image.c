@@ -5,7 +5,7 @@
 
 #include "quakedef.h"
 
-static char loadfilename[MAX_OSPATH]; //file scope so that error messages can use it
+static s8 loadfilename[MAX_OSPATH]; //file scope so that error messages can use it
 
 static stdio_buffer_t *Buf_Alloc(FILE *f)
 {
@@ -19,7 +19,7 @@ static void Buf_Free(stdio_buffer_t *buf)
         free(buf);
 }
 
-static inline int Buf_GetC(stdio_buffer_t *buf)
+static inline s32 Buf_GetC(stdio_buffer_t *buf)
 {
         if (buf->pos >= buf->size)
         {
@@ -33,23 +33,23 @@ static inline int Buf_GetC(stdio_buffer_t *buf)
         return buf->buffer[buf->pos++];
 }
 
-int fgetLittleShort (FILE *f)
+s32 fgetLittleShort (FILE *f)
 {
         byte    b1, b2;
 
         b1 = fgetc(f);
         b2 = fgetc(f);
 
-        return (short)(b1 + b2*256);
+        return (s16)(b1 + b2*256);
 }
 
-byte *Image_LoadTGA (FILE *fin, int *width, int *height)
+byte *Image_LoadTGA (FILE *fin, s32 *width, s32 *height)
 {
-	int columns, rows, numPixels;
+	s32 columns, rows, numPixels;
 	byte *pixbuf;
-	int row, column;
+	s32 row, column;
 	byte *targa_rgba;
-	int realrow; //johnfitz -- fix for upside-down targas
+	s32 realrow; //johnfitz -- fix for upside-down targas
 	bool upside_down; //johnfitz -- fix for upside-down targas
 	stdio_buffer_t *buf;
 	targaheader_t targa_header;
@@ -97,7 +97,7 @@ byte *Image_LoadTGA (FILE *fin, int *width, int *height)
 	if (targa_header.image_type==1) // Uncompressed, paletted images
 	{
 		byte palette[256*4];
-		int i;
+		s32 i;
 		//palette data comes first
 		for (i = 0; i < targa_header.colormap_length; i++)
 		{ //this palette data is bgr.
@@ -133,7 +133,7 @@ byte *Image_LoadTGA (FILE *fin, int *width, int *height)
 			//johnfitz
 			for(column=0; column<columns; column++)
 			{
-				unsigned char red,green,blue,alphabyte;
+				u8 red,green,blue,alphabyte;
 				switch (targa_header.pixel_size)
 				{
 					case 24:
@@ -161,7 +161,7 @@ byte *Image_LoadTGA (FILE *fin, int *width, int *height)
 	}
 	else if (targa_header.image_type==10) // Runlength encoded RGB images
 	{
-		unsigned char red,green,blue,alphabyte,packetHeader,packetSize,j;
+		u8 red,green,blue,alphabyte,packetHeader,packetSize,j;
 		for(row=rows-1; row>=0; row--)
 		{
 			//johnfitz -- fix for upside-down targas
@@ -264,12 +264,12 @@ breakOut:;
 	Buf_Free(buf);
 	fclose(fin);
 
-	*width = (int)(targa_header.width);
-	*height = (int)(targa_header.height);
+	*width = (s32)(targa_header.width);
+	*height = (s32)(targa_header.height);
 	return targa_rgba;
 }
 
-byte *Image_LoadImage (const char *name, int *width, int *height)
+byte *Image_LoadImage (const s8 *name, s32 *width, s32 *height)
 { // returns a pointer to hunk allocated RGBA data
 	FILE *f;
 	q_snprintf (loadfilename, sizeof(loadfilename), "%s.tga", name);

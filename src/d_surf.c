@@ -6,19 +6,19 @@
 
 float surfscale;
 bool r_cache_thrash; // set if surface cache is thrashing
-unsigned long sc_size;
+u64 sc_size;
 surfcache_t *sc_rover, *sc_base;
-int lmonly; // render lightmap only, for lit water
+s32 lmonly; // render lightmap only, for lit water
 
-int D_SurfaceCacheForRes(int width, int height)
+s32 D_SurfaceCacheForRes(s32 width, s32 height)
 {
-	int size;
+	s32 size;
 	if (COM_CheckParm("-surfcachesize")) {
 		size = Q_atoi(com_argv[COM_CheckParm("-surfcachesize")+1])*1024;
 		return size;
 	}
 	size = SURFCACHE_SIZE_AT_320X200;
-	int pix = width * height;
+	s32 pix = width * height;
 	if (pix > 64000)
 		size += (pix - 64000) * 3;
 	return size;
@@ -27,11 +27,11 @@ int D_SurfaceCacheForRes(int width, int height)
 void D_ClearCacheGuard()
 {
 	byte *s = (byte *) sc_base + sc_size;
-	for (int i = 0; i < GUARDSIZE; i++)
+	for (s32 i = 0; i < GUARDSIZE; i++)
 		s[i] = (byte) i;
 }
 
-void D_InitCaches(void *buffer, int size)
+void D_InitCaches(void *buffer, s32 size)
 {
 	Con_Printf("%ik surface cache\n", size / 1024);
 	sc_size = size - GUARDSIZE;
@@ -57,7 +57,7 @@ void D_FlushCaches(void)
 	sc_base->size = sc_size;
 }
 
-surfcache_t *D_SCAlloc(int width, uintptr_t size)
+surfcache_t *D_SCAlloc(s32 width, uintptr_t size)
 {
 	if ((width < 0) || (width > 256))
 		Sys_Error("D_SCAlloc: bad cache width %d\n", width);
@@ -69,7 +69,7 @@ surfcache_t *D_SCAlloc(int width, uintptr_t size)
 		Sys_Error("D_SCAlloc: %i > cache size", size);
 	// if there is not size bytes after the rover, reset to the start
 	bool wrapped_this_time = false;
-	if (!sc_rover || (unsigned long)((byte *) sc_rover - (byte *) sc_base)
+	if (!sc_rover || (u64)((byte *) sc_rover - (byte *) sc_base)
 			> sc_size - size) {
 		if (sc_rover) {
 			wrapped_this_time = true;
@@ -80,7 +80,7 @@ surfcache_t *D_SCAlloc(int width, uintptr_t size)
 	surfcache_t *new = sc_rover;
 	if (sc_rover->owner)
 		*sc_rover->owner = NULL;
-	while (new->size < (int)size) {
+	while (new->size < (s32)size) {
 		sc_rover = sc_rover->next; // free another
 		if (!sc_rover)
 			Sys_Error("D_SCAlloc: hit the end of memory");
@@ -111,7 +111,7 @@ surfcache_t *D_SCAlloc(int width, uintptr_t size)
 	return new;
 }
 
-surfcache_t *D_CacheSurface(msurface_t *surface, int miplevel)
+surfcache_t *D_CacheSurface(msurface_t *surface, s32 miplevel)
 {
 	// if the surface is animating or flashing, flush the cache
 	r_drawsurf.texture = R_TextureAnimation(surface->texinfo->texture);

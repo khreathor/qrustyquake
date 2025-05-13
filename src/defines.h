@@ -17,7 +17,7 @@
 #define	FS_ENT_DIRECTORY	(1 << 1)
 
 #define M_PI_DIV_180 (M_PI / 180.0) //johnfitz                      // mathlib.h
-#define Q_rint(x) ((x) > 0 ? (int)((x) + 0.5) : (int)((x) - 0.5)) // johnfitz -- from joequake
+#define Q_rint(x) ((x) > 0 ? (s32)((x) + 0.5) : (s32)((x) - 0.5)) // johnfitz -- from joequake
 #define DotProduct(x,y) (x[0]*y[0]+x[1]*y[1]+x[2]*y[2])
 #define DoublePrecisionDotProduct(x,y) ((double)(x)[0]*(y)[0]+(double)(x)[1]*(y)[1]+(double)(x)[2]*(y)[2])
 #define LERP(a, b, t) ((a) + ((b)-(a))*(t))
@@ -29,7 +29,7 @@
         _number = DotProduct(_v, _v);                                     \
         if (_number != 0.0)                                               \
         {                                                                 \
-                *((int *)&_y) = 0x5f3759df - ((* (int *) &_number) >> 1); \
+                *((s32 *)&_y) = 0x5f3759df - ((* (s32 *) &_number) >> 1); \
                 _y = _y * (1.5f - (_number * 0.5f * _y * _y));            \
                 VectorScale(_v, _y, _v);                                  \
         }                                                                 \
@@ -44,17 +44,17 @@
 #define	MAX_ENT_LEAFS	32
 #define	EDICT_FROM_AREA(l)	STRUCT_FROM_LINK(l,edict_t,area)
 #define	NEXT_EDICT(e)		((edict_t *)( (byte *)e + pr_edict_size))
-#define	EDICT_TO_PROG(e)	(int)((byte *)e - (byte *)sv.edicts)
+#define	EDICT_TO_PROG(e)	(s32)((byte *)e - (byte *)sv.edicts)
 #define PROG_TO_EDICT(e)	((edict_t *)((byte *)sv.edicts + e))
 #define	G_FLOAT(o)		(pr_globals[o])
-#define	G_INT(o)		(*(int *)&pr_globals[o])
-#define	G_EDICT(o)		((edict_t *)((byte *)sv.edicts+ *(int *)&pr_globals[o]))
+#define	G_INT(o)		(*(s32 *)&pr_globals[o])
+#define	G_EDICT(o)		((edict_t *)((byte *)sv.edicts+ *(s32 *)&pr_globals[o]))
 #define G_EDICTNUM(o)		NUM_FOR_EDICT(G_EDICT(o))
 #define	G_VECTOR(o)		(&pr_globals[o])
 #define	G_STRING(o)		(PR_GetString(*(string_t *)&pr_globals[o]))
 #define	G_FUNCTION(o)		(*(func_t *)&pr_globals[o])
 #define	E_FLOAT(e,o)		(((float*)&e->v)[o])
-#define	E_INT(e,o)		(*(int *)&((float*)&e->v)[o])
+#define	E_INT(e,o)		(*(s32 *)&((float*)&e->v)[o])
 #define	E_VECTOR(e,o)		(&((float*)&e->v)[o])
 #define	E_STRING(e,o)		(PR_GetString(*(string_t *)&((float*)&e->v)[o]))
 #define PROGHEADER_CRC 5927
@@ -66,7 +66,7 @@
 #define	MAX_DYNAMIC_CHANNELS	128
 #define	MAX_RAW_SAMPLES	8192
 
-#define NET_HEADERSIZE		(2 * sizeof(unsigned int))         // net_defs.h
+#define NET_HEADERSIZE		(2 * sizeof(u32))         // net_defs.h
 #define NET_DATAGRAMSIZE	(MAX_DATAGRAM + NET_HEADERSIZE)
 #define NETFLAG_LENGTH_MASK	0x0000ffff // Must fit NET_MAXMESSAGE
 #define NETFLAG_DATA		0x00010000
@@ -159,13 +159,13 @@
 #define SU_EXTEND3		(1<<31) // another byte to follow, future expansion
 #define	SND_VOLUME		(1<<0)	// a byte // a sound with no channel is a local only sound
 #define	SND_ATTENUATION		(1<<1)	// a byte
-#define	SND_LOOPING		(1<<2)	// a long
+#define	SND_LOOPING		(1<<2)	// a s64
 #define DEFAULT_SOUND_PACKET_VOLUME		255
 #define DEFAULT_SOUND_PACKET_ATTENUATION	1.0
-#define	SND_LARGEENTITY	(1<<3)	// a short + byte (instead of just a short)
-#define	SND_LARGESOUND	(1<<4)	// a short soundindex (instead of a byte)
-#define B_LARGEMODEL	(1<<0)	// modelindex is short instead of byte
-#define B_LARGEFRAME	(1<<1)	// frame is short instead of byte
+#define	SND_LARGEENTITY	(1<<3)	// a s16 + byte (instead of just a s16)
+#define	SND_LARGESOUND	(1<<4)	// a s16 soundindex (instead of a byte)
+#define B_LARGEMODEL	(1<<0)	// modelindex is s16 instead of byte
+#define B_LARGEFRAME	(1<<1)	// frame is s16 instead of byte
 #define B_ALPHA			(1<<2)	// 1 byte, uses ENTALPHA_ENCODE, not sent if ENTALPHA_DEFAULT
 #define B_SCALE			(1<<3)
 #define ENTALPHA_DEFAULT	0	//entity's alpha is "default" (i.e. water obeys r_wateralpha) -- must be zero so zeroed out memory works
@@ -180,21 +180,21 @@
 #define	svc_bad					0 // server to client
 #define	svc_nop					1
 #define	svc_disconnect			2
-#define	svc_updatestat			3	// [byte] [long]
-#define	svc_version				4	// [long] server version
-#define	svc_setview				5	// [short] entity number
+#define	svc_updatestat			3	// [byte] [s64]
+#define	svc_version				4	// [s64] server version
+#define	svc_setview				5	// [s16] entity number
 #define	svc_sound				6	// <see code>
 #define	svc_time				7	// [float] server time
 #define	svc_print				8	// [string] null terminated string
 #define	svc_stufftext			9	// [string] stuffed into client's console buffer, \n terminated
 #define	svc_setangle			10	// [angle3] set the view angle to this absolute value
-#define	svc_serverinfo	11	// [long] version
+#define	svc_serverinfo	11	// [s64] version
 									// [string] signon string
 									// [string]..[0]model cache
 									// [string]...[0]sounds cache
 #define	svc_lightstyle			12	// [byte] [string]
 #define	svc_updatename			13	// [byte] [string]
-#define	svc_updatefrags			14	// [byte] [short]
+#define	svc_updatefrags			14	// [byte] [s16]
 #define	svc_clientdata			15	// <shortbits + data>
 #define	svc_stopsound			16	// <see code>
 #define	svc_updatecolors		17	// [byte] [byte]
@@ -220,7 +220,7 @@
 #define svc_fog				41	// [byte] density [byte] red [byte] green [byte] blue [float] time
 #define svc_spawnbaseline2		42  // support for large modelindex, large framenum, alpha, using flags
 #define svc_spawnstatic2		43	// support for large modelindex, large framenum, alpha, using flags
-#define	svc_spawnstaticsound2	44	// [coord3] [short] samp [byte] vol [byte] aten
+#define	svc_spawnstaticsound2	44	// [coord3] [s16] samp [byte] vol [byte] aten
 #define svc_botchat		38 // 2021 re-release server messages - see:
 #define svc_setviews		45 // https://steamcommunity.com/sharedfiles/filedetails/?id=2679459726
 #define svc_updateping		46
@@ -496,7 +496,7 @@
 #define ioctlsocket ioctl
 #define closesocket close
 #define selectsocket select
-#define IOCTLARG_P(x) /* (char *) */ x
+#define IOCTLARG_P(x) /* (s8 *) */ x
 #define NET_EWOULDBLOCK EWOULDBLOCK
 #define NET_ECONNREFUSED ECONNREFUSED
 #define socketerror(x) strerror((x))
@@ -886,7 +886,7 @@
 #define	MULTIPLAYER_ITEMS 3
 #define	NUM_SETUP_CMDS 5
 #define	SLIDER_RANGE 10
-#define	NUMCOMMANDS (int)(sizeof(bindnames)/sizeof(bindnames[0]))
+#define	NUMCOMMANDS (s32)(sizeof(bindnames)/sizeof(bindnames[0]))
 #define StartingGame (m_multiplayer_cursor == 1)
 #define JoiningGame (m_multiplayer_cursor == 0)
 #define SerialConfig (m_net_cursor == 0)
@@ -933,7 +933,7 @@
 
 #define	STRINGTEMP_BUFFERS		16                          // pr_cmds.c
 #define	STRINGTEMP_LENGTH		1024
-#define	RETURN_EDICT(e) (((int *)pr_globals)[OFS_RETURN] = EDICT_TO_PROG(e))
+#define	RETURN_EDICT(e) (((s32 *)pr_globals)[OFS_RETURN] = EDICT_TO_PROG(e))
 #define	MSG_BROADCAST	0		// unreliable to all
 #define	MSG_ONE		1		// reliable to one (msg_entity)
 #define	MSG_ALL		2		// reliable to all

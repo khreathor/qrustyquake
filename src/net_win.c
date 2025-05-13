@@ -36,7 +36,7 @@ net_driver_t net_drivers[] = {
 	 Datagram_Shutdown }
 };
 
-const int net_numdrivers = Q_COUNTOF(net_drivers);
+const s32 net_numdrivers = Q_COUNTOF(net_drivers);
 
 #include "net_wins.h"
 #include "net_wipx.h"
@@ -87,4 +87,4 @@ net_landriver_t net_landrivers[] = {
 	 WIPX_SetSocketPort }
 };
 
-const int net_numlandrivers = Q_COUNTOF(net_landrivers);
+const s32 net_numlandrivers = Q_COUNTOF(net_landrivers);

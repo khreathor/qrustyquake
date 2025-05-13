@@ -13,7 +13,7 @@ static in_addr_t myAddr;
 
 sys_socket_t UDP_Init()
 {
-	char buff[MAXHOSTNAMELEN];
+	s8 buff[MAXHOSTNAMELEN];
 	struct hostent *local;
 	struct qsockaddr addr;
 	if (COM_CheckParm("-noudp"))
@@ -21,14 +21,14 @@ sys_socket_t UDP_Init()
 	// determine my name & address
 	myAddr = htonl(INADDR_LOOPBACK);
 	if (gethostname(buff, MAXHOSTNAMELEN) != 0) {
-		int err = SOCKETERRNO;
+		s32 err = SOCKETERRNO;
 		Con_SafePrintf("UDP_Init: WARNING: gethostname failed (%s)\n",
 			       socketerror(err));
 	} else {
 		buff[MAXHOSTNAMELEN - 1] = 0;
 		if (!(local = gethostbyname(buff))) {
 #ifdef _WIN32
-			const char herrmsg[1024];
+			const s8 herrmsg[1024];
 			FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | 
 				FORMAT_MESSAGE_FROM_SYSTEM | 
 				FORMAT_MESSAGE_IGNORE_INSERTS, 
@@ -49,7 +49,7 @@ sys_socket_t UDP_Init()
 			Con_SafePrintf
 			    ("UDP_Init: address from gethostbyname not IPv4\n");
 		} else {
-			int i = COM_CheckParm("-ip");
+			s32 i = COM_CheckParm("-ip");
 			if (i) {
 				if (i < com_argc - 1) {
 					myAddr = inet_addr(com_argv[i + 1]);
@@ -71,10 +71,10 @@ sys_socket_t UDP_Init()
 	}
 	broadcastaddr.sin_family = AF_INET;
 	broadcastaddr.sin_addr.s_addr = INADDR_BROADCAST;
-	broadcastaddr.sin_port = htons((unsigned short)net_hostport);
+	broadcastaddr.sin_port = htons((u16)net_hostport);
 	UDP_GetSocketAddr(net_controlsocket, &addr);
 	strcpy(my_tcpip_address, UDP_AddrToString(&addr));
-	char *tst = strrchr(my_tcpip_address, ':');
+	s8 *tst = strrchr(my_tcpip_address, ':');
 	if (tst)
 		*tst = 0;
 	Con_SafePrintf("UDP Initialized\n");
@@ -106,12 +106,12 @@ void UDP_Listen(bool state)
 	net_acceptsocket = INVALID_SOCKET;
 }
 
-sys_socket_t UDP_OpenSocket(int port)
+sys_socket_t UDP_OpenSocket(s32 port)
 {
 	sys_socket_t newsocket;
 	struct sockaddr_in address;
-	int _true = 1;
-	int err;
+	s32 _true = 1;
+	s32 err;
 	if ((newsocket =
 	     socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) == INVALID_SOCKET) {
 		err = SOCKETERRNO;
@@ -123,7 +123,7 @@ sys_socket_t UDP_OpenSocket(int port)
 	memset(&address, 0, sizeof(struct sockaddr_in));
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = htons((unsigned short)port);
+	address.sin_port = htons((u16)port);
 	if (bind(newsocket, (struct sockaddr *)&address, sizeof(address)) == 0)
 		return newsocket;
 ErrorReturn:
@@ -133,7 +133,7 @@ ErrorReturn:
 	return INVALID_SOCKET;
 }
 
-int UDP_CloseSocket(sys_socket_t socketid)
+s32 UDP_CloseSocket(sys_socket_t socketid)
 {
 	if (socketid == net_broadcastsocket)
 		net_broadcastsocket = 0;
@@ -144,20 +144,20 @@ PartialIPAddress
 this lets you type only as much of the net address as required, using
 the local network components to fill in the rest
 */
-static int PartialIPAddress(const char *in, struct qsockaddr *hostaddr)
+static s32 PartialIPAddress(const s8 *in, struct qsockaddr *hostaddr)
 {
-	char buff[256];
+	s8 buff[256];
 	buff[0] = '.';
-	char *b = buff;
+	s8 *b = buff;
 	strcpy(buff + 1, in);
 	if (buff[1] == '.')
 		b++;
-	int addr = 0;
-	int mask = -1;
+	s32 addr = 0;
+	s32 mask = -1;
 	while (*b == '.') {
 		b++;
-		int num = 0;
-		int run = 0;
+		s32 num = 0;
+		s32 run = 0;
 		while (!(*b < '0' || *b > '9')) {
 			num = num * 10 + *b++ - '0';
 			if (++run > 3)
@@ -170,17 +170,17 @@ static int PartialIPAddress(const char *in, struct qsockaddr *hostaddr)
 		mask <<= 8;
 		addr = (addr << 8) + num;
 	}
-	int port = net_hostport;
+	s32 port = net_hostport;
 	if (*b++ == ':')
 		port = atoi(b);
 	hostaddr->qsa_family = AF_INET;
-	((struct sockaddr_in*)hostaddr)->sin_port = htons((unsigned short)port);
+	((struct sockaddr_in*)hostaddr)->sin_port = htons((u16)port);
 	((struct sockaddr_in*)hostaddr)->sin_addr.s_addr =
 	    (myAddr & htonl(mask)) | htonl(addr);
 	return 0;
 }
 
-int UDP_Connect(sys_socket_t socketid, struct qsockaddr *addr)
+s32 UDP_Connect(sys_socket_t socketid, struct qsockaddr *addr)
 {
 	(void)socketid;
 	(void)addr;
@@ -189,14 +189,14 @@ int UDP_Connect(sys_socket_t socketid, struct qsockaddr *addr)
 
 sys_socket_t UDP_CheckNewConnections()
 {
-	int available;
+	s32 available;
 	struct sockaddr_in from;
 	socklen_t fromlen;
-	char buff[1];
+	s8 buff[1];
 	if (net_acceptsocket == INVALID_SOCKET)
 		return INVALID_SOCKET;
 	if (ioctlsocket(net_acceptsocket, FIONREAD, &available) == -1) {
-		int err = SOCKETERRNO;
+		s32 err = SOCKETERRNO;
 		Sys_Error("UDP: ioctlsocket (FIONREAD) failed (%s)",
 			  socketerror(err));
 	}
@@ -207,12 +207,12 @@ sys_socket_t UDP_CheckNewConnections()
 	return INVALID_SOCKET;
 }
 
-int UDP_Read(sys_socket_t socketid, byte *buf, int len, struct qsockaddr *addr)
+s32 UDP_Read(sys_socket_t socketid, byte *buf, s32 len, struct qsockaddr *addr)
 {
 	socklen_t addrlen = sizeof(struct qsockaddr);
-	int ret = recvfrom(socketid,buf,len,0,(struct sockaddr*)addr,&addrlen);
+	s32 ret = recvfrom(socketid,buf,len,0,(struct sockaddr*)addr,&addrlen);
 	if (ret == SOCKET_ERROR) {
-		int err = SOCKETERRNO;
+		s32 err = SOCKETERRNO;
 		if (err == NET_EWOULDBLOCK || err == NET_ECONNREFUSED)
 			return 0;
 		Con_SafePrintf("UDP_Read, recvfrom: %s\n", socketerror(err));
@@ -220,13 +220,13 @@ int UDP_Read(sys_socket_t socketid, byte *buf, int len, struct qsockaddr *addr)
 	return ret;
 }
 
-static int UDP_MakeSocketBroadcastCapable(sys_socket_t socketid)
+static s32 UDP_MakeSocketBroadcastCapable(sys_socket_t socketid)
 {
-	int i = 1;
+	s32 i = 1;
 	// make this socket broadcast capable
-	if (setsockopt(socketid, SOL_SOCKET, SO_BROADCAST, (char*)&i, sizeof(i))
+	if (setsockopt(socketid, SOL_SOCKET, SO_BROADCAST, (s8*)&i, sizeof(i))
 	    == SOCKET_ERROR) {
-		int err = SOCKETERRNO;
+		s32 err = SOCKETERRNO;
 		Con_SafePrintf("UDP, setsockopt: %s\n", socketerror(err));
 		return -1;
 	}
@@ -234,13 +234,13 @@ static int UDP_MakeSocketBroadcastCapable(sys_socket_t socketid)
 	return 0;
 }
 
-int UDP_Broadcast(sys_socket_t socketid, byte *buf, int len)
+s32 UDP_Broadcast(sys_socket_t socketid, byte *buf, s32 len)
 {
 	if (socketid != net_broadcastsocket) {
 		if (net_broadcastsocket != 0)
 			Sys_Error
 			    ("Attempted to use multiple broadcasts sockets");
-		int ret = UDP_MakeSocketBroadcastCapable(socketid);
+		s32 ret = UDP_MakeSocketBroadcastCapable(socketid);
 		if (ret == -1) {
 			Con_Printf("Unable to make socket broadcast capable\n");
 			return ret;
@@ -250,12 +250,12 @@ int UDP_Broadcast(sys_socket_t socketid, byte *buf, int len)
 			 (struct qsockaddr *)&broadcastaddr);
 }
 
-int UDP_Write(sys_socket_t socketid, byte *buf, int len, struct qsockaddr *addr)
+s32 UDP_Write(sys_socket_t socketid, byte *buf, s32 len, struct qsockaddr *addr)
 {
-	int ret = sendto(socketid, buf, len, 0, (struct sockaddr *)addr,
+	s32 ret = sendto(socketid, buf, len, 0, (struct sockaddr *)addr,
 		     sizeof(struct qsockaddr));
 	if (ret == SOCKET_ERROR) {
-		int err = SOCKETERRNO;
+		s32 err = SOCKETERRNO;
 		if (err == NET_EWOULDBLOCK)
 			return 0;
 		Con_SafePrintf("UDP_Write, sendto: %s\n", socketerror(err));
@@ -263,28 +263,28 @@ int UDP_Write(sys_socket_t socketid, byte *buf, int len, struct qsockaddr *addr)
 	return ret;
 }
 
-const char *UDP_AddrToString(struct qsockaddr *addr)
+const s8 *UDP_AddrToString(struct qsockaddr *addr)
 {
-	static char buffer[22];
-	int haddr = ntohl(((struct sockaddr_in *)addr)->sin_addr.s_addr);
+	static s8 buffer[22];
+	s32 haddr = ntohl(((struct sockaddr_in *)addr)->sin_addr.s_addr);
 	snprintf(buffer, sizeof(buffer), "%d.%d.%d.%d:%d", (haddr >> 24) & 0xff,
 		 (haddr >> 16) & 0xff, (haddr >> 8) & 0xff, haddr & 0xff,
 		 ntohs(((struct sockaddr_in *)addr)->sin_port));
 	return buffer;
 }
 
-int UDP_StringToAddr(const char *string, struct qsockaddr *addr)
+s32 UDP_StringToAddr(const s8 *string, struct qsockaddr *addr)
 {
-	int ha1, ha2, ha3, ha4, hp, ipaddr;
+	s32 ha1, ha2, ha3, ha4, hp, ipaddr;
 	sscanf(string, "%d.%d.%d.%d:%d", &ha1, &ha2, &ha3, &ha4, &hp);
 	ipaddr = (ha1 << 24) | (ha2 << 16) | (ha3 << 8) | ha4;
 	addr->qsa_family = AF_INET;
 	((struct sockaddr_in *)addr)->sin_addr.s_addr = htonl(ipaddr);
-	((struct sockaddr_in *)addr)->sin_port = htons((unsigned short)hp);
+	((struct sockaddr_in *)addr)->sin_port = htons((u16)hp);
 	return 0;
 }
 
-int UDP_GetSocketAddr(sys_socket_t socketid, struct qsockaddr *addr)
+s32 UDP_GetSocketAddr(sys_socket_t socketid, struct qsockaddr *addr)
 {
 	socklen_t addrlen = sizeof(struct qsockaddr);
 	in_addr_t a;
@@ -297,19 +297,19 @@ int UDP_GetSocketAddr(sys_socket_t socketid, struct qsockaddr *addr)
 	return 0;
 }
 
-int UDP_GetNameFromAddr(struct qsockaddr *addr, char *name)
+s32 UDP_GetNameFromAddr(struct qsockaddr *addr, s8 *name)
 {
-	struct hostent *hostentry = gethostbyaddr((char*)&((struct sockaddr_in*)
+	struct hostent *hostentry = gethostbyaddr((s8*)&((struct sockaddr_in*)
 			addr)->sin_addr, sizeof(struct in_addr), AF_INET);
 	if (hostentry) {
-		strncpy(name, (char *)hostentry->h_name, NET_NAMELEN - 1);
+		strncpy(name, (s8 *)hostentry->h_name, NET_NAMELEN - 1);
 		return 0;
 	}
 	strcpy(name, UDP_AddrToString(addr));
 	return 0;
 }
 
-int UDP_GetAddrFromName(const char *name, struct qsockaddr *addr)
+s32 UDP_GetAddrFromName(const s8 *name, struct qsockaddr *addr)
 {
 	struct hostent *hostentry;
 	if (name[0] >= '0' && name[0] <= '9')
@@ -319,13 +319,13 @@ int UDP_GetAddrFromName(const char *name, struct qsockaddr *addr)
 		return -1;
 	addr->qsa_family = AF_INET;
 	((struct sockaddr_in *)addr)->sin_port =
-	    htons((unsigned short)net_hostport);
+	    htons((u16)net_hostport);
 	((struct sockaddr_in *)addr)->sin_addr.s_addr =
 	    *(in_addr_t *) hostentry->h_addr_list[0];
 	return 0;
 }
 
-int UDP_AddrCompare(struct qsockaddr *addr1, struct qsockaddr *addr2)
+s32 UDP_AddrCompare(struct qsockaddr *addr1, struct qsockaddr *addr2)
 {
 	if (addr1->qsa_family != addr2->qsa_family)
 		return -1;
@@ -338,13 +338,13 @@ int UDP_AddrCompare(struct qsockaddr *addr1, struct qsockaddr *addr2)
 	return 0;
 }
 
-int UDP_GetSocketPort(struct qsockaddr *addr)
+s32 UDP_GetSocketPort(struct qsockaddr *addr)
 {
 	return ntohs(((struct sockaddr_in *)addr)->sin_port);
 }
 
-int UDP_SetSocketPort(struct qsockaddr *addr, int port)
+s32 UDP_SetSocketPort(struct qsockaddr *addr, s32 port)
 {
-	((struct sockaddr_in *)addr)->sin_port = htons((unsigned short)port);
+	((struct sockaddr_in *)addr)->sin_port = htons((u16)port);
 	return 0;
 }

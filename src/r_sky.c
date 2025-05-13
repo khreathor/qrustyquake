@@ -6,41 +6,41 @@
 
 #include "quakedef.h"
 
-extern byte *Image_LoadImage (const char *name, int *width, int *height);
+extern byte *Image_LoadImage (const s8 *name, s32 *width, s32 *height);
 
-int iskyspeed = 8;
-int iskyspeed2 = 2;
+s32 iskyspeed = 8;
+s32 iskyspeed2 = 2;
 float skyspeed, skyspeed2;
 float skytime;
 byte *r_skysource;
-int r_skymade;
+s32 r_skymade;
 byte bottomsky[128 * 131];
 byte bottommask[128 * 131];
 byte newsky[128 * 256];	
 // newsky and topsky both pack in here, 128 bytes of newsky on the left of each
 // scan, 128 bytes of topsky on the right, because the low-level drawers need
 // 256-byte scan widths
-char skybox_name[1024]; // name of current skybox, or "" if no skybox
+s8 skybox_name[1024]; // name of current skybox, or "" if no skybox
 
 // Manoel Kasimier - skyboxes - begin
 // Code taken from the ToChriS engine - Author: Vic
-int                             r_skyframe;
+s32                             r_skyframe;
 msurface_t              *r_skyfaces;
 mplane_t                r_skyplanes[6]; // Manoel Kasimier - edited
 mtexinfo_t              r_skytexinfo[6];
 byte         r_skypixels[6][SKYBOX_MAX_SIZE*SKYBOX_MAX_SIZE]; // Manoel Kasimier - edited
 mvertex_t               *r_skyverts;
 medge_t                 *r_skyedges;
-int                             *r_skysurfedges;
+s32                             *r_skysurfedges;
 
 // I just copied this data from a box map...
-int skybox_planes[12] = {2,-128, 0,-128, 2,128, 1,128, 0,128, 1,-128};
+s32 skybox_planes[12] = {2,-128, 0,-128, 2,128, 1,128, 0,128, 1,-128};
 
-int box_surfedges[24] = { 1,2,3,4,  -1,5,6,7,  8,9,-6,10,  -2,-7,-9,11,
+s32 box_surfedges[24] = { 1,2,3,4,  -1,5,6,7,  8,9,-6,10,  -2,-7,-9,11,
   12,-3,-11,-8,  -12,-10,-5,-4};
-int box_edges[24] = { 1,2, 2,3, 3,4, 4,1, 1,5, 5,6, 6,2, 7,8, 8,6, 5,7, 8,3, 7,4};
+s32 box_edges[24] = { 1,2, 2,3, 3,4, 4,1, 1,5, 5,6, 6,2, 7,8, 8,6, 5,7, 8,3, 7,4};
 
-int     box_faces[6] = {0,0,2,2,2,0};
+s32     box_faces[6] = {0,0,2,2,2,0};
 
 vec3_t  box_vecs[6][2] = {
         {       {0,-1,0}, {-1,0,0} }, { {0,1,0}, {0,0,-1} },
@@ -72,7 +72,7 @@ extern  mtexinfo_t              r_skytexinfo[6];
 //extern        cbool           r_drawskybox;
 byte                                    r_skypixels[6][SKYBOX_MAX_SIZE*SKYBOX_MAX_SIZE]; // Manoel Kasimier - edited
 texture_t                               r_skytextures[6];
-char                                    last_skybox_name[1024];
+s8                                    last_skybox_name[1024];
 
 void Sky_LoadTexture (texture_t *mt)
 {
@@ -84,9 +84,9 @@ void Sky_LoadTexture (texture_t *mt)
 	skyunderlay = skyoverlay+128; // Manoel Kasimier - smooth sky
 }
 
-int R_LoadSkybox (const char *name);
+s32 R_LoadSkybox (const s8 *name);
 
-void Sky_LoadSkyBox (const char *name)
+void Sky_LoadSkyBox (const s8 *name)
 {
 	if (strcmp (skybox_name, name) == 0)
 		return; //no change
@@ -107,10 +107,10 @@ void Sky_LoadSkyBox (const char *name)
 }
 
 void R_BuildRGBLUT() {
-	for (int r = 0; r < 256; r += 32) {
-		for (int g = 0; g < 256; g += 32) {
-			for (int b = 0; b < 256; b += 32) {
-				int i = ((r/32) << 6) | ((g/32) << 3) | (b/32);
+	for (s32 r = 0; r < 256; r += 32) {
+		for (s32 g = 0; g < 256; g += 32) {
+			for (s32 b = 0; b < 256; b += 32) {
+				s32 i = ((r/32) << 6) | ((g/32) << 3) | (b/32);
 				rgb_lut[i] = rgbtoi(r, g, b);
 			}
 		}
@@ -118,31 +118,31 @@ void R_BuildRGBLUT() {
 	rgb_lut_built = 1;
 }
 
-unsigned char fast_rgbtoi(unsigned char r, unsigned char g, unsigned char b)
+u8 fast_rgbtoi(u8 r, u8 g, u8 b)
 {
-    int i = ((r / 32) << 6) | ((g / 32) << 3) | (b / 32);
+    s32 i = ((r / 32) << 6) | ((g / 32) << 3) | (b / 32);
     return rgb_lut[i];
 }
 
-byte *Upscale_NearestNeighbor(byte *src, int width, int height, int *new_width,
-	int *new_height) {
+byte *Upscale_NearestNeighbor(byte *src, s32 width, s32 height, s32 *new_width,
+	s32 *new_height) {
 	*new_width = (width < 256) ? 256 : width;
 	*new_height = (height < 256) ? 256 : height;
 	if (*new_width == width && *new_height == height)
 		return src;
-	int scale_x = *new_width / width;
-	int scale_y = *new_height / height;
+	s32 scale_x = *new_width / width;
+	s32 scale_y = *new_height / height;
 	byte *dest = malloc((*new_width) * (*new_height));
 	if (!dest) return 0;
-	for (int y = 0; y < *new_height; ++y) {
-		for (int x = 0; x < *new_width; ++x) {
+	for (s32 y = 0; y < *new_height; ++y) {
+		for (s32 x = 0; x < *new_width; ++x) {
 			dest[y*(*new_width)+x] = src[y/scale_y*width+x/scale_x];
 		}
 	}
 	return dest;
 }
 
-int R_LoadSkybox (const char *name)
+s32 R_LoadSkybox (const s8 *name)
 {
 	if (!name || !name[0]) {
 		skybox_name[0] = 0;
@@ -151,22 +151,22 @@ int R_LoadSkybox (const char *name)
 	if (!strcmp (name, skybox_name)) // the same skybox we are using now
 		return true;
 	q_strlcpy (skybox_name, name, sizeof(skybox_name));
-	int mark = Hunk_LowMark ();
-	for (int i = 0 ; i < 6 ; i++) {
-		char pathname[1024];
-		char *suf[6] = {"rt", "bk", "lf", "ft", "up", "dn"};
-		int r_skysideimage[6] = {5, 2, 4, 1, 0, 3};
+	s32 mark = Hunk_LowMark ();
+	for (s32 i = 0 ; i < 6 ; i++) {
+		s8 pathname[1024];
+		s8 *suf[6] = {"rt", "bk", "lf", "ft", "up", "dn"};
+		s32 r_skysideimage[6] = {5, 2, 4, 1, 0, 3};
 		q_snprintf (pathname, sizeof(pathname), "gfx/env/%s%s", name, suf[r_skysideimage[i]]);
-		int width, height;
+		s32 width, height;
 		byte *pic = Image_LoadImage (pathname, &width, &height);
-		unsigned char *pdest = pic; // CyanBun96: palettize in place
-		unsigned char *psrc = pic; // with some noise dithering
+		u8 *pdest = pic; // CyanBun96: palettize in place
+		u8 *psrc = pic; // with some noise dithering
 		if (!rgb_lut_built)
 			R_BuildRGBLUT();
-		for (int j = 0; j < width*height; j++, psrc+=4) {
-			int r = psrc[0] + (lfsr_random() % 16) - 7;
-			int g = psrc[1] + (lfsr_random() % 16) - 7;
-			int b = psrc[2] + (lfsr_random() % 16) - 7;
+		for (s32 j = 0; j < width*height; j++, psrc+=4) {
+			s32 r = psrc[0] + (lfsr_random() % 16) - 7;
+			s32 g = psrc[1] + (lfsr_random() % 16) - 7;
+			s32 b = psrc[2] + (lfsr_random() % 16) - 7;
 			pdest[j] = fast_rgbtoi(CLAMP(0,r,255),
 						CLAMP(0,g,255),
 						CLAMP(0,b,255));
@@ -253,7 +253,7 @@ void R_InitSkyBox ()
 	r_skysurfedges = loadmodel->surfedges + loadmodel->numsurfedges;
 	loadmodel->numsurfedges += 24;
 	memset (r_skyfaces, 0, 6 * sizeof(*r_skyfaces));
-	for (int i = 0; i < 6; i++) {
+	for (s32 i = 0; i < 6; i++) {
 		r_skyplanes[i].normal[skybox_planes[i*2]] = 1;
 		r_skyplanes[i].dist = skybox_planes[i*2+1];
 		r_skyfaces[i].plane = &r_skyplanes[i];
@@ -262,7 +262,7 @@ void R_InitSkyBox ()
 		r_skyfaces[i].firstedge = loadmodel->numsurfedges-24+i*4;
 		r_skyfaces[i].texinfo = &r_skytexinfo[i];
 		// Manoel Kasimier - hi-res skyboxes - begin
-		int width, height;
+		s32 width, height;
 		if (r_skytexinfo[i].texture) {
 			width = r_skytexinfo[i].texture->width;
 			height = r_skytexinfo[i].texture->height;
@@ -286,12 +286,12 @@ void R_InitSkyBox ()
 		r_skyfaces[i].extents[1] = height;
 		// Manoel Kasimier - hi-res skyboxes - end
 	}
-	for(int i = 0; i < 24; i++)
+	for(s32 i = 0; i < 24; i++)
 		if (box_surfedges[i] > 0)
 			r_skysurfedges[i] = loadmodel->numedges-13 + box_surfedges[i];
 		else
 			r_skysurfedges[i] = - (loadmodel->numedges-13 + -box_surfedges[i]);
-	for(int i = 0; i < 12; i++) {
+	for(s32 i = 0; i < 12; i++) {
 		r_skyedges[i].v[0] = loadmodel->numvertexes-9+box_edges[i*2+0];
 		r_skyedges[i].v[1] = loadmodel->numvertexes-9+box_edges[i*2+1];
 		r_skyedges[i].cachededgeoffset = 0;
@@ -306,29 +306,29 @@ void R_EmitSkyBox ()
 		return; // already set this frame
 	}
 	r_skyframe = r_framecount;
-	for (int i = 0 ; i < 8 ; i++) // set the eight fake vertexes
-		for (int j = 0 ; j < 3 ; j++)
+	for (s32 i = 0 ; i < 8 ; i++) // set the eight fake vertexes
+		for (s32 j = 0 ; j < 3 ; j++)
 			r_skyverts[i].position[j] = r_origin[j] + box_verts[i][j]*128;
-	for (int i = 0 ; i < 6 ; i++) // set the six fake planes
+	for (s32 i = 0 ; i < 6 ; i++) // set the six fake planes
 		if (skybox_planes[i*2+1] > 0)
 			r_skyplanes[i].dist = r_origin[skybox_planes[i*2]]+128;
 		else
 			r_skyplanes[i].dist = r_origin[skybox_planes[i*2]]-128;
-	for (int i = 0 ; i < 6; i++) { // fix texture offsets
+	for (s32 i = 0 ; i < 6; i++) { // fix texture offsets
 		r_skytexinfo[i].vecs[0][3] = -DotProduct (r_origin, r_skytexinfo[i].vecs[0]);
 		r_skytexinfo[i].vecs[1][3] = -DotProduct (r_origin, r_skytexinfo[i].vecs[1]);
 	}
-	int oldkey = r_currentkey; // emit the six faces
+	s32 oldkey = r_currentkey; // emit the six faces
 	r_currentkey = 0x7ffffff0;
-	for (int i = 0; i < 6; i++)
+	for (s32 i = 0; i < 6; i++)
 		R_RenderFace (r_skyfaces + i, 15);
 	r_currentkey = oldkey; // bsp sorting order
 } // Manoel Kasimier - skyboxes - end
 
 void Sky_NewMap()
 { // read worldspawn (this is so ugly, and shouldn't it be done on the server?)
-	char key[128], value[4096];
-	const char *data = cl.worldmodel->entities;
+	s8 key[128], value[4096];
+	const s8 *data = cl.worldmodel->entities;
 	data = COM_Parse(data);
 	if (!data || com_token[0] != '{') // should never happen
 		return; // error
@@ -383,11 +383,11 @@ void Sky_Init()
 void R_InitSky(texture_t *mt)
 { // A sky texture is 256*128, with the right side being a masked overlay
 	byte *src = (byte *) mt + mt->offsets[0];
-	for (int i = 0; i < 128; i++)
-		for (int j = 0; j < 128; j++)
+	for (s32 i = 0; i < 128; i++)
+		for (s32 j = 0; j < 128; j++)
 			newsky[(i * 256) + j + 128] = src[i * 256 + j + 128];
-	for (int i = 0; i < 128; i++)
-		for (int j = 0; j < 131; j++) {
+	for (s32 i = 0; i < 128; i++)
+		for (s32 j = 0; j < 131; j++) {
 			if (src[i * 256 + (j & 0x7F)]) {
 				bottomsky[(i * 131) + j] =
 				    src[i * 256 + (j & 0x7F)];
@@ -402,18 +402,18 @@ void R_InitSky(texture_t *mt)
 
 void R_MakeSky()
 {
-	static int xlast = -1, ylast = -1;
-	int xshift = skytime * skyspeed;
-	int yshift = skytime * skyspeed;
+	static s32 xlast = -1, ylast = -1;
+	s32 xshift = skytime * skyspeed;
+	s32 yshift = skytime * skyspeed;
 	if ((xshift == xlast) && (yshift == ylast))
 		return;
 	xlast = xshift;
 	ylast = yshift;
-	unsigned int *pnewsky = (unsigned int *)&newsky[0];
-	for (int y = 0; y < SKYSIZE; y++) {
-		int baseofs = ((y + yshift) & SKYMASK) * 131;
-		for (int x = 0; x < SKYSIZE; x++) {
-			int ofs = baseofs + ((x + xshift) & SKYMASK);
+	u32 *pnewsky = (u32 *)&newsky[0];
+	for (s32 y = 0; y < SKYSIZE; y++) {
+		s32 baseofs = ((y + yshift) & SKYMASK) * 131;
+		for (s32 x = 0; x < SKYSIZE; x++) {
+			s32 ofs = baseofs + ((x + xshift) & SKYMASK);
 			*(byte *) pnewsky = (*((byte *) pnewsky + 128) &
 					*(byte *) & bottommask[ofs]) |
 					*(byte *) & bottomsky[ofs];
@@ -426,21 +426,21 @@ void R_MakeSky()
 
 void R_GenSkyTile(void *pdest)
 {
-	int xshift = skytime * skyspeed;
-	int yshift = skytime * skyspeed;
-	unsigned int *pnewsky = (unsigned int *)&newsky[0];
-	unsigned int *pd = (unsigned int *)pdest;
-	for (int y = 0; y < SKYSIZE; y++) {
-		int baseofs = ((y + yshift) & SKYMASK) * 131;
-		for (int x = 0; x < SKYSIZE; x++) {
-			int ofs = baseofs + ((x + xshift) & SKYMASK);
+	s32 xshift = skytime * skyspeed;
+	s32 yshift = skytime * skyspeed;
+	u32 *pnewsky = (u32 *)&newsky[0];
+	u32 *pd = (u32 *)pdest;
+	for (s32 y = 0; y < SKYSIZE; y++) {
+		s32 baseofs = ((y + yshift) & SKYMASK) * 131;
+		for (s32 x = 0; x < SKYSIZE; x++) {
+			s32 ofs = baseofs + ((x + xshift) & SKYMASK);
 			*(byte *) pd = (*((byte *) pnewsky + 128) &
 					*(byte *) & bottommask[ofs]) |
 			    *(byte *) & bottomsky[ofs];
-			pnewsky = (unsigned int *)((byte *) pnewsky + 1);
-			pd = (unsigned int *)((byte *) pd + 1);
+			pnewsky = (u32 *)((byte *) pnewsky + 1);
+			pd = (u32 *)((byte *) pd + 1);
 		}
-		pnewsky += 128 / sizeof(unsigned int);
+		pnewsky += 128 / sizeof(u32);
 	}
 }
 
@@ -448,9 +448,9 @@ void R_SetSkyFrame ()
 {
         skyspeed = iskyspeed;
         skyspeed2 = iskyspeed2;
-        int g = GreatestCommonDivisor (iskyspeed, iskyspeed2);
-        int s1 = iskyspeed / g;
-        int s2 = iskyspeed2 / g;
+        s32 g = GreatestCommonDivisor (iskyspeed, iskyspeed2);
+        s32 s1 = iskyspeed / g;
+        s32 s2 = iskyspeed2 / g;
         float temp = SKYSIZE * s1 * s2;
-        skytime = cl.time - ((int)(cl.time / temp) * temp);
+        skytime = cl.time - ((s32)(cl.time / temp) * temp);
 }

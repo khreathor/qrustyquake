@@ -10,14 +10,14 @@ float map_slimealpha;
 
 void R_ParseWorldspawn()
 {
-	char key[128], value[4096];
+	s8 key[128], value[4096];
 	map_fallbackalpha = r_wateralpha.value;
-	int ct = cl.worldmodel->contentstransparent;
+	s32 ct = cl.worldmodel->contentstransparent;
 	map_wateralpha = (ct&SURF_DRAWWATER)?r_wateralpha.value:1;
 	map_lavaalpha =  (ct&SURF_DRAWLAVA)? r_lavaalpha.value:1;
 	map_telealpha =  (ct&SURF_DRAWTELE)? r_telealpha.value:1;
 	map_slimealpha = (ct&SURF_DRAWSLIME)?r_slimealpha.value:1;
-	const char *data = COM_Parse(cl.worldmodel->entities);
+	const s8 *data = COM_Parse(cl.worldmodel->entities);
 	if(!data)return; // error
 	if(com_token[0] != '{')return; // error
 	while(1){
@@ -98,9 +98,9 @@ void R_CheckVariables()
 
 void R_TimeRefresh_f()
 { // For program optimization
-	int startangle = r_refdef.viewangles[1];
+	s32 startangle = r_refdef.viewangles[1];
 	float start = Sys_FloatTime();
-	for (int i = 0; i < 128; i++) {
+	for (s32 i = 0; i < 128; i++) {
 		r_refdef.viewangles[1] = i / 128.0 * 360.0;
 		R_RenderView();
 		VID_Update();
@@ -111,16 +111,16 @@ void R_TimeRefresh_f()
 	r_refdef.viewangles[1] = startangle;
 }
 
-void R_LineGraph(int x, int y, int h)
+void R_LineGraph(s32 x, s32 y, s32 h)
 { // Only called by R_DisplayTime
 // FIXME: should be disabled on no-buffer adapters, or should be in the driver
 	x += r_refdef.vrect.x;
 	y += r_refdef.vrect.y;
 	byte *dest = vid.buffer + vid.width * y + x;
-	int s = r_graphheight.value;
+	s32 s = r_graphheight.value;
 	if (h > s)
 		h = s;
-	int i = 0;
+	s32 i = 0;
 	for (; i < h; i++, dest -= vid.width * 2) {
 		dest[0] = 0xff;
 		*(dest - vid.width) = 0x30;
@@ -133,13 +133,13 @@ void R_LineGraph(int x, int y, int h)
 
 void R_TimeGraph()
 { // Performance monitoring tool
-	static int timex;
+	static s32 timex;
 	static byte r_timings[MAX_TIMINGS];
 	float r_time2 = Sys_FloatTime();
-	int a = (r_time2 - r_time1) / 0.01;
+	s32 a = (r_time2 - r_time1) / 0.01;
 	r_timings[timex] = a;
 	a = timex;
-	int x;
+	s32 x;
 	if (r_refdef.vrect.width <= MAX_TIMINGS)
 		x = r_refdef.vrect.width - 1;
 	else
@@ -177,7 +177,7 @@ void R_PrintDSpeeds()
 	float dv_time = (dv_time2 - dv_time1) * 1000;
 	float ms = (r_time2 - r_time1) * 1000;
 	Con_Printf("%3i %4.1fp %3iw %4.1fb %3is %4.1fe %4.1fv\n",
-		   (int)ms, dp_time, (int)rw_time, db_time, (int)se_time,
+		   (s32)ms, dp_time, (s32)rw_time, db_time, (s32)se_time,
 		   de_time, dv_time);
 }
 
@@ -188,7 +188,7 @@ void R_PrintAliasStats()
 
 void R_TransformFrustum()
 {
-	for (int i = 0; i < 4; i++) {
+	for (s32 i = 0; i < 4; i++) {
 		vec3_t v, v2;
 		v[0] = screenedge[i].normal[2];
 		v[1] = -screenedge[i].normal[0];
@@ -210,9 +210,9 @@ void TransformVector(vec3_t in, vec3_t out)
 
 void R_SetUpFrustumIndexes()
 {
-	int *pindex = r_frustum_indexes;
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 3; j++) {
+	s32 *pindex = r_frustum_indexes;
+	for (s32 i = 0; i < 4; i++) {
+		for (s32 j = 0; j < 3; j++) {
 			if (view_clipplanes[i].normal[j] < 0) {
 				pindex[j] = j;
 				pindex[j + 3] = j + 3;
@@ -242,7 +242,7 @@ void R_SetupFrame()
 				r_maxsurfsseen);
 	}
 	if (r_numedges.value) {
-		int edgecount = edge_p - r_edges;
+		s32 edgecount = edge_p - r_edges;
 
 		if (edgecount > r_maxedgesseen)
 			r_maxedgesseen = edgecount;
@@ -290,9 +290,9 @@ void R_SetupFrame()
 				}
 				vrect.x = 0;
 				vrect.y = 0;
-				vrect.width = (int)w;
-				vrect.height = (int)h;
-				R_ViewChanged(&vrect, (int)((float)sb_lines*
+				vrect.width = (s32)w;
+				vrect.height = (s32)h;
+				R_ViewChanged(&vrect, (s32)((float)sb_lines*
 					(h/(float)vid.height)),vid.aspect*(h/w)*
 					((float)vid.width/(float)vid.height));
 			}

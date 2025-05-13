@@ -5,37 +5,37 @@
 
 #include "quakedef.h"
 
-int r_p0[6], r_p1[6], r_p2[6];
+s32 r_p0[6], r_p1[6], r_p2[6];
 byte *d_pcolormap;
-int d_aflatcolor;
-int d_xdenom;
+s32 d_aflatcolor;
+s32 d_xdenom;
 edgetable *pedgetable;
 // FIXME: some of these can become statics
-int a_sstepxfrac, a_tstepxfrac, r_lstepx, a_ststepxwhole;
-int r_sstepx, r_tstepx, r_lstepy, r_sstepy, r_tstepy;
-int r_zistepx, r_zistepy;
-int d_aspancount, d_countextrastep;
+s32 a_sstepxfrac, a_tstepxfrac, r_lstepx, a_ststepxwhole;
+s32 r_sstepx, r_tstepx, r_lstepy, r_sstepy, r_tstepy;
+s32 r_zistepx, r_zistepy;
+s32 d_aspancount, d_countextrastep;
 spanpackage_t *a_spans;
 spanpackage_t *d_pedgespanpackage;
 byte *d_pdest, *d_ptex;
-short *d_pz;
-int d_sfrac, d_tfrac, d_light, d_zi;
-int d_ptexextrastep, d_sfracextrastep;
-int d_tfracextrastep, d_lightextrastep, d_pdestextrastep;
-int d_lightbasestep, d_pdestbasestep, d_ptexbasestep;
-int d_sfracbasestep, d_tfracbasestep;
-int d_ziextrastep, d_zibasestep;
-int d_pzextrastep, d_pzbasestep;
+s16 *d_pz;
+s32 d_sfrac, d_tfrac, d_light, d_zi;
+s32 d_ptexextrastep, d_sfracextrastep;
+s32 d_tfracextrastep, d_lightextrastep, d_pdestextrastep;
+s32 d_lightbasestep, d_pdestbasestep, d_ptexbasestep;
+s32 d_sfracbasestep, d_tfracbasestep;
+s32 d_ziextrastep, d_zibasestep;
+s32 d_pzextrastep, d_pzbasestep;
 byte *skintable[MAX_LBM_HEIGHT];
-int skinwidth;
+s32 skinwidth;
 byte *skinstart;
-static int ystart;
+static s32 ystart;
 float cur_ent_alpha = 1;
 
-extern unsigned char color_mix_lut[256][256][FOG_LUT_LEVELS];
-extern int fog_lut_built;
+extern u8 color_mix_lut[256][256][FOG_LUT_LEVELS];
+extern s32 fog_lut_built;
 extern vec3_t lightcolor;
-extern int colored_aliaslight;
+extern s32 colored_aliaslight;
 
 static adivtab_t adivtab[32 * 32] = {
 #include "adivtab.h"
@@ -57,13 +57,13 @@ edgetable edgetables[12] = {
 };
 
 void D_PolysetDrawSpans8(spanpackage_t * pspanpackage);
-void D_PolysetCalcGradients(int skinwidth);
+void D_PolysetCalcGradients(s32 skinwidth);
 void D_DrawSubdiv();
 void D_DrawNonSubdiv();
-void D_PolysetRecursiveTriangle(int *p1, int *p2, int *p3);
+void D_PolysetRecursiveTriangle(s32 *p1, s32 *p2, s32 *p3);
 void D_PolysetSetEdgeTable();
 void D_RasterizeAliasPolySmooth();
-void D_PolysetScanLeftEdge(int height);
+void D_PolysetScanLeftEdge(s32 height);
 
 void D_PolysetDraw()
 {
@@ -89,15 +89,15 @@ void D_PolysetDraw()
 		D_DrawNonSubdiv();
 }
 
-void D_PolysetDrawFinalVerts(finalvert_t *fv, int numverts)
+void D_PolysetDrawFinalVerts(finalvert_t *fv, s32 numverts)
 {
-	for (int i = 0; i < numverts; i++, fv++) {
+	for (s32 i = 0; i < numverts; i++, fv++) {
 		// valid triangle coordinates for filling can include the bottom and
 		// right clip edges, due to the fill rule; these shouldn't be drawn
 		if ((fv->v[0] < r_refdef.vrectright) &&
 				(fv->v[1] < r_refdef.vrectbottom)) {
-			int z = fv->v[5] >> 16;
-			short *zbuf = zspantable[fv->v[1]] + fv->v[0];
+			s32 z = fv->v[5] >> 16;
+			s16 *zbuf = zspantable[fv->v[1]] + fv->v[0];
 			if (zbuf < d_pzbuffer || // FIXME properly
 				zbuf >= (d_pzbuffer+vid.width*vid.height*2)) {
 				Con_DPrintf("Zbuf segfault 0 %lx\n", zbuf);
@@ -105,28 +105,28 @@ void D_PolysetDrawFinalVerts(finalvert_t *fv, int numverts)
 			}
 			if (!(z >= *zbuf))
 				continue;
-			int pix;
+			s32 pix;
 			*zbuf = z;
 			pix = skintable[fv->v[3] >> 16][fv->v[2] >> 16];
 			if (!r_rgblighting.value || !colored_aliaslight)
 				pix = ((byte *) acolormap)[pix + (fv->v[4] & 0xFF00)];
 			else {
 				pix = ((byte *) acolormap)[pix];
-				unsigned char tr = vid_curpal[pix * 3 + 0];
-				unsigned char tg = vid_curpal[pix * 3 + 1];
-				unsigned char tb = vid_curpal[pix * 3 + 2];
-				unsigned char rr = (tr * lightcolor[0]) / 255.0f;
-				unsigned char gg = (tg * lightcolor[1]) / 255.0f;
-				unsigned char bb = (tb * lightcolor[2]) / 255.0f;
+				u8 tr = vid_curpal[pix * 3 + 0];
+				u8 tg = vid_curpal[pix * 3 + 1];
+				u8 tb = vid_curpal[pix * 3 + 2];
+				u8 rr = (tr * lightcolor[0]) / 255.0f;
+				u8 gg = (tg * lightcolor[1]) / 255.0f;
+				u8 bb = (tb * lightcolor[2]) / 255.0f;
 				pix = lit_lut[ QUANT(rr)
 					+ QUANT(gg)*LIT_LUT_RES
 					+ QUANT(bb)*LIT_LUT_RES*LIT_LUT_RES ];
 			}
 			if (r_alphastyle.value == 0 && cur_ent_alpha != 1) {
-				int curpix = d_viewbuffer[d_scantable[fv->v[1]] + fv->v[0]];
+				s32 curpix = d_viewbuffer[d_scantable[fv->v[1]] + fv->v[0]];
 				d_viewbuffer[d_scantable[fv->v[1]] + fv->v[0]] =
 					color_mix_lut[curpix][pix]
-					[(int)((1-cur_ent_alpha)*FOG_LUT_LEVELS)];
+					[(s32)((1-cur_ent_alpha)*FOG_LUT_LEVELS)];
 			}
 			else if (r_alphastyle.value == 1 && cur_ent_alpha != 1) {
 				if (D_Dither(&d_viewbuffer[d_scantable[fv->v[1]] + fv->v[0]]))
@@ -142,8 +142,8 @@ void D_DrawSubdiv()
 {
 	finalvert_t *pfv = r_affinetridesc.pfinalverts;
 	mtriangle_t *ptri = r_affinetridesc.ptriangles;
-	int lnumtriangles = r_affinetridesc.numtriangles;
-	for (int i = 0; i < lnumtriangles; i++) {
+	s32 lnumtriangles = r_affinetridesc.numtriangles;
+	for (s32 i = 0; i < lnumtriangles; i++) {
 		finalvert_t *i0 = pfv + ptri[i].vertindex[0];
 		finalvert_t *i1 = pfv + ptri[i].vertindex[1];
 		finalvert_t *i2 = pfv + ptri[i].vertindex[2];
@@ -154,7 +154,7 @@ void D_DrawSubdiv()
 		if (ptri[i].facesfront) {
 			D_PolysetRecursiveTriangle(i0->v, i1->v, i2->v);
 		} else {
-			int s0, s1, s2;
+			s32 s0, s1, s2;
 			s0 = i0->v[2];
 			s1 = i1->v[2];
 			s2 = i2->v[2];
@@ -176,8 +176,8 @@ void D_DrawNonSubdiv()
 {
 	finalvert_t *pfv = r_affinetridesc.pfinalverts;
 	mtriangle_t *ptri = r_affinetridesc.ptriangles;
-	int lnumtriangles = r_affinetridesc.numtriangles;
-	for (int i = 0; i < lnumtriangles; i++, ptri++) {
+	s32 lnumtriangles = r_affinetridesc.numtriangles;
+	for (s32 i = 0; i < lnumtriangles; i++, ptri++) {
 		finalvert_t *i0 = pfv + ptri->vertindex[0];
 		finalvert_t *i1 = pfv + ptri->vertindex[1];
 		finalvert_t *i2 = pfv + ptri->vertindex[2];
@@ -216,11 +216,11 @@ void D_DrawNonSubdiv()
 	}
 }
 
-void D_PolysetRecursiveTriangle(int *lp1, int *lp2, int *lp3)
+void D_PolysetRecursiveTriangle(s32 *lp1, s32 *lp2, s32 *lp3)
 {
-	int *temp;
-	int new[6]; // keep here for OpenBSD compiler
-	int d = lp2[0] - lp1[0];
+	s32 *temp;
+	s32 new[6]; // keep here for OpenBSD compiler
+	s32 d = lp2[0] - lp1[0];
 	if (d < -1 || d > 1)
 		goto split;
 	d = lp2[1] - lp1[1];
@@ -260,8 +260,8 @@ split: // split this edge
 		goto nodraw;
 	if ((lp2[1] == lp1[1]) && (lp2[0] < lp1[0]))
 		goto nodraw;
-	int z = new[5] >> 16;
-	short *zbuf = zspantable[new[1]] + new[0];
+	s32 z = new[5] >> 16;
+	s16 *zbuf = zspantable[new[1]] + new[0];
 	if (zbuf < d_pzbuffer || // FIXME properly
 		zbuf >= (d_pzbuffer+vid.width*vid.height*2)) {
 		Con_DPrintf("Zbuf segfault 1 %lx\n", zbuf);
@@ -269,26 +269,26 @@ split: // split this edge
 	}
 	if (z >= *zbuf) {
 		*zbuf = z;
-		int pix = d_pcolormap[skintable[new[3] >> 16][new[2] >> 16]];
+		s32 pix = d_pcolormap[skintable[new[3] >> 16][new[2] >> 16]];
 		if (!r_rgblighting.value || !colored_aliaslight)
 			pix = d_pcolormap[skintable[new[3] >> 16][new[2] >> 16]];
 		else {
 			pix = d_pcolormap[skintable[new[3] >> 16][new[2] >> 16]];
-			unsigned char tr = vid_curpal[pix * 3 + 0];
-			unsigned char tg = vid_curpal[pix * 3 + 1];
-			unsigned char tb = vid_curpal[pix * 3 + 2];
-			unsigned char rr = (tr * lightcolor[0]) / 255.0f;
-			unsigned char gg = (tg * lightcolor[1]) / 255.0f;
-			unsigned char bb = (tb * lightcolor[2]) / 255.0f;
+			u8 tr = vid_curpal[pix * 3 + 0];
+			u8 tg = vid_curpal[pix * 3 + 1];
+			u8 tb = vid_curpal[pix * 3 + 2];
+			u8 rr = (tr * lightcolor[0]) / 255.0f;
+			u8 gg = (tg * lightcolor[1]) / 255.0f;
+			u8 bb = (tb * lightcolor[2]) / 255.0f;
 			pix = lit_lut[ QUANT(rr)
 				+ QUANT(gg)*LIT_LUT_RES
 				+ QUANT(bb)*LIT_LUT_RES*LIT_LUT_RES ];
 		}
 		if (r_alphastyle.value == 0 && cur_ent_alpha != 1) {
-			int curpix = d_viewbuffer[d_scantable[new[1]] + new[0]];
+			s32 curpix = d_viewbuffer[d_scantable[new[1]] + new[0]];
 			d_viewbuffer[d_scantable[new[1]] + new[0]] =
 				color_mix_lut[curpix][pix]
-				[(int)((1-cur_ent_alpha)*FOG_LUT_LEVELS)];
+				[(s32)((1-cur_ent_alpha)*FOG_LUT_LEVELS)];
 		}
 		else if (r_alphastyle.value == 1 && cur_ent_alpha != 1) {
 			if (D_Dither(&d_viewbuffer[d_scantable[new[1]] + new[0]]))
@@ -309,12 +309,12 @@ void D_PolysetUpdateTables()
 		skinwidth = r_affinetridesc.skinwidth;
 		skinstart = r_affinetridesc.pskin;
 		byte *s = skinstart;
-		for (int i = 0; i < MAX_LBM_HEIGHT; i++, s += skinwidth)
+		for (s32 i = 0; i < MAX_LBM_HEIGHT; i++, s += skinwidth)
 			skintable[i] = s;
 	}
 }
 
-void D_PolysetScanLeftEdge(int height)
+void D_PolysetScanLeftEdge(s32 height)
 {
 	do {
 		d_pedgespanpackage->pdest = d_pdest;
@@ -367,8 +367,8 @@ void D_PolysetSetUpForLineScan(fixed8_t startvertu, fixed8_t startvertv,
 		fixed8_t endvertu, fixed8_t endvertv)
 {
 	errorterm = -1;
-	int tm = endvertu - startvertu;
-	int tn = endvertv - startvertv;
+	s32 tm = endvertu - startvertu;
+	s32 tn = endvertv - startvertv;
 	if (((tm <= 16) && (tm >= -15)) && ((tn <= 16) && (tn >= -15))) {
 		adivtab_t *ptemp = &adivtab[((tm + 15) << 5) + (tn + 15)];
 		ubasestep = ptemp->quotient;
@@ -382,7 +382,7 @@ void D_PolysetSetUpForLineScan(fixed8_t startvertu, fixed8_t startvertv,
 	}
 }
 
-void D_PolysetCalcGradients(int skinwidth)
+void D_PolysetCalcGradients(s32 skinwidth)
 {
 	float p00_minus_p20 = r_p0[0] - r_p2[0];
 	float p01_minus_p21 = r_p0[1] - r_p2[1];
@@ -395,20 +395,20 @@ void D_PolysetCalcGradients(int skinwidth)
 	// very visible, overflow is very unlikely, because of ambient lighting
 	float t0 = r_p0[4] - r_p2[4];
 	float t1 = r_p1[4] - r_p2[4];
-	r_lstepx = (int)ceil((t1*p01_minus_p21-t0*p11_minus_p21)*xstepdenominv);
-	r_lstepy = (int)ceil((t1*p00_minus_p20-t0*p10_minus_p20)*ystepdenominv);
+	r_lstepx = (s32)ceil((t1*p01_minus_p21-t0*p11_minus_p21)*xstepdenominv);
+	r_lstepy = (s32)ceil((t1*p00_minus_p20-t0*p10_minus_p20)*ystepdenominv);
 	t0 = r_p0[2] - r_p2[2];
 	t1 = r_p1[2] - r_p2[2];
-	r_sstepx = (int)((t1*p01_minus_p21-t0*p11_minus_p21)*xstepdenominv);
-	r_sstepy = (int)((t1*p00_minus_p20-t0*p10_minus_p20)*ystepdenominv);
+	r_sstepx = (s32)((t1*p01_minus_p21-t0*p11_minus_p21)*xstepdenominv);
+	r_sstepy = (s32)((t1*p00_minus_p20-t0*p10_minus_p20)*ystepdenominv);
 	t0 = r_p0[3] - r_p2[3];
 	t1 = r_p1[3] - r_p2[3];
-	r_tstepx = (int)((t1*p01_minus_p21-t0*p11_minus_p21)*xstepdenominv);
-	r_tstepy = (int)((t1*p00_minus_p20-t0*p10_minus_p20)*ystepdenominv);
+	r_tstepx = (s32)((t1*p01_minus_p21-t0*p11_minus_p21)*xstepdenominv);
+	r_tstepy = (s32)((t1*p00_minus_p20-t0*p10_minus_p20)*ystepdenominv);
 	t0 = r_p0[5] - r_p2[5];
 	t1 = r_p1[5] - r_p2[5];
-	r_zistepx = (int)((t1*p01_minus_p21-t0*p11_minus_p21)*xstepdenominv);
-	r_zistepy = (int)((t1*p00_minus_p20-t0*p10_minus_p20)*ystepdenominv);
+	r_zistepx = (s32)((t1*p01_minus_p21-t0*p11_minus_p21)*xstepdenominv);
+	r_zistepy = (s32)((t1*p00_minus_p20-t0*p10_minus_p20)*ystepdenominv);
 	a_sstepxfrac = r_sstepx & 0xFFFF;
 	a_tstepxfrac = r_tstepx & 0xFFFF;
 	a_ststepxwhole = skinwidth * (r_tstepx >> 16) + (r_sstepx >> 16);
@@ -417,7 +417,7 @@ void D_PolysetCalcGradients(int skinwidth)
 void D_PolysetDrawSpans8(spanpackage_t *pspanpackage)
 {
 	do {
-		int lcount = d_aspancount - pspanpackage->count;
+		s32 lcount = d_aspancount - pspanpackage->count;
 		errorterm += erroradjustup;
 		if (errorterm >= 0) {
 			d_aspancount += d_countextrastep;
@@ -428,39 +428,39 @@ void D_PolysetDrawSpans8(spanpackage_t *pspanpackage)
 		if (lcount) {
 			byte *lpdest = pspanpackage->pdest;
 			byte *lptex = pspanpackage->ptex;
-			short *lpz = pspanpackage->pz;
-			int lsfrac = pspanpackage->sfrac;
-			int ltfrac = pspanpackage->tfrac;
-			int llight = pspanpackage->light;
-			int lzi = pspanpackage->zi;
-			if (lpz + lcount - d_pzbuffer > vid.width * vid.height * sizeof(short)) {
+			s16 *lpz = pspanpackage->pz;
+			s32 lsfrac = pspanpackage->sfrac;
+			s32 ltfrac = pspanpackage->tfrac;
+			s32 llight = pspanpackage->light;
+			s32 lzi = pspanpackage->zi;
+			if (lpz + lcount - d_pzbuffer > vid.width * vid.height * sizeof(s16)) {
 				Con_DPrintf ("Invalid span length: %d %d\n", 
-					lpz + lcount - d_pzbuffer, vid.width * vid.height * sizeof(short));
+					lpz + lcount - d_pzbuffer, vid.width * vid.height * sizeof(s16));
 				break;
 				// CyanBun96: i caused this bug and i can't be bothered to fix it. Here, have a
 				// quick non-fix to stop it from segfaulting. gl hf whoever stumbles upon this.
 			}
 			do {
 				if ((lzi >> 16) >= *lpz) {
-					int pix;
+					s32 pix;
 					if (!r_rgblighting.value || !colored_aliaslight)
 						pix = ((byte*)acolormap)[*lptex + (llight & 0xFF00)];
 					else {
 						pix = ((byte*)acolormap)[*lptex];
-						unsigned char tr = vid_curpal[pix * 3 + 0];
-						unsigned char tg = vid_curpal[pix * 3 + 1];
-						unsigned char tb = vid_curpal[pix * 3 + 2];
-						unsigned char rr = (tr * lightcolor[0]) / 255.0f;
-						unsigned char gg = (tg * lightcolor[1]) / 255.0f;
-						unsigned char bb = (tb * lightcolor[2]) / 255.0f;
+						u8 tr = vid_curpal[pix * 3 + 0];
+						u8 tg = vid_curpal[pix * 3 + 1];
+						u8 tb = vid_curpal[pix * 3 + 2];
+						u8 rr = (tr * lightcolor[0]) / 255.0f;
+						u8 gg = (tg * lightcolor[1]) / 255.0f;
+						u8 bb = (tb * lightcolor[2]) / 255.0f;
 						pix = lit_lut[ QUANT(rr)
 							+ QUANT(gg)*LIT_LUT_RES
 							+ QUANT(bb)*LIT_LUT_RES*LIT_LUT_RES ];
 					}
 					if (r_alphastyle.value == 0 && cur_ent_alpha != 1) {
-						int curpix = *lpdest;
+						s32 curpix = *lpdest;
 						*lpdest = color_mix_lut[curpix][pix]
-							[(int)((1-cur_ent_alpha)*FOG_LUT_LEVELS)];
+							[(s32)((1-cur_ent_alpha)*FOG_LUT_LEVELS)];
 					}
 					else if (r_alphastyle.value == 1 && cur_ent_alpha != 1) {
 						if (D_Dither(lpdest))
@@ -491,12 +491,12 @@ void D_PolysetDrawSpans8(spanpackage_t *pspanpackage)
 
 void D_RasterizeAliasPolySmooth()
 {
-	int *plefttop = pedgetable->pleftedgevert0;
-	int *prighttop = pedgetable->prightedgevert0;
-	int *pleftbottom = pedgetable->pleftedgevert1;
-	int *prightbottom = pedgetable->prightedgevert1;
-	int initialleftheight = pleftbottom[1] - plefttop[1];
-	int initialrightheight = prightbottom[1] - prighttop[1];
+	s32 *plefttop = pedgetable->pleftedgevert0;
+	s32 *prighttop = pedgetable->prightedgevert0;
+	s32 *pleftbottom = pedgetable->pleftedgevert1;
+	s32 *prightbottom = pedgetable->prightedgevert1;
+	s32 initialleftheight = pleftbottom[1] - plefttop[1];
+	s32 initialrightheight = prightbottom[1] - prighttop[1];
 	// set the s, t, and light gradients, which are consistent across the
 	// triangle because being a triangle, things are affine
 	D_PolysetCalcGradients(r_affinetridesc.skinwidth);
@@ -513,7 +513,7 @@ void D_RasterizeAliasPolySmooth()
 	d_zi = plefttop[5];
 	d_pdest = (byte *) d_viewbuffer + ystart * screenwidth + plefttop[0];
 	d_pz = d_pzbuffer + ystart * d_zwidth + plefttop[0];
-	int working_lstepx, originalcount;
+	s32 working_lstepx, originalcount;
 	if (initialleftheight == 1) {
 		d_pedgespanpackage->pdest = d_pdest;
 		d_pedgespanpackage->pz = d_pz;
@@ -559,7 +559,7 @@ void D_RasterizeAliasPolySmooth()
 	}
 	// scan out the bottom part of the left edge, if it exists
 	if (pedgetable->numleftedges == 2) {
-		int height;
+		s32 height;
 		plefttop = pleftbottom;
 		pleftbottom = pedgetable->pleftedgevert2;
 		height = pleftbottom[1] - plefttop[1];
@@ -631,7 +631,7 @@ void D_RasterizeAliasPolySmooth()
 		d_aspancount = prightbottom[0] - prighttop[0];
 		prighttop = prightbottom;
 		prightbottom = pedgetable->prightedgevert2;
-		int height = prightbottom[1] - prighttop[1];
+		s32 height = prightbottom[1] - prighttop[1];
 		D_PolysetSetUpForLineScan(prighttop[0], prighttop[1],
 				prightbottom[0], prightbottom[1]);
 		d_countextrastep = ubasestep + 1;
@@ -642,7 +642,7 @@ void D_RasterizeAliasPolySmooth()
 
 void D_PolysetSetEdgeTable()
 {
-	int edgetableindex = 0; // assume the vertices are already in top to
+	s32 edgetableindex = 0; // assume the vertices are already in top to
 		// bottom order determine which edges are right & left, and the
 		// order in which to rasterize them
 	if (r_p0[1] >= r_p1[1]) {

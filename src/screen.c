@@ -9,9 +9,9 @@ bool scr_initialized; // ready to draw
 qpic_t *scr_ram;
 qpic_t *scr_net;
 qpic_t *scr_turtle;
-unsigned int scr_fullupdate;
-unsigned int clearconsole;
-unsigned int clearnotify;
+u32 scr_fullupdate;
+u32 clearconsole;
+u32 clearnotify;
 vrect_t scr_vrect;
 bool scr_disabled_for_loading;
 bool scr_drawloading;
@@ -19,22 +19,22 @@ float scr_disabled_time;
 bool scr_skipupdate;
 bool block_drawing;
 void SCR_ScreenShot_f();
-char scr_centerstring[1024]; // center printing
+s8 scr_centerstring[1024]; // center printing
 float scr_centertime_start; // for slow victory printing
 float scr_centertime_off;
-int scr_center_lines;
-int scr_erase_lines;
-unsigned int scr_erase_center;
+s32 scr_center_lines;
+s32 scr_erase_lines;
+u32 scr_erase_center;
 float scr_con_current;
 float scr_conlines; // lines of console to display
 float oldscreensize, oldfov;
 hudstyle_t hudstyle;
-extern int fog_initialized;
-extern int drawlayer;
+extern s32 fog_initialized;
+extern s32 drawlayer;
 
 void SCR_HUDStyle_f (cvar_t *cvar);
 
-void SCR_CenterPrint(const char *str) // Called for important messages
+void SCR_CenterPrint(const s8 *str) // Called for important messages
 { // that should stay in the center of the screen for a few moments
 	strncpy(scr_centerstring, str, sizeof(scr_centerstring) - 1);
 	scr_centertime_off = scr_centertime.value;
@@ -53,7 +53,7 @@ void SCR_EraseCenterString()
 		scr_erase_lines = 0;
 		return;
 	}
-	int y = 48;
+	s32 y = 48;
 	if (scr_center_lines <= 4)
 		y = vid.height * 0.35;
 	Draw_TileClear(0, y, vid.width, 8 * scr_erase_lines);
@@ -61,19 +61,19 @@ void SCR_EraseCenterString()
 
 void SCR_DrawCenterString()
 {
-	int remaining = cl.intermission ? scr_printspeed.value // the finale
-		* (cl.time - scr_centertime_start) : 9999; // char-by-char print
+	s32 remaining = cl.intermission ? scr_printspeed.value // the finale
+		* (cl.time - scr_centertime_start) : 9999; // s8-by-s8 print
 	scr_erase_center = 0;
-	char *start = scr_centerstring;
-	int y = scr_center_lines <= 4 ? vid.height * 0.35 : 48 * uiscale;
+	s8 *start = scr_centerstring;
+	s32 y = scr_center_lines <= 4 ? vid.height * 0.35 : 48 * uiscale;
 	drawlayer = 1;
 	do {
-		int l = 0;
+		s32 l = 0;
 		for (; l < 40; l++) // scan the width of the line
 			if (start[l] == '\n' || !start[l])
 				break;
-		int x = (vid.width - l * 8 * uiscale) / 2;
-		for (int j = 0; j < l; j++, x += 8 * uiscale) {
+		s32 x = (vid.width - l * 8 * uiscale) / 2;
+		for (s32 j = 0; j < l; j++, x += 8 * uiscale) {
 			Draw_CharacterScaled(x, y, start[j], uiscale);
 			if (!remaining--)
 				return;
@@ -184,7 +184,7 @@ void SCR_DrawFPS()
 { // -- johnfitz
 	static double oldtime = 0;
 	static double lastfps = 0;
-	static int oldframecount = 0;
+	static s32 oldframecount = 0;
 	if (con_forcedup) {
 		oldtime = realtime;
 		oldframecount = r_framecount;
@@ -192,7 +192,7 @@ void SCR_DrawFPS()
 		return;
 	}
 	double elapsed_time = realtime - oldtime;
-	int frames = r_framecount - oldframecount;
+	s32 frames = r_framecount - oldframecount;
 	if (elapsed_time < 0 || frames < 0) {
 		oldtime = realtime;
 		oldframecount = r_framecount;
@@ -204,12 +204,12 @@ void SCR_DrawFPS()
 		oldframecount = r_framecount;
 	}
 	if (scr_showfps.value && scr_viewsize.value < 130 && lastfps) {
-		char st[16];
+		s8 st[16];
 		if (scr_showfps.value > 0.f)
 			sprintf(st, "%4.0f fps", lastfps);
 		else
 			sprintf(st, "%.2f ms", 1000.f / lastfps);
-		int x = vid.width - (strlen(st) * 8 * uiscale);
+		s32 x = vid.width - (strlen(st) * 8 * uiscale);
 		Draw_StringScaled(x, 0, st, uiscale);
 	}
 }
@@ -223,7 +223,7 @@ void SCR_DrawRam()
 
 void SCR_DrawTurtle()
 {
-	static int count;
+	static s32 count;
 	if (!scr_showturtle.value)
 		return;
 	if (host_frametime < 0.1) {
@@ -288,8 +288,8 @@ void SCR_SetUpToDrawConsole()
 			scr_con_current = scr_conlines;
 	}
 	if (clearconsole++ < vid.numpages) {
-		Draw_TileClear(0, (int)scr_con_current, vid.width,
-			       vid.height - (int)scr_con_current);
+		Draw_TileClear(0, (s32)scr_con_current, vid.width,
+			       vid.height - (s32)scr_con_current);
 		Sbar_Changed();
 	} else if (clearnotify++ < vid.numpages) {
 		Draw_TileClear(0, 0, vid.width, con_notifylines);
@@ -307,8 +307,8 @@ void SCR_DrawConsole()
 			Con_DrawNotify(); // only draw notify in game
 }
 
-void WritePCXfile(char *filename, byte *data, int width, int height,
-		  int rowbytes, byte *palette)
+void WritePCXfile(s8 *filename, byte *data, s32 width, s32 height,
+		  s32 rowbytes, byte *palette)
 {
 	pcx_t *pcx = Hunk_TempAlloc(width * height * 2 + 1000);
 	if (pcx == NULL) {
@@ -321,18 +321,18 @@ void WritePCXfile(char *filename, byte *data, int width, int height,
 	pcx->bits_per_pixel = 8; // 256 color
 	pcx->xmin = 0;
 	pcx->ymin = 0;
-	pcx->xmax = LittleShort((short)(width - 1));
-	pcx->ymax = LittleShort((short)(height - 1));
-	pcx->hres = LittleShort((short)width);
-	pcx->vres = LittleShort((short)height);
+	pcx->xmax = LittleShort((s16)(width - 1));
+	pcx->ymax = LittleShort((s16)(height - 1));
+	pcx->hres = LittleShort((s16)width);
+	pcx->vres = LittleShort((s16)height);
 	Q_memset(pcx->palette, 0, sizeof(pcx->palette));
 	pcx->color_planes = 1; // chunky image
-	pcx->bytes_per_line = LittleShort((short)width);
+	pcx->bytes_per_line = LittleShort((s16)width);
 	pcx->palette_type = LittleShort(2); // not a grey scale
 	Q_memset(pcx->filler, 0, sizeof(pcx->filler));
 	byte *pack = &pcx->data; // pack the image
-	for (int i = 0; i < height; i++) {
-		for (int j = 0; j < width; j++) {
+	for (s32 i = 0; i < height; i++) {
+		for (s32 j = 0; j < width; j++) {
 			if ((*data & 0xc0) != 0xc0)
 				*pack++ = *data++;
 			else {
@@ -343,18 +343,18 @@ void WritePCXfile(char *filename, byte *data, int width, int height,
 		data += rowbytes - width;
 	}
 	*pack++ = 0x0c; // palette ID byte
-	for (int i = 0; i < 768; i++) // write the palette
+	for (s32 i = 0; i < 768; i++) // write the palette
 		*pack++ = *palette++;
-	int length = pack - (byte *) pcx; // write output file 
+	s32 length = pack - (byte *) pcx; // write output file 
 	COM_WriteFile(filename, pcx, length);
 }
 
 void SCR_ScreenShot_f()
 {
-	char pcxname[80];
-	char checkname[MAX_OSPATH*2];
+	s8 pcxname[80];
+	s8 checkname[MAX_OSPATH*2];
 	strcpy(pcxname, "quake00.pcx"); // find a file name to save it to 
-	int i = 0;
+	s32 i = 0;
 	for (; i <= 99; i++) {
 		pcxname[5] = i / 10 + '0';
 		pcxname[6] = i % 10 + '0';
@@ -397,20 +397,20 @@ void SCR_EndLoadingPlaque()
 	Con_ClearNotify();
 }
 
-char *scr_notifystring;
+s8 *scr_notifystring;
 bool scr_drawdialog;
 
 void SCR_DrawNotifyString()
 {
-	char *start = scr_notifystring;
-	int y = vid.height * 0.35;
+	s8 *start = scr_notifystring;
+	s32 y = vid.height * 0.35;
 	do {
-		int l = 0;
+		s32 l = 0;
 		for (; l < 40; l++) // scan the width of the line
 			if (start[l] == '\n' || !start[l])
 				break;
-		int x = (vid.width - l * 8 * uiscale) / 2;
-		for (int j = 0; j < l; j++, x += 8 * uiscale)
+		s32 x = (vid.width - l * 8 * uiscale) / 2;
+		for (s32 j = 0; j < l; j++, x += 8 * uiscale)
 			Draw_CharacterScaled(x, y, start[j], uiscale);
 		y += 8 * uiscale;
 		while (*start && *start != '\n')
@@ -421,7 +421,7 @@ void SCR_DrawNotifyString()
 	} while (1);
 }
 
-int SCR_ModalMessage(char *text) // Displays a text string in the center
+s32 SCR_ModalMessage(s8 *text) // Displays a text string in the center
 { // of the screen and waits for a Y or N keypress.  
 	if (cls.state == ca_dedicated)
 		return true;
@@ -507,7 +507,7 @@ void SCR_UpdateScreen() // This is called every frame,
 
 void SCR_HUDStyle_f (cvar_t *cvar)
 { // Updates hudstyle variable and invalidates refdef when scr_hudstyle changes
-    int val = (int) cvar->value;
-    hudstyle = (hudstyle_t) CLAMP (0, val, (int) HUD_COUNT - 1);
+    s32 val = (s32) cvar->value;
+    hudstyle = (hudstyle_t) CLAMP (0, val, (s32) HUD_COUNT - 1);
     vid.recalc_refdef = 1;
 }

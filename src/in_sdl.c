@@ -3,13 +3,13 @@
 bool mouse_avail;
 float mouse_x;
 float mouse_y;
-int mouse_oldbuttonstate;
-static int buttonremap[] = { K_MOUSE1, K_MOUSE3, K_MOUSE2, K_MOUSE4, K_MOUSE5 };
+s32 mouse_oldbuttonstate;
+static s32 buttonremap[] = { K_MOUSE1, K_MOUSE3, K_MOUSE2, K_MOUSE4, K_MOUSE5 };
 
 void Sys_SendKeyEvents()
 {
 	SDL_Event event;
-	int sym, state, mod; // keep here for OpenBSD compiler
+	s32 sym, state, mod; // keep here for OpenBSD compiler
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
 		case SDL_KEYDOWN:

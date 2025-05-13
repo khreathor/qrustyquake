@@ -10,7 +10,7 @@ vec3_t chase_dest;
 vec3_t chase_dest_angles;
 
 extern void Cvar_RegisterVariable (cvar_t *variable);
-extern bool SV_RecursiveHullCheck(hull_t *hull, int num, float p1f,
+extern bool SV_RecursiveHullCheck(hull_t *hull, s32 num, float p1f,
 			float p2f, vec3_t p1, vec3_t p2, trace_t *trace);
 
 void Chase_Init()
@@ -34,7 +34,7 @@ void Chase_Update()
 	vec3_t forward, up, right, dest, stop;
 	// if can't see player, reset
 	AngleVectors(cl.viewangles, forward, right, up);
-	for (int i = 0; i < 3; i++) // calc exact destination
+	for (s32 i = 0; i < 3; i++) // calc exact destination
 		chase_dest[i] = r_refdef.vieworg[i]
 		    - forward[i] * chase_back.value
 		    - right[i] * chase_right.value;

@@ -12,18 +12,18 @@ static sys_socket_t net_acceptsocket = INVALID_SOCKET; // socket for fielding ne
 static sys_socket_t net_controlsocket;
 static struct sockaddr_ipx broadcastaddr;
 /* externs from net_wins.c: */
-extern int winsock_initialized;
+extern s32 winsock_initialized;
 extern WSADATA winsockdata;
-extern const char *__WSAE_StrError(int);
+extern const s8 *__WSAE_StrError(s32);
 static sys_socket_t ipxsocket[IPXSOCKETS];
-static int sequence[IPXSOCKETS];
+static s32 sequence[IPXSOCKETS];
 static byte netpacketBuffer[NET_DATAGRAMSIZE + 4];
 
 sys_socket_t WIPX_Init()
 {
-	int err;
-	char *colon;
-	char buff[MAXHOSTNAMELEN];
+	s32 err;
+	s8 *colon;
+	s8 buff[MAXHOSTNAMELEN];
 	struct qsockaddr addr;
 	if (COM_CheckParm("-noipx"))
 		return INVALID_SOCKET;
@@ -36,7 +36,7 @@ sys_socket_t WIPX_Init()
 		}
 	}
 	winsock_initialized++;
-	for (int i = 0; i < IPXSOCKETS; i++)
+	for (s32 i = 0; i < IPXSOCKETS; i++)
 		ipxsocket[i] = 0;
 	// determine my name & address
 	if (gethostname(buff, MAXHOSTNAMELEN) != 0) {
@@ -56,7 +56,7 @@ sys_socket_t WIPX_Init()
 	broadcastaddr.sa_family = AF_IPX;
 	memset(broadcastaddr.sa_netnum, 0, 4);
 	memset(broadcastaddr.sa_nodenum, 0xff, 6);
-	broadcastaddr.sa_socket = htons((unsigned short)net_hostport);
+	broadcastaddr.sa_socket = htons((u16)net_hostport);
 	WIPX_GetSocketAddr(net_controlsocket, &addr);
 	Q_strcpy(my_ipx_address, WIPX_AddrToString(&addr));
 	colon = Q_strrchr(my_ipx_address, ':');
@@ -93,9 +93,9 @@ void WIPX_Listen(bool state)
 	net_acceptsocket = INVALID_SOCKET;
 }
 
-sys_socket_t WIPX_OpenSocket(int port)
+sys_socket_t WIPX_OpenSocket(s32 port)
 {
-	int err;
+	s32 err;
 	sys_socket_t handle, newsocket;
 	struct sockaddr_ipx address;
 	u_long _true = 1;
@@ -116,13 +116,13 @@ sys_socket_t WIPX_OpenSocket(int port)
 	if (ioctlsocket(newsocket, FIONBIO, &_true) == SOCKET_ERROR)
 		goto ErrorReturn;
 	if (setsockopt
-	    (newsocket, SOL_SOCKET, SO_BROADCAST, (char *)&_true, sizeof(_true))
+	    (newsocket, SOL_SOCKET, SO_BROADCAST, (s8 *)&_true, sizeof(_true))
 	    == SOCKET_ERROR)
 		goto ErrorReturn;
 	address.sa_family = AF_IPX;
 	memset(address.sa_netnum, 0, 4);
 	memset(address.sa_nodenum, 0, 6);;
-	address.sa_socket = htons((unsigned short)port);
+	address.sa_socket = htons((u16)port);
 	if (bind(newsocket, (struct sockaddr *)&address, sizeof(address)) == 0) {
 		ipxsocket[handle] = newsocket;
 		sequence[handle] = 0;
@@ -141,15 +141,15 @@ ErrorReturn:
 	return INVALID_SOCKET;
 }
 
-int WIPX_CloseSocket(sys_socket_t handle)
+s32 WIPX_CloseSocket(sys_socket_t handle)
 {
 	sys_socket_t socketid = ipxsocket[handle];
-	int ret = closesocket(socketid);
+	s32 ret = closesocket(socketid);
 	ipxsocket[handle] = 0;
 	return ret;
 }
 
-int WIPX_Connect(sys_socket_t handle, struct qsockaddr *addr) { return 0; }
+s32 WIPX_Connect(sys_socket_t handle, struct qsockaddr *addr) { return 0; }
 
 sys_socket_t WIPX_CheckNewConnections()
 {
@@ -158,7 +158,7 @@ sys_socket_t WIPX_CheckNewConnections()
 	u_long available;
 	if (ioctlsocket(ipxsocket[net_acceptsocket], FIONREAD, &available) ==
 	    SOCKET_ERROR) {
-		int err = SOCKETERRNO;
+		s32 err = SOCKETERRNO;
 		Sys_Error("WIPX: ioctlsocket (FIONREAD) failed (%s)",
 			  socketerror(err));
 	}
@@ -167,14 +167,14 @@ sys_socket_t WIPX_CheckNewConnections()
 	return INVALID_SOCKET;
 }
 
-int WIPX_Read(sys_socket_t handle, byte *buf, int len, struct qsockaddr *addr)
+s32 WIPX_Read(sys_socket_t handle, byte *buf, s32 len, struct qsockaddr *addr)
 {
 	socklen_t addrlen = sizeof(struct qsockaddr);
 	sys_socket_t socketid = ipxsocket[handle];
-	int ret = recvfrom(socketid, (char *)netpacketBuffer, len + 4, 0,
+	s32 ret = recvfrom(socketid, (s8 *)netpacketBuffer, len + 4, 0,
 		     (struct sockaddr *)addr, &addrlen);
 	if (ret == SOCKET_ERROR) {
-		int err = SOCKETERRNO;
+		s32 err = SOCKETERRNO;
 		if (err == NET_EWOULDBLOCK || err == NET_ECONNREFUSED)
 			return 0;
 		Con_SafePrintf("WIPX_Read, recvfrom: %s\n", socketerror(err));
@@ -187,12 +187,12 @@ int WIPX_Read(sys_socket_t handle, byte *buf, int len, struct qsockaddr *addr)
 	return ret;
 }
 
-int WIPX_Broadcast(sys_socket_t handle, byte *buf, int len)
+s32 WIPX_Broadcast(sys_socket_t handle, byte *buf, s32 len)
 {
 	return WIPX_Write(handle, buf, len, (struct qsockaddr *)&broadcastaddr);
 }
 
-int WIPX_Write(sys_socket_t handle, byte *buf, int len, struct qsockaddr *addr)
+s32 WIPX_Write(sys_socket_t handle, byte *buf, s32 len, struct qsockaddr *addr)
 {
 	sys_socket_t socketid = ipxsocket[handle];
 	// build packet with sequence number
@@ -200,10 +200,10 @@ int WIPX_Write(sys_socket_t handle, byte *buf, int len, struct qsockaddr *addr)
 	sequence[handle]++;
 	memcpy(&netpacketBuffer[4], buf, len);
 	len += 4;
-	int ret = sendto(socketid, (char *)netpacketBuffer, len, 0,
+	s32 ret = sendto(socketid, (s8 *)netpacketBuffer, len, 0,
 		   (struct sockaddr *)addr, sizeof(struct qsockaddr));
 	if (ret == SOCKET_ERROR) {
-		int err = SOCKETERRNO;
+		s32 err = SOCKETERRNO;
 		if (err == NET_EWOULDBLOCK)
 			return 0;
 		Con_SafePrintf("WIPX_Write, sendto: %s\n", socketerror(err));
@@ -211,9 +211,9 @@ int WIPX_Write(sys_socket_t handle, byte *buf, int len, struct qsockaddr *addr)
 	return ret;
 }
 
-const char *WIPX_AddrToString(struct qsockaddr *addr)
+const s8 *WIPX_AddrToString(struct qsockaddr *addr)
 {
-	static char buf[28];
+	static s8 buf[28];
 	sprintf(buf, "%02x%02x%02x%02x:%02x%02x%02x%02x%02x%02x:%u",
 		((struct sockaddr_ipx *)addr)->sa_netnum[0] & 0xff,
 		((struct sockaddr_ipx *)addr)->sa_netnum[1] & 0xff,
@@ -230,10 +230,10 @@ const char *WIPX_AddrToString(struct qsockaddr *addr)
 	return buf;
 }
 
-int WIPX_StringToAddr(const char *string, struct qsockaddr *addr)
+s32 WIPX_StringToAddr(const s8 *string, struct qsockaddr *addr)
 {
-	int val;
-	char buf[3];
+	s32 val;
+	s8 buf[3];
 	buf[2] = 0;
 	Q_memset(addr, 0, sizeof(struct qsockaddr));
 	addr->qsa_family = AF_IPX;
@@ -256,33 +256,33 @@ int WIPX_StringToAddr(const char *string, struct qsockaddr *addr)
 	DO(19, sa_nodenum[5]);
 #undef DO
 	sscanf(&string[22], "%u", &val);
-	((struct sockaddr_ipx *)addr)->sa_socket = htons((unsigned short)val);
+	((struct sockaddr_ipx *)addr)->sa_socket = htons((u16)val);
 	return 0;
 }
 
-int WIPX_GetSocketAddr(sys_socket_t handle, struct qsockaddr *addr)
+s32 WIPX_GetSocketAddr(sys_socket_t handle, struct qsockaddr *addr)
 {
 	sys_socket_t socketid = ipxsocket[handle];
 	socklen_t addrlen = sizeof(struct qsockaddr);
 	Q_memset(addr, 0, sizeof(struct qsockaddr));
 	if (getsockname(socketid, (struct sockaddr *)addr, &addrlen) != 0) {
-		int err = SOCKETERRNO;
+		s32 err = SOCKETERRNO;
 		/* FIXME: what action should be taken?... */
 		Con_SafePrintf("WIPX, getsockname: %s\n", socketerror(err));
 	}
 	return 0;
 }
 
-int WIPX_GetNameFromAddr(struct qsockaddr *addr, char *name)
+s32 WIPX_GetNameFromAddr(struct qsockaddr *addr, s8 *name)
 {
 	Q_strcpy(name, WIPX_AddrToString(addr));
 	return 0;
 }
 
-int WIPX_GetAddrFromName(const char *name, struct qsockaddr *addr)
+s32 WIPX_GetAddrFromName(const s8 *name, struct qsockaddr *addr)
 {
-	int n;
-	char buf[32];
+	s32 n;
+	s8 buf[32];
 	n = Q_strlen(name);
 	if (n == 12) {
 		sprintf(buf, "00000000:%s:%u", name, net_hostport);
@@ -297,7 +297,7 @@ int WIPX_GetAddrFromName(const char *name, struct qsockaddr *addr)
 	return -1;
 }
 
-int WIPX_AddrCompare(struct qsockaddr *addr1, struct qsockaddr *addr2)
+s32 WIPX_AddrCompare(struct qsockaddr *addr1, struct qsockaddr *addr2)
 {
 	if (addr1->qsa_family != addr2->qsa_family)
 		return -1;
@@ -318,13 +318,13 @@ int WIPX_AddrCompare(struct qsockaddr *addr1, struct qsockaddr *addr2)
 	return 0;
 }
 
-int WIPX_GetSocketPort(struct qsockaddr *addr)
+s32 WIPX_GetSocketPort(struct qsockaddr *addr)
 {
 	return ntohs(((struct sockaddr_ipx *)addr)->sa_socket);
 }
 
-int WIPX_SetSocketPort(struct qsockaddr *addr, int port)
+s32 WIPX_SetSocketPort(struct qsockaddr *addr, s32 port)
 {
-	((struct sockaddr_ipx *)addr)->sa_socket = htons((unsigned short)port);
+	((struct sockaddr_ipx *)addr)->sa_socket = htons((u16)port);
 	return 0;
 }

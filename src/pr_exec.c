@@ -5,17 +5,17 @@
 #include "quakedef.h"
 
 static prstack_t pr_stack[MAX_STACK_DEPTH];
-static int pr_depth;
+static s32 pr_depth;
 
-static int localstack[LOCALSTACK_SIZE];
-static int localstack_used;
+static s32 localstack[LOCALSTACK_SIZE];
+static s32 localstack_used;
 
 bool pr_trace;
 dfunction_t *pr_xfunction;
-int pr_xstatement;
-int pr_argc;
+s32 pr_xstatement;
+s32 pr_argc;
 
-static const char *pr_opnames[] =
+static const s8 *pr_opnames[] =
 {
 	"DONE",
 
@@ -104,8 +104,8 @@ static const char *pr_opnames[] =
 	"BITOR"
 };
 
-const char *PR_GlobalString (int ofs);
-const char *PR_GlobalStringNoContents (int ofs);
+const s8 *PR_GlobalString (s32 ofs);
+const s8 *PR_GlobalStringNoContents (s32 ofs);
 
 
 //=============================================================================
@@ -117,9 +117,9 @@ const char *PR_GlobalStringNoContents (int ofs);
  */
 static void PR_PrintStatement (dstatement_t *s)
 {
-	int i;
+	s32 i;
 
-	if ((unsigned int)s->op < Q_COUNTOF(pr_opnames))
+	if ((u32)s->op < Q_COUNTOF(pr_opnames))
 	{
 		Con_Printf("%s ", pr_opnames[s->op]);
 		i = strlen(pr_opnames[s->op]);
@@ -133,7 +133,7 @@ static void PR_PrintStatement (dstatement_t *s)
 	{
 		Con_Printf("branch %i", s->a);
 	}
-	else if ((unsigned int)(s->op-OP_STORE_F) < 6)
+	else if ((u32)(s->op-OP_STORE_F) < 6)
 	{
 		Con_Printf("%s", PR_GlobalString(s->a));
 		Con_Printf("%s", PR_GlobalStringNoContents(s->b));
@@ -157,7 +157,7 @@ static void PR_PrintStatement (dstatement_t *s)
  */
 static void PR_StackTrace (void)
 {
-	int i;
+	s32 i;
 	dfunction_t *f;
 
 	if (pr_depth == 0)
@@ -190,8 +190,8 @@ static void PR_StackTrace (void)
  */
 void PR_Profile_f (void)
 {
-	int i, num;
-	int pmax;
+	s32 i, num;
+	s32 pmax;
 	dfunction_t *f, *best;
 
 	if (!sv.active)
@@ -229,10 +229,10 @@ void PR_Profile_f (void)
  Aborts the currently executing function
  ============
  */
-void PR_RunError (const char *error, ...)
+void PR_RunError (const s8 *error, ...)
 {
 	va_list argptr;
-	char string[1024];
+	s8 string[1024];
 
 	va_start (argptr, error);
 	q_vsnprintf (string, sizeof(string), error, argptr);
@@ -255,9 +255,9 @@ void PR_RunError (const char *error, ...)
  Returns the new program statement counter
  ====================
  */
-static int PR_EnterFunction (dfunction_t *f)
+static s32 PR_EnterFunction (dfunction_t *f)
 {
-	int i, j, c, o;
+	s32 i, j, c, o;
 
 	pr_stack[pr_depth].s = pr_xstatement;
 	pr_stack[pr_depth].f = pr_xfunction;
@@ -271,7 +271,7 @@ static int PR_EnterFunction (dfunction_t *f)
 		PR_RunError("PR_ExecuteProgram: locals stack overflow");
 
 	for (i = 0; i < c ; i++)
-		localstack[localstack_used + i] = ((int *)pr_globals)[f->parm_start + i];
+		localstack[localstack_used + i] = ((s32 *)pr_globals)[f->parm_start + i];
 	localstack_used += c;
 
 	// copy parameters
@@ -280,7 +280,7 @@ static int PR_EnterFunction (dfunction_t *f)
 	{
 		for (j = 0; j < f->parm_size[i]; j++)
 		{
-			((int *)pr_globals)[o] = ((int *)pr_globals)[OFS_PARM0 + i*3 + j];
+			((s32 *)pr_globals)[o] = ((s32 *)pr_globals)[OFS_PARM0 + i*3 + j];
 			o++;
 		}
 	}
@@ -294,9 +294,9 @@ static int PR_EnterFunction (dfunction_t *f)
  PR_LeaveFunction
  ====================
  */
-static int PR_LeaveFunction (void)
+static s32 PR_LeaveFunction (void)
 {
-	int i, c;
+	s32 i, c;
 
 	if (pr_depth <= 0)
 		Host_Error("prog stack underflow");
@@ -308,7 +308,7 @@ static int PR_LeaveFunction (void)
 		PR_RunError("PR_ExecuteProgram: locals stack underflow");
 
 	for (i = 0; i < c; i++)
-		((int *)pr_globals)[pr_xfunction->parm_start + i] = localstack[localstack_used + i];
+		((s32 *)pr_globals)[pr_xfunction->parm_start + i] = localstack[localstack_used + i];
 
 	// up stack
 	pr_depth--;
@@ -324,18 +324,18 @@ PR_ExecuteProgram
 The interpretation main loop
 ====================
 */
-#define OPA ((eval_t *)&pr_globals[(unsigned short)st->a])
-#define OPB ((eval_t *)&pr_globals[(unsigned short)st->b])
-#define OPC ((eval_t *)&pr_globals[(unsigned short)st->c])
+#define OPA ((eval_t *)&pr_globals[(u16)st->a])
+#define OPB ((eval_t *)&pr_globals[(u16)st->b])
+#define OPC ((eval_t *)&pr_globals[(u16)st->c])
 
 void PR_ExecuteProgram (func_t fnum)
 {
 	eval_t *ptr;
 	dstatement_t *st;
 	dfunction_t *f, *newf;
-	int profile, startprofile;
+	s32 profile, startprofile;
 	edict_t *ed;
-	int exitdepth;
+	s32 exitdepth;
 
 	if (!fnum || fnum >= progs->numfunctions)
 	{
@@ -411,11 +411,11 @@ void PR_ExecuteProgram (func_t fnum)
 				break;
 
 			case OP_BITAND:
-				OPC->_float = (int)OPA->_float & (int)OPB->_float;
+				OPC->_float = (s32)OPA->_float & (s32)OPB->_float;
 				break;
 
 			case OP_BITOR:
-				OPC->_float = (int)OPA->_float | (int)OPB->_float;
+				OPC->_float = (s32)OPA->_float | (s32)OPB->_float;
 				break;
 
 			case OP_GE:
@@ -527,7 +527,7 @@ void PR_ExecuteProgram (func_t fnum)
 					pr_xstatement = st - pr_statements;
 					PR_RunError("assignment to world entity");
 				}
-				OPC->_int = (byte *)((int *)&ed->v + OPB->_int) - (byte *)sv.edicts;
+				OPC->_int = (byte *)((s32 *)&ed->v + OPB->_int) - (byte *)sv.edicts;
 				break;
 
 			case OP_LOAD_F:
@@ -539,7 +539,7 @@ void PR_ExecuteProgram (func_t fnum)
 #ifdef PARANOID
 				NUM_FOR_EDICT(ed); // Make sure it's in range
 #endif
-				OPC->_int = ((eval_t *)((int *)&ed->v + OPB->_int))->_int;
+				OPC->_int = ((eval_t *)((s32 *)&ed->v + OPB->_int))->_int;
 				break;
 
 			case OP_LOAD_V:
@@ -547,7 +547,7 @@ void PR_ExecuteProgram (func_t fnum)
 #ifdef PARANOID
 				NUM_FOR_EDICT(ed); // Make sure it's in range
 #endif
-				ptr = (eval_t *)((int *)&ed->v + OPB->_int);
+				ptr = (eval_t *)((s32 *)&ed->v + OPB->_int);
 				OPC->vector[0] = ptr->vector[0];
 				OPC->vector[1] = ptr->vector[1];
 				OPC->vector[2] = ptr->vector[2];
@@ -585,7 +585,7 @@ void PR_ExecuteProgram (func_t fnum)
 				newf = &pr_functions[OPA->function];
 				if (newf->first_statement < 0)
 				{ // Built-in function
-					int i = -newf->first_statement;
+					s32 i = -newf->first_statement;
 					if (i >= pr_numbuiltins)
 						PR_RunError("Bad builtin call number %d", i);
 					pr_builtins[i]();
@@ -600,9 +600,9 @@ void PR_ExecuteProgram (func_t fnum)
 				pr_xfunction->profile += profile - startprofile;
 				startprofile = profile;
 				pr_xstatement = st - pr_statements;
-				pr_globals[OFS_RETURN] = pr_globals[(unsigned short)st->a];
-				pr_globals[OFS_RETURN + 1] = pr_globals[(unsigned short)st->a + 1];
-				pr_globals[OFS_RETURN + 2] = pr_globals[(unsigned short)st->a + 2];
+				pr_globals[OFS_RETURN] = pr_globals[(u16)st->a];
+				pr_globals[OFS_RETURN + 1] = pr_globals[(u16)st->a + 1];
+				pr_globals[OFS_RETURN + 2] = pr_globals[(u16)st->a + 2];
 				st = &pr_statements[PR_LeaveFunction()];
 				if (pr_depth == exitdepth)
 				{ // Done

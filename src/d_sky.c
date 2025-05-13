@@ -2,12 +2,12 @@
 
 #include "quakedef.h"
 
-void D_Sky_uv_To_st(int u, int v, fixed16_t *s, fixed16_t *t)
+void D_Sky_uv_To_st(s32 u, s32 v, fixed16_t *s, fixed16_t *t)
 {
 	float temp = r_refdef.vrect.width >= r_refdef.vrect.height ?
 		(float)r_refdef.vrect.width : (float)r_refdef.vrect.height;
-	float wu = 8192.0 * (float)(u - ((int)vid.width >> 1)) / temp;
-	float wv = 8192.0 * (float)(((int)vid.height >> 1) - v) / temp;
+	float wu = 8192.0 * (float)(u - ((s32)vid.width >> 1)) / temp;
+	float wv = 8192.0 * (float)(((s32)vid.height >> 1) - v) / temp;
 	vec3_t end;
 	end[0] = 4096 * vpn[0] + wu * vright[0] + wv * vup[0];
 	end[1] = 4096 * vpn[1] + wu * vright[1] + wv * vup[1];
@@ -15,22 +15,22 @@ void D_Sky_uv_To_st(int u, int v, fixed16_t *s, fixed16_t *t)
 	end[2] *= 3;
 	VectorNormalize(end);
 	temp = skytime * skyspeed; // TODO: add D_SetupFrame & set this there
-	*s = (int)((temp + 6 * (SKYSIZE / 2 - 1) * end[0]) * 0x10000);
-	*t = (int)((temp + 6 * (SKYSIZE / 2 - 1) * end[1]) * 0x10000);
+	*s = (s32)((temp + 6 * (SKYSIZE / 2 - 1) * end[0]) * 0x10000);
+	*t = (s32)((temp + 6 * (SKYSIZE / 2 - 1) * end[1]) * 0x10000);
 }
 
 void D_DrawSkyScans8(espan_t *pspan)
 {
 	do {
-		unsigned char *pdest = (unsigned char *)((byte *) d_viewbuffer +
+		u8 *pdest = (u8 *)((byte *) d_viewbuffer +
 					  (screenwidth * pspan->v) + pspan->u);
-		int count = pspan->count;
-		int u = pspan->u; // calculate the initial s & t
-		int v = pspan->v;
+		s32 count = pspan->count;
+		s32 u = pspan->u; // calculate the initial s & t
+		s32 v = pspan->v;
 		fixed16_t s, t, snext = 0, tnext = 0;
 		D_Sky_uv_To_st(u, v, &s, &t);
 		do {
-			int spancount = count >= SKY_SPAN_MAX ?
+			s32 spancount = count >= SKY_SPAN_MAX ?
 				SKY_SPAN_MAX : count;
 			count -= spancount;
 			fixed16_t sstep = 0;
@@ -45,7 +45,7 @@ void D_DrawSkyScans8(espan_t *pspan)
 			} else {
 				// calculate s and t at last pixel in span,
 				// calculate s and t steps across span by division
-				int spancountminus1 = (float)(spancount - 1);
+				s32 spancountminus1 = (float)(spancount - 1);
 				if (spancountminus1 > 0) {
 					u += spancountminus1;
 					D_Sky_uv_To_st(u, v, &snext, &tnext);

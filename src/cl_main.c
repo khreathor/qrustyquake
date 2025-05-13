@@ -16,7 +16,7 @@ entity_t cl_static_entities[MAX_STATIC_ENTITIES];
 lightstyle_t cl_lightstyle[MAX_LIGHTSTYLES];
 dlight_t cl_dlights[MAX_DLIGHTS];
 
-int cl_numvisedicts;
+s32 cl_numvisedicts;
 entity_t *cl_visedicts[MAX_VISEDICTS];
 
 extern void CL_AdjustAngles();
@@ -35,7 +35,7 @@ void CL_ClearState()
 	memset(cl_beams, 0, sizeof(cl_beams));
 	// allocate the efrags and chain together into a free list
 	cl.free_efrags = cl_efrags;
-	int i = 0;
+	s32 i = 0;
 	for (; i < MAX_EFRAGS - 1; i++)
 		cl.free_efrags[i].entnext = &cl.free_efrags[i + 1];
 	cl.free_efrags[i].entnext = NULL;
@@ -74,7 +74,7 @@ void CL_Disconnect_f()
 }
 
 
-void CL_EstablishConnection(char *host)
+void CL_EstablishConnection(s8 *host)
 { // Host should be either "local" or a net address to be passed on
 	if (cls.state == ca_dedicated || cls.demoplayback)
 		return;
@@ -90,7 +90,7 @@ void CL_EstablishConnection(char *host)
 
 void CL_SignonReply()
 { // An svc_signonnum has been received, perform a client side setup
-	char str[8192];
+	s8 str[8192];
 	Con_DPrintf("CL_SignonReply: %i\n", cls.signon);
 	switch (cls.signon) {
 	case 1:
@@ -103,8 +103,8 @@ void CL_SignonReply()
 				va("name \"%s\"\n", cl_name.string));
 		MSG_WriteByte(&cls.message, clc_stringcmd);
 		MSG_WriteString(&cls.message,
-				va("color %i %i\n", ((int)cl_color.value) >> 4,
-				   ((int)cl_color.value) & 15));
+				va("color %i %i\n", ((s32)cl_color.value) >> 4,
+				   ((s32)cl_color.value) & 15));
 		MSG_WriteByte(&cls.message, clc_stringcmd);
 		sprintf(str, "spawn %s", cls.spawnparms);
 		MSG_WriteString(&cls.message, str);
@@ -122,7 +122,7 @@ void CL_SignonReply()
 
 void CL_NextDemo()
 { // Called to play the next demo in the demo loop
-	char str[1024];
+	s8 str[1024];
 	if (cls.demonum == -1)
 		return; // don't play demos
 	SCR_BeginLoadingPlaque();
@@ -142,7 +142,7 @@ void CL_NextDemo()
 void CL_PrintEntities_f()
 {
 	entity_t *ent = cl_entities;
-	for (int i = 0; i < cl.num_entities; i++, ent++) {
+	for (s32 i = 0; i < cl.num_entities; i++, ent++) {
 		Con_Printf("%3i:", i);
 		if (!ent->model) {
 			Con_Printf("EMPTY\n");
@@ -155,9 +155,9 @@ void CL_PrintEntities_f()
 	}
 }
 
-dlight_t *CL_AllocDlight (int key)
+dlight_t *CL_AllocDlight (s32 key)
 {
-        int i;
+        s32 i;
         dlight_t *dl;
         if (key) { // first look for an exact key match
                 dl = cl_dlights;
@@ -191,7 +191,7 @@ void CL_DecayLights()
 {
 	float time = cl.time - cl.oldtime;
 	dlight_t *dl = cl_dlights;
-	for (int i = 0; i < MAX_DLIGHTS; i++, dl++) {
+	for (s32 i = 0; i < MAX_DLIGHTS; i++, dl++) {
 		if (dl->die < cl.time || !dl->radius)
 			continue;
 		dl->radius -= time * dl->decay;
@@ -229,12 +229,12 @@ void CL_RelinkEntities()
 {
 	float frac = CL_LerpPoint(); // determine partial update time
 	cl_numvisedicts = 0;
-	for (int i = 0; i < 3; i++) // interpolate player info
+	for (s32 i = 0; i < 3; i++) // interpolate player info
 		cl.velocity[i] = cl.mvelocity[1][i] +
 		    frac * (cl.mvelocity[0][i] - cl.mvelocity[1][i]);
 
 	if (cls.demoplayback) {
-		for (int j = 0; j < 3; j++) { // interpolate the angles
+		for (s32 j = 0; j < 3; j++) { // interpolate the angles
 			float d = cl.mviewangles[0][j] - cl.mviewangles[1][j];
 			if (d > 180)
 				d -= 360;
@@ -246,7 +246,7 @@ void CL_RelinkEntities()
 	float bobjrotate = anglemod(100 * cl.time);
 	// start on the entity after the world
 	entity_t *ent = cl_entities + 1;
-	for (int i = 1; i < cl.num_entities; i++, ent++) {
+	for (s32 i = 1; i < cl.num_entities; i++, ent++) {
 		if (!ent->model) { // empty slot
 			if (ent->forcelink)
 				R_RemoveEfrags(ent); // just became empty
@@ -266,7 +266,7 @@ void CL_RelinkEntities()
 		} else { // if the delta is large assume a teleport, don't lerp
 			float f = frac;
 			vec3_t delta;
-			for (int j = 0; j < 3; j++) {
+			for (s32 j = 0; j < 3; j++) {
 				delta[j] =
 				    ent->msg_origins[0][j] -
 				    ent->msg_origins[1][j];
@@ -274,7 +274,7 @@ void CL_RelinkEntities()
 					f = 1;//assume teleportation, not motion
 			}
 			// interpolate the origin and angles
-			for (int j = 0; j < 3; j++) {
+			for (s32 j = 0; j < 3; j++) {
 				ent->origin[j] =
 				    ent->msg_origins[1][j] + f * delta[j];
 				float d = ent->msg_angles[0][j] -
@@ -346,11 +346,11 @@ void CL_RelinkEntities()
 
 }
 
-int CL_ReadFromServer()
+s32 CL_ReadFromServer()
 { // Read all incoming data from the server
 	cl.oldtime = cl.time;
 	cl.time += host_frametime;
-	int ret;
+	s32 ret;
 	do {
 		ret = CL_GetMessage();
 		if (ret == -1)

@@ -8,14 +8,14 @@
 #include "quakedef.h"
 
 cmdalias_t *cmd_alias;
-int trashtest;
-int *trashspot;
+s32 trashtest;
+s32 *trashspot;
 bool cmd_wait;
 sizebuf_t cmd_text;
-static int cmd_argc;
-static char *cmd_argv[MAX_ARGS];
-static char *cmd_null_string = "";
-static char *cmd_args = NULL;
+static s32 cmd_argc;
+static s8 *cmd_argv[MAX_ARGS];
+static s8 *cmd_null_string = "";
+static s8 *cmd_args = NULL;
 cmd_source_t cmd_source;
 //johnfitz -- better tab completion
 cmd_function_t *cmd_functions; // possible commands to execute
@@ -36,9 +36,9 @@ void Cbuf_Init() // Command Buffer
 	SZ_Alloc(&cmd_text, 1<<18); // space for commands and script files
 }
 
-void Cbuf_AddText(const char *text)
+void Cbuf_AddText(const s8 *text)
 { // Adds command text at the end of the buffer
-	int l = Q_strlen(text);
+	s32 l = Q_strlen(text);
 	if (cmd_text.cursize + l >= cmd_text.maxsize) {
 		Con_Printf("Cbuf_AddText: overflow\n");
 		return;
@@ -49,10 +49,10 @@ void Cbuf_AddText(const char *text)
 // Adds command text immediately after the current command
 // Adds a \n to the text
 // FIXME: actually change the command buffer to do less copying
-void Cbuf_InsertText(char *text)
+void Cbuf_InsertText(s8 *text)
 {
-	char *temp = NULL; // copy off any commands still remaining
-	int templen = cmd_text.cursize; // in the exec buffer
+	s8 *temp = NULL; // copy off any commands still remaining
+	s32 templen = cmd_text.cursize; // in the exec buffer
 	if (templen) {
 		temp = Z_Malloc(templen);
 		Q_memcpy(temp, cmd_text.data, templen);
@@ -74,15 +74,15 @@ void Cbuf_Waited()
 
 void Cbuf_Execute ()
 { // Spike: reworked 'wait' for renderer/server rate independance
-    int     i;
-    char    *text;
-    char    line[1024];
-    int     quotes, comment;
+    s32     i;
+    s8    *text;
+    s8    line[1024];
+    s32     quotes, comment;
 
     while (cmd_text.cursize && !cmd_wait)
     {
 // find a \n or ; line break
-        text = (char *)cmd_text.data;
+        text = (s8 *)cmd_text.data;
 
         quotes = 0;
         comment = 0;
@@ -98,7 +98,7 @@ void Cbuf_Execute ()
                 break;
         }
 
-        if (i > (int)sizeof(line) - 1)
+        if (i > (s32)sizeof(line) - 1)
         {
             memcpy (line, text, sizeof(line) - 1);
             line[sizeof(line) - 1] = 0;
@@ -136,10 +136,10 @@ void Cbuf_Execute ()
 // quake -nosound +cmd amlev1
 void Cmd_StuffCmds_f() // Script Commands
 {
-	char cmds[CMDLINE_LENGTH];
-	int plus = false; // On Unix, argv[0] is command name
-	int j = 0;
-	for (int i = 0; cmdline.string[i]; i++) {
+	s8 cmds[CMDLINE_LENGTH];
+	s32 plus = false; // On Unix, argv[0] is command name
+	s32 j = 0;
+	for (s32 i = 0; cmdline.string[i]; i++) {
 		if (cmdline.string[i] == '+') {
 			plus = true;
 			if (j > 0) {
@@ -161,8 +161,8 @@ void Cmd_Exec_f()
 		Con_Printf("exec <filename> : execute a script file\n");
 		return;
 	}
-	int mark = Hunk_LowMark();
-	char *f = (char *)COM_LoadHunkFile(Cmd_Argv(1), NULL);
+	s32 mark = Hunk_LowMark();
+	s8 *f = (s8 *)COM_LoadHunkFile(Cmd_Argv(1), NULL);
 	if (!f) {
 		Con_Printf("couldn't exec %s\n", Cmd_Argv(1));
 		return;
@@ -174,14 +174,14 @@ void Cmd_Exec_f()
 
 void Cmd_Echo_f()
 { // Just prints the rest of the line to the console
-	for (int i = 1; i < Cmd_Argc(); i++)
+	for (s32 i = 1; i < Cmd_Argc(); i++)
 		Con_Printf("%s ", Cmd_Argv(i));
 	Con_Printf("\n");
 }
 
-char *CopyString(char *in)
+s8 *CopyString(s8 *in)
 {
-	char *out = Z_Malloc(strlen(in) + 1);
+	s8 *out = Z_Malloc(strlen(in) + 1);
 	strcpy(out, in);
 	return out;
 }
@@ -189,9 +189,9 @@ char *CopyString(char *in)
 void Cmd_Alias_f() // johnfitz -- rewritten
 { // Creates a new command that executes a command string (possibly ; seperated)
 	cmdalias_t *a;
-	char cmd[1024];
-	int i;
-	char *s; // keep here for OpenBSD compiler
+	s8 cmd[1024];
+	s32 i;
+	s8 *s; // keep here for OpenBSD compiler
 	switch (Cmd_Argc()) {
 	case 1:	//list all aliases
 		for (a = cmd_alias, i = 0; a; a = a->next, i++)
@@ -210,7 +210,7 @@ void Cmd_Alias_f() // johnfitz -- rewritten
 	default: //set alias string
 		s = Cmd_Argv(1);
 		if (strlen(s) >= MAX_ALIAS_NAME) {
-			Con_Printf("Alias name is too long\n");
+			Con_Printf("Alias name is too s64\n");
 			return;
 		}
 		// if the alias allready exists, reuse it
@@ -228,7 +228,7 @@ void Cmd_Alias_f() // johnfitz -- rewritten
 		strcpy(a->name, s);
 		// copy the rest of the command line
 		cmd[0] = 0; // start out with a null string
-		int c = Cmd_Argc();
+		s32 c = Cmd_Argc();
 		for (i = 2; i < c; i++) {
 			strcat(cmd, Cmd_Argv(i));
 			if (i != c)
@@ -275,8 +275,8 @@ void Cmd_Unaliasall_f() // -- johnfitz
 
 void Cmd_List_f() // Command Execution // -- johnfitz
 {
-	char *partial;
-	int len;
+	s8 *partial;
+	s32 len;
 	if (Cmd_Argc() > 1) {
 		partial = Cmd_Argv(1);
 		len = Q_strlen(partial);
@@ -284,7 +284,7 @@ void Cmd_List_f() // Command Execution // -- johnfitz
 		partial = NULL;
 		len = 0;
 	}
-	int count = 0;
+	s32 count = 0;
 	for (cmd_function_t *cmd = cmd_functions; cmd; cmd = cmd->next) {
 		if (partial && Q_strncmp(partial, cmd->name, len))
 			continue;
@@ -310,26 +310,26 @@ void Cmd_Init()
 	Cmd_AddCommand("wait", Cmd_Wait_f);
 }
 
-int Cmd_Argc()
+s32 Cmd_Argc()
 {
 	return cmd_argc;
 }
 
-char *Cmd_Argv(int arg)
+s8 *Cmd_Argv(s32 arg)
 {
 	if (arg >= cmd_argc)
 		return cmd_null_string;
 	return cmd_argv[arg];
 }
 
-char *Cmd_Args()
+s8 *Cmd_Args()
 {
 	return cmd_args;
 }
 
-void Cmd_TokenizeString(const char *text)
+void Cmd_TokenizeString(const s8 *text)
 { // Parses the given string into command line tokens.
-	for (int i = 0; i < cmd_argc; i++)
+	for (s32 i = 0; i < cmd_argc; i++)
 		Z_Free(cmd_argv[i]); // clear the args from the last string
 	cmd_argc = 0;
 	cmd_args = NULL;
@@ -343,7 +343,7 @@ void Cmd_TokenizeString(const char *text)
 		if (!*text)
 			return;
 		if (cmd_argc == 1)
-			cmd_args = (char *)text;
+			cmd_args = (s8 *)text;
 		text = COM_Parse(text);
 		if (!text)
 			return;
@@ -355,7 +355,7 @@ void Cmd_TokenizeString(const char *text)
 	}
 }
 
-void Cmd_AddCommand(char *cmd_name, xcommand_t function)
+void Cmd_AddCommand(s8 *cmd_name, xcommand_t function)
 {
 	if (host_initialized) // because hunk allocation would get stomped
 		Sys_Error("Cmd_AddCommand after host_initialized");
@@ -393,7 +393,7 @@ void Cmd_AddCommand(char *cmd_name, xcommand_t function)
 	} // johnfitz
 }
 
-bool Cmd_Exists(const char *cmd_name)
+bool Cmd_Exists(const s8 *cmd_name)
 {
 	for (cmd_function_t *cmd = cmd_functions; cmd; cmd = cmd->next)
 		if (!Q_strcmp(cmd_name, cmd->name))
@@ -401,9 +401,9 @@ bool Cmd_Exists(const char *cmd_name)
 	return false;
 }
 
-char *Cmd_CompleteCommand(char *partial)
+s8 *Cmd_CompleteCommand(s8 *partial)
 {
-	int len = Q_strlen(partial);
+	s32 len = Q_strlen(partial);
 	if (!len)
 		return NULL;
 	for (cmd_function_t *cmd = cmd_functions; cmd; cmd = cmd->next)
@@ -412,7 +412,7 @@ char *Cmd_CompleteCommand(char *partial)
 	return NULL;
 }
 
-void Cmd_ExecuteString(const char *text, cmd_source_t src)
+void Cmd_ExecuteString(const s8 *text, cmd_source_t src)
 { // A complete command line has been parsed, so try to execute it
   // FIXME: lookupnoadd the token to speed search?
 	cmd_source = src;

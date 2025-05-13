@@ -11,7 +11,7 @@
 
 float v_dmg_time, v_dmg_roll, v_dmg_pitch;
 vec3_t forward, right, up;
-extern int in_forward, in_forward2, in_back;
+extern s32 in_forward, in_forward2, in_back;
 extern vrect_t scr_vrect;
 
 // Palette flashes 
@@ -34,7 +34,7 @@ float V_CalcRoll(vec3_t angles, vec3_t velocity)
 
 float V_CalcBob()
 {
-	float cycle=cl.time-(int)(cl.time/cl_bobcycle.value)*cl_bobcycle.value;
+	float cycle=cl.time-(s32)(cl.time/cl_bobcycle.value)*cl_bobcycle.value;
 	cycle /= cl_bobcycle.value;
 	if (cycle < cl_bobup.value)
 		cycle = M_PI * cycle / cl_bobup.value;
@@ -119,12 +119,12 @@ void V_DriftPitch()
 void BuildGammaTable(float g)
 {
 	if (g == 1.0) {
-		for (int i = 0; i < 256; i++)
+		for (s32 i = 0; i < 256; i++)
 			gammatable[i] = i;
 		return;
 	}
-	for (int i = 0; i < 256; i++) {
-		int inf = 255 * pow((i + 0.5) / 255.5, g) + 0.5;
+	for (s32 i = 0; i < 256; i++) {
+		s32 inf = 255 * pow((i + 0.5) / 255.5, g) + 0.5;
 		if (inf < 0)
 			inf = 0;
 		if (inf > 255)
@@ -146,9 +146,9 @@ bool V_CheckGamma()
 
 void V_ParseDamage (void)
 {
-        int             armor, blood;
+        s32             armor, blood;
         vec3_t  from;
-        int             i;
+        s32             i;
         vec3_t  forward, right, up;
         entity_t        *ent;
         float   side;
@@ -226,7 +226,7 @@ void V_BonusFlash_f()
 }
 
 
-void V_SetContentsColor(int contents)
+void V_SetContentsColor(s32 contents)
 { // Underwater, lava, etc each has a color shift
 	switch (contents) {
 	case CONTENTS_EMPTY:
@@ -275,12 +275,12 @@ void V_UpdatePalette()
 	V_CalcPowerupCshift();
 	float frametime = fabs (cl.time - cl.oldtime);
 	bool new = false;
-	for (int i = 0; i < NUM_CSHIFTS; i++) {
+	for (s32 i = 0; i < NUM_CSHIFTS; i++) {
 		if (cl.cshifts[i].percent != cl.prev_cshifts[i].percent) {
 			new = true;
 			cl.prev_cshifts[i].percent = cl.cshifts[i].percent;
 		}
-		for (int j = 0; j < 3; j++)
+		for (s32 j = 0; j < 3; j++)
 			if (cl.cshifts[i].destcolor[j] !=
 			    cl.prev_cshifts[i].destcolor[j]) {
 				new = true;
@@ -302,12 +302,12 @@ void V_UpdatePalette()
 	byte pal[768];
 	byte *basepal = host_basepal;
 	byte *newpal = pal;
-	for (int i = 0; i < 256; i++) {
-		int r = basepal[0];
-		int g = basepal[1];
-		int b = basepal[2];
+	for (s32 i = 0; i < 256; i++) {
+		s32 r = basepal[0];
+		s32 g = basepal[1];
+		s32 b = basepal[2];
 		basepal += 3;
-		for (int j = 0; j < NUM_CSHIFTS; j++) {
+		for (s32 j = 0; j < NUM_CSHIFTS; j++) {
 			r += (cl.cshifts[j].percent *
 			      (cl.cshifts[j].destcolor[0] - r)) >> 8;
 			g += (cl.cshifts[j].percent *
@@ -476,7 +476,7 @@ void V_CalcRefdef()
 	angles[ROLL] = ent->angles[ROLL];
 	vec3_t forward, right, up;
 	AngleVectors(angles, forward, right, up);
-	for (int i = 0; i < 3; i++)
+	for (s32 i = 0; i < 3; i++)
 		r_refdef.vieworg[i] += scr_ofsx.value * forward[i]
 		    + scr_ofsy.value * right[i]
 		    + scr_ofsz.value * up[i];
@@ -485,7 +485,7 @@ void V_CalcRefdef()
 	CalcGunAngle();
 	VectorCopy(ent->origin, view->origin);
 	view->origin[2] += cl.viewheight;
-	for (int i = 0; i < 3; i++)
+	for (s32 i = 0; i < 3; i++)
 		view->origin[i] += forward[i] * bob * 0.4;
 	view->origin[2] += bob;
 	// fudge position around to keep amount of weapon visible

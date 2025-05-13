@@ -218,7 +218,7 @@ int main(int c, char **v)
 	quakeparms_t parms;
 	host_parms.argc = c;
 	host_parms.argv = (s8**)v;
-	COM_InitArgv(host_parms.argc, (char**)host_parms.argv);
+	COM_InitArgv(host_parms.argc, (s8**)host_parms.argv);
 	host_parms.memsize = DEFAULT_MEMORY;
 	if(COM_CheckParm("-heapsize")){
 		s32 t = COM_CheckParm("-heapsize") + 1;

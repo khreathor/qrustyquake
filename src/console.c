@@ -3,23 +3,23 @@
 #include "quakedef.h"
 
 bool con_forcedup; // because no entities to refresh
-int con_totallines; // total lines in console scrollback
-int con_backscroll; // lines up from bottom to display
-int con_current; // where next message will be printed
-int con_x; // offset in current line for next print
-char *con_text = 0;
-int con_linewidth;
+s32 con_totallines; // total lines in console scrollback
+s32 con_backscroll; // lines up from bottom to display
+s32 con_current; // where next message will be printed
+s32 con_x; // offset in current line for next print
+s8 *con_text = 0;
+s32 con_linewidth;
 float con_cursorspeed = 4;
-int con_vislines;
+s32 con_vislines;
 bool con_debuglog;
 bool con_initialized;
-int con_notifylines; // scan lines to clear for notify lines
+s32 con_notifylines; // scan lines to clear for notify lines
 float con_times[NUM_CON_TIMES];	// realtime time the line was generated
 				// for transparent notify lines
 
-extern char key_lines[32][MAXCMDLINE];
-extern int edit_line;
-extern int key_linepos;
+extern s8 key_lines[32][MAXCMDLINE];
+extern s32 edit_line;
+extern s32 key_linepos;
 extern bool team_message;
 extern void M_Menu_Main_f();
 
@@ -65,8 +65,8 @@ void Con_MessageMode2_f()
 void Con_CheckResize()
 { // If the line width has changed, reformat the buffer.
 	// TODO make this work with uiscale properly
-	int i, j, width, oldwidth, oldtotallines, numlines, numchars;
-	char tbuf[CON_TEXTSIZE];
+	s32 i, j, width, oldwidth, oldtotallines, numlines, numchars;
+	s8 tbuf[CON_TEXTSIZE];
 
 	width = (vid.width >> 3) - 2;
 	if (uiscale)
@@ -118,8 +118,8 @@ void Con_CheckResize()
 
 void Con_Init()
 {
-	char temp[MAXGAMEDIRLEN + 1];
-	char *t2 = "/qconsole.log";
+	s8 temp[MAXGAMEDIRLEN + 1];
+	s8 *t2 = "/qconsole.log";
 	con_debuglog = COM_CheckParm("-condebug");
 	if (con_debuglog) {
 		if (strlen(com_gamedir) < (MAXGAMEDIRLEN - strlen(t2))) {
@@ -157,13 +157,13 @@ void Con_Linefeed()
 // Handles cursor positioning, line wrapping, etc
 // All console printing must go through this in order to be logged to disk
 // If no console is visible, the notify window will pop up.
-void Con_Print(char *txt)
+void Con_Print(s8 *txt)
 {
-	static int cr;
+	static s32 cr;
 	if (!con_initialized)
 		return;
 	con_backscroll = 0;
-	int mask = 0;
+	s32 mask = 0;
 	if (txt[0] == 1) {
 		mask = 128; // go to colored text
 		S_LocalSound("misc/talk.wav"); // play talk wav
@@ -172,7 +172,7 @@ void Con_Print(char *txt)
 		mask = 128; // go to colored text
 		txt++;
 	}
-	int c, l, y; // keep here for OpenBSD compiler
+	s32 c, l, y; // keep here for OpenBSD compiler
 	while ((c = *txt)) {
 		for (l = 0; l < con_linewidth; l++) // count word length
 			if (txt[l] <= ' ')
@@ -208,23 +208,23 @@ void Con_Print(char *txt)
 	}
 }
 
-void Con_DebugLog(char *file, char *fmt, ...)
+void Con_DebugLog(s8 *file, s8 *fmt, ...)
 {
 	va_list argptr;
 	va_start(argptr, fmt);
-	static char data[1024];
+	static s8 data[1024];
 	vsprintf(data, fmt, argptr);
 	va_end(argptr);
-	int fd = open(file, O_WRONLY | O_CREAT | O_APPEND, 0666);
+	s32 fd = open(file, O_WRONLY | O_CREAT | O_APPEND, 0666);
 	write(fd, data, strlen(data));
 	close(fd);
 }
 
-void Con_Printf(const char *fmt, ...) // FIXME make a buffer size safe vsprintf?
+void Con_Printf(const s8 *fmt, ...) // FIXME make a buffer size safe vsprintf?
 { // Handles cursor positioning, line wrapping, etc
 	va_list argptr;
 	va_start(argptr, fmt);
-	char msg[MAXPRINTMSG];
+	s8 msg[MAXPRINTMSG];
 	vsprintf(msg, fmt, argptr);
 	va_end(argptr);
 	Sys_Printf("%s", msg);// also echo to debugging console
@@ -253,10 +253,10 @@ void Con_Printf(const char *fmt, ...) // FIXME make a buffer size safe vsprintf?
 	// }
 }
 
-void Con_DPrintf(char *fmt, ...)
+void Con_DPrintf(s8 *fmt, ...)
 { // A Con_Printf that only shows up if the "developer" cvar is set
 	va_list argptr;
-	char msg[MAXPRINTMSG];
+	s8 msg[MAXPRINTMSG];
 	if (!developer.value)
 		return; // don't confuse non-developers with techie stuff...
 	va_start(argptr, fmt);
@@ -265,14 +265,14 @@ void Con_DPrintf(char *fmt, ...)
 	Con_Printf("%s", msg);
 }
 
-void Con_SafePrintf(char *fmt, ...)
+void Con_SafePrintf(s8 *fmt, ...)
 { // Okay to call even when the screen can't be updated
-	char msg[1024];
+	s8 msg[1024];
 	va_list argptr;
 	va_start(argptr, fmt);
 	vsprintf(msg, fmt, argptr);
 	va_end(argptr);
-	int temp = scr_disabled_for_loading;
+	s32 temp = scr_disabled_for_loading;
 	scr_disabled_for_loading = true;
 	Con_Printf("%s", msg);
 	scr_disabled_for_loading = temp;
@@ -283,15 +283,15 @@ void Con_DrawInput()
 { // The input line scrolls horizontally if typing goes beyond the right edge
 	if (key_dest != key_console && !con_forcedup)
 		return; // don't draw anything
-	char *text = key_lines[edit_line];
+	s8 *text = key_lines[edit_line];
 	// add the cursor frame
-	text[key_linepos] = 10 + ((int)(realtime * con_cursorspeed) & 1);
-	for (int i = key_linepos + 1; i < con_linewidth; i++)
+	text[key_linepos] = 10 + ((s32)(realtime * con_cursorspeed) & 1);
+	for (s32 i = key_linepos + 1; i < con_linewidth; i++)
 		text[i] = ' '; // fill out remainder with spaces
 // TODO this should work properly with correctly calculated con_linewidth
 	if (key_linepos >= con_linewidth) // prestep if horizontally scrolling
 		text += 1 + key_linepos - con_linewidth;
-	for (int i = 0; i < con_linewidth; i++) // draw it
+	for (s32 i = 0; i < con_linewidth; i++) // draw it
 		Draw_CharacterScaled(((i + 1) << 3) * uiscale,
 			con_vislines - 16 * uiscale, text[i], uiscale);
 	key_lines[edit_line][key_linepos] = 0; // remove cursor
@@ -300,9 +300,9 @@ void Con_DrawInput()
 
 void Con_DrawNotify()
 { // Draws the last few lines of output transparently over the game top
-	extern char chat_buffer[];
-	int x = 0, v = 0;
-	for (int i = con_current - NUM_CON_TIMES + 1; i <= con_current; i++) {
+	extern s8 chat_buffer[];
+	s32 x = 0, v = 0;
+	for (s32 i = con_current - NUM_CON_TIMES + 1; i <= con_current; i++) {
 		if (i < 0)
 			continue;
 		float time = con_times[i % NUM_CON_TIMES];
@@ -311,7 +311,7 @@ void Con_DrawNotify()
 		time = realtime - time;
 		if (time > con_notifytime.value)
 			continue;
-		char *text = con_text + (i % con_totallines) * con_linewidth;
+		s8 *text = con_text + (i % con_totallines) * con_linewidth;
 		clearnotify = 0;
 		for (x = 0; x < con_linewidth; x++)
 			Draw_CharacterScaled(((x + 1) << 3) * uiscale,
@@ -328,7 +328,7 @@ void Con_DrawNotify()
 			x++;
 		}
 		Draw_CharacterScaled(((x + 5) << 3) * uiscale, v * uiscale,
-			10 + ((int)(realtime * con_cursorspeed) & 1), uiscale);
+			10 + ((s32)(realtime * con_cursorspeed) & 1), uiscale);
 		v += 8 * uiscale;
 	}
 	if (v > con_notifylines)
@@ -336,20 +336,20 @@ void Con_DrawNotify()
 }
 
 
-void Con_DrawConsole(int lines, bool drawinput)//Draws console with solid bg
+void Con_DrawConsole(s32 lines, bool drawinput)//Draws console with solid bg
 { // Typing input line at the bottom should only be drawn if typing is allowed
-	char *text;
+	s8 *text;
 	if (lines <= 0)
 		return;
 	Draw_ConsoleBackground(lines); // draw the background
 	con_vislines = lines; // draw the text
-	int rows = ((lines - 16) >> 3) * uiscale; // rows of text to draw
-	int y = lines - 16 * uiscale - (rows << 3) * uiscale; // may start slightly negative
-	for (int i = con_current-rows+1; i <= con_current; i++, y += 8*uiscale){
-		int j = i - con_backscroll;
+	s32 rows = ((lines - 16) >> 3) * uiscale; // rows of text to draw
+	s32 y = lines - 16 * uiscale - (rows << 3) * uiscale; // may start slightly negative
+	for (s32 i = con_current-rows+1; i <= con_current; i++, y += 8*uiscale){
+		s32 j = i - con_backscroll;
 		j = j < 0 ? 0 : j;
 		text = con_text + (j % con_totallines) * con_linewidth;
-		for (int x = 0; x < con_linewidth; x++)
+		for (s32 x = 0; x < con_linewidth; x++)
 			Draw_CharacterScaled(((x + 1) << 3) * uiscale, y,
 					     text[x], uiscale);
 	}

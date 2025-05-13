@@ -11,11 +11,11 @@ vec3_t r_entorigin; // the currently rendering entity in world coordinates
 
 float entity_rotation[3][3];
 vec3_t r_worldmodelorg;
-int r_currentbkey;
+s32 r_currentbkey;
 
 static mvertex_t *pbverts;
 static bedge_t *pbedges;
-static int numbverts, numbedges;
+static s32 numbverts, numbedges;
 static mvertex_t *pfrontenter, *pfrontexit;
 static bool makeclippededge;
 
@@ -105,11 +105,11 @@ void R_RecursiveClipBPoly(bedge_t *pedges, mnode_t *pnode, msurface_t *psurf)
 		mvertex_t *plastvert = pedges->v[0];
 		float lastdist = DotProduct(plastvert->position, tplane.normal)
 			- tplane.dist;
-		int lastside = lastdist > 0 ? 0 : 1;
+		s32 lastside = lastdist > 0 ? 0 : 1;
 		mvertex_t *pvert = pedges->v[1];
 		float dist = DotProduct(pvert->position, tplane.normal)
 			- tplane.dist;
-		int side = dist > 0 ? 0 : 1;
+		s32 side = dist > 0 ? 0 : 1;
 		if (side != lastside) {
 			if (numbverts >= MAX_BMODEL_VERTS) // clipped
 				return;
@@ -171,7 +171,7 @@ void R_RecursiveClipBPoly(bedge_t *pedges, mnode_t *pnode, msurface_t *psurf)
 		ptedge->v[1] = pfrontexit;
 		numbedges += 2;
 	}
-	for (int i = 0; i < 2; i++) { // draw or recurse further
+	for (s32 i = 0; i < 2; i++) { // draw or recurse further
 		if (!psideedges[i])
 			continue;
 		// draw if we reached a non-solid leaf, done if all that's left
@@ -196,14 +196,14 @@ void R_DrawSolidClippedSubmodelPolygons(model_t *pmodel)
 	mvertex_t bverts[MAX_BMODEL_VERTS];
 	bedge_t bedges[MAX_BMODEL_EDGES], *pbedge;
 	msurface_t *psurf = &pmodel->surfaces[pmodel->firstmodelsurface];
-	if (psurf->flags&SURF_DRAWCUTOUT&&!r_pass&&(int)r_twopass.value&1)
+	if (psurf->flags&SURF_DRAWCUTOUT&&!r_pass&&(s32)r_twopass.value&1)
 		return;
 	if ((psurf->flags&SURF_DRAWSKY) && 
 	    (psurf->texinfo->texture->width/psurf->texinfo->texture->height!=2))
 		return; // avoid drawing broken skies
-	int numsurfaces = pmodel->nummodelsurfaces;
+	s32 numsurfaces = pmodel->nummodelsurfaces;
 	medge_t *pedges = pmodel->edges;
-	for (int i = 0; i < numsurfaces; i++, psurf++) {
+	for (s32 i = 0; i < numsurfaces; i++, psurf++) {
 		mplane_t *pplane = psurf->plane; // find which side of the node we are on
 		vec_t dot = DotProduct(modelorg, pplane->normal) - pplane->dist;
 		// draw the polygon
@@ -222,9 +222,9 @@ void R_DrawSolidClippedSubmodelPolygons(model_t *pmodel)
 			Sys_Error("no edges in bmodel");
 		pbedge = &bedges[numbedges];
 		numbedges += psurf->numedges;
-		int j = 0;
+		s32 j = 0;
 		for (; j < psurf->numedges; j++) {
-			int lindex = pmodel->surfedges[psurf->firstedge + j];
+			s32 lindex = pmodel->surfedges[psurf->firstedge + j];
 			if (lindex > 0) {
 				medge_t *pedge = &pedges[lindex];
 				pbedge[j].v[0]=&r_pcurrentvertbase[pedge->v[0]];
@@ -242,13 +242,13 @@ void R_DrawSolidClippedSubmodelPolygons(model_t *pmodel)
 	}
 }
 
-void R_DrawSubmodelPolygons(model_t *pmodel, int clipflags)
+void R_DrawSubmodelPolygons(model_t *pmodel, s32 clipflags)
 {
 	msurface_t *psurf = &pmodel->surfaces[pmodel->firstmodelsurface];
-	if (psurf->flags&SURF_DRAWCUTOUT&&!r_pass&&(int)r_twopass.value&1)
+	if (psurf->flags&SURF_DRAWCUTOUT&&!r_pass&&(s32)r_twopass.value&1)
 		return;
-	int numsurfaces = pmodel->nummodelsurfaces;
-	for (int i = 0; i < numsurfaces; i++, psurf++) {
+	s32 numsurfaces = pmodel->nummodelsurfaces;
+	for (s32 i = 0; i < numsurfaces; i++, psurf++) {
 		// find which side of the node we are on
 		mplane_t *pplane = psurf->plane;
 		vec_t dot = DotProduct(modelorg, pplane->normal) - pplane->dist;
@@ -262,18 +262,18 @@ void R_DrawSubmodelPolygons(model_t *pmodel, int clipflags)
 	}
 }
 
-void R_RecursiveWorldNode(mnode_t *node, int clipflags)
+void R_RecursiveWorldNode(mnode_t *node, s32 clipflags)
 {
 	if (node->contents == CONTENTS_SOLID||node->visframe != r_visframecount)
 		return;
 	if (clipflags) { // cull the clipping planes if not trivial accept
-		for (int i = 0; i < 4; i++) {
+		for (s32 i = 0; i < 4; i++) {
 			if (!(clipflags & (1 << i)))
 				continue; // don't need to clip against it
 			// generate accept and reject points
 			// FIXME: do with fast look-ups or integer tests based
 			// on the sign bit of the floating point values
-			int *pindex = pfrustum_indexes[i];
+			s32 *pindex = pfrustum_indexes[i];
 			vec3_t acceptpt, rejectpt;
 			rejectpt[0] = (float)node->minmaxs[pindex[0]];
 			rejectpt[1] = (float)node->minmaxs[pindex[1]];
@@ -294,7 +294,7 @@ void R_RecursiveWorldNode(mnode_t *node, int clipflags)
 	if (node->contents < 0) { // if a leaf node, draw stuff
 		mleaf_t *pleaf = (mleaf_t *) node;
 		msurface_t **mark = pleaf->firstmarksurface;
-		int c = pleaf->nummarksurfaces;
+		s32 c = pleaf->nummarksurfaces;
 		if (c) {
 			do {
 				(*mark)->visframe = r_framecount;
@@ -318,16 +318,16 @@ void R_RecursiveWorldNode(mnode_t *node, int clipflags)
 			dot = DotProduct(modelorg, plane->normal) - plane->dist;
 			break;
 		}
-		int side = dot >= 0 ? 0 : 1;
+		s32 side = dot >= 0 ? 0 : 1;
 		// recurse down the children, front side first
 		R_RecursiveWorldNode(node->children[side], clipflags);
-		int c = node->numsurfaces; // draw stuff
+		s32 c = node->numsurfaces; // draw stuff
 		if (c) {
 			msurface_t *surf = cl.worldmodel->surfaces + node->firstsurface;
 			if (dot < -BACKFACE_EPSILON) {
 				do {
 					if ((surf->flags & SURF_PLANEBACK) && (surf->visframe == r_framecount)
-						&& !(surf->flags&SURF_DRAWCUTOUT&&!r_pass&&(int)r_twopass.value&1)) {
+						&& !(surf->flags&SURF_DRAWCUTOUT&&!r_pass&&(s32)r_twopass.value&1)) {
 						R_RenderFace(surf, clipflags);
 					}
 					surf++;
@@ -335,7 +335,7 @@ void R_RecursiveWorldNode(mnode_t *node, int clipflags)
 			} else if (dot > BACKFACE_EPSILON) {
 				do {
 					if (!(surf->flags & SURF_PLANEBACK) && (surf->visframe == r_framecount)
-						&& !(surf->flags&SURF_DRAWCUTOUT&&!r_pass&&(int)r_twopass.value&1)
+						&& !(surf->flags&SURF_DRAWCUTOUT&&!r_pass&&(s32)r_twopass.value&1)
 						&& strncmp(surf->texinfo->texture->name, "bal_pureblack", 13)) {
 						// hardcoded texture skip fixes the black sky bottom in ad_tears
 						R_RenderFace(surf, clipflags);

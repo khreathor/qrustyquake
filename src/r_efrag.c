@@ -44,7 +44,7 @@ static efrag_t *R_GetEfrag () // based on RMQEngine
         }
         else {
                 cl.free_efrags = (efrag_t *) Hunk_AllocName (EXTRA_EFRAGS * sizeof (efrag_t), "efrags");
-		int i = 0;
+		s32 i = 0;
                 for (; i < EXTRA_EFRAGS - 1; i++)
                         cl.free_efrags[i].leafnext = &cl.free_efrags[i + 1];
                 cl.free_efrags[i].leafnext = NULL;
@@ -68,7 +68,7 @@ void R_SplitEntityOnNode(mnode_t *node)
 		return;
 	}
 	mplane_t *splitplane = node->plane; // NODE_MIXED
-	int sides = BOX_ON_PLANE_SIDE(r_emins, r_emaxs, splitplane);
+	s32 sides = BOX_ON_PLANE_SIDE(r_emins, r_emaxs, splitplane);
 	if (sides == 3) {
 		// split on this plane
 		// if this is the first splitter of this bmodel, remember it
@@ -91,7 +91,7 @@ void R_SplitEntityOnNode2(mnode_t *node)
 		return; // leaf, so it's  visible and not BSP clipped
 	}
 	mplane_t *splitplane = node->plane;
-	int sides = BOX_ON_PLANE_SIDE(r_emins, r_emaxs, splitplane);
+	s32 sides = BOX_ON_PLANE_SIDE(r_emins, r_emaxs, splitplane);
 	if (sides == 3) {
 		r_pefragtopnode = node; // remember first splitter
 		return;
@@ -110,7 +110,7 @@ void R_AddEfrags(entity_t *ent)
 	lastlink = &ent->efrag;
 	r_pefragtopnode = NULL;
 	model_t *entmodel = ent->model;
-	for (int i = 0; i < 3; i++) {
+	for (s32 i = 0; i < 3; i++) {
 		r_emins[i] = ent->origin[i] + entmodel->mins[i];
 		r_emaxs[i] = ent->origin[i] + entmodel->maxs[i];
 	}

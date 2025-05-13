@@ -10,10 +10,10 @@
 
 #include "miniz.h"
 
-static char	*largv[MAX_NUM_ARGVS + 1];
-static char	argvdummy[] = " ";
+static s8	*largv[MAX_NUM_ARGVS + 1];
+static s8	argvdummy[] = " ";
 
-int		safemode;
+s32		safemode;
 
 static bool		com_modified;	// set true if using non-id files
 
@@ -22,15 +22,15 @@ bool		fitzmode;
 static void COM_Path_f (void);
 
 
-char	com_token[1024];
-int		com_argc;
-char	**com_argv;
-char	com_cmdline[CMDLINE_LENGTH];
+s8	com_token[1024];
+s32		com_argc;
+s8	**com_argv;
+s8	com_cmdline[CMDLINE_LENGTH];
 
 bool standard_quake = true, rogue, hipnotic;
 
 // this graphic needs to be in the pak file to use registered features
-static unsigned short pop[] =
+static u16 pop[] =
 {
 	0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,
 	0x0000,0x0000,0x6600,0x0000,0x0000,0x0000,0x6600,0x0000,
@@ -84,13 +84,13 @@ override an explicit setting on the original command line.
 
 //============================================================================
 
-static int q_islower(int c){return (c >= 'a' && c <= 'z');}
-static int q_isupper(int c){return (c >= 'A' && c <= 'Z');}
-static int q_tolower(int c){return ((q_isupper(c)) ? (c | ('a' - 'A')) : c);}
-static int q_toupper(int c){return ((q_islower(c)) ? (c & ~('a' - 'A')) : c);}
-static int q_isdigit(int c){return (c >= '0' && c <= '9');}
-static int q_isblank(int c){return (c == ' ' || c == '\t');}
-static int q_isspace(int c)
+static s32 q_islower(s32 c){return (c >= 'a' && c <= 'z');}
+static s32 q_isupper(s32 c){return (c >= 'A' && c <= 'Z');}
+static s32 q_tolower(s32 c){return ((q_isupper(c)) ? (c | ('a' - 'A')) : c);}
+static s32 q_toupper(s32 c){return ((q_islower(c)) ? (c & ~('a' - 'A')) : c);}
+static s32 q_isdigit(s32 c){return (c >= '0' && c <= '9');}
+static s32 q_isblank(s32 c){return (c == ' ' || c == '\t');}
+static s32 q_isspace(s32 c)
 {
 	switch(c) {
 	case ' ':  case '\t':
@@ -159,7 +159,7 @@ void Vec_Grow (void **pvec, size_t element_size, size_t count)
 		else
 			new_buffer = malloc (total_size);
 		if (!new_buffer)
-			Sys_Error ("Vec_Grow: failed to allocate %lu bytes\n", (unsigned long)total_size);
+			Sys_Error ("Vec_Grow: failed to allocate %lu bytes\n", (u64)total_size);
 
 		*pvec = 1 + (vec_header_t*)new_buffer;
 		VEC_HEADER(*pvec) = header;
@@ -200,10 +200,10 @@ void Vec_Free (void **pvec)
 
 // $OpenBSD: q_strlcpy.c,v 1.11 2006/05/05 15:27:38 millert Exp $
 // Copyright (c) 1998 Todd C. Miller <Todd.Miller@courtesan.com>
-int q_strlcpy (char *dst, const char *src, size_t siz)
+s32 q_strlcpy (s8 *dst, const s8 *src, size_t siz)
 {
-	char *d = dst;
-	const char *s = src;
+	s8 *d = dst;
+	const s8 *s = src;
 	size_t n = siz;
 	if (n != 0) { // Copy as many bytes as will fit
 		while (--n != 0) {
@@ -220,10 +220,10 @@ int q_strlcpy (char *dst, const char *src, size_t siz)
 }
 
 // $OpenBSD: q_strlcat.c,v 1.13 2005/08/08 08:05:37 espie Exp $
-size_t q_strlcat (char *dst, const char *src, size_t siz)
+size_t q_strlcat (s8 *dst, const s8 *src, size_t siz)
 {
-        char *d = dst;
-        const char *s = src;
+        s8 *d = dst;
+        const s8 *s = src;
         size_t n = siz;
         // Find the end of dst and adjust bytes left but don't go past end
         while (n-- != 0 && *d != '\0')
@@ -243,11 +243,11 @@ size_t q_strlcat (char *dst, const char *src, size_t siz)
         return(dlen + (s - src));       // count does not include NUL
 }
 
-int q_strcasecmp(const char * s1, const char * s2)
+s32 q_strcasecmp(const s8 * s1, const s8 * s2)
 {
-	const char * p1 = s1;
-	const char * p2 = s2;
-	char c1, c2;
+	const s8 * p1 = s1;
+	const s8 * p2 = s2;
+	s8 c1, c2;
 
 	if (p1 == p2)
 		return 0;
@@ -260,14 +260,14 @@ int q_strcasecmp(const char * s1, const char * s2)
 			break;
 	} while (c1 == c2);
 
-	return (int)(c1 - c2);
+	return (s32)(c1 - c2);
 }
 
-int q_strncasecmp(const char *s1, const char *s2, size_t n)
+s32 q_strncasecmp(const s8 *s1, const s8 *s2, size_t n)
 {
-	const char * p1 = s1;
-	const char * p2 = s2;
-	char c1, c2;
+	const s8 * p1 = s1;
+	const s8 * p2 = s2;
+	s8 c1, c2;
 
 	if (p1 == p2 || n == 0)
 		return 0;
@@ -280,17 +280,17 @@ int q_strncasecmp(const char *s1, const char *s2, size_t n)
 			break;
 	} while (--n > 0);
 
-	return (int)(c1 - c2);
+	return (s32)(c1 - c2);
 }
 
-char *q_strcasestr(const char *haystack, const char *needle)
+s8 *q_strcasestr(const s8 *haystack, const s8 *needle)
 {
 	const size_t len = strlen(needle);
 
 	while (*haystack)
 	{
 		if (!q_strncasecmp(haystack, needle, len))
-			return (char *)haystack;
+			return (s8 *)haystack;
 
 		++haystack;
 	}
@@ -298,9 +298,9 @@ char *q_strcasestr(const char *haystack, const char *needle)
 	return NULL;
 }
 
-char *q_strlwr (char *str)
+s8 *q_strlwr (s8 *str)
 {
-	char	*c;
+	s8	*c;
 	c = str;
 	while (*c)
 	{
@@ -310,9 +310,9 @@ char *q_strlwr (char *str)
 	return str;
 }
 
-char *q_strupr (char *str)
+s8 *q_strupr (s8 *str)
 {
-	char	*c;
+	s8	*c;
 	c = str;
 	while (*c)
 	{
@@ -322,23 +322,23 @@ char *q_strupr (char *str)
 	return str;
 }
 
-char *q_strdup (const char *str)
+s8 *q_strdup (const s8 *str)
 {
 	size_t len = strlen (str) + 1;
-	char  *newstr = (char *)malloc (len);
+	s8  *newstr = (s8 *)malloc (len);
 	memcpy (newstr, str, len);
 	return newstr;
 }
 
 
-int q_vsnprintf(char *str, size_t size, const char *format, va_list args)
+s32 q_vsnprintf(s8 *str, size_t size, const s8 *format, va_list args)
 {
-	int		ret;
+	s32		ret;
 
 	ret = vsnprintf_func (str, size, format, args);
 
 	if (ret < 0)
-		ret = (int)size;
+		ret = (s32)size;
 	if (size == 0)	/* no buffer */
 		return ret;
 	if ((size_t)ret >= size)
@@ -347,9 +347,9 @@ int q_vsnprintf(char *str, size_t size, const char *format, va_list args)
 	return ret;
 }
 
-int q_snprintf (char *str, size_t size, const char *format, ...)
+s32 q_snprintf (s8 *str, size_t size, const s8 *format, ...)
 {
-	int		ret;
+	s32		ret;
 	va_list		argptr;
 
 	va_start (argptr, format);
@@ -359,7 +359,7 @@ int q_snprintf (char *str, size_t size, const char *format, ...)
 	return ret;
 }
 
-void Q_memset (void *dest, int fill, size_t count)
+void Q_memset (void *dest, s32 fill, size_t count)
 {
 	size_t		i;
 
@@ -368,7 +368,7 @@ void Q_memset (void *dest, int fill, size_t count)
 		count >>= 2;
 		fill = fill | (fill<<8) | (fill<<16) | (fill<<24);
 		for (i = 0; i < count; i++)
-			((int *)dest)[i] = fill;
+			((s32 *)dest)[i] = fill;
 	}
 	else
 		for (i = 0; i < count; i++)
@@ -388,14 +388,14 @@ void Q_memcpy (void *dest, const void *src, size_t count)
 	{
 		count >>= 2;
 		for (i = 0; i < count; i++)
-			((int *)dest)[i] = ((int *)src)[i];
+			((s32 *)dest)[i] = ((s32 *)src)[i];
 	}
 	else
 		for (i = 0; i < count; i++)
 			((byte *)dest)[i] = ((byte *)src)[i];
 }
 
-int Q_memcmp (const void *m1, const void *m2, size_t count)
+s32 Q_memcmp (const void *m1, const void *m2, size_t count)
 {
 	while(count)
 	{
@@ -406,7 +406,7 @@ int Q_memcmp (const void *m1, const void *m2, size_t count)
 	return 0;
 }
 
-void Q_strcpy (char *dest, const char *src)
+void Q_strcpy (s8 *dest, const s8 *src)
 {
 	while (*src)
 	{
@@ -415,7 +415,7 @@ void Q_strcpy (char *dest, const char *src)
 	*dest++ = 0;
 }
 
-void Q_strncpy (char *dest, const char *src, int count)
+void Q_strncpy (s8 *dest, const s8 *src, s32 count)
 {
 	while (*src && count--)
 	{
@@ -425,9 +425,9 @@ void Q_strncpy (char *dest, const char *src, int count)
 		*dest++ = 0;
 }
 
-int Q_strlen (const char *str)
+s32 Q_strlen (const s8 *str)
 {
-	int		count;
+	s32		count;
 
 	count = 0;
 	while (str[count])
@@ -436,25 +436,25 @@ int Q_strlen (const char *str)
 	return count;
 }
 
-char *Q_strrchr(const char *s, char c)
+s8 *Q_strrchr(const s8 *s, s8 c)
 {
-	int len = Q_strlen(s);
+	s32 len = Q_strlen(s);
 	s += len;
 	while (len--)
 	{
 		if (*--s == c)
-			return (char *)s;
+			return (s8 *)s;
 	}
 	return NULL;
 }
 
-void Q_strcat (char *dest, const char *src)
+void Q_strcat (s8 *dest, const s8 *src)
 {
 	dest += Q_strlen(dest);
 	Q_strcpy (dest, src);
 }
 
-int Q_strcmp (const char *s1, const char *s2)
+s32 Q_strcmp (const s8 *s1, const s8 *s2)
 {
 	while (1)
 	{
@@ -469,7 +469,7 @@ int Q_strcmp (const char *s1, const char *s2)
 	return -1;
 }
 
-int Q_strncmp (const char *s1, const char *s2, int count)
+s32 Q_strncmp (const s8 *s1, const s8 *s2, s32 count)
 {
 	while (1)
 	{
@@ -486,11 +486,11 @@ int Q_strncmp (const char *s1, const char *s2, int count)
 	return -1;
 }
 
-int Q_atoi (const char *str)
+s32 Q_atoi (const s8 *str)
 {
-	int		val;
-	int		sign;
-	int		c;
+	s32		val;
+	s32		sign;
+	s32		c;
 
 	while (q_isspace (*str))
 		++str;
@@ -548,12 +548,12 @@ int Q_atoi (const char *str)
 }
 
 
-float Q_atof (const char *str)
+float Q_atof (const s8 *str)
 {
 	double		val;
-	int		sign;
-	int		c;
-	int	decimal, total;
+	s32		sign;
+	s32		c;
+	s32	decimal, total;
 
 	while (q_isspace (*str))
 		++str;
@@ -636,14 +636,14 @@ float Q_atof (const char *str)
 
 bool	host_bigendian;
 
-short	(*BigShort) (short l);
-short	(*LittleShort) (short l);
-int	(*BigLong) (int l);
-int	(*LittleLong) (int l);
+s16	(*BigShort) (s16 l);
+s16	(*LittleShort) (s16 l);
+s32	(*BigLong) (s32 l);
+s32	(*LittleLong) (s32 l);
 float	(*BigFloat) (float l);
 float	(*LittleFloat) (float l);
 
-short ShortSwap (short l)
+s16 ShortSwap (s16 l)
 {
 	byte	b1, b2;
 
@@ -653,12 +653,12 @@ short ShortSwap (short l)
 	return (b1<<8) + b2;
 }
 
-short ShortNoSwap (short l)
+s16 ShortNoSwap (s16 l)
 {
 	return l;
 }
 
-int LongSwap (int l)
+s32 LongSwap (s32 l)
 {
 	byte	b1, b2, b3, b4;
 
@@ -667,10 +667,10 @@ int LongSwap (int l)
 	b3 = (l>>16)&255;
 	b4 = (l>>24)&255;
 
-	return ((int)b1<<24) + ((int)b2<<16) + ((int)b3<<8) + b4;
+	return ((s32)b1<<24) + ((s32)b2<<16) + ((s32)b3<<8) + b4;
 }
 
-int LongNoSwap (int l)
+s32 LongNoSwap (s32 l)
 {
 	return l;
 }
@@ -710,7 +710,7 @@ Handles byte ordering and avoids alignment errors
 // writing functions
 //
 
-void MSG_WriteChar (sizebuf_t *sb, int c)
+void MSG_WriteChar (sizebuf_t *sb, s32 c)
 {
 	byte	*buf;
 
@@ -723,7 +723,7 @@ void MSG_WriteChar (sizebuf_t *sb, int c)
 	buf[0] = c;
 }
 
-void MSG_WriteByte (sizebuf_t *sb, int c)
+void MSG_WriteByte (sizebuf_t *sb, s32 c)
 {
 	byte	*buf;
 
@@ -736,12 +736,12 @@ void MSG_WriteByte (sizebuf_t *sb, int c)
 	buf[0] = c;
 }
 
-void MSG_WriteShort (sizebuf_t *sb, int c)
+void MSG_WriteShort (sizebuf_t *sb, s32 c)
 {
 	byte	*buf;
 
 #ifdef PARANOID
-	if (c < ((short)0x8000) || c > (short)0x7fff)
+	if (c < ((s16)0x8000) || c > (s16)0x7fff)
 		Sys_Error ("MSG_WriteShort: range error");
 #endif
 
@@ -750,7 +750,7 @@ void MSG_WriteShort (sizebuf_t *sb, int c)
 	buf[1] = c>>8;
 }
 
-void MSG_WriteLong (sizebuf_t *sb, int c)
+void MSG_WriteLong (sizebuf_t *sb, s32 c)
 {
 	byte	*buf;
 
@@ -766,7 +766,7 @@ void MSG_WriteFloat (sizebuf_t *sb, float f)
 	union
 	{
 		float	f;
-		int	l;
+		s32	l;
 	} dat;
 
 	dat.f = f;
@@ -775,7 +775,7 @@ void MSG_WriteFloat (sizebuf_t *sb, float f)
 	SZ_Write (sb, &dat.l, 4);
 }
 
-void MSG_WriteString (sizebuf_t *sb, const char *s)
+void MSG_WriteString (sizebuf_t *sb, const s8 *s)
 {
 	if (!s)
 		SZ_Write (sb, "", 1);
@@ -793,7 +793,7 @@ void MSG_WriteCoord16 (sizebuf_t *sb, float f)
 void MSG_WriteCoord24 (sizebuf_t *sb, float f)
 {
 	MSG_WriteShort (sb, f);
-	MSG_WriteByte (sb, (int)(f*255)%255);
+	MSG_WriteByte (sb, (s32)(f*255)%255);
 }
 
 //johnfitz -- 32-bit float coords
@@ -802,7 +802,7 @@ void MSG_WriteCoord32f (sizebuf_t *sb, float f)
 	MSG_WriteFloat (sb, f);
 }
 
-void MSG_WriteCoord (sizebuf_t *sb, float f, unsigned int flags)
+void MSG_WriteCoord (sizebuf_t *sb, float f, u32 flags)
 {
 	if (flags & PRFL_FLOATCOORD)
 		MSG_WriteFloat (sb, f);
@@ -813,17 +813,17 @@ void MSG_WriteCoord (sizebuf_t *sb, float f, unsigned int flags)
 	else MSG_WriteCoord16 (sb, f);
 }
 
-void MSG_WriteAngle (sizebuf_t *sb, float f, unsigned int flags)
+void MSG_WriteAngle (sizebuf_t *sb, float f, u32 flags)
 {
 	if (flags & PRFL_FLOATANGLE)
 		MSG_WriteFloat (sb, f);
 	else if (flags & PRFL_SHORTANGLE)
 		MSG_WriteShort (sb, Q_rint(f * 65536.0 / 360.0) & 65535);
-	else MSG_WriteByte (sb, Q_rint(f * 256.0 / 360.0) & 255); //johnfitz -- use Q_rint instead of (int)	}
+	else MSG_WriteByte (sb, Q_rint(f * 256.0 / 360.0) & 255); //johnfitz -- use Q_rint instead of (s32)	}
 }
 
 //johnfitz -- for PROTOCOL_FITZQUAKE
-void MSG_WriteAngle16 (sizebuf_t *sb, float f, unsigned int flags)
+void MSG_WriteAngle16 (sizebuf_t *sb, float f, u32 flags)
 {
 	if (flags & PRFL_FLOATANGLE)
 		MSG_WriteFloat (sb, f);
@@ -834,7 +834,7 @@ void MSG_WriteAngle16 (sizebuf_t *sb, float f, unsigned int flags)
 //
 // reading functions
 //
-int		msg_readcount;
+s32		msg_readcount;
 bool	msg_badread;
 
 void MSG_BeginReading (void)
@@ -844,9 +844,9 @@ void MSG_BeginReading (void)
 }
 
 // returns -1 and sets msg_badread if no more characters are available
-int MSG_ReadChar (void)
+s32 MSG_ReadChar (void)
 {
-	int	c;
+	s32	c;
 
 	if (msg_readcount+1 > net_message.cursize)
 	{
@@ -854,15 +854,15 @@ int MSG_ReadChar (void)
 		return -1;
 	}
 
-	c = (signed char)net_message.data[msg_readcount];
+	c = (s8)net_message.data[msg_readcount];
 	msg_readcount++;
 
 	return c;
 }
 
-int MSG_ReadByte (void)
+s32 MSG_ReadByte (void)
 {
-	int	c;
+	s32	c;
 
 	if (msg_readcount+1 > net_message.cursize)
 	{
@@ -870,15 +870,15 @@ int MSG_ReadByte (void)
 		return -1;
 	}
 
-	c = (unsigned char)net_message.data[msg_readcount];
+	c = (u8)net_message.data[msg_readcount];
 	msg_readcount++;
 
 	return c;
 }
 
-int MSG_ReadShort (void)
+s32 MSG_ReadShort (void)
 {
-	int	c;
+	s32	c;
 
 	if (msg_readcount+2 > net_message.cursize)
 	{
@@ -886,7 +886,7 @@ int MSG_ReadShort (void)
 		return -1;
 	}
 
-	c = (short)(net_message.data[msg_readcount]
+	c = (s16)(net_message.data[msg_readcount]
 			+ (net_message.data[msg_readcount+1]<<8));
 
 	msg_readcount += 2;
@@ -894,9 +894,9 @@ int MSG_ReadShort (void)
 	return c;
 }
 
-int MSG_ReadLong (void)
+s32 MSG_ReadLong (void)
 {
-	int	c;
+	s32	c;
 
 	if (msg_readcount+4 > net_message.cursize)
 	{
@@ -920,7 +920,7 @@ float MSG_ReadFloat (void)
 	{
 		byte	b[4];
 		float	f;
-		int	l;
+		s32	l;
 	} dat;
 
 	dat.b[0] = net_message.data[msg_readcount];
@@ -934,10 +934,10 @@ float MSG_ReadFloat (void)
 	return dat.f;
 }
 
-const char *MSG_ReadString (void)
+const s8 *MSG_ReadString (void)
 {
-	static char	string[2048];
-	int		c;
+	static s8	string[2048];
+	s32		c;
 	size_t		l;
 
 	l = 0;
@@ -973,7 +973,7 @@ float MSG_ReadCoord32f (void)
 	return MSG_ReadFloat();
 }
 
-float MSG_ReadCoord (unsigned int flags)
+float MSG_ReadCoord (u32 flags)
 {
 	if (flags & PRFL_FLOATCOORD)
 		return MSG_ReadFloat ();
@@ -984,7 +984,7 @@ float MSG_ReadCoord (unsigned int flags)
 	else return MSG_ReadCoord16 ();
 }
 
-float MSG_ReadAngle (unsigned int flags)
+float MSG_ReadAngle (u32 flags)
 {
 	if (flags & PRFL_FLOATANGLE)
 		return MSG_ReadFloat ();
@@ -994,7 +994,7 @@ float MSG_ReadAngle (unsigned int flags)
 }
 
 //johnfitz -- for PROTOCOL_FITZQUAKE
-float MSG_ReadAngle16 (unsigned int flags)
+float MSG_ReadAngle16 (u32 flags)
 {
 	if (flags & PRFL_FLOATANGLE)
 		return MSG_ReadFloat ();	// make sure
@@ -1004,7 +1004,7 @@ float MSG_ReadAngle16 (unsigned int flags)
 
 //===========================================================================
 
-void SZ_Alloc (sizebuf_t *buf, int startsize)
+void SZ_Alloc (sizebuf_t *buf, s32 startsize)
 {
 	if (startsize < 256)
 		startsize = 256;
@@ -1027,7 +1027,7 @@ void SZ_Clear (sizebuf_t *buf)
 	buf->cursize = 0;
 }
 
-void *SZ_GetSpace (sizebuf_t *buf, int length)
+void *SZ_GetSpace (sizebuf_t *buf, s32 length)
 {
 	void	*data;
 
@@ -1050,14 +1050,14 @@ void *SZ_GetSpace (sizebuf_t *buf, int length)
 	return data;
 }
 
-void SZ_Write (sizebuf_t *buf, const void *data, int length)
+void SZ_Write (sizebuf_t *buf, const void *data, s32 length)
 {
 	Q_memcpy (SZ_GetSpace(buf,length),data,length);
 }
 
-void SZ_Print (sizebuf_t *buf, const char *data)
+void SZ_Print (sizebuf_t *buf, const s8 *data)
 {
-	int		len = Q_strlen(data) + 1;
+	s32		len = Q_strlen(data) + 1;
 
 	if (buf->data[buf->cursize-1])
 	{	/* no trailing 0 */
@@ -1077,9 +1077,9 @@ void SZ_Print (sizebuf_t *buf, const char *data)
 COM_SkipPath
 ============
 */
-const char *COM_SkipPath (const char *pathname)
+const s8 *COM_SkipPath (const s8 *pathname)
 {
-	const char	*last;
+	const s8	*last;
 
 	last = pathname;
 	while (*pathname)
@@ -1096,9 +1096,9 @@ const char *COM_SkipPath (const char *pathname)
 COM_StripExtension
 ============
 */
-void COM_StripExtension (const char *in, char *out, size_t outsize)
+void COM_StripExtension (const s8 *in, s8 *out, size_t outsize)
 {
-	int	length;
+	s32	length;
 
 	if (!*in)
 	{
@@ -1107,7 +1107,7 @@ void COM_StripExtension (const char *in, char *out, size_t outsize)
 	}
 	if (in != out)	/* copy when not in-place editing */
 		q_strlcpy (out, in, outsize);
-	length = (int)strlen(out) - 1;
+	length = (s32)strlen(out) - 1;
 	while (length > 0 && out[length] != '.')
 	{
 		--length;
@@ -1123,9 +1123,9 @@ void COM_StripExtension (const char *in, char *out, size_t outsize)
 COM_FileGetExtension - doesn't return NULL
 ============
 */
-const char *COM_FileGetExtension (const char *in)
+const s8 *COM_FileGetExtension (const s8 *in)
 {
-	const char	*src;
+	const s8	*src;
 	size_t		len;
 
 	len = strlen(in);
@@ -1146,9 +1146,9 @@ const char *COM_FileGetExtension (const char *in)
 COM_ExtractExtension
 ============
 */
-void COM_ExtractExtension (const char *in, char *out, size_t outsize)
+void COM_ExtractExtension (const s8 *in, s8 *out, size_t outsize)
 {
-	const char *ext = COM_FileGetExtension (in);
+	const s8 *ext = COM_FileGetExtension (in);
 	if (! *ext)
 		*out = '\0';
 	else
@@ -1162,9 +1162,9 @@ take 'somedir/otherdir/filename.ext',
 write only 'filename' to the output
 ============
 */
-void COM_FileBase (const char *in, char *out, size_t outsize)
+void COM_FileBase (const s8 *in, s8 *out, size_t outsize)
 {
-	const char	*dot, *slash, *s;
+	const s8	*dot, *slash, *s;
 
 	s = in;
 	slash = in;
@@ -1200,9 +1200,9 @@ if path doesn't have a .EXT, append extension
 ==================
 */
 #if 0 /* can be dangerous */
-void COM_DefaultExtension (char *path, const char *extension, size_t len)
+void COM_DefaultExtension (s8 *path, const s8 *extension, size_t len)
 {
-	char	*src;
+	s8	*src;
 
 	if (!*path) return;
 	src = path + strlen(path) - 1;
@@ -1225,7 +1225,7 @@ if path extension doesn't match .EXT, append it
 (extension should include the leading ".")
 ==================
 */
-void COM_AddExtension (char *path, const char *extension, size_t len)
+void COM_AddExtension (s8 *path, const s8 *extension, size_t len)
 {
 	if (strcmp(COM_FileGetExtension(path), extension + 1) != 0)
 		q_strlcat(path, extension, len);
@@ -1243,10 +1243,10 @@ The mode argument controls how overflow is handled:
 - CPE_ALLOWTRUNC:	truncate com_token (ignore the extra characters in this token)
 ==============
 */
-const char *COM_ParseEx (const char *data, cpe_mode mode)
+const s8 *COM_ParseEx (const s8 *data, cpe_mode mode)
 {
-	int		c;
-	int		len;
+	s32		c;
+	s32		len;
 
 	len = 0;
 	com_token[0] = 0;
@@ -1341,7 +1341,7 @@ Parse a token out of a string
 Return NULL in case of overflow
 ==============
 */
-const char *COM_Parse (const char *data)
+const s8 *COM_Parse (const s8 *data)
 {
 	return COM_ParseEx (data, CPE_NOTRUNC);
 }
@@ -1355,9 +1355,9 @@ Returns the position (1 to argc-1) in the program's argument list
 where the given parameter apears, or 0 if not present
 ================
 */
-int COM_CheckParm (const char *parm)
+s32 COM_CheckParm (const s8 *parm)
 {
-	int		i;
+	s32		i;
 
 	for (i = 1; i < com_argc; i++)
 	{
@@ -1382,9 +1382,9 @@ being registered.
 */
 static void COM_CheckRegistered (void)
 {
-	int		h;
-	unsigned short	check[128];
-	int		i;
+	s32		h;
+	u16	check[128];
+	s32		i;
 
 	COM_OpenFile("gfx/pop.lmp", &h, NULL);
 
@@ -1403,12 +1403,12 @@ static void COM_CheckRegistered (void)
 
 	i = Sys_FileRead (h, check, sizeof(check));
 	COM_CloseFile (h);
-	if (i != (int) sizeof(check))
+	if (i != (s32) sizeof(check))
 		goto corrupt;
 
 	for (i = 0; i < 128; i++)
 	{
-		if (pop[i] != (unsigned short)BigShort (check[i]))
+		if (pop[i] != (u16)BigShort (check[i]))
 		{ corrupt:
 			Sys_Error ("Corrupted data file.");
 		}
@@ -1431,9 +1431,9 @@ static void COM_CheckRegistered (void)
 COM_InitArgv
 ================
 */
-void COM_InitArgv (int argc, char **argv)
+void COM_InitArgv (s32 argc, s8 **argv)
 {
-	int		i, j, n;
+	s32		i, j, n;
 
 // reconstitute the command line for the cmdline externally visible cvar
 	n = 0;
@@ -1488,7 +1488,7 @@ COM_Init
 */
 void COM_Init (void)
 {
-	int	i = 0x12345678;
+	s32	i = 0x12345678;
 		/*    U N I X */
 
 	/*
@@ -1501,11 +1501,11 @@ void COM_Init (void)
 	PDP_ORDER: 34 12 78 56
 		   N  U  X  I
 	*/
-	if ( *(char *)&i == 0x12 )
+	if ( *(s8 *)&i == 0x12 )
 		host_bigendian = true;
-	else if ( *(char *)&i == 0x78 )
+	else if ( *(s8 *)&i == 0x78 )
 		host_bigendian = false;
-	else /* if ( *(char *)&i == 0x34 ) */
+	else /* if ( *(s8 *)&i == 0x34 ) */
 		Sys_Error ("Unsupported endianism.");
 
 	if (host_bigendian)
@@ -1543,18 +1543,18 @@ FIXME: make this buffer size safe someday
 ============
 */
 
-static char *get_va_buffer(void)
+static s8 *get_va_buffer(void)
 {
-	static char va_buffers[VA_NUM_BUFFS][VA_BUFFERLEN];
-	static int buffer_idx = 0;
+	static s8 va_buffers[VA_NUM_BUFFS][VA_BUFFERLEN];
+	static s32 buffer_idx = 0;
 	buffer_idx = (buffer_idx + 1) & (VA_NUM_BUFFS - 1);
 	return va_buffers[buffer_idx];
 }
 
-char *va (const char *format, ...)
+s8 *va (const s8 *format, ...)
 {
 	va_list		argptr;
-	char		*va_buf;
+	s8		*va_buf;
 
 	va_buf = get_va_buffer ();
 	va_start (argptr, format);
@@ -1572,14 +1572,14 @@ QUAKE FILESYSTEM
 =============================================================================
 */
 
-int	com_filesize;
+s32	com_filesize;
 
 
 
 
-char	com_gamedir[MAX_OSPATH];
-char	com_basedir[MAX_OSPATH];
-int	file_from_pak;		// ZOID: global indicating that file came from a pak
+s8	com_gamedir[MAX_OSPATH];
+s8	com_basedir[MAX_OSPATH];
+s32	file_from_pak;		// ZOID: global indicating that file came from a pak
 
 searchpath_t	*com_searchpaths;
 searchpath_t	*com_base_searchpaths;
@@ -1612,10 +1612,10 @@ COM_WriteFile
 The filename will be prefixed by the current game directory
 ============
 */
-void COM_WriteFile (const char *filename, const void *data, int len)
+void COM_WriteFile (const s8 *filename, const void *data, s32 len)
 {
-	int		handle;
-	char	name[MAX_OSPATH];
+	s32		handle;
+	s8	name[MAX_OSPATH];
 
 	Sys_mkdir (com_gamedir); //johnfitz -- if we've switched to a nonexistant gamedir, create it now so we don't crash
 
@@ -1638,9 +1638,9 @@ void COM_WriteFile (const char *filename, const void *data, int len)
 COM_CreatePath
 ============
 */
-void COM_CreatePath (char *path)
+void COM_CreatePath (s8 *path)
 {
-	char	*ofs;
+	s8	*ofs;
 
 	for (ofs = path + 1; *ofs; ofs++)
 	{
@@ -1658,9 +1658,9 @@ void COM_CreatePath (char *path)
 COM_filelength
 ================
 */
-long COM_filelength (FILE *f)
+s64 COM_filelength (FILE *f)
 {
-	long		pos, end;
+	s64		pos, end;
 
 	pos = ftell (f);
 	fseek (f, 0, SEEK_END);
@@ -1680,13 +1680,13 @@ If neither of file or handle is set, this
 can be used for detecting a file's presence.
 ===========
 */
-static int COM_FindFile (const char *filename, int *handle, FILE **file,
-							unsigned int *path_id)
+static s32 COM_FindFile (const s8 *filename, s32 *handle, FILE **file,
+							u32 *path_id)
 {
 	searchpath_t	*search;
-	char		netpath[MAX_OSPATH];
+	s8		netpath[MAX_OSPATH];
 	pack_t		*pak;
-	int		i;
+	s32		i;
 
 	if (file && handle)
 		Sys_Error ("COM_FindFile: both handle and file set");
@@ -1786,9 +1786,9 @@ COM_FileExists
 Returns whether the file is found in the quake filesystem.
 ===========
 */
-bool COM_FileExists (const char *filename, unsigned int *path_id)
+bool COM_FileExists (const s8 *filename, u32 *path_id)
 {
-	int ret = COM_FindFile (filename, NULL, NULL, path_id);
+	s32 ret = COM_FindFile (filename, NULL, NULL, path_id);
 	return (ret == -1) ? false : true;
 }
 
@@ -1801,7 +1801,7 @@ returns a handle and a length
 it may actually be inside a pak file
 ===========
 */
-int COM_OpenFile (const char *filename, int *handle, unsigned int *path_id)
+s32 COM_OpenFile (const s8 *filename, s32 *handle, u32 *path_id)
 {
 	return COM_FindFile (filename, handle, NULL, path_id);
 }
@@ -1814,7 +1814,7 @@ If the requested file is inside a packfile, a new FILE * will be opened
 into the file.
 ===========
 */
-int COM_FOpenFile (const char *filename, FILE **file, unsigned int *path_id)
+s32 COM_FOpenFile (const s8 *filename, FILE **file, u32 *path_id)
 {
 	return COM_FindFile (filename, NULL, file, path_id);
 }
@@ -1826,7 +1826,7 @@ COM_CloseFile
 If it is a pak file handle, don't really close it
 ============
 */
-void COM_CloseFile (int h)
+void COM_CloseFile (s32 h)
 {
 	searchpath_t	*s;
 
@@ -1849,14 +1849,14 @@ Allways appends a 0 byte.
 
 static byte	*loadbuf;
 static cache_user_t *loadcache;
-static int	loadsize;
+static s32	loadsize;
 
-byte *COM_LoadFile (const char *path, int usehunk, unsigned int *path_id)
+byte *COM_LoadFile (const s8 *path, s32 usehunk, u32 *path_id)
 {
-	int		h;
+	s32		h;
 	byte	*buf;
-	char	base[32];
-	int	len, nread;
+	s8	base[32];
+	s32	len, nread;
 
 	buf = NULL;	// quiet compiler warning
 
@@ -1908,29 +1908,29 @@ byte *COM_LoadFile (const char *path, int usehunk, unsigned int *path_id)
 	return buf;
 }
 
-byte *COM_LoadHunkFile (const char *path, unsigned int *path_id)
+byte *COM_LoadHunkFile (const s8 *path, u32 *path_id)
 {
 	return COM_LoadFile (path, LOADFILE_HUNK, path_id);
 }
 
-byte *COM_LoadZoneFile (const char *path, unsigned int *path_id)
+byte *COM_LoadZoneFile (const s8 *path, u32 *path_id)
 {
 	return COM_LoadFile (path, LOADFILE_ZONE, path_id);
 }
 
-byte *COM_LoadTempFile (const char *path, unsigned int *path_id)
+byte *COM_LoadTempFile (const s8 *path, u32 *path_id)
 {
 	return COM_LoadFile (path, LOADFILE_TEMPHUNK, path_id);
 }
 
-void COM_LoadCacheFile (const char *path, struct cache_user_s *cu, unsigned int *path_id)
+void COM_LoadCacheFile (const s8 *path, struct cache_user_s *cu, u32 *path_id)
 {
 	loadcache = cu;
 	COM_LoadFile (path, LOADFILE_CACHE, path_id);
 }
 
 // uses temp hunk if larger than bufsize
-byte *COM_LoadStackFile (const char *path, void *buffer, int bufsize, unsigned int *path_id)
+byte *COM_LoadStackFile (const s8 *path, void *buffer, s32 bufsize, u32 *path_id)
 {
 	byte	*buf;
 
@@ -1942,16 +1942,16 @@ byte *COM_LoadStackFile (const char *path, void *buffer, int bufsize, unsigned i
 }
 
 // returns malloc'd memory
-byte *COM_LoadMallocFile (const char *path, unsigned int *path_id)
+byte *COM_LoadMallocFile (const s8 *path, u32 *path_id)
 {
 	return COM_LoadFile (path, LOADFILE_MALLOC, path_id);
 }
 
-byte *COM_LoadMallocFile_TextMode_OSPath (const char *path, long *len_out)
+byte *COM_LoadMallocFile_TextMode_OSPath (const s8 *path, s64 *len_out)
 {
 	FILE	*f;
 	byte	*data;
-	long	len, actuallen;
+	s64	len, actuallen;
 
 	// ericw -- this is used by Host_Loadgame_f. Translate CRLF to LF on load games,
 	// othewise multiline messages have a garbage character at the end of each line.
@@ -1991,23 +1991,23 @@ byte *COM_LoadMallocFile_TextMode_OSPath (const char *path, long *len_out)
 	return data;
 }
 
-const char *COM_ParseIntNewline(const char *buffer, int *value)
+const s8 *COM_ParseIntNewline(const s8 *buffer, s32 *value)
 {
-	int consumed = 0;
+	s32 consumed = 0;
 	sscanf (buffer, "%i\n%n", value, &consumed);
 	return buffer + consumed;
 }
 
-const char *COM_ParseFloatNewline(const char *buffer, float *value)
+const s8 *COM_ParseFloatNewline(const s8 *buffer, float *value)
 {
-	int consumed = 0;
+	s32 consumed = 0;
 	sscanf (buffer, "%f\n%n", value, &consumed);
 	return buffer + consumed;
 }
 
-const char *COM_ParseStringNewline(const char *buffer)
+const s8 *COM_ParseStringNewline(const s8 *buffer)
 {
-	int consumed = 0;
+	s32 consumed = 0;
 	com_token[0] = '\0';
 	sscanf (buffer, "%1023s\n%n", com_token, &consumed);
 	return buffer + consumed;
@@ -2023,21 +2023,21 @@ Loads the header and directory, adding the files at the beginning
 of the list so they override previous pack files.
 =================
 */
-static pack_t *COM_LoadPackFile (const char *packfile)
+static pack_t *COM_LoadPackFile (const s8 *packfile)
 {
 	dpackheader_t	header;
-	int		i;
+	s32		i;
 	packfile_t	*newfiles;
-	int		numpackfiles;
+	s32		numpackfiles;
 	pack_t		*pack;
-	int		packhandle;
+	s32		packhandle;
 	dpackfile_t	info[MAX_FILES_IN_PACK];
-	unsigned short	crc;
+	u16	crc;
 
 	if (Sys_FileOpenRead (packfile, &packhandle) == -1)
 		return NULL;
 
-	if (Sys_FileRead(packhandle, &header, sizeof(header)) != (int) sizeof(header) ||
+	if (Sys_FileRead(packhandle, &header, sizeof(header)) != (s32) sizeof(header) ||
 	    header.id[0] != 'P' || header.id[1] != 'A' || header.id[2] != 'C' || header.id[3] != 'K')
 		Sys_Error ("%s is not a packfile", packfile);
 
@@ -2099,13 +2099,13 @@ static pack_t *COM_LoadPackFile (const char *packfile)
 COM_AddGameDirectory -- johnfitz -- modified based on topaz's tutorial
 =================
 */
-static void COM_AddGameDirectory (const char *base, const char *dir)
+static void COM_AddGameDirectory (const s8 *base, const s8 *dir)
 {
-	int i;
-	unsigned int path_id;
+	s32 i;
+	u32 path_id;
 	searchpath_t *search;
 	pack_t *pak, *qspak;
-	char pakfile[MAX_OSPATH];
+	s8 pakfile[MAX_OSPATH];
 	bool been_here = false;
 
 	q_strlcpy (com_gamedir, va("%s/%s", base, dir), sizeof(com_gamedir));
@@ -2172,8 +2172,8 @@ static void COM_Game_f (void)
 {
 	if (Cmd_Argc() > 1)
 	{
-		const char *p = Cmd_Argv(1);
-		const char *p2 = Cmd_Argv(2);
+		const s8 *p = Cmd_Argv(1);
+		const s8 *p2 = Cmd_Argv(2);
 		searchpath_t *search;
 
 		if (!registered.value) //disable shareware quake
@@ -2284,7 +2284,7 @@ static void COM_Game_f (void)
 		{
 			q_snprintf (com_gamedir, sizeof(com_gamedir), "%s/%s",
 					(host_parms.userdir != host_parms.basedir)?
-					(char *)host_parms.userdir : com_basedir,
+					(s8 *)host_parms.userdir : com_basedir,
 					GAMENAME);
 		}
 
@@ -2321,7 +2321,7 @@ COM_InitFilesystem
 */
 void COM_InitFilesystem (void) //johnfitz -- modified based on topaz's tutorial
 {
-	int i, j;
+	s32 i, j;
 
 	Cvar_RegisterVariable (&registered);
 	Cvar_RegisterVariable (&cmdline);
@@ -2358,7 +2358,7 @@ void COM_InitFilesystem (void) //johnfitz -- modified based on topaz's tutorial
 	i = COM_CheckParm ("-game");
 	if (i && i < com_argc-1)
 	{
-		const char *p = com_argv[i + 1];
+		const s8 *p = com_argv[i + 1];
 		if (!*p || !strcmp(p, ".") || strstr(p, "..") || strstr(p, "/") || strstr(p, "\\") || strstr(p, ":"))
 			Sys_Error ("gamedir should be a single directory name, not a path\n");
 		com_modified = true;
@@ -2392,8 +2392,8 @@ void COM_InitFilesystem (void) //johnfitz -- modified based on topaz's tutorial
 
 size_t FS_fread(void *ptr, size_t size, size_t nmemb, fshandle_t *fh)
 {
-	long byte_size;
-	long bytes_read;
+	s64 byte_size;
+	s64 bytes_read;
 	size_t nmemb_read;
 
 	if (!fh) {
@@ -2426,11 +2426,11 @@ size_t FS_fread(void *ptr, size_t size, size_t nmemb, fshandle_t *fh)
 	return nmemb_read;
 }
 
-int FS_fseek(fshandle_t *fh, long offset, int whence)
+s32 FS_fseek(fshandle_t *fh, s64 offset, s32 whence)
 {
 /* I don't care about 64 bit off_t or fseeko() here.
  * the quake/hexen2 file system is 32 bits, anyway. */
-	int ret;
+	s32 ret;
 
 	if (!fh) {
 		errno = EBADF;
@@ -2470,7 +2470,7 @@ int FS_fseek(fshandle_t *fh, long offset, int whence)
 	return 0;
 }
 
-int FS_fclose(fshandle_t *fh)
+s32 FS_fclose(fshandle_t *fh)
 {
 	if (!fh) {
 		errno = EBADF;
@@ -2479,7 +2479,7 @@ int FS_fclose(fshandle_t *fh)
 	return fclose(fh->file);
 }
 
-long FS_ftell(fshandle_t *fh)
+s64 FS_ftell(fshandle_t *fh)
 {
 	if (!fh) {
 		errno = EBADF;
@@ -2496,7 +2496,7 @@ void FS_rewind(fshandle_t *fh)
 	fh->pos = 0;
 }
 
-int FS_feof(fshandle_t *fh)
+s32 FS_feof(fshandle_t *fh)
 {
 	if (!fh) {
 		errno = EBADF;
@@ -2507,7 +2507,7 @@ int FS_feof(fshandle_t *fh)
 	return 0;
 }
 
-int FS_ferror(fshandle_t *fh)
+s32 FS_ferror(fshandle_t *fh)
 {
 	if (!fh) {
 		errno = EBADF;
@@ -2516,7 +2516,7 @@ int FS_ferror(fshandle_t *fh)
 	return ferror(fh->file);
 }
 
-int FS_fgetc(fshandle_t *fh)
+s32 FS_fgetc(fshandle_t *fh)
 {
 	if (!fh) {
 		errno = EBADF;
@@ -2528,9 +2528,9 @@ int FS_fgetc(fshandle_t *fh)
 	return fgetc(fh->file);
 }
 
-char *FS_fgets(char *s, int size, fshandle_t *fh)
+s8 *FS_fgets(s8 *s, s32 size, fshandle_t *fh)
 {
-	char *ret;
+	s8 *ret;
 
 	if (FS_feof(fh))
 		return NULL;
@@ -2544,7 +2544,7 @@ char *FS_fgets(char *s, int size, fshandle_t *fh)
 	return ret;
 }
 
-long FS_filelength (fshandle_t *fh)
+s64 FS_filelength (fshandle_t *fh)
 {
 	if (!fh) {
 		errno = EBADF;
@@ -2568,7 +2568,7 @@ COM_HashString
 Computes the FNV-1a hash of string str
 ================
 */
-unsigned COM_HashString (const char *str)
+unsigned COM_HashString (const s8 *str)
 {
 	unsigned hash = 0x811c9dc5u;
 	while (*str)
@@ -2609,11 +2609,11 @@ static size_t mz_zip_file_read_func(void *opaque, mz_uint64 ofs, void *buf, size
 LOC_LoadFile
 ================
 */
-bool LOC_LoadFile (const char *file)
+bool LOC_LoadFile (const s8 *file)
 {
-	char path[1024];
-	int i,lineno,warnings;
-	char *cursor;
+	s8 path[1024];
+	s32 i,lineno,warnings;
+	s8 *cursor;
 
 	SDL_RWops *rw = NULL;
 	Sint64 sz;
@@ -2645,18 +2645,18 @@ bool LOC_LoadFile (const char *file)
 		archive.m_pRead = mz_zip_file_read_func;
 		archive.m_pIO_opaque = rw;
 		if (!mz_zip_reader_init(&archive, sz, 0)) goto fail;
-		localization.text = (char *) mz_zip_reader_extract_file_to_heap(&archive, file, &size, 0);
+		localization.text = (s8 *) mz_zip_reader_extract_file_to_heap(&archive, file, &size, 0);
 		if (!localization.text) goto fail;
 		mz_zip_reader_end(&archive);
 		SDL_RWclose(rw);
-		localization.text = (char *) realloc(localization.text, size+1);
+		localization.text = (s8 *) realloc(localization.text, size+1);
 		localization.text[size] = 0;
 	}
 	else
 	{
 		sz = SDL_RWsize(rw);
 		if (sz <= 0) goto fail;
-		localization.text = (char *) calloc(1, sz+1);
+		localization.text = (s8 *) calloc(1, sz+1);
 		if (!localization.text)
 		{
 fail:			mz_zip_reader_end(&archive);
@@ -2671,14 +2671,14 @@ fail:			mz_zip_reader_end(&archive);
 	cursor = localization.text;
 
 	// skip BOM
-	if ((unsigned char)(cursor[0]) == 0xEF && (unsigned char)(cursor[1]) == 0xBB && (unsigned char)(cursor[2]) == 0xBF)
+	if ((u8)(cursor[0]) == 0xEF && (u8)(cursor[1]) == 0xBB && (u8)(cursor[2]) == 0xBF)
 		cursor += 3;
 
 	warnings = 0;
 	lineno = 0;
 	while (*cursor)
 	{
-		char *line, *equals;
+		s8 *line, *equals;
 
 		lineno++;
 
@@ -2703,13 +2703,13 @@ fail:			mz_zip_reader_end(&archive);
 		}
 		else if (equals)
 		{
-			char *key_end = equals;
+			s8 *key_end = equals;
 			bool leading_quote;
 			bool trailing_quote;
 			locentry_t *entry;
-			char *value_src;
-			char *value_dst;
-			char *value;
+			s8 *value_src;
+			s8 *value_dst;
+			s8 *value;
 
 			// trim whitespace before equals sign
 			while (key_end != line && q_isspace(key_end[-1]))
@@ -2732,7 +2732,7 @@ fail:			mz_zip_reader_end(&archive);
 			{
 				if (*value_src == '\\' && value_src + 1 != cursor)
 				{
-					char c = value_src[1];
+					s8 c = value_src[1];
 					value_src += 2;
 					switch (c)
 					{
@@ -2788,7 +2788,7 @@ fail:			mz_zip_reader_end(&archive);
 			// Log entries with unprintable characters if developer is set to 2 or higher
 			/*if (developer.value >= 2.f && strchr (value, QCHAR_BOX))
 			{
-				int trim = (int) strlen (value);
+				s32 trim = (s32) strlen (value);
 				// trim trailing newlines
 				while (trim > 0 && value[trim - 1] == '\n')
 					--trim;
@@ -2879,7 +2879,7 @@ LOC_GetRawString
 Returns localized string if available, or NULL otherwise
 ================
 */
-const char* LOC_GetRawString (const char *key)
+const s8* LOC_GetRawString (const s8 *key)
 {
 	unsigned pos, end;
 
@@ -2916,9 +2916,9 @@ LOC_GetString
 Returns localized string if available, or input string otherwise
 ================
 */
-const char* LOC_GetString (const char *key)
+const s8* LOC_GetString (const s8 *key)
 {
-	const char* value = LOC_GetRawString(key);
+	const s8* value = LOC_GetRawString(key);
 	return value ? value : key;
 }
 
@@ -2930,10 +2930,10 @@ Returns argument index (>= 0) and advances the string if it starts with a placeh
 otherwise returns a negative value and leaves the pointer unchanged
 ================
 */
-static int LOC_ParseArg (const char **pstr)
+static s32 LOC_ParseArg (const s8 **pstr)
 {
-	int arg;
-	const char *str = *pstr;
+	s32 arg;
+	const s8 *str = *pstr;
 
 	// opening brace
 	if (*str != '{')
@@ -2958,7 +2958,7 @@ static int LOC_ParseArg (const char **pstr)
 LOC_HasPlaceholders
 ================
 */
-bool LOC_HasPlaceholders (const char *str)
+bool LOC_HasPlaceholders (const s8 *str)
 {
 	if (!localization.numindices)
 		return false;
@@ -2981,10 +2981,10 @@ Returns number of written chars, excluding the NUL terminator
 If len > 0, output is always NUL-terminated
 ================
 */
-size_t LOC_Format (const char *format, const char* (*getarg_fn) (int idx, void* userdata), void* userdata, char* out, size_t len)
+size_t LOC_Format (const s8 *format, const s8* (*getarg_fn) (s32 idx, void* userdata), void* userdata, s8* out, size_t len)
 {
 	size_t written = 0;
-	int numargs = 0;
+	s32 numargs = 0;
 
 	if (!len)
 	{
@@ -2995,10 +2995,10 @@ size_t LOC_Format (const char *format, const char* (*getarg_fn) (int idx, void* 
 
 	while (*format && written < len)
 	{
-		const char* insert;
+		const s8* insert;
 		size_t space_left;
 		size_t insert_len;
-		int argindex = LOC_ParseArg(&format);
+		s32 argindex = LOC_ParseArg(&format);
 
 		if (argindex < 0)
 		{

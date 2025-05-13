@@ -10,7 +10,7 @@
 #define __wsaerr_static static
 #endif	/* static */
 
-__wsaerr_static const char *__WSAE_StrError (int err)
+__wsaerr_static const s8 *__WSAE_StrError (s32 err)
 {
 	switch (err)
 	{
@@ -26,7 +26,7 @@ __wsaerr_static const char *__WSAE_StrError (int err)
 	case WSAEALREADY:	return "Operation already in progress";		/* 10037 */
 	case WSAENOTSOCK:	return "Socket operation on non-socket";	/* 10038 */
 	case WSAEDESTADDRREQ:	return "Destination address required";		/* 10039 */
-	case WSAEMSGSIZE:	return "Message too long";			/* 10040 */
+	case WSAEMSGSIZE:	return "Message too s64";			/* 10040 */
 	case WSAEPROTOTYPE:	return "Protocol wrong type for socket";	/* 10041 */
 	case WSAENOPROTOOPT:	return "Bad protocol option";			/* 10042 */
 	case WSAEPROTONOSUPPORT: return "Protocol not supported";		/* 10043 */
@@ -49,7 +49,7 @@ __wsaerr_static const char *__WSAE_StrError (int err)
 	case WSAETIMEDOUT:	return "Connection timed out";			/* 10060 */
 	case WSAECONNREFUSED:	return "Connection refused";			/* 10061 */
 	case WSAELOOP:		return "Too many levels of symbolic links";	/* 10062 */
-	case WSAENAMETOOLONG:	return "File name too long";			/* 10063 */
+	case WSAENAMETOOLONG:	return "File name too s64";			/* 10063 */
 	case WSAEHOSTDOWN:	return "Host is down";				/* 10064 */
 	case WSAEHOSTUNREACH:	return "No Route to Host";			/* 10065 */
 	case WSAENOTEMPTY:	return "Directory not empty";			/* 10066 */
@@ -82,7 +82,7 @@ __wsaerr_static const char *__WSAE_StrError (int err)
 
 	default:
 		{
-			static char _err_unknown[64];
+			static s8 _err_unknown[64];
 			sprintf(_err_unknown, "Unknown WSAE error (%d)", err);
 			return  _err_unknown;
 		}

@@ -22,10 +22,10 @@ edge_t edge_head;
 edge_t edge_tail;
 edge_t edge_aftertail;
 edge_t edge_sentinel;
-int r_currentkey;
-int r_bmodelactive;
-int current_iv;
-long edge_head_u_shift20, edge_tail_u_shift20;
+s32 r_currentkey;
+s32 r_bmodelactive;
+s32 current_iv;
+s64 edge_head_u_shift20, edge_tail_u_shift20;
 float fv;
 
 static void (*pdrawfunc)();
@@ -54,7 +54,7 @@ void R_BeginEdgeFrame()
 		r_currentkey = 0;
 	}
 	// FIXME: set with memset
-	for (int v = r_refdef.vrect.y; v < r_refdef.vrectbottom; v++) {
+	for (s32 v = r_refdef.vrect.y; v < r_refdef.vrectbottom; v++) {
 		newedges[v] = removeedges[v] = NULL;
 	}
 }
@@ -150,7 +150,7 @@ void R_CleanupSpan()
 	// now that we've reached the right edge of the screen, we're done with
 	// any unfinished surfaces, so emit a span for whatever's on top
 	surf_t *surf = surfaces[1].next;
-	long iu = edge_tail_u_shift20;
+	s64 iu = edge_tail_u_shift20;
 	if (iu > surf->last_u) {
 		espan_t *span = span_p++;
 		span->u = surf->last_u;
@@ -172,7 +172,7 @@ void R_LeadingEdgeBackwards(edge_t *edge)
 	// don't start a span if this is an inverted span, with the end edge
 	// preceding the start edge (that is, we've already seen the end edge)
 	surf_t *surf2;
-	int iu; // keep here for the OpenBSD compiler
+	s32 iu; // keep here for the OpenBSD compiler
 	if (++surf->spanstate == 1) {
 		surf2 = surfaces[1].next;
 		if (surf->key > surf2->key)
@@ -224,7 +224,7 @@ void R_TrailingEdge(surf_t *surf, edge_t *edge)
 		if (surf->insubmodel)
 			r_bmodelactive--;
 		if (surf == surfaces[1].next) {
-			long iu = edge->u >> 20; // emit a span
+			s64 iu = edge->u >> 20; // emit a span
 			if (iu > surf->last_u) { // (current top going away)
 				espan_t *span = span_p++;
 				span->u = surf->last_u;
@@ -243,7 +243,7 @@ void R_TrailingEdge(surf_t *surf, edge_t *edge)
 void R_LeadingEdge (edge_t *edge)
 {
 	surf_t *surf, *surf2;
-	int iu; // keep here for the OpenBSD compiler
+	s32 iu; // keep here for the OpenBSD compiler
 	if (edge->surfs[1])
 	{
 		// it's adding a new surface in, so find the correct place
@@ -377,14 +377,14 @@ void R_ScanEdges()
 	span_p = basespan_p;
 	// clear active edges to just background edges around the whole screen
 	// FIXME: most of this only needs to be set up once
-	edge_head.u = (long)r_refdef.vrect.x << 20;
+	edge_head.u = (s64)r_refdef.vrect.x << 20;
 	edge_head_u_shift20 = edge_head.u >> 20;
 	edge_head.u_step = 0;
 	edge_head.prev = NULL;
 	edge_head.next = &edge_tail;
 	edge_head.surfs[0] = 0;
 	edge_head.surfs[1] = 1;
-	edge_tail.u = ((long)r_refdef.vrectright << 20) + 0xFFFFF;
+	edge_tail.u = ((s64)r_refdef.vrectright << 20) + 0xFFFFF;
 	edge_tail_u_shift20 = edge_tail.u >> 20;
 	edge_tail.u_step = 0;
 	edge_tail.prev = &edge_head;
@@ -398,8 +398,8 @@ void R_ScanEdges()
 	// FIXME: do we need this now that we clamp x in r_draw.c?
 	edge_sentinel.u = ((uint64_t)2000) << 24; // make sure nothing sorts past this
 	edge_sentinel.prev = &edge_aftertail;
-	long bottom = r_refdef.vrectbottom - 1; // process all scan lines
-	long iv = r_refdef.vrect.y;
+	s64 bottom = r_refdef.vrectbottom - 1; // process all scan lines
+	s64 iv = r_refdef.vrect.y;
 	for (; iv < bottom; iv++) {
 		current_iv = iv;
 		fv = (float)iv;

@@ -16,13 +16,13 @@ is not a staircase.
 
 =============
 */
-int c_yes, c_no;
+s32 c_yes, c_no;
 
 bool SV_CheckBottom (edict_t *ent)
 {
 	vec3_t	mins, maxs, start, stop;
 	trace_t	trace;
-	int		x, y;
+	s32		x, y;
 	float	mid, bottom;
 
 	VectorAdd (ent->v.origin, ent->v.mins, mins);
@@ -96,7 +96,7 @@ bool SV_movestep (edict_t *ent, vec3_t move, bool relink)
 	float		dz;
 	vec3_t		oldorg, neworg, end;
 	trace_t		trace;
-	int			i;
+	s32			i;
 	edict_t		*enemy;
 
 // try the move
@@ -104,7 +104,7 @@ bool SV_movestep (edict_t *ent, vec3_t move, bool relink)
 	VectorAdd (ent->v.origin, move, neworg);
 
 // flying monsters don't step up
-	if ( (int)ent->v.flags & (FL_SWIM | FL_FLY) )
+	if ( (s32)ent->v.flags & (FL_SWIM | FL_FLY) )
 	{
 	// try one move with vertical motion, then one without
 		for (i=0 ; i<2 ; i++)
@@ -123,7 +123,7 @@ bool SV_movestep (edict_t *ent, vec3_t move, bool relink)
 
 			if (trace.fraction == 1)
 			{
-				if ( ((int)ent->v.flags & FL_SWIM) && SV_PointContents(trace.endpos) == CONTENTS_EMPTY )
+				if ( ((s32)ent->v.flags & FL_SWIM) && SV_PointContents(trace.endpos) == CONTENTS_EMPTY )
 					return false;	// swim monster left water
 
 				VectorCopy (trace.endpos, ent->v.origin);
@@ -159,12 +159,12 @@ bool SV_movestep (edict_t *ent, vec3_t move, bool relink)
 	if (trace.fraction == 1)
 	{
 	// if monster had the ground pulled out, go ahead and fall
-		if ( (int)ent->v.flags & FL_PARTIALGROUND )
+		if ( (s32)ent->v.flags & FL_PARTIALGROUND )
 		{
 			VectorAdd (ent->v.origin, move, ent->v.origin);
 			if (relink)
 				SV_LinkEdict (ent, true);
-			ent->v.flags = (int)ent->v.flags & ~FL_ONGROUND;
+			ent->v.flags = (s32)ent->v.flags & ~FL_ONGROUND;
 		//	Con_Printf ("fall down\n");
 			return true;
 		}
@@ -177,7 +177,7 @@ bool SV_movestep (edict_t *ent, vec3_t move, bool relink)
 
 	if (!SV_CheckBottom (ent))
 	{
-		if ( (int)ent->v.flags & FL_PARTIALGROUND )
+		if ( (s32)ent->v.flags & FL_PARTIALGROUND )
 		{	// entity had floor mostly pulled out from underneath it
 			// and is trying to correct
 			if (relink)
@@ -188,10 +188,10 @@ bool SV_movestep (edict_t *ent, vec3_t move, bool relink)
 		return false;
 	}
 
-	if ( (int)ent->v.flags & FL_PARTIALGROUND )
+	if ( (s32)ent->v.flags & FL_PARTIALGROUND )
 	{
 	//	Con_Printf ("back on ground\n");
-		ent->v.flags = (int)ent->v.flags & ~FL_PARTIALGROUND;
+		ent->v.flags = (s32)ent->v.flags & ~FL_PARTIALGROUND;
 	}
 	ent->v.groundentity = EDICT_TO_PROG(trace.ent);
 
@@ -252,7 +252,7 @@ SV_FixCheckBottom
 void SV_FixCheckBottom (edict_t *ent)
 {
 //	Con_Printf ("SV_FixCheckBottom\n");
-	ent->v.flags = (int)ent->v.flags | FL_PARTIALGROUND;
+	ent->v.flags = (s32)ent->v.flags | FL_PARTIALGROUND;
 }
 
 
@@ -268,7 +268,7 @@ void SV_NewChaseDir (edict_t *actor, edict_t *enemy, float dist)
 	float			d[3];
 	float		tdir, olddir, turnaround;
 
-	olddir = anglemod( (int)(actor->v.ideal_yaw/45)*45 );
+	olddir = anglemod( (s32)(actor->v.ideal_yaw/45)*45 );
 	turnaround = anglemod(olddir - 180);
 
 	deltax = enemy->v.origin[0] - actor->v.origin[0];
@@ -299,7 +299,7 @@ void SV_NewChaseDir (edict_t *actor, edict_t *enemy, float dist)
 	}
 
 // try other directions
-	if ( ((rand()&3) & 1) ||  abs((int)deltay)>abs((int)deltax)) // ericw -- explicit int cast to suppress clang suggestion to use fabsf
+	if ( ((rand()&3) & 1) ||  abs((s32)deltay)>abs((s32)deltax)) // ericw -- explicit s32 cast to suppress clang suggestion to use fabsf
 	{
 		tdir=d[1];
 		d[1]=d[2];
@@ -353,7 +353,7 @@ SV_CloseEnough
 */
 bool SV_CloseEnough (edict_t *ent, edict_t *goal, float dist)
 {
-	int		i;
+	s32		i;
 
 	for (i=0 ; i<3 ; i++)
 	{
@@ -380,7 +380,7 @@ void SV_MoveToGoal (void)
 	goal = PROG_TO_EDICT(ent->v.goalentity);
 	dist = G_FLOAT(OFS_PARM0);
 
-	if ( !( (int)ent->v.flags & (FL_ONGROUND|FL_FLY|FL_SWIM) ) )
+	if ( !( (s32)ent->v.flags & (FL_ONGROUND|FL_FLY|FL_SWIM) ) )
 	{
 		G_FLOAT(OFS_RETURN) = 0;
 		return;

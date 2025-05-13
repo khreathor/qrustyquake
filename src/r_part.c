@@ -2,9 +2,9 @@
 
 #include "quakedef.h"
 
-int ramp1[8] = { 0x6f, 0x6d, 0x6b, 0x69, 0x67, 0x65, 0x63, 0x61 };
-int ramp2[8] = { 0x6f, 0x6e, 0x6d, 0x6c, 0x6b, 0x6a, 0x68, 0x66 };
-int ramp3[8] = { 0x6d, 0x6b, 6, 5, 4, 3 };
+s32 ramp1[8] = { 0x6f, 0x6d, 0x6b, 0x69, 0x67, 0x65, 0x63, 0x61 };
+s32 ramp2[8] = { 0x6f, 0x6e, 0x6d, 0x6c, 0x6b, 0x6a, 0x68, 0x66 };
+s32 ramp3[8] = { 0x6d, 0x6b, 6, 5, 4, 3 };
 vec3_t avelocity = { 23, 7, 3 };
 float beamlength = 16;
 float partstep = 0.01;
@@ -12,7 +12,7 @@ float timescale = 0.01;
 
 particle_t *active_particles, *free_particles;
 particle_t *particles;
-int r_numparticles;
+s32 r_numparticles;
 vec3_t r_pright, r_pup, r_ppn;
 vec3_t avelocities[NUMVERTEXNORMALS];
 
@@ -20,9 +20,9 @@ extern float r_avertexnormals[NUMVERTEXNORMALS][3];
 
 void R_InitParticles()
 {
-	int i = COM_CheckParm("-particles");
+	s32 i = COM_CheckParm("-particles");
 	if (i) {
-		r_numparticles = (int)(Q_atoi(com_argv[i + 1]));
+		r_numparticles = (s32)(Q_atoi(com_argv[i + 1]));
 		if (r_numparticles < ABSOLUTE_MIN_PARTICLES)
 			r_numparticles = ABSOLUTE_MIN_PARTICLES;
 	} else
@@ -35,13 +35,13 @@ void R_EntityParticles(entity_t *ent)
 {
 	float dist = 64;
 	if (!avelocities[0][0]) {
-		for (int i = 0; i < NUMVERTEXNORMALS; i++) {
+		for (s32 i = 0; i < NUMVERTEXNORMALS; i++) {
 			avelocities[i][0] = (rand() & 255) * 0.01;
 			avelocities[i][1] = (rand() & 255) * 0.01;
 			avelocities[i][2] = (rand() & 255) * 0.01;
 		}
 	}
-	for (int i = 0; i < NUMVERTEXNORMALS; i++) {
+	for (s32 i = 0; i < NUMVERTEXNORMALS; i++) {
 		float angle = cl.time * avelocities[i][0];
 		float sy = sin(angle);
 		float cy = cos(angle);
@@ -75,14 +75,14 @@ void R_ClearParticles()
 {
 	free_particles = &particles[0];
 	active_particles = NULL;
-	for (int i = 0; i < r_numparticles; i++)
+	for (s32 i = 0; i < r_numparticles; i++)
 		particles[i].next = &particles[i + 1];
 	particles[r_numparticles - 1].next = NULL;
 }
 
 void R_ReadPointFile_f()
 {
-	char name[MAX_OSPATH];
+	s8 name[MAX_OSPATH];
 	sprintf(name, "maps/%s.pts", sv.name);
 	FILE *f;
 	COM_FOpenFile(name, &f, NULL);
@@ -91,10 +91,10 @@ void R_ReadPointFile_f()
 		return;
 	}
 	Con_Printf("Reading %s...\n", name);
-	int c = 0;
+	s32 c = 0;
 	for (;;) {
 		vec3_t org;
-		int r = fscanf(f, "%f %f %f\n", &org[0], &org[1], &org[2]);
+		s32 r = fscanf(f, "%f %f %f\n", &org[0], &org[1], &org[2]);
 		if (r != 3)
 			break;
 		c++;
@@ -119,20 +119,20 @@ void R_ReadPointFile_f()
 void R_ParseParticleEffect ()
 {
         vec3_t org, dir;
-        for (int i=0 ; i<3 ; i++)
+        for (s32 i=0 ; i<3 ; i++)
                 org[i] = MSG_ReadCoord (cl.protocolflags);
-        for (int i=0 ; i<3 ; i++)
+        for (s32 i=0 ; i<3 ; i++)
                 dir[i] = MSG_ReadChar () * (1.0/16);
-        int msgcount = MSG_ReadByte ();
-        int color = MSG_ReadByte ();
-        int count = msgcount == 255 ? 1024 : msgcount;
+        s32 msgcount = MSG_ReadByte ();
+        s32 color = MSG_ReadByte ();
+        s32 count = msgcount == 255 ? 1024 : msgcount;
         R_RunParticleEffect (org, dir, color, count);
 }
 
 // CyanBun96: TODO a lot of shared code between these. consolidate?
 void R_ParticleExplosion(vec3_t org)
 {
-	for (int i = 0; i < 1024; i++) {
+	for (s32 i = 0; i < 1024; i++) {
 		if (!free_particles)
 			return;
 		particle_t *p = free_particles;
@@ -144,13 +144,13 @@ void R_ParticleExplosion(vec3_t org)
 		p->ramp = rand() & 3;
 		if (i & 1) {
 			p->type = pt_explode;
-			for (int j = 0; j < 3; j++) {
+			for (s32 j = 0; j < 3; j++) {
 				p->org[j] = org[j] + ((rand() % 32) - 16);
 				p->vel[j] = (rand() % 512) - 256;
 			}
 		} else {
 			p->type = pt_explode2;
-			for (int j = 0; j < 3; j++) {
+			for (s32 j = 0; j < 3; j++) {
 				p->org[j] = org[j] + ((rand() % 32) - 16);
 				p->vel[j] = (rand() % 512) - 256;
 			}
@@ -158,10 +158,10 @@ void R_ParticleExplosion(vec3_t org)
 	}
 }
 
-void R_ParticleExplosion2(vec3_t org, int colorStart, int colorLength)
+void R_ParticleExplosion2(vec3_t org, s32 colorStart, s32 colorLength)
 {
-	int colorMod = 0;
-	for (int i = 0; i < 512; i++) {
+	s32 colorMod = 0;
+	for (s32 i = 0; i < 512; i++) {
 		if (!free_particles)
 			return;
 		particle_t *p = free_particles;
@@ -172,7 +172,7 @@ void R_ParticleExplosion2(vec3_t org, int colorStart, int colorLength)
 		p->color = colorStart + (colorMod % colorLength);
 		colorMod++;
 		p->type = pt_blob;
-		for (int j = 0; j < 3; j++) {
+		for (s32 j = 0; j < 3; j++) {
 			p->org[j] = org[j] + ((rand() % 32) - 16);
 			p->vel[j] = (rand() % 512) - 256;
 		}
@@ -181,7 +181,7 @@ void R_ParticleExplosion2(vec3_t org, int colorStart, int colorLength)
 
 void R_BlobExplosion(vec3_t org)
 {
-	for (int i = 0; i < 1024; i++) {
+	for (s32 i = 0; i < 1024; i++) {
 		if (!free_particles)
 			return;
 		particle_t *p = free_particles;
@@ -192,14 +192,14 @@ void R_BlobExplosion(vec3_t org)
 		if (i & 1) {
 			p->type = pt_blob;
 			p->color = 66 + rand() % 6;
-			for (int j = 0; j < 3; j++) {
+			for (s32 j = 0; j < 3; j++) {
 				p->org[j] = org[j] + ((rand() % 32) - 16);
 				p->vel[j] = (rand() % 512) - 256;
 			}
 		} else {
 			p->type = pt_blob2;
 			p->color = 150 + rand() % 6;
-			for (int j = 0; j < 3; j++) {
+			for (s32 j = 0; j < 3; j++) {
 				p->org[j] = org[j] + ((rand() % 32) - 16);
 				p->vel[j] = (rand() % 512) - 256;
 			}
@@ -207,9 +207,9 @@ void R_BlobExplosion(vec3_t org)
 	}
 }
 
-void R_RunParticleEffect(vec3_t org, vec3_t dir, int color, int count)
+void R_RunParticleEffect(vec3_t org, vec3_t dir, s32 color, s32 count)
 {
-	for (int i = 0; i < count; i++) {
+	for (s32 i = 0; i < count; i++) {
 		if (!free_particles)
 			return;
 		particle_t *p = free_particles;
@@ -222,14 +222,14 @@ void R_RunParticleEffect(vec3_t org, vec3_t dir, int color, int count)
 			p->ramp = rand() & 3;
 			if (i & 1) {
 				p->type = pt_explode;
-				for (int j = 0; j < 3; j++) {
+				for (s32 j = 0; j < 3; j++) {
 					p->org[j] =
 					    org[j] + ((rand() % 32) - 16);
 					p->vel[j] = (rand() % 512) - 256;
 				}
 			} else {
 				p->type = pt_explode2;
-				for (int j = 0; j < 3; j++) {
+				for (s32 j = 0; j < 3; j++) {
 					p->org[j] =
 					    org[j] + ((rand() % 32) - 16);
 					p->vel[j] = (rand() % 512) - 256;
@@ -239,7 +239,7 @@ void R_RunParticleEffect(vec3_t org, vec3_t dir, int color, int count)
 			p->die = cl.time + 0.1 * (rand() % 5);
 			p->color = (color & ~7) + (rand() & 7);
 			p->type = pt_slowgrav;
-			for (int j = 0; j < 3; j++) {
+			for (s32 j = 0; j < 3; j++) {
 				p->org[j] = org[j] + ((rand() & 15) - 8);
 				p->vel[j] = dir[j] * 15;
 			}
@@ -249,9 +249,9 @@ void R_RunParticleEffect(vec3_t org, vec3_t dir, int color, int count)
 
 void R_LavaSplash(vec3_t org)
 {
-	for (int i = -16; i < 16; i++)
-		for (int j = -16; j < 16; j++)
-			for (int k = 0; k < 1; k++) {
+	for (s32 i = -16; i < 16; i++)
+		for (s32 j = -16; j < 16; j++)
+			for (s32 k = 0; k < 1; k++) {
 				if (!free_particles)
 					return;
 				particle_t *p = free_particles;
@@ -276,9 +276,9 @@ void R_LavaSplash(vec3_t org)
 
 void R_TeleportSplash(vec3_t org)
 {
-	for (int i = -16; i < 16; i += 4)
-		for (int j = -16; j < 16; j += 4)
-			for (int k = -24; k < 32; k += 4) {
+	for (s32 i = -16; i < 16; i += 4)
+		for (s32 j = -16; j < 16; j += 4)
+			for (s32 k = -24; k < 32; k += 4) {
 				if (!free_particles)
 					return;
 				particle_t *p = free_particles;
@@ -301,13 +301,13 @@ void R_TeleportSplash(vec3_t org)
 			}
 }
 
-void R_RocketTrail(vec3_t start, vec3_t end, int type)
+void R_RocketTrail(vec3_t start, vec3_t end, s32 type)
 {
-	static int tracercount;
+	static s32 tracercount;
 	vec3_t vec;
 	VectorSubtract(end, start, vec);
 	float len = VectorNormalize(vec);
-	int dec;
+	s32 dec;
 	if (type < 128)
 		dec = 3;
 	else {
@@ -327,23 +327,23 @@ void R_RocketTrail(vec3_t start, vec3_t end, int type)
 		switch (type) {
 		case 0: // rocket trail
 			p->ramp = (rand() & 3);
-			p->color = ramp3[(int)p->ramp];
+			p->color = ramp3[(s32)p->ramp];
 			p->type = pt_fire;
-			for (int j = 0; j < 3; j++)
+			for (s32 j = 0; j < 3; j++)
 				p->org[j] = start[j] + ((rand() % 6) - 3);
 			break;
 
 		case 1: // smoke smoke
 			p->ramp = (rand() & 3) + 2;
-			p->color = ramp3[(int)p->ramp];
+			p->color = ramp3[(s32)p->ramp];
 			p->type = pt_fire;
-			for (int j = 0; j < 3; j++)
+			for (s32 j = 0; j < 3; j++)
 				p->org[j] = start[j] + ((rand() % 6) - 3);
 			break;
 		case 2: // blood
 			p->type = pt_grav;
 			p->color = 67 + (rand() & 3);
-			for (int j = 0; j < 3; j++)
+			for (s32 j = 0; j < 3; j++)
 				p->org[j] = start[j] + ((rand() % 6) - 3);
 			break;
 		case 3:
@@ -367,7 +367,7 @@ void R_RocketTrail(vec3_t start, vec3_t end, int type)
 		case 4: // slight blood
 			p->type = pt_grav;
 			p->color = 67 + (rand() & 3);
-			for (int j = 0; j < 3; j++)
+			for (s32 j = 0; j < 3; j++)
 				p->org[j] = start[j] + ((rand() % 6) - 3);
 			len -= 3;
 			break;
@@ -375,7 +375,7 @@ void R_RocketTrail(vec3_t start, vec3_t end, int type)
 			p->color = 9 * 16 + 8 + (rand() & 3);
 			p->type = pt_static;
 			p->die = cl.time + 0.3;
-			for (int j = 0; j < 3; j++)
+			for (s32 j = 0; j < 3; j++)
 				p->org[j] = start[j] + ((rand() & 15) - 8);
 			break;
 		}
@@ -428,7 +428,7 @@ void R_DrawParticles()
 			if (p->ramp >= 6)
 				p->die = -1;
 			else
-				p->color = ramp3[(int)p->ramp];
+				p->color = ramp3[(s32)p->ramp];
 			p->vel[2] += grav;
 			break;
 
@@ -437,8 +437,8 @@ void R_DrawParticles()
 			if (p->ramp >= 8)
 				p->die = -1;
 			else
-				p->color = ramp1[(int)p->ramp];
-			for (int i = 0; i < 3; i++)
+				p->color = ramp1[(s32)p->ramp];
+			for (s32 i = 0; i < 3; i++)
 				p->vel[i] += p->vel[i] * dvel;
 			p->vel[2] -= grav;
 			break;
@@ -447,18 +447,18 @@ void R_DrawParticles()
 			if (p->ramp >= 8)
 				p->die = -1;
 			else
-				p->color = ramp2[(int)p->ramp];
-			for (int i = 0; i < 3; i++)
+				p->color = ramp2[(s32)p->ramp];
+			for (s32 i = 0; i < 3; i++)
 				p->vel[i] -= p->vel[i] * frametime;
 			p->vel[2] -= grav;
 			break;
 		case pt_blob:
-			for (int i = 0; i < 3; i++)
+			for (s32 i = 0; i < 3; i++)
 				p->vel[i] += p->vel[i] * dvel;
 			p->vel[2] -= grav;
 			break;
 		case pt_blob2:
-			for (int i = 0; i < 2; i++)
+			for (s32 i = 0; i < 2; i++)
 				p->vel[i] -= p->vel[i] * dvel;
 			p->vel[2] -= grav;
 			break;

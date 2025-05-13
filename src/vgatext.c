@@ -12,7 +12,7 @@ static const Uint8 palette[16][3] = {
 	{0xff, 0x57, 0x57}, {0xff, 0x57, 0xff}, {0xff, 0xff, 0x57}, {0xff, 0xff, 0xff}
 };
 
-static void render_cell(Uint8 *image, int pitch, Uint16 cell, int noblink)
+static void render_cell(Uint8 *image, s32 pitch, Uint16 cell, s32 noblink)
 {
 	// get components
 	Uint8 code = (Uint8)(cell & 0xFF);
@@ -23,9 +23,9 @@ static void render_cell(Uint8 *image, int pitch, Uint16 cell, int noblink)
 	Uint8 bgcolor = (attr >> 4) & 0x07;
 	Uint8 fgcolor = attr & 0x0F;
 
-	for (int y = 0; y < 16; y++)
+	for (s32 y = 0; y < 16; y++)
 	{
-		for (int x = 0; x < 8; x++)
+		for (s32 x = 0; x < 8; x++)
 		{
 			// write bgcolor
 			image[y * pitch + x] = bgcolor;
@@ -42,7 +42,7 @@ static void render_cell(Uint8 *image, int pitch, Uint16 cell, int noblink)
 	}
 }
 
-int vgatext_main(SDL_Window *window, Uint16 *screen)
+s32 vgatext_main(SDL_Window *window, Uint16 *screen)
 {
 	Uint8 image0[400][640];
 	Uint8 image1[400][640];
@@ -73,9 +73,9 @@ int vgatext_main(SDL_Window *window, Uint16 *screen)
 	if (!surface8)
 		return -1;
 
-	unsigned char *ppal = (unsigned char *)palette;
+	u8 *ppal = (u8 *)palette;
 	SDL_Color pcolors[256];
-        for (int i = 0; i < 256; ++i) {
+        for (s32 i = 0; i < 256; ++i) {
                 pcolors[i].r = *ppal++;
                 pcolors[i].g = *ppal++;
                 pcolors[i].b = *ppal++;
@@ -89,9 +89,9 @@ int vgatext_main(SDL_Window *window, Uint16 *screen)
 	rect.h = 400;
 
 	// render vgatext
-	for (int y = 0; y < 25; y++)
+	for (s32 y = 0; y < 25; y++)
 	{
-		for (int x = 0; x < 80; x++)
+		for (s32 x = 0; x < 80; x++)
 		{
 			uint16_t cell = screen[y * 80 + x];
 			uint8_t *imgpos0 = &image0[y * 16][x * 8];
@@ -103,12 +103,12 @@ int vgatext_main(SDL_Window *window, Uint16 *screen)
 	}
 
 	// create rgb image0
-	for (int y = 0; y < 400; y++)
+	for (s32 y = 0; y < 400; y++)
 		memcpy(&((Uint8 *)surface8->pixels)[y * surface8->pitch], &image0[y][0], 640);
 	SDL_BlitSurface(surface8, &rect, windowsurface0, &rect);
 
 	// create rgb image1
-	for (int y = 0; y < 400; y++)
+	for (s32 y = 0; y < 400; y++)
 		memcpy(&((Uint8 *)surface8->pixels)[y * surface8->pitch], &image1[y][0], 640);
 	SDL_BlitSurface(surface8, &rect, windowsurface1, &rect);
 

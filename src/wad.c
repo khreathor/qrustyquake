@@ -5,7 +5,7 @@
 
 #include "quakedef.h"
 
-int				wad_numlumps;
+s32				wad_numlumps;
 lumpinfo_t		*wad_lumps;
 byte			*wad_base = NULL;
 
@@ -22,10 +22,10 @@ Space padding is so names can be printed nicely in tables.
 Can safely be performed in place.
 ==================
 */
-void W_CleanupName (const char *in, char *out)
+void W_CleanupName (const s8 *in, s8 *out)
 {
-	int		i;
-	int		c;
+	s32		i;
+	s32		c;
 
 	for (i=0 ; i<16 ; i++ )
 	{
@@ -51,9 +51,9 @@ void W_LoadWadFile (void) //johnfitz -- filename is now hard-coded for honesty
 {
 	lumpinfo_t		*lump_p;
 	wadinfo_t		*header;
-	int			i;
-	int			infotableofs;
-	const char		*filename = WADFILENAME;
+	s32			i;
+	s32			infotableofs;
+	const s8		*filename = WADFILENAME;
 
 	//johnfitz -- modified to use malloc
 	//TODO: use cache_alloc
@@ -93,11 +93,11 @@ void W_LoadWadFile (void) //johnfitz -- filename is now hard-coded for honesty
 W_GetLumpinfo
 =============
 */
-static lumpinfo_t *W_GetLumpinfo (lumpinfo_t *lumps, int numlumps, const char *name)
+static lumpinfo_t *W_GetLumpinfo (lumpinfo_t *lumps, s32 numlumps, const s8 *name)
 {
-	int		i;
+	s32		i;
 	lumpinfo_t	*lump_p;
-	char	clean[16];
+	s8	clean[16];
 
 	W_CleanupName (name, clean);
 
@@ -111,7 +111,7 @@ static lumpinfo_t *W_GetLumpinfo (lumpinfo_t *lumps, int numlumps, const char *n
 	return NULL;
 }
 
-void *W_GetLumpName (const char *name)
+void *W_GetLumpName (const s8 *name)
 {
 	lumpinfo_t	*lump;
 
@@ -122,7 +122,7 @@ void *W_GetLumpName (const char *name)
 	return (void *)(wad_base + lump->filepos);
 }
 
-void *W_GetLumpNum (int num)
+void *W_GetLumpNum (s32 num)
 {
 	lumpinfo_t	*lump;
 
@@ -139,12 +139,12 @@ void *W_GetLumpNum (int num)
 W_OpenWadFile
 =================
 */
-static bool W_OpenWadFile (const char *filename, fshandle_t *fh)
+static bool W_OpenWadFile (const s8 *filename, fshandle_t *fh)
 {
 	FILE *f;
-	long  length;
+	s64  length;
 
-	length = (long)COM_FOpenFile (filename, &f, NULL);
+	length = (s64)COM_FOpenFile (filename, &f, NULL);
 	if (length == -1)
 		return false;
 
@@ -161,9 +161,9 @@ static bool W_OpenWadFile (const char *filename, fshandle_t *fh)
 W_AddWadFile
 =================
 */
-static wad_t *W_AddWadFile (const char *name, fshandle_t *fh)
+static wad_t *W_AddWadFile (const s8 *name, fshandle_t *fh)
 {
-	int			i, id, numlumps, infotableofs, disksize;
+	s32			i, id, numlumps, infotableofs, disksize;
 	wadinfo_t	header;
 	lumpinfo_t *lumps, *info;
 	wad_t	   *wad;
@@ -245,12 +245,12 @@ static wad_t *W_AddWadFile (const char *name, fshandle_t *fh)
 W_LoadWadList
 =================
 */
-wad_t *W_LoadWadList (const char *names)
+wad_t *W_LoadWadList (const s8 *names)
 {
-	char	  *newnames = q_strdup (names);
-	char	  *name, *e;
+	s8	  *newnames = q_strdup (names);
+	s8	  *name, *e;
 	wad_t	  *wad, *wads = NULL;
-	char	   filename[MAX_QPATH];
+	s8	   filename[MAX_QPATH];
 	fshandle_t fh;
 
 	for (name = newnames; name && *name;)
@@ -318,7 +318,7 @@ void W_FreeWadList (wad_t *wads)
 W_GetLumpinfoList
 =================
 */
-lumpinfo_t *W_GetLumpinfoList (wad_t *wads, const char *name, wad_t **out_wad)
+lumpinfo_t *W_GetLumpinfoList (wad_t *wads, const s8 *name, wad_t **out_wad)
 {
 	lumpinfo_t *info;
 

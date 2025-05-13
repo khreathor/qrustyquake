@@ -8,7 +8,7 @@
 #include "quakedef.h"
 
 static cvar_t	*cvar_vars;
-static char	cvar_null_string[] = "";
+static s8	cvar_null_string[] = "";
 
 //==============================================================================
 //
@@ -16,7 +16,7 @@ static char	cvar_null_string[] = "";
 //
 //==============================================================================
 
-void Cvar_Reset (const char *name); //johnfitz
+void Cvar_Reset (const s8 *name); //johnfitz
 
 /*
 ============
@@ -26,8 +26,8 @@ Cvar_List_f -- johnfitz
 void Cvar_List_f (void)
 {
 	cvar_t	*cvar;
-	const char 	*partial;
-	int		len, count;
+	const s8 	*partial;
+	s32		len, count;
 
 	if (Cmd_Argc() > 1)
 	{
@@ -114,7 +114,7 @@ Cvar_Cycle_f -- johnfitz
 */
 void Cvar_Cycle_f (void)
 {
-	int i;
+	s32 i;
 
 	if (Cmd_Argc() < 3)
 	{
@@ -229,7 +229,7 @@ void Cvar_Init (void)
 Cvar_FindVar
 ============
 */
-cvar_t *Cvar_FindVar (const char *var_name)
+cvar_t *Cvar_FindVar (const s8 *var_name)
 {
 	cvar_t	*var;
 
@@ -242,7 +242,7 @@ cvar_t *Cvar_FindVar (const char *var_name)
 	return NULL;
 }
 
-cvar_t *Cvar_FindVarAfter (const char *prev_name, unsigned int with_flags)
+cvar_t *Cvar_FindVarAfter (const s8 *prev_name, u32 with_flags)
 {
 	cvar_t	*var;
 
@@ -271,14 +271,14 @@ cvar_t *Cvar_FindVarAfter (const char *prev_name, unsigned int with_flags)
 Cvar_LockVar
 ============
 */
-void Cvar_LockVar (const char *var_name)
+void Cvar_LockVar (const s8 *var_name)
 {
 	cvar_t	*var = Cvar_FindVar (var_name);
 	if (var)
 		var->flags |= CVAR_LOCKED;
 }
 
-void Cvar_UnlockVar (const char *var_name)
+void Cvar_UnlockVar (const s8 *var_name)
 {
 	cvar_t	*var = Cvar_FindVar (var_name);
 	if (var)
@@ -300,7 +300,7 @@ void Cvar_UnlockAll (void)
 Cvar_VariableValue
 ============
 */
-float	Cvar_VariableValue (const char *var_name)
+float	Cvar_VariableValue (const s8 *var_name)
 {
 	cvar_t	*var;
 
@@ -316,7 +316,7 @@ float	Cvar_VariableValue (const char *var_name)
 Cvar_VariableString
 ============
 */
-const char *Cvar_VariableString (const char *var_name)
+const s8 *Cvar_VariableString (const s8 *var_name)
 {
 	cvar_t *var;
 
@@ -332,10 +332,10 @@ const char *Cvar_VariableString (const char *var_name)
 Cvar_CompleteVariable
 ============
 */
-const char *Cvar_CompleteVariable (const char *partial)
+const s8 *Cvar_CompleteVariable (const s8 *partial)
 {
 	cvar_t	*cvar;
-	int	len;
+	s32	len;
 
 	len = strlen(partial);
 	if (!len)
@@ -356,7 +356,7 @@ const char *Cvar_CompleteVariable (const char *partial)
 Cvar_Reset -- johnfitz
 ============
 */
-void Cvar_Reset (const char *name)
+void Cvar_Reset (const s8 *name)
 {
 	cvar_t	*var;
 
@@ -367,7 +367,7 @@ void Cvar_Reset (const char *name)
 		Cvar_SetQuick (var, var->default_string);
 }
 
-void Cvar_SetQuick (cvar_t *var, const char *value)
+void Cvar_SetQuick (cvar_t *var, const s8 *value)
 {
 	if (var->flags & (CVAR_ROM|CVAR_LOCKED))
 		return;
@@ -378,7 +378,7 @@ void Cvar_SetQuick (cvar_t *var, const char *value)
 		var->string = Z_Strdup (value);
 	else
 	{
-		int	len;
+		s32	len;
 
 		if (!strcmp(var->string, value))
 			return;	// no change
@@ -388,9 +388,9 @@ void Cvar_SetQuick (cvar_t *var, const char *value)
 		if (len != strlen(var->string))
 		{
 			Z_Free ((void *)var->string);
-			var->string = (char *) Z_Malloc (len + 1);
+			var->string = (s8 *) Z_Malloc (len + 1);
 		}
-		memcpy ((char *)var->string, value, len + 1);
+		memcpy ((s8 *)var->string, value, len + 1);
 	}
 
 	var->value = Q_atof (var->string);
@@ -414,10 +414,10 @@ void Cvar_SetQuick (cvar_t *var, const char *value)
 
 void Cvar_SetValueQuick (cvar_t *var, const float value)
 {
-	char	val[32], *ptr = val;
+	s8	val[32], *ptr = val;
 
-	if (value == (float)((int)value))
-		q_snprintf (val, sizeof(val), "%i", (int)value);
+	if (value == (float)((s32)value))
+		q_snprintf (val, sizeof(val), "%i", (s32)value);
 	else
 	{
 		q_snprintf (val, sizeof(val), "%f", value);
@@ -436,7 +436,7 @@ void Cvar_SetValueQuick (cvar_t *var, const float value)
 Cvar_Set
 ============
 */
-void Cvar_Set (const char *var_name, const char *value)
+void Cvar_Set (const s8 *var_name, const s8 *value)
 {
 	cvar_t		*var;
 
@@ -455,12 +455,12 @@ void Cvar_Set (const char *var_name, const char *value)
 Cvar_SetValue
 ============
 */
-void Cvar_SetValue (const char *var_name, const float value)
+void Cvar_SetValue (const s8 *var_name, const float value)
 {
-	char	val[32], *ptr = val;
+	s8	val[32], *ptr = val;
 
-	if (value == (float)((int)value))
-		q_snprintf (val, sizeof(val), "%i", (int)value);
+	if (value == (float)((s32)value))
+		q_snprintf (val, sizeof(val), "%i", (s32)value);
 	else
 	{
 		q_snprintf (val, sizeof(val), "%f", value);
@@ -479,7 +479,7 @@ void Cvar_SetValue (const char *var_name, const float value)
 Cvar_SetROM
 ============
 */
-void Cvar_SetROM (const char *var_name, const char *value)
+void Cvar_SetROM (const s8 *var_name, const s8 *value)
 {
 	cvar_t *var = Cvar_FindVar (var_name);
 	if (var)
@@ -495,7 +495,7 @@ void Cvar_SetROM (const char *var_name, const char *value)
 Cvar_SetValueROM
 ============
 */
-void Cvar_SetValueROM (const char *var_name, const float value)
+void Cvar_SetValueROM (const s8 *var_name, const float value)
 {
 	cvar_t *var = Cvar_FindVar (var_name);
 	if (var)
@@ -515,7 +515,7 @@ Adds a freestanding variable to the variable list.
 */
 void Cvar_RegisterVariable (cvar_t *variable)
 {
-	char	value[512];
+	s8	value[512];
 	bool	set_rom;
 	cvar_t	*cursor,*prev; //johnfitz -- sorted list insert
 

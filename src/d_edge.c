@@ -2,11 +2,11 @@
 
 #include "quakedef.h"
 
-extern int screenwidth;
-static int miplevel;
+extern s32 screenwidth;
+static s32 miplevel;
 float scale_for_mip;
-int ubasestep, errorterm, erroradjustup, erroradjustdown;
-int vstartscan;
+s32 ubasestep, errorterm, erroradjustup, erroradjustdown;
+s32 vstartscan;
 vec3_t transformed_modelorg;
 extern float cur_ent_alpha;
 
@@ -14,9 +14,9 @@ extern float cur_ent_alpha;
 extern void R_RotateBmodel();
 extern void R_TransformFrustum();
 
-int D_MipLevelForScale(float scale)
+s32 D_MipLevelForScale(float scale)
 {
-	int lmiplevel;
+	s32 lmiplevel;
 	if (scale >= d_scalemip[0])
 		lmiplevel = 0;
 	else if (scale >= d_scalemip[1])
@@ -30,13 +30,13 @@ int D_MipLevelForScale(float scale)
 	return lmiplevel;
 }
 
-void D_DrawSolidSurface(surf_t *surf, int color)
+void D_DrawSolidSurface(surf_t *surf, s32 color)
 { // FIXME: clean this up
-	int pix = (color << 24) | (color << 16) | (color << 8) | color;
+	s32 pix = (color << 24) | (color << 16) | (color << 8) | color;
 	for (espan_t *span = surf->spans; span; span = span->pnext) {
 		byte *pdest = (byte *) d_viewbuffer + screenwidth * span->v;
-		int u = span->u;
-		int u2 = span->u + span->count - 1;
+		s32 u = span->u;
+		s32 u2 = span->u + span->count - 1;
 		((byte *) pdest)[u] = pix;
 		if (u2 - u < 8)
 			for (u++; u <= u2; u++)
@@ -46,7 +46,7 @@ void D_DrawSolidSurface(surf_t *surf, int color)
 				((byte *) pdest)[u] = pix;
 			u2 -= 4;
 			for (; u <= u2; u += 4)
-				*(int *)((byte *) pdest + u) = pix;
+				*(s32 *)((byte *) pdest + u) = pix;
 			u2 += 4;
 			for (; u <= u2; u++)
 				((byte *) pdest)[u] = pix;
@@ -113,7 +113,7 @@ void D_DrawSurfaces()
 		// 35, which leads to segfaults on any further checks while
 		// still passing s->entity != NULL check. Must be a symptom of
 		// some bigger issue that I can't be bothered to diagnose ATM.
-		unsigned long is_ent = (unsigned long)s->entity & 0xffff000;
+		u64 is_ent = (u64)s->entity & 0xffff000;
 		// CyanBun96: a 0 in either of those causes an error. FIXME
 		if (!pface || !pface->extents[0] || !pface->extents[1]) {
 			if (pface)
@@ -124,8 +124,8 @@ void D_DrawSurfaces()
 			continue;
 		}
 		// CyanBun96: reject broken surfaces earlier to avoid crashes
-		int wd = pface->extents[0] >> (MIPLEVELS-1);
-		int sz = wd * pface->extents[1] >> (MIPLEVELS-1);
+		s32 wd = pface->extents[0] >> (MIPLEVELS-1);
+		s32 sz = wd * pface->extents[1] >> (MIPLEVELS-1);
 		if (((wd < 0 || wd > 256) || (sz <= 0 || sz > 0x10000)) &&
 			!SURF_WINQUAKE_DRAWTRANSLUCENT) {
 			Con_DPrintf("Invalid surface width/size %d %d\n",wd,sz);
@@ -182,8 +182,8 @@ void D_DrawSurfaces()
 			d_zistepu = 0;
 			d_zistepv = 0;
 			d_ziorigin = -0.9;
-			if (!r_pass || (int)r_twopass.value&1)
-				D_DrawSolidSurface(s, (int)r_clearcolor.value & 0xFF);
+			if (!r_pass || (s32)r_twopass.value&1)
+				D_DrawSolidSurface(s, (s32)r_clearcolor.value & 0xFF);
 			else D_DrawSolidSurface(s, 0xFF);
 			D_DrawZSpans(s->spans);
 		} else if (s->flags & SURF_DRAWTURB && (!s->entity->model->haslitwater

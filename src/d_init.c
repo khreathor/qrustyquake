@@ -6,10 +6,10 @@
 
 surfcache_t *d_initial_rover;
 bool d_roverwrapped;
-int d_minmip;
+s32 d_minmip;
 float d_scalemip[NUM_MIPS - 1];
 static float basemip[NUM_MIPS - 1] = { 1.0, 0.5 * 0.8, 0.25 * 0.8 };
-extern int d_aflatcolor;
+extern s32 d_aflatcolor;
 
 void D_Init()
 {
@@ -28,7 +28,7 @@ void D_SetupFrame()
 	d_initial_rover = sc_rover;
 	d_minmip = d_mipcap.value;
 	d_minmip = CLAMP(0, d_minmip, 3);
-	for (int i = 0; i < (NUM_MIPS - 1); i++)
+	for (s32 i = 0; i < (NUM_MIPS - 1); i++)
 		d_scalemip[i] = basemip[i] * d_mipscale.value;
 	d_aflatcolor = 0;
 }

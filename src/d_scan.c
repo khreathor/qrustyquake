@@ -4,25 +4,25 @@
 
 #include "quakedef.h"
 
-unsigned char *r_turb_pbase, *r_turb_pdest;
+u8 *r_turb_pbase, *r_turb_pdest;
 fixed16_t r_turb_s, r_turb_t, r_turb_sstep, r_turb_tstep;
-int *r_turb_turb;
-int r_turb_spancount;
-short *pz; // Manoel Kasimier - translucent water
-int izi, izistep;
-int dither_pat = 0;
-unsigned char *litwater_base;
-int lwmark = 0;
+s32 *r_turb_turb;
+s32 r_turb_spancount;
+s16 *pz; // Manoel Kasimier - translucent water
+s32 izi, izistep;
+s32 dither_pat = 0;
+u8 *litwater_base;
+s32 lwmark = 0;
 
-extern int fog_lut_built;
+extern s32 fog_lut_built;
 
 void D_DrawTurbulent8Span();
 
-int D_Dither(byte *pos)
+s32 D_Dither(byte *pos)
 {
-	unsigned long d = pos - vid.buffer;
-	unsigned long x = d % vid.width;
-	unsigned long y = d / vid.width;
+	u64 d = pos - vid.buffer;
+	u64 x = d % vid.width;
+	u64 y = d / vid.width;
 	switch (dither_pat) {
 		case 0: return !(d % 6); // 1/6
 		case 1: return (y&1) && ((y&3) == 3 ? (x&1) : !(x&1)); // 1/4
@@ -36,24 +36,24 @@ int D_Dither(byte *pos)
 
 void D_WarpScreen() // this performs a slight compression of the screen at the
 { // same time as the sine warp, to keep the edges from wrapping
-	int w = r_refdef.vrect.width;
-	int h = r_refdef.vrect.height;
+	s32 w = r_refdef.vrect.width;
+	s32 h = r_refdef.vrect.height;
 	float wratio = w / (float)scr_vrect.width;
 	float hratio = h / (float)scr_vrect.height;
 	byte *rowptr[MAXHEIGHT + (AMP2 * 2)];
-	int column[MAXWIDTH + (AMP2 * 2)];
-	for (int v = 0; v < scr_vrect.height + AMP2 * 2; v++)
+	s32 column[MAXWIDTH + (AMP2 * 2)];
+	for (s32 v = 0; v < scr_vrect.height + AMP2 * 2; v++)
 		rowptr[v] = d_viewbuffer + (r_refdef.vrect.y * screenwidth) +
-		    screenwidth * (int)((float)v * hratio * h / (h + AMP2 * 2));
-	for (int u = 0; u < scr_vrect.width + AMP2 * 2; u++)
-		column[u] = r_refdef.vrect.x + (int)((float)u * wratio * w /
+		    screenwidth * (s32)((float)v * hratio * h / (h + AMP2 * 2));
+	for (s32 u = 0; u < scr_vrect.width + AMP2 * 2; u++)
+		column[u] = r_refdef.vrect.x + (s32)((float)u * wratio * w /
 						     (w + AMP2 * 2));
-	int *turb = intsintable + ((int)(cl.time * SPEED) & (CYCLE - 1));
+	s32 *turb = intsintable + ((s32)(cl.time * SPEED) & (CYCLE - 1));
 	byte *dest = vid.buffer + scr_vrect.y * vid.width + scr_vrect.x;
-	for (int v = 0; v < scr_vrect.height; v++, dest += vid.width) {
-		int *col = &column[turb[v]];
+	for (s32 v = 0; v < scr_vrect.height; v++, dest += vid.width) {
+		s32 *col = &column[turb[v]];
 		byte **row = &rowptr[v];
-		for (int u = 0; u < scr_vrect.width; u += 4) {
+		for (s32 u = 0; u < scr_vrect.width; u += 4) {
 			dest[u + 0] = row[turb[u + 0]][col[u + 0]];
 			dest[u + 1] = row[turb[u + 1]][col[u + 1]];
 			dest[u + 2] = row[turb[u + 2]][col[u + 2]];
@@ -66,9 +66,9 @@ void D_DrawTurbulent8Span()
 {
 	if (!lmonly) {
 		do {
-			int s = ((r_turb_s + r_turb_turb[(r_turb_t >> 16) & (CYCLE - 1)]) >> 16) & 63;
-			int t = ((r_turb_t + r_turb_turb[(r_turb_s >> 16) & (CYCLE - 1)]) >> 16) & 63;
-			int pix = *(r_turb_pbase + (t << 6) + s);
+			s32 s = ((r_turb_s + r_turb_turb[(r_turb_t >> 16) & (CYCLE - 1)]) >> 16) & 63;
+			s32 t = ((r_turb_t + r_turb_turb[(r_turb_s >> 16) & (CYCLE - 1)]) >> 16) & 63;
+			s32 pix = *(r_turb_pbase + (t << 6) + s);
 			*r_turb_pdest++ = pix;
 			r_turb_s += r_turb_sstep;
 			r_turb_t += r_turb_tstep;
@@ -76,19 +76,19 @@ void D_DrawTurbulent8Span()
 	} else { // lit water: render first and then apply the already drawn lightmap as a filter
 		if (!lit_lut_initialized) R_BuildLitLUT();
 		do {
-			int s = ((r_turb_s + r_turb_turb[(r_turb_t >> 16) & (CYCLE - 1)]) >> 16) & 63;
-			int t = ((r_turb_t + r_turb_turb[(r_turb_s >> 16) & (CYCLE - 1)]) >> 16) & 63;
-			int pix = *(r_turb_pbase + (t << 6) + s);
-			int lit = *(litwater_base+(r_turb_pdest-d_viewbuffer));
-			unsigned char rp = host_basepal[pix * 3 + 0];
-			unsigned char gp = host_basepal[pix * 3 + 1];
-			unsigned char bp = host_basepal[pix * 3 + 2];
-			unsigned char rl = host_basepal[lit * 3 + 0];
-			unsigned char gl = host_basepal[lit * 3 + 1];
-			unsigned char bl = host_basepal[lit * 3 + 2];
-			int r = rp * rl / 255;
-			int g = gp * gl / 255;
-			int b = bp * bl / 255;
+			s32 s = ((r_turb_s + r_turb_turb[(r_turb_t >> 16) & (CYCLE - 1)]) >> 16) & 63;
+			s32 t = ((r_turb_t + r_turb_turb[(r_turb_s >> 16) & (CYCLE - 1)]) >> 16) & 63;
+			s32 pix = *(r_turb_pbase + (t << 6) + s);
+			s32 lit = *(litwater_base+(r_turb_pdest-d_viewbuffer));
+			u8 rp = host_basepal[pix * 3 + 0];
+			u8 gp = host_basepal[pix * 3 + 1];
+			u8 bp = host_basepal[pix * 3 + 2];
+			u8 rl = host_basepal[lit * 3 + 0];
+			u8 gl = host_basepal[lit * 3 + 1];
+			u8 bl = host_basepal[lit * 3 + 2];
+			s32 r = rp * rl / 255;
+			s32 g = gp * gl / 255;
+			s32 b = bp * bl / 255;
 			*r_turb_pdest++ = lit_lut[ QUANT(r)
                                         + QUANT(g)*LIT_LUT_RES
                                         + QUANT(b)*LIT_LUT_RES*LIT_LUT_RES ];
@@ -104,10 +104,10 @@ void D_DrawTurbulent8SpanAlpha (float opacity)
 		if (!fog_lut_built) build_color_mix_lut(0);
 		do {
 			if (*pz <= (izi >> 16)) {
-				int s=((r_turb_s+r_turb_turb[(r_turb_t>>16)&(CYCLE-1)])>>16)&63;
-				int t=((r_turb_t+r_turb_turb[(r_turb_s>>16)&(CYCLE-1)])>>16)&63;
+				s32 s=((r_turb_s+r_turb_turb[(r_turb_t>>16)&(CYCLE-1)])>>16)&63;
+				s32 t=((r_turb_t+r_turb_turb[(r_turb_s>>16)&(CYCLE-1)])>>16)&63;
 				*r_turb_pdest = color_mix_lut[*(r_turb_pbase + (t << 6) + s)]
-					[*r_turb_pdest][(int)(opacity*FOG_LUT_LEVELS)];
+					[*r_turb_pdest][(s32)(opacity*FOG_LUT_LEVELS)];
 			}
 			r_turb_pdest++;
 			izi += izistep;
@@ -121,24 +121,24 @@ void D_DrawTurbulent8SpanAlpha (float opacity)
 		if (!lit_lut_initialized) R_BuildLitLUT();
 		do {
 			if (*pz <= (izi >> 16)) {
-				int s=((r_turb_s+r_turb_turb[(r_turb_t>>16)&(CYCLE-1)])>>16)&63;
-				int t=((r_turb_t+r_turb_turb[(r_turb_s>>16)&(CYCLE-1)])>>16)&63;
-				int pix = *(r_turb_pbase + (t << 6) + s);
-				int lit = *(litwater_base+(r_turb_pdest-d_viewbuffer));
-				unsigned char rp = host_basepal[pix * 3 + 0];
-				unsigned char gp = host_basepal[pix * 3 + 1];
-				unsigned char bp = host_basepal[pix * 3 + 2];
-				unsigned char rl = host_basepal[lit * 3 + 0];
-				unsigned char gl = host_basepal[lit * 3 + 1];
-				unsigned char bl = host_basepal[lit * 3 + 2];
-				int r = rp * rl / 255;
-				int g = gp * gl / 255;
-				int b = bp * bl / 255;
+				s32 s=((r_turb_s+r_turb_turb[(r_turb_t>>16)&(CYCLE-1)])>>16)&63;
+				s32 t=((r_turb_t+r_turb_turb[(r_turb_s>>16)&(CYCLE-1)])>>16)&63;
+				s32 pix = *(r_turb_pbase + (t << 6) + s);
+				s32 lit = *(litwater_base+(r_turb_pdest-d_viewbuffer));
+				u8 rp = host_basepal[pix * 3 + 0];
+				u8 gp = host_basepal[pix * 3 + 1];
+				u8 bp = host_basepal[pix * 3 + 2];
+				u8 rl = host_basepal[lit * 3 + 0];
+				u8 gl = host_basepal[lit * 3 + 1];
+				u8 bl = host_basepal[lit * 3 + 2];
+				s32 r = rp * rl / 255;
+				s32 g = gp * gl / 255;
+				s32 b = bp * bl / 255;
 				pix = lit_lut[ QUANT(r)
 						+ QUANT(g)*LIT_LUT_RES
 						+ QUANT(b)*LIT_LUT_RES*LIT_LUT_RES ];
 				*r_turb_pdest = color_mix_lut[pix]
-					[*r_turb_pdest][(int)(opacity*FOG_LUT_LEVELS)];
+					[*r_turb_pdest][(s32)(opacity*FOG_LUT_LEVELS)];
 			}
 			r_turb_pdest++;
 			izi += izistep;
@@ -158,8 +158,8 @@ void D_DrawTurbulent8SpanAlpha (float opacity)
 	if (!lmonly) {
 		do {
 			if (*pz <= (izi >> 16)) {
-				int s=((r_turb_s+r_turb_turb[(r_turb_t>>16)&(CYCLE-1)])>>16)&63;
-				int t=((r_turb_t+r_turb_turb[(r_turb_s>>16)&(CYCLE-1)])>>16)&63;
+				s32 s=((r_turb_s+r_turb_turb[(r_turb_t>>16)&(CYCLE-1)])>>16)&63;
+				s32 t=((r_turb_t+r_turb_turb[(r_turb_s>>16)&(CYCLE-1)])>>16)&63;
 				if (D_Dither(r_turb_pdest))
 					*r_turb_pdest = *(r_turb_pbase + (t << 6) + s);
 			}
@@ -172,20 +172,20 @@ void D_DrawTurbulent8SpanAlpha (float opacity)
 	} else {
 		do {
 			if (*pz <= (izi >> 16)) {
-				int s=((r_turb_s+r_turb_turb[(r_turb_t>>16)&(CYCLE-1)])>>16)&63;
-				int t=((r_turb_t+r_turb_turb[(r_turb_s>>16)&(CYCLE-1)])>>16)&63;
+				s32 s=((r_turb_s+r_turb_turb[(r_turb_t>>16)&(CYCLE-1)])>>16)&63;
+				s32 t=((r_turb_t+r_turb_turb[(r_turb_s>>16)&(CYCLE-1)])>>16)&63;
 				if (D_Dither(r_turb_pdest)) {
-					int pix = *(r_turb_pbase + (t << 6) + s);
-					int lit = *(litwater_base+(r_turb_pdest-d_viewbuffer));
-					unsigned char rp = host_basepal[pix * 3 + 0];
-					unsigned char gp = host_basepal[pix * 3 + 1];
-					unsigned char bp = host_basepal[pix * 3 + 2];
-					unsigned char rl = host_basepal[lit * 3 + 0];
-					unsigned char gl = host_basepal[lit * 3 + 1];
-					unsigned char bl = host_basepal[lit * 3 + 2];
-					int r = rp * rl / 255;
-					int g = gp * gl / 255;
-					int b = bp * bl / 255;
+					s32 pix = *(r_turb_pbase + (t << 6) + s);
+					s32 lit = *(litwater_base+(r_turb_pdest-d_viewbuffer));
+					u8 rp = host_basepal[pix * 3 + 0];
+					u8 gp = host_basepal[pix * 3 + 1];
+					u8 bp = host_basepal[pix * 3 + 2];
+					u8 rl = host_basepal[lit * 3 + 0];
+					u8 gl = host_basepal[lit * 3 + 1];
+					u8 bl = host_basepal[lit * 3 + 2];
+					s32 r = rp * rl / 255;
+					s32 g = gp * gl / 255;
+					s32 b = bp * bl / 255;
 					*r_turb_pdest = lit_lut[ QUANT(r)
 							+ QUANT(g)*LIT_LUT_RES
 							+ QUANT(b)*LIT_LUT_RES*LIT_LUT_RES ];
@@ -202,31 +202,31 @@ void D_DrawTurbulent8SpanAlpha (float opacity)
 
 void Turbulent8(espan_t *pspan, float opacity)
 {
-	r_turb_turb = sintable + ((int)(cl.time * SPEED) & (CYCLE - 1));
+	r_turb_turb = sintable + ((s32)(cl.time * SPEED) & (CYCLE - 1));
 	r_turb_sstep = 0; // keep compiler happy
 	r_turb_tstep = 0; // ditto
-	r_turb_pbase = (unsigned char *)cacheblock;
+	r_turb_pbase = (u8 *)cacheblock;
 	float sdivz16stepu = d_sdivzstepu * 16;
 	float tdivz16stepu = d_tdivzstepu * 16;
 	float zi16stepu = d_zistepu * 16;
-	izistep = (int)(d_zistepu * 0x8000 * 0x10000);
+	izistep = (s32)(d_zistepu * 0x8000 * 0x10000);
 	do {
 		r_turb_pdest = (byte *) ((byte *) d_viewbuffer + (screenwidth * pspan->v) + pspan->u);
 		pz = d_pzbuffer + (d_zwidth * pspan->v) + pspan->u; // Manoel Kasimier - translucent water
-		int count = pspan->count;
+		s32 count = pspan->count;
 		float du = (float)pspan->u; // calculate the initial s/z, t/z,
 		float dv = (float)pspan->v; // 1/z, s, and t and clamp
 		float sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
 		float tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
 		float zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
 		float z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
-		izi = (int)(zi * 0x8000 * 0x10000); // Manoel Kasimier - translucent water
-		r_turb_s = (int)(sdivz * z) + sadjust;
+		izi = (s32)(zi * 0x8000 * 0x10000); // Manoel Kasimier - translucent water
+		r_turb_s = (s32)(sdivz * z) + sadjust;
 		if (r_turb_s > bbextents)
 			r_turb_s = bbextents;
 		else if (r_turb_s < 0)
 			r_turb_s = 0;
-		r_turb_t = (int)(tdivz * z) + tadjust;
+		r_turb_t = (s32)(tdivz * z) + tadjust;
 		if (r_turb_t > bbextentt)
 			r_turb_t = bbextentt;
 		else if (r_turb_t < 0)
@@ -244,14 +244,14 @@ void Turbulent8(espan_t *pspan, float opacity)
 				tdivz += tdivz16stepu;
 				zi += zi16stepu;
 				z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
-				snext = (int)(sdivz * z) + sadjust;
+				snext = (s32)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
 				else if (snext < 16)
 					snext = 16; // prevent round-off error on <0 steps from
 				// from causing overstepping & running off the
 				// edge of the texture
-				tnext = (int)(tdivz * z) + tadjust;
+				tnext = (s32)(tdivz * z) + tadjust;
 				if (tnext > bbextentt)
 					tnext = bbextentt;
 				else if (tnext < 16)
@@ -269,14 +269,14 @@ void Turbulent8(espan_t *pspan, float opacity)
 				tdivz += d_tdivzstepu * spancountminus1;
 				zi += d_zistepu * spancountminus1;
 				z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
-				snext = (int)(sdivz * z) + sadjust;
+				snext = (s32)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
 				else if (snext < 16)
 					snext = 16; // prevent round-off error on <0 steps from
 				// from causing overstepping & running off the
 				// edge of the texture
-				tnext = (int)(tdivz * z) + tadjust;
+				tnext = (s32)(tdivz * z) + tadjust;
 				if (tnext > bbextentt)
 					tnext = bbextentt;
 				else if (tnext < 16)
@@ -302,26 +302,26 @@ void D_DrawSkyboxScans8(espan_t *pspan)
 { // CyanBun96: this is exactly the same as DrawSpans8 except for the fog mixing part. consolidate. FIXME
 	if(fog_density > 0 && !fog_lut_built) // for r_skyfog
 		build_color_mix_lut(0);
-	unsigned char *pbase = (unsigned char *)cacheblock;
+	u8 *pbase = (u8 *)cacheblock;
 	float sdivz8stepu = d_sdivzstepu * 8;
 	float tdivz8stepu = d_tdivzstepu * 8;
 	float zi8stepu = d_zistepu * 8;
 	do {
-		unsigned char *pdest = (unsigned char *)((byte *) d_viewbuffer +
+		u8 *pdest = (u8 *)((byte *) d_viewbuffer +
 				      (screenwidth * pspan->v) + pspan->u);
-		int count = pspan->count;
+		s32 count = pspan->count;
 		float du = (float)pspan->u; // calculate the initial s/z, t/z,
 		float dv = (float)pspan->v; // 1/z, s, and t and clamp
 		float sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
 		float tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
 		float zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
 		float z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
-		fixed16_t s = (int)(sdivz * z) + sadjust;
+		fixed16_t s = (s32)(sdivz * z) + sadjust;
 		if (s > bbextents)
 			s = bbextents;
 		else if (s < 0)
 			s = 0;
-		fixed16_t t = (int)(tdivz * z) + tadjust;
+		fixed16_t t = (s32)(tdivz * z) + tadjust;
 		if (t > bbextentt)
 			t = bbextentt;
 		else if (t < 0)
@@ -331,7 +331,7 @@ void D_DrawSkyboxScans8(espan_t *pspan)
 			fixed16_t snext, tnext;
 			fixed16_t sstep = 0; // keep compiler happy
 			fixed16_t tstep = 0; // ditto
-			int spancount = count;
+			s32 spancount = count;
 			if (count >= 8)
 				spancount = 8;
 			count -= spancount;
@@ -342,14 +342,14 @@ void D_DrawSkyboxScans8(espan_t *pspan)
 				tdivz += tdivz8stepu;
 				zi += zi8stepu;
 				z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
-				snext = (int)(sdivz * z) + sadjust;
+				snext = (s32)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
 				else if (snext < 8)
 					snext = 8; // prevent round-off error on <0 steps from
 				// from causing overstepping & running off the
 				// edge of the texture
-				tnext = (int)(tdivz * z) + tadjust;
+				tnext = (s32)(tdivz * z) + tadjust;
 				if (tnext > bbextentt)
 					tnext = bbextentt;
 				else if (tnext < 8)
@@ -366,14 +366,14 @@ void D_DrawSkyboxScans8(espan_t *pspan)
 				tdivz += d_tdivzstepu * spancountminus1;
 				zi += d_zistepu * spancountminus1;
 				z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
-				snext = (int)(sdivz * z) + sadjust;
+				snext = (s32)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
 				else if (snext < 8)
 					snext = 8; // prevent round-off error on <0 steps from
 				// from causing overstepping & running off the
 				// edge of the texture
-				tnext = (int)(tdivz * z) + tadjust;
+				tnext = (s32)(tdivz * z) + tadjust;
 				if (tnext > bbextentt)
 					tnext = bbextentt;
 				else if (tnext < 8)
@@ -384,13 +384,13 @@ void D_DrawSkyboxScans8(espan_t *pspan)
 				}
 			}
 
-			int foglut = r_skyfog.value*FOG_LUT_LEVELS;
+			s32 foglut = r_skyfog.value*FOG_LUT_LEVELS;
 			do {
-				unsigned char pix = *(pbase + (s >> 16) +
+				u8 pix = *(pbase + (s >> 16) +
 					(t >> 16) * cachewidth);
 				if (fog_density > 0)
 					pix = color_mix_lut[pix][fog_pal_index][foglut];
-				if (pix != 0xff || !((int)r_twopass.value&1))
+				if (pix != 0xff || !((s32)r_twopass.value&1))
 					*pdest = pix;
 				pdest++;
 				s += sstep;
@@ -404,34 +404,34 @@ void D_DrawSkyboxScans8(espan_t *pspan)
 
 void D_DrawSpans8(espan_t *pspan)
 {
-	unsigned char *pbase = (unsigned char *)cacheblock;
+	u8 *pbase = (u8 *)cacheblock;
 	float sdivz8stepu = d_sdivzstepu * 8;
 	float tdivz8stepu = d_tdivzstepu * 8;
 	float zi8stepu = d_zistepu * 8;
 	do {
-		unsigned char *pdest = (unsigned char *)((byte *) d_viewbuffer +
+		u8 *pdest = (u8 *)((byte *) d_viewbuffer +
 				      (screenwidth * pspan->v) + pspan->u);
 		if (lmonly) {
 			if (!litwater_base) {
 				lwmark = Hunk_HighMark();
 				litwater_base = Hunk_HighAllocName(vid.width*vid.height, "waterlightmap");
 			}
-			pdest = (unsigned char *)((byte *) litwater_base +
+			pdest = (u8 *)((byte *) litwater_base +
 				      (screenwidth * pspan->v) + pspan->u);
 		}
-		int count = pspan->count;
+		s32 count = pspan->count;
 		float du = (float)pspan->u; // calculate the initial s/z, t/z,
 		float dv = (float)pspan->v; // 1/z, s, and t and clamp
 		float sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
 		float tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
 		float zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
 		float z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
-		fixed16_t s = (int)(sdivz * z) + sadjust;
+		fixed16_t s = (s32)(sdivz * z) + sadjust;
 		if (s > bbextents)
 			s = bbextents;
 		else if (s < 0)
 			s = 0;
-		fixed16_t t = (int)(tdivz * z) + tadjust;
+		fixed16_t t = (s32)(tdivz * z) + tadjust;
 		if (t > bbextentt)
 			t = bbextentt;
 		else if (t < 0)
@@ -441,7 +441,7 @@ void D_DrawSpans8(espan_t *pspan)
 			fixed16_t snext, tnext;
 			fixed16_t sstep = 0; // keep compiler happy
 			fixed16_t tstep = 0; // ditto
-			int spancount = count;
+			s32 spancount = count;
 			if (count >= 8)
 				spancount = 8;
 			count -= spancount;
@@ -452,14 +452,14 @@ void D_DrawSpans8(espan_t *pspan)
 				tdivz += tdivz8stepu;
 				zi += zi8stepu;
 				z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
-				snext = (int)(sdivz * z) + sadjust;
+				snext = (s32)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
 				else if (snext < 8)
 					snext = 8; // prevent round-off error on <0 steps from
 				// from causing overstepping & running off the
 				// edge of the texture
-				tnext = (int)(tdivz * z) + tadjust;
+				tnext = (s32)(tdivz * z) + tadjust;
 				if (tnext > bbextentt)
 					tnext = bbextentt;
 				else if (tnext < 8)
@@ -476,14 +476,14 @@ void D_DrawSpans8(espan_t *pspan)
 				tdivz += d_tdivzstepu * spancountminus1;
 				zi += d_zistepu * spancountminus1;
 				z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
-				snext = (int)(sdivz * z) + sadjust;
+				snext = (s32)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
 				else if (snext < 8)
 					snext = 8; // prevent round-off error on <0 steps from
 				// from causing overstepping & running off the
 				// edge of the texture
-				tnext = (int)(tdivz * z) + tadjust;
+				tnext = (s32)(tdivz * z) + tadjust;
 				if (tnext > bbextentt)
 					tnext = bbextentt;
 				else if (tnext < 8)
@@ -495,9 +495,9 @@ void D_DrawSpans8(espan_t *pspan)
 			}
 
 			do {
-				unsigned char pix = *(pbase + (s >> 16) +
+				u8 pix = *(pbase + (s >> 16) +
 					(t >> 16) * cachewidth);
-				if (pix != 0xff || !((int)r_twopass.value&1))
+				if (pix != 0xff || !((s32)r_twopass.value&1))
 					*pdest = pix;
 				pdest++;
 				s += sstep;
@@ -511,29 +511,29 @@ void D_DrawSpans8(espan_t *pspan)
 
 void D_DrawTransSpans8(espan_t *pspan, float opacity)
 { // CyanBun96: this is literally D_DrawSpans8 with a few extra lines. FIXME
-	unsigned char *pbase = (unsigned char *)cacheblock;
+	u8 *pbase = (u8 *)cacheblock;
 	float sdivz8stepu = d_sdivzstepu * 8;
 	float tdivz8stepu = d_tdivzstepu * 8;
 	float zi8stepu = d_zistepu * 8;
-	izistep = (int)(d_zistepu * 0x8000 * 0x10000);
+	izistep = (s32)(d_zistepu * 0x8000 * 0x10000);
 	do {
-		unsigned char *pdest = (unsigned char *)((byte *) d_viewbuffer +
+		u8 *pdest = (u8 *)((byte *) d_viewbuffer +
 				      (screenwidth * pspan->v) + pspan->u);
 		pz = d_pzbuffer + (d_zwidth * pspan->v) + pspan->u;
-		int count = pspan->count;
+		s32 count = pspan->count;
 		float du = (float)pspan->u; // calculate the initial s/z, t/z,
 		float dv = (float)pspan->v; // 1/z, s, and t and clamp
 		float sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
 		float tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
 		float zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
 		float z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
-		izi = (int)(zi * 0x8000 * 0x10000);
-		fixed16_t s = (int)(sdivz * z) + sadjust;
+		izi = (s32)(zi * 0x8000 * 0x10000);
+		fixed16_t s = (s32)(sdivz * z) + sadjust;
 		if (s > bbextents)
 			s = bbextents;
 		else if (s < 0)
 			s = 0;
-		fixed16_t t = (int)(tdivz * z) + tadjust;
+		fixed16_t t = (s32)(tdivz * z) + tadjust;
 		if (t > bbextentt)
 			t = bbextentt;
 		else if (t < 0)
@@ -543,7 +543,7 @@ void D_DrawTransSpans8(espan_t *pspan, float opacity)
 			fixed16_t snext, tnext;
 			fixed16_t sstep = 0; // keep compiler happy
 			fixed16_t tstep = 0; // ditto
-			int spancount = count;
+			s32 spancount = count;
 			if (count >= 8)
 				spancount = 8;
 			count -= spancount;
@@ -554,14 +554,14 @@ void D_DrawTransSpans8(espan_t *pspan, float opacity)
 				tdivz += tdivz8stepu;
 				zi += zi8stepu;
 				z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
-				snext = (int)(sdivz * z) + sadjust;
+				snext = (s32)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
 				else if (snext < 8)
 					snext = 8; // prevent round-off error on <0 steps from
 				// from causing overstepping & running off the
 				// edge of the texture
-				tnext = (int)(tdivz * z) + tadjust;
+				tnext = (s32)(tdivz * z) + tadjust;
 				if (tnext > bbextentt)
 					tnext = bbextentt;
 				else if (tnext < 8)
@@ -578,14 +578,14 @@ void D_DrawTransSpans8(espan_t *pspan, float opacity)
 				tdivz += d_tdivzstepu * spancountminus1;
 				zi += d_zistepu * spancountminus1;
 				z = (float)0x10000 / zi; // prescale to 16.16 fixed-point
-				snext = (int)(sdivz * z) + sadjust;
+				snext = (s32)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
 				else if (snext < 8)
 					snext = 8; // prevent round-off error on <0 steps from
 				// from causing overstepping & running off the
 				// edge of the texture
-				tnext = (int)(tdivz * z) + tadjust;
+				tnext = (s32)(tdivz * z) + tadjust;
 				if (tnext > bbextentt)
 					tnext = bbextentt;
 				else if (tnext < 8)
@@ -595,13 +595,13 @@ void D_DrawTransSpans8(espan_t *pspan, float opacity)
 					tstep = (tnext - t) / (spancount - 1);
 				}
 			}
-			int foglut = opacity*FOG_LUT_LEVELS;
+			s32 foglut = opacity*FOG_LUT_LEVELS;
 			if (r_alphastyle.value == 0) {
 				if (!fog_lut_built)
 					build_color_mix_lut(0);
 				do {
 					if (*pz <= (izi >> 16)) {
-						unsigned char pix = *(pbase + (s >> 16) +
+						u8 pix = *(pbase + (s >> 16) +
 							(t >> 16) * cachewidth);
 						if (pix != 0xff) {
 							pix = color_mix_lut[pix][*pdest][foglut];
@@ -618,7 +618,7 @@ void D_DrawTransSpans8(espan_t *pspan, float opacity)
 			else {
 				do {
 					if (*pz <= (izi >> 16) && D_Dither(pdest)) {
-						unsigned char pix = *(pbase + (s >> 16) +
+						u8 pix = *(pbase + (s >> 16) +
 							(t >> 16) * cachewidth);
 						*pdest = pix;
 					}
@@ -637,31 +637,31 @@ void D_DrawTransSpans8(espan_t *pspan, float opacity)
 
 void D_DrawZSpans(espan_t *pspan)
 {
-	int izistep = (int)(d_zistepu * 0x8000 * 0x10000);
+	s32 izistep = (s32)(d_zistepu * 0x8000 * 0x10000);
 	do {
-		short *pdest = d_pzbuffer + (d_zwidth * pspan->v) + pspan->u;
-		int count = pspan->count;
+		s16 *pdest = d_pzbuffer + (d_zwidth * pspan->v) + pspan->u;
+		s32 count = pspan->count;
 		float du = (float)pspan->u; // calculate the initial 1/z
 		float dv = (float)pspan->v;
 		double zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
-		int izi = (int)(zi * 0x8000 * 0x10000);
+		s32 izi = (s32)(zi * 0x8000 * 0x10000);
 		if ((intptr_t) pdest & 0x02) {
-			*pdest++ = (short)(izi >> 16);
+			*pdest++ = (s16)(izi >> 16);
 			izi += izistep;
 			count--;
 		}
-		int doublecount = count >> 1;
+		s32 doublecount = count >> 1;
 		if (doublecount > 0) {
 			do {
-				unsigned int ltemp = izi >> 16;
+				u32 ltemp = izi >> 16;
 				izi += izistep;
 				ltemp |= izi & 0xFFFF0000;
 				izi += izistep;
-				*(int *)pdest = ltemp;
+				*(s32 *)pdest = ltemp;
 				pdest += 2;
 			} while (--doublecount > 0);
 		}
 		if (count & 1)
-			*pdest = (short)(izi >> 16);
+			*pdest = (s16)(izi >> 16);
 	} while ((pspan = pspan->pnext) != NULL);
 }

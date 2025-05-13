@@ -23,8 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 
-void Cache_FreeLow (int new_low_hunk);
-void Cache_FreeHigh (int new_high_hunk);
+void Cache_FreeLow (s32 new_low_hunk);
+void Cache_FreeHigh (s32 new_high_hunk);
 
 
 /*
@@ -88,9 +88,9 @@ void Z_Free (void *ptr)
 }
 
 
-static void *Z_TagMalloc (int size, int tag)
+static void *Z_TagMalloc (s32 size, s32 tag)
 {
-	int		extra;
+	s32		extra;
 	memblock_t	*start, *rover, *newblock, *base;
 
 	if (!tag)
@@ -141,7 +141,7 @@ static void *Z_TagMalloc (int size, int tag)
 	base->id = ZONEID;
 
 // marker for memory trash testing
-	*(int *)((byte *)base + base->size - 4) = ZONEID;
+	*(s32 *)((byte *)base + base->size - 4) = ZONEID;
 
 	return (void *) ((byte *)base + sizeof(memblock_t));
 }
@@ -174,7 +174,7 @@ static void Z_CheckHeap (void)
 Z_Malloc
 ========================
 */
-void *Z_Malloc (int size)
+void *Z_Malloc (s32 size)
 {
 	void	*buf;
 
@@ -192,9 +192,9 @@ void *Z_Malloc (int size)
 Z_Realloc
 ========================
 */
-void *Z_Realloc(void *ptr, int size)
+void *Z_Realloc(void *ptr, s32 size)
 {
-	int old_size;
+	s32 old_size;
 	void *old_ptr;
 	memblock_t *block;
 
@@ -208,7 +208,7 @@ void *Z_Realloc(void *ptr, int size)
 		Sys_Error ("Z_Realloc: realloced a freed pointer");
 
 	old_size = block->size;
-	old_size -= (4 + (int)sizeof(memblock_t));	/* see Z_TagMalloc() */
+	old_size -= (4 + (s32)sizeof(memblock_t));	/* see Z_TagMalloc() */
 	old_ptr = ptr;
 
 	Z_Free (ptr);
@@ -224,10 +224,10 @@ void *Z_Realloc(void *ptr, int size)
 	return ptr;
 }
 
-char *Z_Strdup (const char *s)
+s8 *Z_Strdup (const s8 *s)
 {
 	size_t sz = strlen(s) + 1;
-	char *ptr = (char *) Z_Malloc (sz);
+	s8 *ptr = (s8 *) Z_Malloc (sz);
 	memcpy (ptr, s, sz);
 	return ptr;
 }
@@ -265,13 +265,13 @@ void Z_Print (memzone_t *zone)
 
 
 byte	*hunk_base;
-int		hunk_size;
+s32		hunk_size;
 
-int		hunk_low_used;
-int		hunk_high_used;
+s32		hunk_low_used;
+s32		hunk_high_used;
 
 bool	hunk_tempactive;
-int		hunk_tempmark;
+s32		hunk_tempmark;
 
 /*
 ==============
@@ -288,7 +288,7 @@ void Hunk_Check (void)
 	{
 		if (h->sentinel != HUNK_SENTINEL)
 			Sys_Error ("Hunk_Check: trashed sentinel");
-		if (h->size < (int) sizeof(hunk_t) || h->size + (byte *)h - hunk_base > hunk_size)
+		if (h->size < (s32) sizeof(hunk_t) || h->size + (byte *)h - hunk_base > hunk_size)
 			Sys_Error ("Hunk_Check: bad size");
 		h = (hunk_t *)((byte *)h+h->size);
 	}
@@ -305,9 +305,9 @@ Otherwise, allocations with the same name will be totaled up before printing.
 void Hunk_Print (bool all)
 {
 	hunk_t	*h, *next, *endlow, *starthigh, *endhigh;
-	int		count, sum;
-	int		totalblocks;
-	char	name[HUNKNAME_LEN];
+	s32		count, sum;
+	s32		totalblocks;
+	s8	name[HUNKNAME_LEN];
 
 	count = 0;
 	sum = 0;
@@ -345,7 +345,7 @@ void Hunk_Print (bool all)
 	//
 		if (h->sentinel != HUNK_SENTINEL)
 			Sys_Error ("Hunk_Check: trashed sentinel");
-		if (h->size < (int) sizeof(hunk_t) || h->size + (byte *)h - hunk_base > hunk_size)
+		if (h->size < (s32) sizeof(hunk_t) || h->size + (byte *)h - hunk_base > hunk_size)
 			Sys_Error ("Hunk_Check: bad size");
 
 		next = (hunk_t *)((byte *)h+h->size);
@@ -395,7 +395,7 @@ void Hunk_Print_f (void)
 Hunk_AllocName
 ===================
 */
-void *Hunk_AllocName (int size, const char *name)
+void *Hunk_AllocName (s32 size, const s8 *name)
 {
 	hunk_t	*h;
 
@@ -426,17 +426,17 @@ void *Hunk_AllocName (int size, const char *name)
 Hunk_Alloc
 ===================
 */
-void *Hunk_Alloc (int size)
+void *Hunk_Alloc (s32 size)
 {
 	return Hunk_AllocName (size, "unknown");
 }
 
-int	Hunk_LowMark (void)
+s32	Hunk_LowMark (void)
 {
 	return hunk_low_used;
 }
 
-void Hunk_FreeToLowMark (int mark)
+void Hunk_FreeToLowMark (s32 mark)
 {
 	if (mark < 0 || mark > hunk_low_used)
 		Sys_Error ("Hunk_FreeToLowMark: bad mark %i", mark);
@@ -444,7 +444,7 @@ void Hunk_FreeToLowMark (int mark)
 	hunk_low_used = mark;
 }
 
-int	Hunk_HighMark (void)
+s32	Hunk_HighMark (void)
 {
 	if (hunk_tempactive)
 	{
@@ -455,7 +455,7 @@ int	Hunk_HighMark (void)
 	return hunk_high_used;
 }
 
-void Hunk_FreeToHighMark (int mark)
+void Hunk_FreeToHighMark (s32 mark)
 {
 	if (hunk_tempactive)
 	{
@@ -474,7 +474,7 @@ void Hunk_FreeToHighMark (int mark)
 Hunk_HighAllocName
 ===================
 */
-void *Hunk_HighAllocName (int size, const char *name)
+void *Hunk_HighAllocName (s32 size, const s8 *name)
 {
 	hunk_t	*h;
 
@@ -520,7 +520,7 @@ Hunk_TempAlloc
 Return space from the top of the hunk
 =================
 */
-void *Hunk_TempAlloc (int size)
+void *Hunk_TempAlloc (s32 size)
 {
 	void	*buf;
 
@@ -541,10 +541,10 @@ void *Hunk_TempAlloc (int size)
 	return buf;
 }
 
-char *Hunk_Strdup (const char *s, const char *name)
+s8 *Hunk_Strdup (const s8 *s, const s8 *name)
 {
 	size_t sz = strlen(s) + 1;
-	char *ptr = (char *) Hunk_AllocName (sz, name);
+	s8 *ptr = (s8 *) Hunk_AllocName (sz, name);
 	memcpy (ptr, s, sz);
 	return ptr;
 }
@@ -557,7 +557,7 @@ CACHE MEMORY
 ===============================================================================
 */
 
-cache_system_t *Cache_TryAlloc (int size, bool nobottom);
+cache_system_t *Cache_TryAlloc (s32 size, bool nobottom);
 
 cache_system_t	cache_head;
 
@@ -597,7 +597,7 @@ Cache_FreeLow
 Throw things out until the hunk can be expanded to the given point
 ============
 */
-void Cache_FreeLow (int new_low_hunk)
+void Cache_FreeLow (s32 new_low_hunk)
 {
 	cache_system_t	*c;
 
@@ -619,7 +619,7 @@ Cache_FreeHigh
 Throw things out until the hunk can be expanded to the given point
 ============
 */
-void Cache_FreeHigh (int new_high_hunk)
+void Cache_FreeHigh (s32 new_high_hunk)
 {
 	cache_system_t	*c, *prev;
 
@@ -671,7 +671,7 @@ Looks for a free block of memory between the high and low hunk marks
 Size should already include the header and padding
 ============
 */
-cache_system_t *Cache_TryAlloc (int size, bool nobottom)
+cache_system_t *Cache_TryAlloc (s32 size, bool nobottom)
 {
 	cache_system_t	*cs, *new_cs;
 
@@ -857,7 +857,7 @@ void *Cache_Check (cache_user_t *c)
 Cache_Alloc
 ==============
 */
-void *Cache_Alloc (cache_user_t *c, int size, const char *name)
+void *Cache_Alloc (cache_user_t *c, s32 size, const s8 *name)
 {
 	cache_system_t	*cs;
 
@@ -894,7 +894,7 @@ void *Cache_Alloc (cache_user_t *c, int size, const char *name)
 //============================================================================
 
 
-static void Memory_InitZone (memzone_t *zone, int size)
+static void Memory_InitZone (memzone_t *zone, s32 size)
 {
 	memblock_t	*block;
 
@@ -918,10 +918,10 @@ static void Memory_InitZone (memzone_t *zone, int size)
 Memory_Init
 ========================
 */
-void Memory_Init (void *buf, int size)
+void Memory_Init (void *buf, s32 size)
 {
-	int p;
-	int zonesize = DYNAMIC_SIZE;
+	s32 p;
+	s32 zonesize = DYNAMIC_SIZE;
 
 	hunk_base = (byte *) buf;
 	hunk_size = size;
