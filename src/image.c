@@ -7,21 +7,6 @@
 
 static char loadfilename[MAX_OSPATH]; //file scope so that error messages can use it
 
-typedef struct stdio_buffer_s {
-        FILE *f;
-        unsigned char buffer[1024];
-        int size;
-        int pos;
-} stdio_buffer_t;
-
-typedef struct targaheader_s {
-        unsigned char   id_length, colormap_type, image_type;
-        unsigned short  colormap_index, colormap_length;
-        unsigned char   colormap_size;
-        unsigned short  x_origin, y_origin, width, height;
-        unsigned char   pixel_size, attributes;
-} targaheader_t;
-
 static stdio_buffer_t *Buf_Alloc(FILE *f)
 {
         stdio_buffer_t *buf = (stdio_buffer_t *) calloc(1, sizeof(stdio_buffer_t));

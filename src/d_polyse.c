@@ -5,31 +5,6 @@
 
 #include "quakedef.h"
 
-typedef struct {
-	int quotient;
-	int remainder;
-} adivtab_t;
-
-typedef struct {
-	void *pdest;
-	short *pz;
-	int count;
-	byte *ptex;
-	int sfrac, tfrac, light, zi;
-} spanpackage_t;
-
-typedef struct {
-	int isflattop;
-	int numleftedges;
-	int *pleftedgevert0;
-	int *pleftedgevert1;
-	int *pleftedgevert2;
-	int numrightedges;
-	int *prightedgevert0;
-	int *prightedgevert1;
-	int *prightedgevert2;
-} edgetable;
-
 int r_p0[6], r_p1[6], r_p2[6];
 byte *d_pcolormap;
 int d_aflatcolor;

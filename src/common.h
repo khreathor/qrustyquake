@@ -8,9 +8,6 @@
 
 // comndef.h  -- general definitions
 
-typedef unsigned char byte;
-
-
 void SZ_Alloc (sizebuf_t *buf, int startsize);
 void SZ_Free (sizebuf_t *buf);
 void SZ_Clear (sizebuf_t *buf);
@@ -118,11 +115,6 @@ extern int q_vsnprintf(char *str, size_t size, const char *format, va_list args)
 extern	char		com_token[1024];
 extern	bool	com_eof;
 
-typedef enum
-{
-	CPE_NOTRUNC,		// return parse error in case of overflow
-	CPE_ALLOWTRUNC		// truncate com_token in case of overflow
-} cpe_mode;
 
 const char *COM_Parse (const char *data);
 const char *COM_ParseEx (const char *data, cpe_mode mode);

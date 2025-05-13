@@ -23,22 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 
-typedef struct memblock_s
-{
-	int	size;		// including the header and possibly tiny fragments
-	int	tag;		// a tag of 0 is a free block
-	int	id;		// should be ZONEID
-	int	pad;		// pad to 64 bit boundary
-	struct	memblock_s	*next, *prev;
-} memblock_t;
-
-typedef struct
-{
-	int		size;		// total bytes malloced, including header
-	memblock_t	blocklist;	// start / end cap for linked list
-	memblock_t	*rover;
-} memzone_t;
-
 void Cache_FreeLow (int new_low_hunk);
 void Cache_FreeHigh (int new_high_hunk);
 
@@ -279,12 +263,6 @@ void Z_Print (memzone_t *zone)
 
 //============================================================================
 
-typedef struct
-{
-	int		sentinel;
-	int		size;		// including sizeof(hunk_t), -1 = not allocated
-	char	name[HUNKNAME_LEN];
-} hunk_t;
 
 byte	*hunk_base;
 int		hunk_size;
@@ -578,15 +556,6 @@ CACHE MEMORY
 
 ===============================================================================
 */
-
-typedef struct cache_system_s
-{
-	int			size;		// including this header
-	cache_user_t		*user;
-	char			name[CACHENAME_LEN];
-	struct cache_system_s	*prev, *next;
-	struct cache_system_s	*lru_prev, *lru_next;	// for LRU flushing
-} cache_system_t;
 
 cache_system_t *Cache_TryAlloc (int size, bool nobottom);
 

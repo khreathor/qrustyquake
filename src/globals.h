@@ -569,7 +569,6 @@ void ED_LoadFromFile (const char *data);
 edict_t *EDICT_NUM(int);
 int NUM_FOR_EDICT(edict_t*);
 extern const int type_size[NUM_TYPE_SIZES];
-typedef void (*builtin_t) (void);
 extern const builtin_t *pr_builtins;
 extern const int pr_numbuiltins;
 extern int pr_argc;

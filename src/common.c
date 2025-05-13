@@ -1575,21 +1575,6 @@ QUAKE FILESYSTEM
 int	com_filesize;
 
 
-//
-// on-disk pakfile
-//
-typedef struct
-{
-	char	name[56];
-	int		filepos, filelen;
-} dpackfile_t;
-
-typedef struct
-{
-	char	id[4];
-	int		dirofs;
-	int		dirlen;
-} dpackheader_t;
 
 
 char	com_gamedir[MAX_OSPATH];
@@ -2573,21 +2558,7 @@ long FS_filelength (fshandle_t *fh)
 								LOCALIZATION
 ============================================================================
 */
-typedef struct
-{
-	char *key;
-	char *value;
-} locentry_t;
 
-typedef struct
-{
-	int			numentries;
-	int			maxnumentries;
-	int			numindices;
-	unsigned	*indices;
-	locentry_t	*entries;
-	char		*text;
-} localization_t;
 
 static localization_t localization;
 

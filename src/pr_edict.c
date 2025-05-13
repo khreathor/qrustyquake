@@ -43,11 +43,6 @@ static ddef_t	*ED_FieldAtOfs (int ofs);
 static bool	ED_ParseEpair (void *base, ddef_t *key, const char *s);
 
 
-typedef struct {
-	ddef_t	*pcache;
-	char	field[MAX_FIELD_LEN];
-} gefv_cache;
-
 static gefv_cache	gefvCache[GEFV_CACHESIZE] =
 {
 		{ NULL,	"" },

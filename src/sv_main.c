@@ -7,44 +7,6 @@
 
 #include "quakedef.h"
 
-//FIXME don't redefine this here
-struct qsockaddr
-{
-        short qsa_family;
-        unsigned char qsa_data[14];
-};
-typedef struct qsocket_s
-{
-        struct qsocket_s        *next;
-        double          connecttime;
-        double          lastMessageTime;
-        double          lastSendTime;
-
-        bool        disconnected;
-        bool        canSend;
-        bool        sendNext;
-
-        int             driver;
-        int             landriver;
-        sys_socket_t    socket;
-        void            *driverdata;
-
-        unsigned int    ackSequence;
-        unsigned int    sendSequence;
-        unsigned int    unreliableSendSequence;
-        int             sendMessageLength;
-        byte            sendMessage [NET_MAXMESSAGE];
-
-        unsigned int    receiveSequence;
-        unsigned int    unreliableReceiveSequence;
-        int             receiveMessageLength;
-        byte            receiveMessage [NET_MAXMESSAGE];
-
-        struct qsockaddr        addr;
-        char            address[NET_NAMELEN];
-
-} qsocket_t;
-
 server_t	sv;
 server_static_t	svs;
 

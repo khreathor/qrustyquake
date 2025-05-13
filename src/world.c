@@ -17,16 +17,6 @@ line of sight checks trace->crosscontent, but bullets don't
 */
 
 
-typedef struct
-{
-	vec3_t		boxmins, boxmaxs;// enclose the test object along entire move
-	float		*mins, *maxs;	// size of the moving object
-	vec3_t		mins2, maxs2;	// size when clipping against mosnters
-	float		*start, *end;
-	trace_t		trace;
-	int			type;
-	edict_t		*passedict;
-} moveclip_t;
 
 
 int SV_HullPointContents (hull_t *hull, int num, vec3_t p);
@@ -166,15 +156,6 @@ ENTITY AREA CHECKING
 
 ===============================================================================
 */
-
-typedef struct areanode_s
-{
-	int		axis;		// -1 = leaf node
-	float	dist;
-	struct areanode_s	*children[2];
-	link_t	trigger_edicts;
-	link_t	solid_edicts;
-} areanode_t;
 
 static	areanode_t	sv_areanodes[AREA_NODES];
 static	int			sv_numareanodes;
