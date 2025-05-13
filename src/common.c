@@ -21,20 +21,10 @@ bool		fitzmode;
 
 static void COM_Path_f (void);
 
-// if a packfile directory differs from this, it is assumed to be hacked
-#define PAK0_COUNT		339	/* id1/pak0.pak - v1.0x */
-#define PAK0_CRC_V100		13900	/* id1/pak0.pak - v1.00 */
-#define PAK0_CRC_V101		62751	/* id1/pak0.pak - v1.01 */
-#define PAK0_CRC_V106		32981	/* id1/pak0.pak - v1.06 */
-#define PAK0_CRC	(PAK0_CRC_V106)
-#define PAK0_COUNT_V091		308	/* id1/pak0.pak - v0.91/0.92, not supported */
-#define PAK0_CRC_V091		28804	/* id1/pak0.pak - v0.91/0.92, not supported */
 
 char	com_token[1024];
 int		com_argc;
 char	**com_argv;
-
-#define CMDLINE_LENGTH	256		/* johnfitz -- mirrored in cmd.c */
 char	com_cmdline[CMDLINE_LENGTH];
 
 bool standard_quake = true, rogue, hipnotic;
@@ -1560,12 +1550,6 @@ is defined in VA_NUM_BUFFS.
 FIXME: make this buffer size safe someday
 ============
 */
-#define	VA_NUM_BUFFS	4
-#if (MAX_OSPATH >= 1024)
-#define	VA_BUFFERLEN	MAX_OSPATH
-#else
-#define	VA_BUFFERLEN	1024
-#endif
 
 static char *get_va_buffer(void)
 {
@@ -1615,7 +1599,6 @@ typedef struct
 	int		dirlen;
 } dpackheader_t;
 
-#define MAX_FILES_IN_PACK	2048
 
 char	com_gamedir[MAX_OSPATH];
 char	com_basedir[MAX_OSPATH];
@@ -1886,12 +1869,6 @@ Filename are reletive to the quake directory.
 Allways appends a 0 byte.
 ============
 */
-#define	LOADFILE_ZONE		0
-#define	LOADFILE_HUNK		1
-#define	LOADFILE_TEMPHUNK	2
-#define	LOADFILE_CACHE		3
-#define	LOADFILE_STACK		4
-#define	LOADFILE_MALLOC		5
 
 static byte	*loadbuf;
 static cache_user_t *loadcache;

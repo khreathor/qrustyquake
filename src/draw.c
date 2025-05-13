@@ -3,21 +3,6 @@
 // this is the only file outside the refresh that touches the vid buffer
 #include "quakedef.h"
 
-#define	MAX_CACHED_PICS		128
-
-typedef struct {
-	vrect_t rect;
-	int width;
-	int height;
-	byte *ptexbytes;
-	int rowbytes;
-} rectdesc_t;
-
-typedef struct cachepic_s {
-	char name[MAX_QPATH];
-	cache_user_t cache;
-} cachepic_t;
-
 cachepic_t menu_cachepics[MAX_CACHED_PICS];
 int menu_numcachepics;
 static rectdesc_t r_rectdesc;

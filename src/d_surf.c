@@ -4,8 +4,6 @@
 
 #include "quakedef.h"
 
-#define GUARDSIZE       4
-
 float surfscale;
 bool r_cache_thrash; // set if surface cache is thrashing
 unsigned long sc_size;

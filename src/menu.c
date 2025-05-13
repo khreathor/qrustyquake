@@ -2,23 +2,6 @@
 
 #include "quakedef.h"
 
-#define	MAIN_ITEMS 5
-#define	SINGLEPLAYER_ITEMS 3
-#define	MAX_SAVEGAMES 12
-#define	MULTIPLAYER_ITEMS 3
-#define	NUM_SETUP_CMDS 5
-#define	SLIDER_RANGE 10
-#define	NUMCOMMANDS (int)(sizeof(bindnames)/sizeof(bindnames[0]))
-#define StartingGame (m_multiplayer_cursor == 1)
-#define JoiningGame (m_multiplayer_cursor == 0)
-#define SerialConfig (m_net_cursor == 0)
-#define DirectConfig (m_net_cursor == 1)
-#define	IPXConfig (m_net_cursor == 2)
-#define	TCPIPConfig (m_net_cursor == 3)
-#define	NUM_HELP_PAGES 6
-#define NUM_LANCONFIG_CMDS 3
-#define	NUM_GAMEOPTIONS 9
-
 int drawmousemenu = 0;
 int serialAvailable = 0;
 int ipxAvailable = 0;
@@ -66,16 +49,6 @@ byte identityTable[256];
 byte translationTable[256];
 int fpslimits[] = { 30,60,72,100,120,144,165,180,200,240,300,360,500,999999 };
 
-typedef struct {
-	char *name;
-	char *description;
-} level_t;
-
-typedef struct {
-	char *description;
-	int firstLevel;
-	int levels;
-} episode_t;
 
 level_t levels[] = {
 	{ "start", "Entrance" }, // 0

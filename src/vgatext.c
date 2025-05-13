@@ -4,8 +4,6 @@
 #include "quakedef.h"
 #include "vgafont.h"
 
-#define BLINK_HZ ((1000 / 70) * 16)
-
 // ega 16-color palette
 static const Uint8 palette[16][3] = {
 	{0x00, 0x00, 0x00}, {0x00, 0x00, 0xab}, {0x00, 0xab, 0x00}, {0x00, 0xab, 0xab},

@@ -2,15 +2,6 @@
 
 #include "quakedef.h"
 
-#define MAXLEFTCLIPEDGES 100
-#define FULLY_CLIPPED_CACHED 0x80000000
-#define FRAMECOUNT_MASK 0x7FFFFFFF
-
-typedef struct {
-	float u, v;
-	int ceilv;
-} evert_t;
-
 unsigned int cacheoffset;
 int c_faceclip; // number of faces clipped
 zpointdesc_t r_zpointdesc;

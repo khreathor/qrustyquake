@@ -5,8 +5,6 @@
 
 #include "quakedef.h"
 
-#define	STRINGTEMP_BUFFERS		16
-#define	STRINGTEMP_LENGTH		1024
 static	char	pr_string_temp[STRINGTEMP_BUFFERS][STRINGTEMP_LENGTH];
 static	byte	pr_string_tempindex = 0;
 
@@ -15,12 +13,7 @@ static char *PR_GetTempString (void)
 	return pr_string_temp[(STRINGTEMP_BUFFERS-1) & ++pr_string_tempindex];
 }
 
-#define	RETURN_EDICT(e) (((int *)pr_globals)[OFS_RETURN] = EDICT_TO_PROG(e))
 
-#define	MSG_BROADCAST	0		// unreliable to all
-#define	MSG_ONE		1		// reliable to one (msg_entity)
-#define	MSG_ALL		2		// reliable to all
-#define	MSG_INIT	3		// write to the init string
 
 /*
 ===============================================================================
@@ -813,7 +806,6 @@ it is not returned at all.
 name checkclient ()
 =================
 */
-#define	MAX_CHECK	16
 static int c_invis, c_notvis;
 static void PF_checkclient (void)
 {

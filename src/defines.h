@@ -1,7 +1,7 @@
 #ifndef GLOBDEFINES_
 #define GLOBDEFINES_
 
-#define	q_min(a, b)	(((a) < (b)) ? (a) : (b))                      // common
+#define	q_min(a, b)	(((a) < (b)) ? (a) : (b))                    // common.h
 #define	q_max(a, b)	(((a) > (b)) ? (a) : (b))
 #define	CLAMP(_minval, x, _maxval)		\
 	((x) < (_minval) ? (_minval) :		\
@@ -16,7 +16,7 @@
 #define	FS_ENT_FILE		(1 << 0)
 #define	FS_ENT_DIRECTORY	(1 << 1)
 
-#define M_PI_DIV_180 (M_PI / 180.0) //johnfitz                        // mathlib
+#define M_PI_DIV_180 (M_PI / 180.0) //johnfitz                      // mathlib.h
 #define Q_rint(x) ((x) > 0 ? (int)((x) + 0.5) : (int)((x) - 0.5)) // johnfitz -- from joequake
 #define DotProduct(x,y) (x[0]*y[0]+x[1]*y[1]+x[2]*y[2])
 #define DoublePrecisionDotProduct(x,y) ((double)(x)[0]*(y)[0]+(double)(x)[1]*(y)[1]+(double)(x)[2]*(y)[2])
@@ -40,7 +40,7 @@
                       : (((p)->dist >= (emaxs)[(p)->type]) ? 2 : 3) \
         ) : BoxOnPlaneSide((emins), (emaxs), (p)))
 
-#define NUM_TYPE_SIZES 8                                                // progs
+#define NUM_TYPE_SIZES 8                                              // progs.h
 #define	MAX_ENT_LEAFS	32
 #define	EDICT_FROM_AREA(l)	STRUCT_FROM_LINK(l,edict_t,area)
 #define	NEXT_EDICT(e)		((edict_t *)( (byte *)e + pr_edict_size))
@@ -59,14 +59,14 @@
 #define	E_STRING(e,o)		(PR_GetString(*(string_t *)&((float*)&e->v)[o]))
 #define PROGHEADER_CRC 5927
 
-#define Q_COUNTOF(x) (sizeof(x) / sizeof((x)[0])) // for array size  // q_stdinc
+#define Q_COUNTOF(x) (sizeof(x)/sizeof((x)[0])) // for array size  // q_stdinc.h
 
-#define WAV_FORMAT_PCM	1                                             // q_sound
+#define WAV_FORMAT_PCM	1                                           // q_sound.h
 #define	MAX_CHANNELS		1024
 #define	MAX_DYNAMIC_CHANNELS	128
 #define	MAX_RAW_SAMPLES	8192
 
-#define NET_HEADERSIZE		(2 * sizeof(unsigned int))           // net_defs
+#define NET_HEADERSIZE		(2 * sizeof(unsigned int))         // net_defs.h
 #define NET_DATAGRAMSIZE	(MAX_DATAGRAM + NET_HEADERSIZE)
 #define NETFLAG_LENGTH_MASK	0x0000ffff // Must fit NET_MAXMESSAGE
 #define NETFLAG_DATA		0x00010000
@@ -89,7 +89,7 @@
 #define HOSTCACHESIZE	8
 #define IS_LOOP_DRIVER(p) ((p) == 0) // Loop driver must always be registered the first
 
-#define	PROTOCOL_NETQUAKE 15 //johnfitz -- standard quake protocol   // protocol
+#define	PROTOCOL_NETQUAKE 15 //johnfitz -- standard quake protocol // protocol.h
 #define PROTOCOL_FITZQUAKE	666 //johnfitz -- added new protocol for fitzquake 0.85
 #define PROTOCOL_RMQ		999
 #define PRFL_SHORTANGLE		(1 << 1)
@@ -259,7 +259,7 @@
 #define ENTSCALE_ENCODE(a)	((a) ? ((a) * ENTSCALE_DEFAULT) : ENTSCALE_DEFAULT) // Convert to byte
 #define ENTSCALE_DECODE(a)	((float)(a) / ENTSCALE_DEFAULT) // Convert to float for rendering
 
-#define	CVAR_NONE		0                                        // cvar
+#define	CVAR_NONE		0                                      // cvar.h
 #define	CVAR_ARCHIVE		(1U << 0)	// if set, causes it to be saved to config
 #define	CVAR_NOTIFY		(1U << 1)	// changes will be broadcasted to all players (q1)
 #define	CVAR_SERVERINFO	(1U << 2)	// added to serverinfo will be sent to clients (q1/net_dgrm.c and qwsv)
@@ -270,26 +270,26 @@
 #define	CVAR_REGISTERED		(1U << 10)	// the var is added to the list of variables
 #define	CVAR_CALLBACK		(1U << 16)	// var has a callback
 
-#define NET_NAMELEN 64                                                    // net
+#define NET_NAMELEN 64                                                  // net.h
 #define NET_MAXMESSAGE 65535 // ericw -- was 32000
 
-#define R_SKY_SMASK 0x007F0000                                        // d_local
+#define R_SKY_SMASK 0x007F0000                                      // d_local.h
 #define R_SKY_TMASK 0x007F0000
 #define DS_SPAN_LIST_END -128
 #define SKYBOX_MAX_SIZE 1024
 #define SURFCACHE_SIZE_AT_320X200 3000*1024 // CyanBun96: was 600*1024
 #define FOG_LUT_LEVELS 32
 
-#define MAX_ALIAS_NAME 32                                                 // cmd
+#define MAX_ALIAS_NAME 32                                               // cmd.h
 #define MAX_ARGS 80
 
-#define MOVE_NORMAL 0                                                   // world
+#define MOVE_NORMAL 0                                                 // world.h
 #define MOVE_NOMONSTERS 1
 #define MOVE_MISSILE 2
 
-#define	MAX_HANDLES 32                                                    // sys
+#define	MAX_HANDLES 32                                                  // sys.h
 
-#define MAX_SIGNON_BUFFERS 256                                         // server
+#define MAX_SIGNON_BUFFERS 256                                       // server.h
 #define	NUM_PING_TIMES		16
 #define	NUM_SPAWN_PARMS		16
 #define	MOVETYPE_NONE			0		// never moves // edict->movetype values
@@ -337,7 +337,7 @@
 #define	SPAWNFLAG_NOT_HARD			1024
 #define	SPAWNFLAG_NOT_DEATHMATCH	2048
 
-#define OFS_NULL 0                                                    // pr_comp
+#define OFS_NULL 0                                                  // pr_comp.h
 #define OFS_RETURN 1
 #define OFS_PARM0 4 // leave 3 ofs for each parm to hold vectors
 #define OFS_PARM1 7
@@ -352,9 +352,9 @@
 #define MAX_PARMS 8
 #define PROG_VERSION 6
 
-#define	VIEWMODNAME_LENGTH 256                                         // r_main
+#define	VIEWMODNAME_LENGTH 256                                       // r_main.h
 
-#define NUM_OLDMODES 9                                                // vid_sdl
+#define NUM_OLDMODES 9                                              // vid_sdl.h
 #define VID_GRADES (1 << VID_CBITS)
 #define VID_CBITS 6
 #define MAX_MODE_LIST 30
@@ -362,12 +362,12 @@
 #define MAX_COLUMN_SIZE 5
 #define MODE_AREA_HEIGHT (MAX_COLUMN_SIZE + 6)
 
-#define RANDARR_SIZE 19937 // prime to reduce unintended patterns       // d_fog
+#define RANDARR_SIZE 19937 // prime to reduce unintended patterns     // d_fog.h
 
-#define FOG_LUT_LEVELS 32                                              // rgbtoi
+#define FOG_LUT_LEVELS 32                                            // rgbtoi.h
 #define LIT_LUT_RES 64
 
-#define CSHIFT_CONTENTS 0                                              // client
+#define CSHIFT_CONTENTS 0                                            // client.h
 #define CSHIFT_DAMAGE 1
 #define CSHIFT_BONUS 2
 #define CSHIFT_POWERUP 3
@@ -384,7 +384,7 @@
 #define MAX_STATIC_ENTITIES 2048 // torches, etc
 #define MAX_VISEDICTS 16384 // larger, now we support BSP2
 
-#define K_TAB 9                                                          // keys
+#define K_TAB 9                                                        // keys.h
 #define K_ENTER 13 // these are key numbers that should be passed to Key_Event
 #define K_ESCAPE 27 // normal keys should be passed as lowercase ascii
 #define K_SPACE 32
@@ -469,7 +469,7 @@
 #define K_LTRIGGER 251
 #define K_RTRIGGER 252
 
-#define	MAXCLIPPLANES 11                                               // render
+#define	MAXCLIPPLANES 11                                             // render.h
 #define	TOP_RANGE 16 // soldier uniform colors
 #define	BOTTOM_RANGE 96
 #define LERP_MOVESTEP   (1<<0) //this is a MOVETYPE_STEP entity, enable movement lerp
@@ -478,7 +478,7 @@
 #define LERP_RESETMOVE  (1<<3) //disable movement lerping until next origin/angles change
 #define LERP_FINISH     (1<<4) //use lerpfinish time from server update instead of assuming interval of 0.1
 
-#undef HAVE_SA_LEN                                                    // net_sys
+#undef HAVE_SA_LEN                                                  // net_sys.h
 #define SA_FAM_OFFSET 0
 #ifdef _WIN32
 #define MAXHOSTNAMELEN 1024
@@ -501,7 +501,7 @@
 #define socketerror(x) strerror((x))
 #endif
 
-#define XCENTERING (1.0 / 2.0)                                        // r_local
+#define XCENTERING (1.0 / 2.0)                                      // r_local.h
 #define YCENTERING (1.0 / 2.0)
 #define ALIAS_BASE_SIZE_RATIO (1.0 / 11.0) // normalizing factor so player model
 	// works out to about 1 pixel per triangle
@@ -519,7 +519,7 @@
 #define LIT_LUT_RES 64
 #define QUANT(x) (((x) * (LIT_LUT_RES - 1)) / 255)
 
-#define	CMP_NONE		0                                         // wad
+#define	CMP_NONE		0                                       // wad.h
 #define	CMP_LZSS		1
 #define	TYP_NONE		0
 #define	TYP_LABEL		1
@@ -534,7 +534,7 @@
 #define WADID_VALVE	('W' | ('A' << 8) | ('D' << 16) | ('3' << 24))
 #define	WADFILENAME "gfx.wad" //johnfitz -- filename is now hard-coded for honesty
 
-#define VERSION 0.50                                                 // quakedef
+#define VERSION 0.50                                               // quakedef.h
 #define FITZQUAKE_VERSION 0.85
 #define GAMENAME "id1"
 #define CMDLINE_LENGTH 256
@@ -634,7 +634,7 @@
 #define DATAGRAM_MTU 1400 // johnfitz -- actual limit for unreliable messages to nonlocal clients
 #define DIST_EPSILON (0.03125) // 1/32 epsilon to keep floating point happy (moved from world.c)
 
-#define WARP_WIDTH 320                                                // d_iface
+#define WARP_WIDTH 320                                              // d_iface.h
 #define WARP_HEIGHT 200
 #define MAX_LBM_HEIGHT 480
 #define PARTICLE_Z_CLIP 8.0
@@ -647,7 +647,7 @@
 #define SKYMASK (SKYSIZE - 1)
 #define CYCLE 128 // turbulent cycle size
 
-#define MAXVERTS 16 // max points in a surface polygon               // r_shared
+#define MAXVERTS 16 // max points in a surface polygon             // r_shared.h
 #define MAXWORKINGVERTS (MAXVERTS+4) // max points in an intermediate
 	// polygon (while processing)
 #define MAXHEIGHT 8640 // CyanBun96: 16k resolution. futureproofing.
@@ -668,7 +668,7 @@
 #define ALIAS_Z_CLIP 0x0010
 #define ALIAS_XY_CLIP_MASK 0x000F
 
-#define TEX_SPECIAL 1 // sky or slime, no lightmap or 256 subdivision // bspfile
+#define TEX_SPECIAL 1 // sky or slime, no lightmap or 256 subd      // bspfile.h
 #define TEX_MISSING 2 // johnfitz -- this texinfo does not have a texture
 #define MAX_MAP_HULLS 4 // upper design bounds
 #define MAX_MAP_MODELS 256
@@ -749,7 +749,7 @@
 #define AMBIENT_LAVA 3
 #define NUM_AMBIENTS 4 // automatic ambient sounds
 
-#define SPRITE_VERSION 1                                             // spritegn
+#define SPRITE_VERSION 1                                           // spritegn.h
 #define SPR_VP_PARALLEL_UPRIGHT 0
 #define SPR_FACING_UPRIGHT 1
 #define SPR_VP_PARALLEL 2
@@ -757,12 +757,12 @@
 #define SPR_VP_PARALLEL_ORIENTED 4
 #define IDSPRITEHEADER (('P'<<24)+('S'<<16)+('D'<<8)+'I') // little-endian IDSP
 
-#define ALIAS_VERSION 6                                              // modelgen
+#define ALIAS_VERSION 6                                            // modelgen.h
 #define ALIAS_ONSEAM 0x0020
 #define DT_FACES_FRONT 0x0010
 #define IDPOLYHEADER (('O'<<24)+('P'<<16)+('D'<<8)+'I') // little-endian "IDPO"
 
-#define SIDE_FRONT 0                                                    // model
+#define SIDE_FRONT 0                                                  // model.h
 #define SIDE_BACK 1
 #define SIDE_ON 2
 #define SURF_PLANEBACK 2
@@ -844,7 +844,7 @@
 #define MOD_NOSHADOW 512 // don't cast a shadow
 #define MOD_FBRIGHTHACK 1024 // when fullbrights are disabled, use a hack to render this model brighter
 
-#define Q_MINIZ_H 1                                                     // miniz
+#define Q_MINIZ_H 1                                                   // miniz.h
 #define MINIZ_EXPORT
 #define MINIZ_NO_STDIO
 #define MINIZ_NO_TIME
@@ -895,4 +895,98 @@
 #define tinfl_get_adler32(r) (r)->m_check_adler32
 #define TINFL_USE_64BIT_BITBUF 1
 #define TINFL_BITBUF_SIZE (64)
+
+#define MAX_CACHED_PICS	128                                            // draw.c
+
+#define MAXLEFTCLIPEDGES 100                                         // r_draw.c
+#define FULLY_CLIPPED_CACHED 0x80000000
+#define FRAMECOUNT_MASK 0x7FFFFFFF
+
+#define BLINK_HZ ((1000 / 70) * 16)                                 // vgatext.c
+
+#define MAX_BMODEL_VERTS 2500 // CyanBun96: was 500                   // r_bsp.c
+#define MAX_BMODEL_EDGES 5000 // was 1000
+
+#define NUMVERTEXNORMALS 162                                        // r_alias.c
+#define LIGHT_MIN 5
+
+#define GUARDSIZE 4                                                  // d_surf.c
+
+#define ANIM_CYCLE 2                                                  // model.c
+#define	MAX_MOD_KNOWN 32768 // johnfitz -- was 512
+#define NL_PRESENT 0 // values for model_t's needload
+#define NL_NEEDS_LOADED 1
+#define NL_UNREFERENCED 2
+#define VISPATCH_HEADER_LEN 36
+
+#define CON_TEXTSIZE 65536                                          // console.c
+#define NUM_CON_TIMES 4
+#define MAXCMDLINE 256
+#define MAXGAMEDIRLEN 1000
+#define MAXPRINTMSG 4096
+
+#define MAX_STACK_DEPTH 64                                          // pr_exec.c
+#define LOCALSTACK_SIZE 2048
+
+#define CRC_INIT_VALUE 0xffff                                           // crc.c
+#define CRC_XOR_VALUE 0x0000
+
+#define	MAIN_ITEMS 5                                                   // menu.c
+#define	SINGLEPLAYER_ITEMS 3
+#define	MAX_SAVEGAMES 12
+#define	MULTIPLAYER_ITEMS 3
+#define	NUM_SETUP_CMDS 5
+#define	SLIDER_RANGE 10
+#define	NUMCOMMANDS (int)(sizeof(bindnames)/sizeof(bindnames[0]))
+#define StartingGame (m_multiplayer_cursor == 1)
+#define JoiningGame (m_multiplayer_cursor == 0)
+#define SerialConfig (m_net_cursor == 0)
+#define DirectConfig (m_net_cursor == 1)
+#define	IPXConfig (m_net_cursor == 2)
+#define	TCPIPConfig (m_net_cursor == 3)
+#define	NUM_HELP_PAGES 6
+#define NUM_LANCONFIG_CMDS 3
+#define	NUM_GAMEOPTIONS 9
+
+#define MOVE_EPSILON 0.01                                           // sv_phys.c
+#define STOP_EPSILON 0.1
+#define MAX_CLIP_PLANES 5
+#define STEPSIZE 18
+
+#define SKY_SPAN_SHIFT 5                                              // d_sky.c
+#define SKY_SPAN_MAX (1 << SKY_SPAN_SHIFT)
+
+#define MAX_FORWARD 6                                               // sv_user.c
+
+#define PAK0_COUNT 339 // id1/pak0.pak - v1.0x                       // common.c
+#define PAK0_CRC_V100 13900 // id1/pak0.pak - v1.00
+#define PAK0_CRC_V101 62751 // id1/pak0.pak - v1.01
+#define PAK0_CRC_V106 32981 // id1/pak0.pak - v1.06
+#define PAK0_CRC (PAK0_CRC_V106)
+#define PAK0_COUNT_V091 308 // id1/pak0.pak - v0.91/0.92, not supported
+#define PAK0_CRC_V091 28804 // id1/pak0.pak - v0.91/0.92, not supported
+#define VA_NUM_BUFFS 4
+#define VA_BUFFERLEN 1024
+#define MAX_FILES_IN_PACK 2048
+#define LOADFILE_ZONE 0
+#define	LOADFILE_HUNK 1
+#define	LOADFILE_TEMPHUNK 2
+#define	LOADFILE_CACHE 3
+#define	LOADFILE_STACK 4
+#define	LOADFILE_MALLOC 5
+
+#define	MAX_FIELD_LEN	64                                         // pr_edict.c
+#define	GEFV_CACHESIZE	2
+#define	PR_STRING_ALLOCSLOTS	256
+
+#define	STEPSIZE	18                                          // sv_move.c
+
+#define	STRINGTEMP_BUFFERS		16                          // pr_cmds.c
+#define	STRINGTEMP_LENGTH		1024
+#define	RETURN_EDICT(e) (((int *)pr_globals)[OFS_RETURN] = EDICT_TO_PROG(e))
+#define	MSG_BROADCAST	0		// unreliable to all
+#define	MSG_ONE		1		// reliable to one (msg_entity)
+#define	MSG_ALL		2		// reliable to all
+#define	MSG_INIT	3		// write to the init string
+#define	MAX_CHECK	16
 #endif

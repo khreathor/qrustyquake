@@ -25,7 +25,6 @@ usercmd_t	cmd;
 SV_SetIdealPitch
 ===============
 */
-#define	MAX_FORWARD	6
 void SV_SetIdealPitch (void)
 {
 	float	angleval, sinval, cosval;

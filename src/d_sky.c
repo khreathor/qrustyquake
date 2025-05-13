@@ -2,9 +2,6 @@
 
 #include "quakedef.h"
 
-#define SKY_SPAN_SHIFT	5
-#define SKY_SPAN_MAX	(1 << SKY_SPAN_SHIFT)
-
 void D_Sky_uv_To_st(int u, int v, fixed16_t *s, fixed16_t *t)
 {
 	float temp = r_refdef.vrect.width >= r_refdef.vrect.height ?

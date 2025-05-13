@@ -20,8 +20,6 @@ flying/floating monsters are SOLID_SLIDEBOX and MOVETYPE_FLY
 solid_edge items only clip against bsp models.
 */
 
-#define	MOVE_EPSILON	0.01
-
 void SV_Physics_Toss (edict_t *ent);
 
 /*
@@ -158,7 +156,6 @@ Slide off of the impacting object
 returns the blocked flags (1 = floor, 2 = step / wall)
 ==================
 */
-#define	STOP_EPSILON	0.1
 
 int ClipVelocity (vec3_t in, vec3_t normal, vec3_t out, float overbounce)
 {
@@ -198,7 +195,6 @@ Returns the clipflags if the velocity was modified (hit something solid)
 If steptrace is not NULL, the trace of any vertical wall hit will be stored
 ============
 */
-#define	MAX_CLIP_PLANES	5
 int SV_FlyMove (edict_t *ent, float time, trace_t *steptrace)
 {
 	int			bumpcount, numbumps;
@@ -766,7 +762,6 @@ SV_WalkMove
 Only used by players
 ======================
 */
-#define	STEPSIZE	18
 void SV_WalkMove (edict_t *ent)
 {
 	vec3_t		upmove, downmove;

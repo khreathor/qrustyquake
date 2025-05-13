@@ -4,11 +4,8 @@
 
 #include "quakedef.h"
 
-// This is enables a simple IP banning mechanism
-#define BAN_TEST
-// these two macros are to make the code more readable
-#define sfunc	net_landrivers[sock->landriver]
-#define dfunc	net_landrivers[net_landriverlevel]
+#define sfunc net_landrivers[sock->landriver] // readability macros
+#define dfunc net_landrivers[net_landriverlevel]
 
 static struct {
 	unsigned int length;
@@ -37,7 +34,6 @@ static char *StrAddr(struct qsockaddr *addr)
 		sprintf(buf + n * 2, "%02x", *p++);
 	return buf;
 }
-#ifdef BAN_TEST
 static struct in_addr banAddr;
 static struct in_addr banMask;
 
@@ -82,7 +78,6 @@ static void NET_Ban_f()
 		break;
 	}
 }
-#endif // BAN_TEST
 
 int Datagram_SendMessage(qsocket_t *sock, sizebuf_t *data)
 {
@@ -1178,3 +1173,5 @@ qsocket_t *Datagram_Connect(const char *host)
 	}
 	return ret;
 }
+#undef sfunc
+#undef dfunc

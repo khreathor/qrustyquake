@@ -42,8 +42,6 @@ const int	type_size[NUM_TYPE_SIZES] = {
 static ddef_t	*ED_FieldAtOfs (int ofs);
 static bool	ED_ParseEpair (void *base, ddef_t *key, const char *s);
 
-#define	MAX_FIELD_LEN	64
-#define	GEFV_CACHESIZE	2
 
 typedef struct {
 	ddef_t	*pcache;
@@ -1311,7 +1309,6 @@ int NUM_FOR_EDICT(edict_t *e)
 //===========================================================================
 
 
-#define	PR_STRING_ALLOCSLOTS	256
 
 static void PR_AllocStringSlots (void)
 {

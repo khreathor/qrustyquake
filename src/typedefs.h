@@ -1411,4 +1411,35 @@ typedef struct client_s {
 	float spawn_parms[NUM_SPAWN_PARMS];
 	int old_frags;
 } client_t;
+
+typedef struct {                                                       // draw.c
+	vrect_t rect;
+	int width;
+	int height;
+	byte *ptexbytes;
+	int rowbytes;
+} rectdesc_t;
+typedef struct cachepic_s {
+	char name[MAX_QPATH];
+	cache_user_t cache;
+} cachepic_t;
+
+typedef struct {                                                     // r_draw.c
+	float u, v;
+	int ceilv;
+} evert_t;
+
+typedef enum { touchessolid, drawnode, nodrawnode } solidstate_t;     // r_bsp.c
+
+typedef struct { int index0; int index1; } aedge_t;                 // r_alias.c
+
+typedef struct vispatch_s { // External VIS file support              // model.c
+	char mapname[32];
+	int filelen; // length of data after header (VIS+Leafs)
+} vispatch_t;
+
+typedef struct { int s; dfunction_t *f; } prstack_t;                // pr_exec.c
+
+typedef struct { char *name; char *description; } level_t;             // menu.c
+typedef struct { char *description; int firstLevel; int levels; } episode_t;
 #endif

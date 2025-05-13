@@ -2,12 +2,6 @@
 
 #include "quakedef.h"
 
-#define CON_TEXTSIZE 65536
-#define NUM_CON_TIMES 4
-#define MAXCMDLINE 256
-#define MAXGAMEDIRLEN 1000
-#define MAXPRINTMSG 4096
-
 bool con_forcedup; // because no entities to refresh
 int con_totallines; // total lines in console scrollback
 int con_backscroll; // lines up from bottom to display

@@ -4,14 +4,6 @@
 
 #include "quakedef.h"
 
-#define NUMVERTEXNORMALS 162
-#define LIGHT_MIN 5 // lowest light value we'll allow, to avoid the
-		// need for inner-loop light clamping
-typedef struct {
-	int index0;
-	int index1;
-} aedge_t;
-
 mtriangle_t *ptriangles;
 affinetridesc_t r_affinetridesc;
 void *acolormap; // FIXME: should go away

@@ -2,11 +2,6 @@
 
 #include "quakedef.h"
 
-#define MAX_BMODEL_VERTS 2500 // CyanBun96: was 500
-#define MAX_BMODEL_EDGES 5000 // was 1000
-
-typedef enum { touchessolid, drawnode, nodrawnode } solidstate_t;
-
 // current entity info
 bool insubmodel;
 entity_t *currententity;
