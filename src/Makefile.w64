@@ -59,4 +59,4 @@ release:
 	$(MAKE) -f $(MAKEFILE_LIST) BUILD_TYPE=release SDL_CFLAGS="$(SDL_CFLAGS)" SDL_LIBS="$(SDL_LIBS)"
 
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f $(OBJS) $(TARGET).exe

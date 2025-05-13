@@ -28,17 +28,12 @@ f64 Sys_FloatTime()
 
 f64 Sys_DoubleTime(){ return Sys_FloatTime(); }
 
-#ifndef INVALID_FILE_ATTRIBUTES
-#define INVALID_FILE_ATTRIBUTES ((DWORD)-1)
-#endif
 s32 Sys_FileType (const s8 *path)
 {
-        DWORD result = GetFileAttributes(path);
-
-        if(result == INVALID_FILE_ATTRIBUTES)
+        s32 result = GetFileAttributes(path);
+        if(result == -1)
                 return FS_ENT_NONE;
         if(result & FILE_ATTRIBUTE_DIRECTORY)
                 return FS_ENT_DIRECTORY;
-
         return FS_ENT_FILE;
 }

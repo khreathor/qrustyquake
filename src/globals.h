@@ -39,11 +39,14 @@ EX s32 fog_lut_built;
 EX f32 gamma_lut[256];
 EX s32 color_conv_initialized;
 EX lab_t lab_palette[256];
+EX u8 rgb_lut[RGB_LUT_SIZE];
+EX s32 rgb_lut_built;
 EX void init_color_conv();
 EX u8 rgbtoi_lab(u8 r, u8 g, u8 b);
 EX u8 rgbtoi(u8 r, u8 g, u8 b);
 EX void build_color_mix_lut(cvar_t *cvar);
 EX void R_BuildLitLUT();
+EX u32 lfsr_random();
 
 EX s32 fog_initialized;                                               // d_fog.c
 EX u32 lfsr;

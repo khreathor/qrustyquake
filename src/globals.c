@@ -7,6 +7,8 @@ s32 color_conv_initialized = 0;
 lab_t lab_palette[256];
 u8 lit_lut[LIT_LUT_RES*LIT_LUT_RES*LIT_LUT_RES];
 u8 lit_lut_initialized = 0;
+unsigned char rgb_lut[RGB_LUT_SIZE];
+int rgb_lut_built = 0;
 
 s32 fog_initialized = 0;                                              // d_fog.c
 u32 lfsr = 0x1337; // non-zero seed

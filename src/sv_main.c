@@ -1233,7 +1233,6 @@ SERVER SPAWNING
 ==============================================================================
 */
 
-#define SIGNON_SIZE		31500 // QS has a MAX_DATAGRAM of 32000, try to play nice
 
 /*
 ================

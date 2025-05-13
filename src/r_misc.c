@@ -131,7 +131,6 @@ void R_LineGraph(int x, int y, int h)
 	}
 }
 
-#define	MAX_TIMINGS 100
 void R_TimeGraph()
 { // Performance monitoring tool
 	static int timex;

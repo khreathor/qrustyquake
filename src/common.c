@@ -330,14 +330,6 @@ char *q_strdup (const char *str)
 	return newstr;
 }
 
-/* platform dependant (v)snprintf function names: */
-#if defined(_WIN32)
-#define	snprintf_func		_snprintf
-#define	vsnprintf_func		_vsnprintf
-#else
-#define	snprintf_func		snprintf
-#define	vsnprintf_func		vsnprintf
-#endif
 
 int q_vsnprintf(char *str, size_t size, const char *format, va_list args)
 {

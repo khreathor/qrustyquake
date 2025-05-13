@@ -1,5 +1,3 @@
-#include "quakedef.h"
-
 extern cvar_t vid_mode, _vid_default_mode_win, scr_uiscale, sensitivityyscale,
 _windowed_mouse, newoptions, aspectr, realwidth, realheight, r_draworder,
 r_speeds, r_timegraph, r_graphheight, r_clearcolor, r_waterwarp, r_fullbright,

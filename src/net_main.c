@@ -4,8 +4,7 @@
 
 #include "quakedef.h"
 
-// these two macros are to make the code more readable
-#define sfunc net_drivers[sock->driver]
+#define sfunc net_drivers[sock->driver] // readability macros
 #define dfunc net_drivers[net_driverlevel]
 
 int net_driverlevel;
@@ -588,3 +587,5 @@ void SchedulePollProcedure(PollProcedure *proc, double timeOffset)
 	proc->next = pp;
 	prev->next = proc;
 }
+#undef sfunc
+#undef dfunc

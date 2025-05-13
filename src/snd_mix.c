@@ -7,7 +7,6 @@
 
 #include "quakedef.h"
 
-#define	PAINTBUFFER_SIZE	2048
 portable_samplepair_t paintbuffer[PAINTBUFFER_SIZE];
 int		snd_scaletable[32][256];
 int		*snd_p, snd_linear_count;

@@ -366,6 +366,7 @@
 
 #define FOG_LUT_LEVELS 32                                            // rgbtoi.h
 #define LIT_LUT_RES 64
+#define RGB_LUT_SIZE 512 // 8×8×8 color space
 
 #define CSHIFT_CONTENTS 0                                            // client.h
 #define CSHIFT_DAMAGE 1
@@ -844,58 +845,6 @@
 #define MOD_NOSHADOW 512 // don't cast a shadow
 #define MOD_FBRIGHTHACK 1024 // when fullbrights are disabled, use a hack to render this model brighter
 
-#define Q_MINIZ_H 1                                                   // miniz.h
-#define MINIZ_EXPORT
-#define MINIZ_NO_STDIO
-#define MINIZ_NO_TIME
-#define MINIZ_NO_DEFLATE_APIS
-#define MINIZ_NO_ARCHIVE_WRITING_APIS
-#define MINIZ_NO_ZLIB_APIS
-#define MINIZ_NO_ZLIB_COMPATIBLE_NAMES
-#define MINIZ_LITTLE_ENDIAN (SDL_BYTEORDER == SDL_LIL_ENDIAN)
-#define MINIZ_NO_ARCHIVE_WRITING_APIS
-#define MINIZ_USE_UNALIGNED_LOADS_AND_STORES 1
-#define MINIZ_UNALIGNED_USE_MEMCPY
-#define MINIZ_HAS_64BIT_REGISTERS 1
-#define MZ_CRC32_INIT (0)
-#define MZ_DEFLATED 8
-#define MZ_VERSION "10.2.0"
-#define MZ_VERNUM 0xA100
-#define MZ_VER_MAJOR 10
-#define MZ_VER_MINOR 2
-#define MZ_VER_REVISION 0
-#define MZ_VER_SUBREVISION 0
-#define MZ_FALSE (0)
-#define MZ_TRUE (1)
-#define MZ_MACRO_END while (0)
-#define MZ_FILE void *
-#define MZ_ASSERT(x) assert(x)
-#define MZ_MALLOC(x) malloc(x)
-#define MZ_FREE(x) free(x)
-#define MZ_REALLOC(p, x) realloc(p, x)
-#define MZ_MAX(a, b) (((a) > (b)) ? (a) : (b))
-#define MZ_MIN(a, b) (((a) < (b)) ? (a) : (b))
-#define MZ_CLEAR_OBJ(obj) memset(&(obj), 0, sizeof(obj))
-#define MZ_CLEAR_ARR(obj) memset((obj), 0, sizeof(obj))
-#define MZ_CLEAR_PTR(obj) memset((obj), 0, sizeof(*obj))
-#define MZ_READ_LE16(p) *((const mz_uint16 *)(p))
-#define MZ_READ_LE32(p) *((const mz_uint32 *)(p))
-#define MZ_READ_LE64(p) (((mz_uint64)MZ_READ_LE32(p)) | (((mz_uint64)MZ_READ_LE32((const mz_uint8 *)(p) + sizeof(mz_uint32))) << 32U))
-#define MZ_FORCEINLINE inline
-#define MZ_UINT16_MAX (0xFFFFU)
-#define MZ_UINT32_MAX (0xFFFFFFFFU)
-#define TINFL_LZ_DICT_SIZE 32768
-// Initializes the decompressor to its initial state.
-#define tinfl_init(r)     \
-    do                    \
-    {                     \
-        (r)->m_state = 0; \
-    }                     \
-    MZ_MACRO_END
-#define tinfl_get_adler32(r) (r)->m_check_adler32
-#define TINFL_USE_64BIT_BITBUF 1
-#define TINFL_BITBUF_SIZE (64)
-
 #define MAX_CACHED_PICS	128                                            // draw.c
 
 #define MAXLEFTCLIPEDGES 100                                         // r_draw.c
@@ -980,6 +929,7 @@
 #define	PR_STRING_ALLOCSLOTS	256
 
 #define	STEPSIZE	18                                          // sv_move.c
+#define	DI_NODIR	-1
 
 #define	STRINGTEMP_BUFFERS		16                          // pr_cmds.c
 #define	STRINGTEMP_LENGTH		1024
@@ -989,4 +939,44 @@
 #define	MSG_ALL		2		// reliable to all
 #define	MSG_INIT	3		// write to the init string
 #define	MAX_CHECK	16
+
+#ifdef _WIN32 // platform dependant (v)snprintf function names:      // common.c
+#define	snprintf_func		_snprintf
+#define	vsnprintf_func		_vsnprintf
+#else
+#define	snprintf_func		snprintf
+#define	vsnprintf_func		vsnprintf
+#endif
+
+#define NUMVERTEXNORMALS 162                                         // r_part.c
+#define MAX_PARTICLES 2048
+#define ABSOLUTE_MIN_PARTICLES 512
+
+#define DPS_MAXSPANS MAXHEIGHT+1 // +1 for spanpackage marking end // d_polyse.c
+
+#define SIGNON_SIZE 31500                                           // sv_main.c
+
+#define	MAX_TIMINGS 100                                              // r_misc.c
+
+#define	DYNAMIC_SIZE	(4 * 1024 * 1024) // ericw -- was 512KB        // zone.c
+#define	ZONEID	0x1d4a11
+#define MINFRAGMENT	64
+#define	HUNK_SENTINEL	0x1df001ed
+#define HUNKNAME_LEN	24
+#define CACHENAME_LEN	32
+
+#define NUM_MIPS 4                                                   // d_init.c
+
+#define	PAINTBUFFER_SIZE	2048                                // snd_mix.c
+
+#define	AREA_DEPTH	4                                             // world.c
+#define	AREA_NODES	32
+
+#define SAVEGAME_VERSION 5                                         // host_cmd.c
+
+#define EXTRA_EFRAGS    128                                         // r_efrag.c
+
+#define SND_FILTERQUALITY_DEFAULT "1"                               // snd_dma.c
+#define	sound_nominal_clip_dist	1000.0
+#define	MAX_SFX		1024
 #endif

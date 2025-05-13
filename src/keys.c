@@ -4,8 +4,6 @@
 
 // key up events are sent even if in console mode
 
-#define MAXCMDLINE 256
-
 s8 key_lines[32][MAXCMDLINE];
 s32 key_linepos;
 s32 shift_down = false;

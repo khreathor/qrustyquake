@@ -15,6 +15,7 @@
 #include <float.h>
 #include <time.h>
 #include <sys/types.h>
+#include <assert.h>
 #ifndef _WIN32
 #include <unistd.h>
 #include <sys/param.h>

@@ -4,7 +4,7 @@
 
 #include "quakedef.h"
 
-#define SHOWNET(x) if(cl_shownet.value==2)Con_Printf("%3i:%s\n",msg_readcount-1,x);
+#define SHOWNET(x) 
 
 int bitcounts[16];
 char *svc_strings[] = {
@@ -946,19 +946,25 @@ void CL_ParseServerMessage ()
 			Host_Error ("CL_ParseServerMessage: Bad server message");
 		cmd = MSG_ReadByte ();
 		if (cmd == -1) {
-			SHOWNET("END OF MESSAGE");
+			if(cl_shownet.value==2)
+				Con_Printf("%3i:%s\n",msg_readcount-1,
+						"END OF MESSAGE");
 			return; // end of message
 		}
 		// if the high bit of the command byte is set, it is a fast update
 		if (cmd & U_SIGNAL) //johnfitz -- was 128, changed for clarity
 		{
-			SHOWNET("fast update");
+			if(cl_shownet.value==2)
+				Con_Printf("%3i:%s\n",msg_readcount-1,
+						"fast update");
 			CL_ParseUpdate (cmd&127);
 			continue;
 		}
-		//FIXMEif (cmd < (int)NUM_SVC_STRINGS) {
-		//FIXME SHOWNET(svc_strings[cmd]);
-		//FIXME}
+		if (cmd < (int)Q_COUNTOF(svc_strings)) {
+			if(cl_shownet.value==2)
+				Con_Printf("%3i:%s\n",msg_readcount-1,
+						svc_strings[cmd]);
+		}
 		// other commands
 		switch (cmd)
 		{

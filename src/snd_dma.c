@@ -36,7 +36,6 @@ vec3_t		listener_forward;
 vec3_t		listener_right;
 vec3_t		listener_up;
 
-#define	sound_nominal_clip_dist	1000.0
 
 int		soundtime;	// sample PAIRS
 int		paintedtime;	// sample PAIRS
@@ -45,7 +44,6 @@ int		s_rawend;
 portable_samplepair_t	s_rawsamples[MAX_RAW_SAMPLES];
 
 
-#define	MAX_SFX		1024
 static sfx_t	*known_sfx = NULL;	// hunk allocated [MAX_SFX]
 static int	num_sfx;
 
@@ -53,7 +51,6 @@ static sfx_t	*ambient_sfx[NUM_AMBIENTS];
 
 static bool	sound_started = false;
 
-#define SND_FILTERQUALITY_DEFAULT "1"
 
 static void S_SoundInfo_f (void)
 {

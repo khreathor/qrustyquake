@@ -5,9 +5,6 @@
 
 #include "quakedef.h"
 
-// TODO: put in span spilling to shrink list size
-#define DPS_MAXSPANS MAXHEIGHT+1 // 1 extra for spanpackage that marks end
-
 typedef struct {
 	int quotient;
 	int remainder;

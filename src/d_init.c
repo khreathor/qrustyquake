@@ -4,8 +4,6 @@
 
 #include "quakedef.h"
 
-#define NUM_MIPS 4
-
 surfcache_t *d_initial_rover;
 bool d_roverwrapped;
 int d_minmip;

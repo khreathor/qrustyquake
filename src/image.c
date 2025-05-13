@@ -5,8 +5,6 @@
 
 #include "quakedef.h"
 
-#define TARGAHEADERSIZE 18              /* size on disk */
-
 static char loadfilename[MAX_OSPATH]; //file scope so that error messages can use it
 
 typedef struct stdio_buffer_s {

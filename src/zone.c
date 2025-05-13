@@ -23,11 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 
-#define	DYNAMIC_SIZE	(4 * 1024 * 1024) // ericw -- was 512KB (64-bit) / 384KB (32-bit)
-
-#define	ZONEID	0x1d4a11
-#define MINFRAGMENT	64
-
 typedef struct memblock_s
 {
 	int	size;		// including the header and possibly tiny fragments
@@ -284,9 +279,6 @@ void Z_Print (memzone_t *zone)
 
 //============================================================================
 
-#define	HUNK_SENTINEL	0x1df001ed
-
-#define HUNKNAME_LEN	24
 typedef struct
 {
 	int		sentinel;
@@ -428,10 +420,6 @@ Hunk_AllocName
 void *Hunk_AllocName (int size, const char *name)
 {
 	hunk_t	*h;
-
-#ifdef PARANOID
-	Hunk_Check ();
-#endif
 
 	if (size < 0)
 		Sys_Error ("Hunk_Alloc: bad size: %i", size);
@@ -591,7 +579,6 @@ CACHE MEMORY
 ===============================================================================
 */
 
-#define CACHENAME_LEN	32
 typedef struct cache_system_s
 {
 	int			size;		// including this header

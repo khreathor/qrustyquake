@@ -2,8 +2,6 @@
 
 #include "quakedef.h"
 
-#define EXTRA_EFRAGS    128
-
 mnode_t *r_pefragtopnode;
 efrag_t **lastlink;
 vec3_t r_emins, r_emaxs;

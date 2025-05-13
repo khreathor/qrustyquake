@@ -6,13 +6,7 @@
 
 #include "quakedef.h"
 
-#define RGB_LUT_SIZE 512  // 8×8×8 color space
-unsigned char rgb_lut[RGB_LUT_SIZE];
-int rgb_lut_built = 0;
-
 extern byte *Image_LoadImage (const char *name, int *width, int *height);
-extern unsigned char rgbtoi(unsigned char r, unsigned char g, unsigned char b);
-extern unsigned int lfsr_random();
 
 int iskyspeed = 8;
 int iskyspeed2 = 2;

@@ -1,5 +1,3 @@
-#include <stdint.h>
-
 #ifndef QTYPEDEFS_
 #define QTYPEDEFS_
 typedef uint8_t  u8;                                           // standard types

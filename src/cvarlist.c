@@ -1,5 +1,4 @@
 #include "quakedef.h"
-
 #define ZR 0,0,0,0      // "name", default value, flags (1 - save to config.cfg)
 cvar_t _vid_default_mode_win=              {"_vid_default_mode_win", "3", 1,ZR};
 cvar_t scr_uiscale=                                  {"scr_uiscale", "1", 1,ZR};

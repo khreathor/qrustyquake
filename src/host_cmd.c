@@ -2,8 +2,6 @@
 
 #include "quakedef.h"
 
-#define SAVEGAME_VERSION 5
-
 int current_skill;
 
 extern char *pr_strings;
