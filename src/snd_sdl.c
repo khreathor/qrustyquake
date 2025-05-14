@@ -2,14 +2,11 @@
 // Copyright (C) 2005-2012 O.Sezer <sezero@users.sourceforge.net>
 // Copyright (C) 2010-2014 QuakeSpasm developers
 // GPLv3 See LICENSE for details.
-
 // snd_sdl.c - SDL audio driver for Hexen II: Hammer of Thyrion (uHexen2)
 // based on implementations found in the quakeforge and ioquake3 projects.
-
 #include "quakedef.h"
 
 static s32	buffersize;
-
 
 static void SDLCALL paint_audio (void *unused, Uint8 *stream, s32 len)
 {

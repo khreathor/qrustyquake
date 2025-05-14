@@ -12,21 +12,11 @@
 // pointer is greater than another one, it should be drawn in front
 // surfaces[1] is the background, and is used as the active surface stack
 
-edge_t *auxedges;
-edge_t *r_edges, *edge_p, *edge_max;
-surf_t *surfaces, *surface_p, *surf_max;
-edge_t *newedges[MAXHEIGHT];
-edge_t *removeedges[MAXHEIGHT];
-espan_t *span_p, *max_span_p;
-edge_t edge_head;
-edge_t edge_tail;
-edge_t edge_aftertail;
-edge_t edge_sentinel;
-s32 r_currentkey;
-s32 r_bmodelactive;
-s32 current_iv;
-s64 edge_head_u_shift20, edge_tail_u_shift20;
-f32 fv;
+static espan_t *span_p, *max_span_p;
+static edge_t edge_sentinel;
+static s32 current_iv;
+static s64 edge_head_u_shift20, edge_tail_u_shift20;
+static f32 fv;
 
 static void (*pdrawfunc)();
 void R_GenerateSpans();

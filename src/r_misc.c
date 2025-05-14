@@ -1,12 +1,11 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 #include "quakedef.h"
 
-f32 map_fallbackalpha;
-f32 map_wateralpha;
-f32 map_lavaalpha;
-f32 map_telealpha;
-f32 map_slimealpha;
+static f32 map_fallbackalpha;
+static f32 map_wateralpha;
+static f32 map_lavaalpha;
+static f32 map_telealpha;
+static f32 map_slimealpha;
 
 void R_ParseWorldspawn()
 {
@@ -99,13 +98,13 @@ void R_CheckVariables()
 void R_TimeRefresh_f()
 { // For program optimization
 	s32 startangle = r_refdef.viewangles[1];
-	f32 start = Sys_FloatTime();
+	f32 start = Sys_DoubleTime();
 	for (s32 i = 0; i < 128; i++) {
 		r_refdef.viewangles[1] = i / 128.0 * 360.0;
 		R_RenderView();
 		VID_Update();
 	}
-	f32 stop = Sys_FloatTime();
+	f32 stop = Sys_DoubleTime();
 	f32 time = stop - start;
 	Con_Printf("%f seconds (%f fps)\n", time, 128 / time);
 	r_refdef.viewangles[1] = startangle;
@@ -135,7 +134,7 @@ void R_TimeGraph()
 { // Performance monitoring tool
 	static s32 timex;
 	static u8 r_timings[MAX_TIMINGS];
-	f32 r_time2 = Sys_FloatTime();
+	f32 r_time2 = Sys_DoubleTime();
 	s32 a = (r_time2 - r_time1) / 0.01;
 	r_timings[timex] = a;
 	a = timex;
@@ -159,7 +158,7 @@ void R_TimeGraph()
 
 void R_PrintTimes()
 {
-	f32 r_time2 = Sys_FloatTime();
+	f32 r_time2 = Sys_DoubleTime();
 	f32 ms = 1000 * (r_time2 - r_time1);
 	Con_Printf("%5.1f ms %3i/%3i/%3i poly %3i surf\n",
 		   ms, c_faceclip, r_polycount, r_drawnpolycount, c_surf);
@@ -168,7 +167,7 @@ void R_PrintTimes()
 
 void R_PrintDSpeeds()
 {
-	f32 r_time2 = Sys_FloatTime();
+	f32 r_time2 = Sys_DoubleTime();
 	f32 dp_time = (dp_time2 - dp_time1) * 1000;
 	f32 rw_time = (rw_time2 - rw_time1) * 1000;
 	f32 db_time = (db_time2 - db_time1) * 1000;

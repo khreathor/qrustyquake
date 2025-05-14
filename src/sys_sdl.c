@@ -1,7 +1,5 @@
 #include "quakedef.h"
-
-FILE *sys_handles[MAX_HANDLES];
-extern f64 Host_GetFrameInterval();
+static FILE *sys_handles[MAX_HANDLES];
 
 void Sys_Printf(const s8 *fmt, ...)
 {
@@ -156,42 +154,30 @@ s32 Sys_FileTime(const s8 *path)
 	return -1;
 }
 
-#ifndef _WIN32
-s32 Sys_FileType (const s8 *path)
-{
-        /*
-        if(access(path, R_OK) == -1)
-                return 0;
-        */
-        struct stat     st;
-
-        if(stat(path, &st) != 0)
-                return FS_ENT_NONE;
-        if(S_ISDIR(st.st_mode))
-                return FS_ENT_DIRECTORY;
-        if(S_ISREG(st.st_mode))
-                return FS_ENT_FILE;
-
-        return FS_ENT_NONE;
-}
+s32 Sys_FileWrite(s32 handle, const void *src, s32 count)
+{ return fwrite(src, 1, count, sys_handles[handle]); }
 
 s32 Sys_FileOpenWrite(const s8 *path)
 {
 	s32 i = findhandle();
 	FILE *f = fopen(path, "wb");
-	if(!f)
-		Sys_Error("Error opening %s: %s", path, strerror(errno));
+	if(!f) Sys_Error("Error opening %s: %s", path, strerror(errno));
 	sys_handles[i] = f;
 	return i;
 }
 
-s32 Sys_FileWrite(s32 handle, const void *src, s32 count)
+#ifndef _WIN32
+s32 Sys_FileType (const s8 *path)
 {
-	return fwrite(src, 1, count, sys_handles[handle]);
+        struct stat st;
+        if(stat(path, &st) != 0) return FS_ENT_NONE;
+        if(S_ISDIR(st.st_mode)) return FS_ENT_DIRECTORY;
+        if(S_ISREG(st.st_mode)) return FS_ENT_FILE;
+        return FS_ENT_NONE;
 }
 
-f64 Sys_FloatTime()
-{ // CyanBun96: TODO move this to DoubleTime and remove FloatTime
+f64 Sys_DoubleTime()
+{
 	struct timeval tp;
 	struct timezone tzp;
 	static s32 secbase;
@@ -203,12 +189,25 @@ f64 Sys_FloatTime()
 	return (tp.tv_sec - secbase) + tp.tv_usec / 1000000.0;
 }
 
-f64 Sys_DoubleTime(){ return Sys_FloatTime(); }
-
-void Sys_mkdir(const s8 *path)
+void Sys_mkdir(const s8 *path) { mkdir(path, 0777); }
+#else
+s32 Sys_FileType (const s8 *path)
 {
-	mkdir(path, 0777);
+        s32 result = GetFileAttributes(path);
+        if(result == -1) return FS_ENT_NONE;
+        if(result & FILE_ATTRIBUTE_DIRECTORY) return FS_ENT_DIRECTORY;
+        return FS_ENT_FILE;
 }
+
+f64 Sys_DoubleTime()
+{
+	static s32 starttime = 0;
+	if(!starttime)
+		starttime = clock();
+	return (clock() - starttime) * 1.0 / 1024;
+}
+
+void Sys_mkdir(const s8 *path) { _mkdir(path); }
 #endif
 
 int main(int c, char **v)
@@ -228,7 +227,7 @@ int main(int c, char **v)
 	host_parms.membase = malloc(host_parms.memsize);
 	host_parms.basedir = ".";
 	Host_Init();
-	f64 oldtime = Sys_FloatTime() - 0.1;
+	f64 oldtime = Sys_DoubleTime() - 0.1;
 	while(1){
 		f64 newtime = Sys_Throttle(oldtime);
 		f64 deltatime = newtime - oldtime;

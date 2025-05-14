@@ -1,39 +1,31 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 // r_alias.c: routines for setting up to draw alias models
-
 #include "quakedef.h"
 
 mtriangle_t *ptriangles;
 affinetridesc_t r_affinetridesc;
-void *acolormap; // FIXME: should go away
-trivertx_t *r_apverts;
-// TODO: these probably will go away with optimized rasterization
+void *acolormap;
 mdl_t *pmdl;
-vec3_t r_plightvec;
-s32 r_ambientlight;
-f32 r_shadelight;
 aliashdr_t *paliashdr;
 finalvert_t *pfinalverts;
 auxvert_t *pauxverts;
 s32 r_amodels_drawn;
 s32 a_skinwidth;
-s32 r_anumverts;
-f32 aliastransform[3][4];
 
+static trivertx_t *r_apverts;
+static vec3_t r_plightvec;
+static s32 r_ambientlight;
+static f32 r_shadelight;
+static s32 r_anumverts;
+static f32 aliastransform[3][4];
 static f32 ziscale;
 static model_t *pmodel;
 static vec3_t alias_forward, alias_right, alias_up;
 static maliasskindesc_t *pskindesc;
 static aedge_t aedges[12] = {
-	{ 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 },
-	{ 4, 5 }, { 5, 6 }, { 6, 7 }, { 7, 4 },
-	{ 0, 5 }, { 1, 4 }, { 2, 7 }, { 3, 6 }
-};
-
-f32 r_avertexnormals[NUMVERTEXNORMALS][3] = {
-#include "anorms.h"
-};
+	{0,1},{1,2},{2,3},{3,0},
+	{4,5},{5,6},{6,7},{7,4},
+	{0,5},{1,4},{2,7},{3,6}};
 
 void R_AliasTransformAndProjectFinalVerts(finalvert_t *fv, stvert_t *pstverts);
 void R_AliasSetUpTransform(s32 trivial_accept);

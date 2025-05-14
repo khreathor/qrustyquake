@@ -3,80 +3,42 @@
 // Copyright (C) 2007-2008 Kristian Duske
 // Copyright (C) 2010-2014 QuakeSpasm developers
 // GPLv3 See LICENSE for details.
-
 #include "quakedef.h"
 
-extern u8 *Image_LoadImage (const s8 *name, s32 *width, s32 *height);
-
-s32 iskyspeed = 8;
-s32 iskyspeed2 = 2;
-f32 skyspeed, skyspeed2;
-f32 skytime;
-u8 *r_skysource;
-s32 r_skymade;
-u8 bottomsky[128 * 131];
-u8 bottommask[128 * 131];
-u8 newsky[128 * 256];	
-// newsky and topsky both pack in here, 128 bytes of newsky on the left of each
-// scan, 128 bytes of topsky on the right, because the low-level drawers need
-// 256-u8 scan widths
-s8 skybox_name[1024]; // name of current skybox, or "" if no skybox
-
-// Manoel Kasimier - skyboxes - begin
-// Code taken from the ToChriS engine - Author: Vic
-s32                             r_skyframe;
-msurface_t              *r_skyfaces;
-mplane_t                r_skyplanes[6]; // Manoel Kasimier - edited
-mtexinfo_t              r_skytexinfo[6];
-u8         r_skypixels[6][SKYBOX_MAX_SIZE*SKYBOX_MAX_SIZE]; // Manoel Kasimier - edited
-mvertex_t               *r_skyverts;
-medge_t                 *r_skyedges;
-s32                             *r_skysurfedges;
-
-// I just copied this data from a box map...
-s32 skybox_planes[12] = {2,-128, 0,-128, 2,128, 1,128, 0,128, 1,-128};
-
-s32 box_surfedges[24] = { 1,2,3,4,  -1,5,6,7,  8,9,-6,10,  -2,-7,-9,11,
-  12,-3,-11,-8,  -12,-10,-5,-4};
-s32 box_edges[24] = { 1,2, 2,3, 3,4, 4,1, 1,5, 5,6, 6,2, 7,8, 8,6, 5,7, 8,3, 7,4};
-
-s32     box_faces[6] = {0,0,2,2,2,0};
-
-vec3_t  box_vecs[6][2] = {
-        {       {0,-1,0}, {-1,0,0} }, { {0,1,0}, {0,0,-1} },
-        {       {0,-1,0}, {1,0,0} }, { {1,0,0}, {0,0,-1} },
-        { {0,-1,0}, {0,0,-1} }, { {-1,0,0}, {0,0,-1} }
-};
-
-// Manoel Kasimier - hi-res skyboxes - begin
-vec3_t  box_bigvecs[6][2] = {
-        {       {0,-2,0}, {-2,0,0} }, { {0,2,0}, {0,0,-2} },
-        {       {0,-2,0}, {2,0,0} }, { {2,0,0}, {0,0,-2} },
-        { {0,-2,0}, {0,0,-2} }, { {-2,0,0}, {0,0,-2} }
-};
-vec3_t  box_bigbigvecs[6][2] = {
-        {       {0,-4,0}, {-4,0,0} }, { {0,4,0}, {0,0,-4} },
-        {       {0,-4,0}, {4,0,0} }, { {4,0,0}, {0,0,-4} },
-        { {0,-4,0}, {0,0,-4} }, { {-4,0,0}, {0,0,-4} }
-}; // Manoel Kasimier - hi-res skyboxes - end
-f32   box_verts[8][3] = { {-1,-1,-1}, {-1,1,-1}, {1,1,-1}, {1,-1,-1},
+static s32 iskyspeed = 8;
+static s32 iskyspeed2 = 2;
+static u8 bottomsky[128 * 131];
+static u8 bottommask[128 * 131];
+static u8 newsky[128 * 256];	
+static s32 r_skyframe;
+static msurface_t *r_skyfaces;
+static mplane_t r_skyplanes[6]; // Manoel Kasimier - edited
+static mtexinfo_t r_skytexinfo[6];
+static mvertex_t *r_skyverts;
+static medge_t *r_skyedges;
+static s32 *r_skysurfedges;
+static u8 *skyunderlay, *skyoverlay; // Manoel Kasimier - smooth sky
+static u8 bottomalpha[128*131]; // Manoel Kasimier - translucent sky
+static texture_t r_skytextures[6];
+static s8 last_skybox_name[1024];
+static s32 skybox_planes[12] = {2,-128, 0,-128, 2,128, 1,128, 0,128, 1,-128};
+static s32 box_surfedges[24] = { 1,2,3,4,  -1,5,6,7,  8,9,-6,10,  -2,-7,-9,11,
+				 12,-3,-11,-8,     -12,-10,-5,-4};
+static s32 box_edges[24] = {1,2,2,3,3,4,4,1,1,5,5,6,6,2,7,8,8,6,5,7,8,3,7,4};
+static s32 box_faces[6] = {0,0,2,2,2,0};
+static vec3_t box_vecs[6][2] = { {{0,-1,0}, {-1,0,0} }, { {0,1,0}, {0,0,-1} },
+				{ {0,-1,0}, {1,0,0} },  { {1,0,0}, {0,0,-1} },
+				{ {0,-1,0}, {0,0,-1} }, { {-1,0,0}, {0,0,-1}}};
+static vec3_t box_bigvecs[6][2] = { {{0,-2,0}, {-2,0,0} }, {{0,2,0}, {0,0,-2} },
+			 	   { {0,-2,0}, {2,0,0} }, { {2,0,0}, {0,0,-2} },
+				   { {0,-2,0}, {0,0,-2}}, {{-2,0,0}, {0,0,-2}}};
+static vec3_t box_bigbigvecs[6][2] = {{{0,-4,0},{-4,0,0} },{{0,4,0}, {0,0,-4}},
+				     { {0,-4,0},{4,0,0} }, {{4,0,0}, {0,0,-4}},
+				     { {0,-4,0},{0,0,-4} },{{-4,0,0},{0,0,-4}}};
+static f32 box_verts[8][3] = { {-1,-1,-1}, {-1,1,-1}, {1,1,-1}, {1,-1,-1},
 				{-1,-1,1}, {-1,1,1}, {1,-1,1}, {1,1,1} };
-// Manoel Kasimier - skyboxes - end
-
-u8    *skyunderlay, *skyoverlay; // Manoel Kasimier - smooth sky
-u8    bottomalpha[128*131]; // Manoel Kasimier - translucent sky
-
-// Manoel Kasimier - skyboxes - begin
-// Code taken from the ToChriS engine - Author: Vic (vic@quakesrc.org) (http://hkitchen.quakesrc.org/)
-extern  mtexinfo_t              r_skytexinfo[6];
-//extern        cbool           r_drawskybox;
-u8                                    r_skypixels[6][SKYBOX_MAX_SIZE*SKYBOX_MAX_SIZE]; // Manoel Kasimier - edited
-texture_t                               r_skytextures[6];
-s8                                    last_skybox_name[1024];
-
 void Sky_LoadTexture (texture_t *mt)
 {
-	// Baker: Warn.
 	if (mt->width != 256 || mt->height != 128) // Leave this.
 		Con_Printf ("Standard sky texture %s expected to be 256 x 128 but is %d by %d ", mt->name, mt->width, mt->height);
 

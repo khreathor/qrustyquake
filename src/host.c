@@ -237,7 +237,7 @@ void Host_ShutdownServer(bool crash)
 	if (cls.state == ca_connected) // stop all client sounds immediately
 		CL_Disconnect();
 	// flush any pending messages - like the score!!!
-	f64 start = Sys_FloatTime();
+	f64 start = Sys_DoubleTime();
 	s32 count;
 	do {
 		count = 0;
@@ -257,7 +257,7 @@ void Host_ShutdownServer(bool crash)
 				}
 			}
 		}
-		if ((Sys_FloatTime() - start) > 3.0)
+		if ((Sys_DoubleTime() - start) > 3.0)
 			break;
 	}
 	while (count);
@@ -404,10 +404,10 @@ void _Host_Frame(f32 time)
 	if (cls.state == ca_connected) // fetch results from server
 		CL_ReadFromServer();
 	if (host_speeds.value) // update video
-		time1 = Sys_FloatTime();
+		time1 = Sys_DoubleTime();
 	SCR_UpdateScreen();
 	if (host_speeds.value)
-		time2 = Sys_FloatTime();
+		time2 = Sys_DoubleTime();
 	if (cls.signon == SIGNONS) { // update audio
 		S_Update(r_origin, vpn, vright, vup);
 		CL_DecayLights();
@@ -451,9 +451,9 @@ void Host_Frame(f32 time)
 		_Host_Frame(time);
 		return;
 	}
-	f64 time1 = Sys_FloatTime();
+	f64 time1 = Sys_DoubleTime();
 	_Host_Frame(time);
-	f64 time2 = Sys_FloatTime();
+	f64 time2 = Sys_DoubleTime();
 	timetotal += time2 - time1;
 	timecount++;
 	if (timecount < 1000)

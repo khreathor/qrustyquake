@@ -1,9 +1,7 @@
 #include "quakedef.h"
 
-f32 lab_f(f32 t)
-{ // cube-root if > epsilon, linear otherwise
-	return (t > 0.008856f) ? cbrtf(t) : ((903.3f * t + 16.0f) / 116.0f);
-}
+f32 lab_f(f32 t) // cube-root if > epsilon, linear otherwise
+{ return (t > 0.008856f) ? cbrtf(t) : ((903.3f * t + 16.0f) / 116.0f); }
 
 lab_t rgb_lin_to_lab(f32 r, f32 g, f32 b)
 {

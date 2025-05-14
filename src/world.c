@@ -3,21 +3,16 @@
 // Copyright (C) 2007-2008 Kristian Duske
 // Copyright (C) 2010-2014 QuakeSpasm developers
 // GPLv3 See LICENSE for details.
-
 // world.c -- world query functions
-
 #include "quakedef.h"
 
-/*
-
-entities never clip against themselves, or their owner
-
-line of sight checks trace->crosscontent, but bullets don't
-
-*/
-
-
-
+// entities never clip against themselves, or their owner
+// line of sight checks trace->crosscontent, but bullets don't
+static hull_t box_hull;
+static mclipnode_t box_clipnodes[6]; //johnfitz -- was dclipnode_t
+static mplane_t box_planes[6];
+static areanode_t sv_areanodes[AREA_NODES];
+static s32 sv_numareanodes;
 
 s32 SV_HullPointContents (hull_t *hull, s32 num, vec3_t p);
 
@@ -30,9 +25,6 @@ HULL BOXES
 */
 
 
-static	hull_t		box_hull;
-static	mclipnode_t	box_clipnodes[6]; //johnfitz -- was dclipnode_t
-static	mplane_t	box_planes[6];
 
 /*
 ===================
@@ -157,8 +149,6 @@ ENTITY AREA CHECKING
 ===============================================================================
 */
 
-static	areanode_t	sv_areanodes[AREA_NODES];
-static	s32			sv_numareanodes;
 
 /*
 ===============
@@ -244,8 +234,7 @@ Spike -- just builds a list of entities within the area, rather than walking
 them and risking the list getting corrupt.
 ====================
 */
-static void
-SV_AreaTriggerEdicts ( edict_t *ent, areanode_t *node, edict_t **list, s32 *listcount, const s32 listspace )
+static void SV_AreaTriggerEdicts ( edict_t *ent, areanode_t *node, edict_t **list, s32 *listcount, const s32 listspace )
 {
 	link_t		*l, *next;
 	edict_t		*touch;
@@ -898,4 +887,3 @@ trace_t SV_Move (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, s32 type, e
 
 	return clip.trace;
 }
-

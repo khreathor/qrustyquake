@@ -2,23 +2,11 @@
 // Copyright (C) 2002-2009 John Fitzgibbons and others
 // Copyright (C) 2010-2014 QuakeSpasm developers
 // GPLv3 See LICENSE for details.
-
 // sv_main.c -- server main program
-
 #include "quakedef.h"
 
-server_t	sv;
-server_static_t	svs;
-
-static s8	localmodels[MAX_MODELS][8];	// inline model names for precache
-
-s32		sv_protocol = PROTOCOL_FITZQUAKE; //johnfitz
-
-extern bool pr_alpha_supported; //johnfitz
-extern s32 pr_effects_mask;
-
-
-u8 *SV_FatPVS (vec3_t org, model_t *worldmodel); //johnfitz -- added worldmodel as a parameter
+static s8 localmodels[MAX_MODELS][8]; // inline model names for precache
+static s32 sv_protocol = PROTOCOL_FITZQUAKE; //johnfitz
  
 //============================================================================
 

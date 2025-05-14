@@ -28,6 +28,7 @@ void Host_Frame(f32 time);
 void Host_Quit_f();
 void Host_ClientCommands(s8 *fmt, ...);
 void Host_ShutdownServer(bool crash);
+f64 Host_GetFrameInterval();
 void Chase_Init();
 void Chase_Update();
 void Cvar_SetCallback(cvar_t *var, cvarcallback_t func);
@@ -56,6 +57,10 @@ EX f32 fog_green;
 EX f32 fog_blue;
 EX u8 fog_pal_index;
 EX f32 randarr[RANDARR_SIZE];
+EX void Fog_FogCommand_f();
+EX void Fog_ParseWorldspawn();
+EX void Fog_SetPalIndex(cvar_t *cvar);
+EX void R_DrawFog();
 
 EX u32 oldmodes[NUM_OLDMODES*2];                                    // vid_sdl.c
 EX s8 modelist[NUM_OLDMODES][8];
@@ -212,7 +217,6 @@ EX void Sys_mkdir (const s8 *path);
 EX void Sys_Error (const s8 *error, ...); // System IO
 EX void Sys_Printf (const s8 *fmt, ...);
 EX void Sys_Quit ();
-EX f64 Sys_FloatTime ();
 EX f64 Sys_DoubleTime ();
 
 s32 Loop_Init ();                                                  // net_loop.h
@@ -321,6 +325,7 @@ extern u32 clearnotify; // set to 0 whenever notify text is drawn
 extern bool scr_disabled_for_loading;
 extern bool scr_skipupdate;
 extern bool block_drawing;
+extern f32 scr_centertime_off;
 extern hudstyle_t hudstyle;
 
 sys_socket_t UDP_Init();                                            // net_udp.h
@@ -342,10 +347,7 @@ s32 UDP_AddrCompare(struct qsockaddr *addr1, struct qsockaddr *addr2);
 s32 UDP_GetSocketPort(struct qsockaddr *addr);
 s32 UDP_SetSocketPort(struct qsockaddr *addr, s32 port);
 
-extern s32 wad_numlumps;                                                // wad.h
-extern lumpinfo_t *wad_lumps;
-extern u8 *wad_base;
-void W_LoadWadFile (void); //johnfitz -- filename is now hard-coded
+void W_LoadWadFile (void); //johnfitz -- filename is now hard-coded     // wad.h
 void W_CleanupName (const s8 *in, s8 *out);
 void *W_GetLumpName (const s8 *name);
 void *W_GetLumpNum (s32 num);
@@ -464,8 +466,9 @@ extern void TransformVector(vec3_t in, vec3_t out);
 extern void SetUpForLineScan(s32 startvertu, s32 startvertv,
 		s32 endvertu, s32 endvertv);
 extern void R_MakeSky();
-void Sky_LoadSkyBox (const s8 *name);
+extern void Sky_LoadSkyBox (const s8 *name);
 extern void R_DrawLine(polyvert_t *polyvert0, polyvert_t *polyvert1);
+extern void R_EmitSkyBox();
 
 void SV_ClearWorld();                                                 // world.h
 void SV_UnlinkEdict(edict_t *ent);
@@ -664,20 +667,26 @@ void SNDDMA_Submit(void);
 void SNDDMA_BlockSound(void);
 void SNDDMA_UnblockSound(void);
 extern channel_t snd_channels[MAX_CHANNELS];
-extern volatile dma_t *shm;
+extern dma_t *shm;
 extern s32 total_channels;
-extern s32 soundtime;
 extern s32 paintedtime;
 extern s32 s_rawend;
-extern vec3_t listener_origin;
-extern vec3_t listener_forward;
-extern vec3_t listener_right;
-extern vec3_t listener_up;
 extern portable_samplepair_t s_rawsamples[MAX_RAW_SAMPLES];
 void S_LocalSound (const s8 *name);
 sfxcache_t *S_LoadSound (sfx_t *s);
 wavinfo_t GetWavinfo (const s8 *name, u8 *wav, s32 wavlength);
 void SND_InitScaletable (void);
+void S_StopAllSounds (bool clear);
+
+EX bool pr_alpha_supported;                                        // pr_edict.c
+EX s32 pr_effects_mask;
+EX dprograms_t *progs;
+EX dfunction_t *pr_functions;
+EX dstatement_t *pr_statements;
+EX globalvars_t *pr_global_struct;
+EX f32 *pr_globals;
+EX s32 pr_edict_size;
+EX u16 pr_crc;
 
 extern clipplane_t view_clipplanes[4];                              // r_local.h
 extern mplane_t screenedge[4];
@@ -751,11 +760,6 @@ extern bool r_fov_greater_than_90;
 extern s32 r_pass;
 extern s32 color_lightmap;
 extern s32 lmonly;
-extern f32 map_fallbackalpha;
-extern f32 map_wateralpha;
-extern f32 map_lavaalpha;
-extern f32 map_telealpha;
-extern f32 map_slimealpha;
 void R_DrawSprite();
 void R_RenderFace(msurface_t *fa, s32 clipflags);
 void R_RenderBmodelFace(bedge_t *pedges, msurface_t *psurf);
@@ -1019,10 +1023,6 @@ EX s32 d_vrectx, d_vrecty, d_vrectright_particle, d_vrectbottom_particle;
 EX s32 d_scantable[MAXHEIGHT];
 EX s16 *zspantable[MAXHEIGHT];
 
-EX u32 sb_updates; // if >= vid.numpages, no update needed             // sbar.c
-
-EX sspan_t spans[MAXHEIGHT + 1];                                   // d_sprite.c
-
 EX f32 surfscale;                                                    // d_surf.c
 EX bool r_cache_thrash; // set if surface cache is thrashing
 EX u64 sc_size;
@@ -1068,12 +1068,30 @@ EX s32 key_repeats[256]; // if > 1, it is autorepeating
 EX s8 chat_buffer[32];
 EX bool team_message;
 
-EX f32 cur_ent_alpha;                                              // d_polyse.c
-
-EX vec3_t lightcolor; //johnfitz -- lit support via lordhavoc       // r_light.c
-
 EX s32 dither_pat;                                                   // d_scan.c
 EX s32 lwmark;
 EX u8 *litwater_base;
+
+EX void R_SetWateralpha_f(cvar_t *var);                              // r_misc.c
+EX void R_SetLavaalpha_f(cvar_t *var);
+EX void R_SetTelealpha_f(cvar_t *var);
+EX void R_SetSlimealpha_f(cvar_t *var);
+EX void R_ParseWorldspawn();
+
+EX void R_InitSkyBox();                                               // r_sky.c
+EX void Sky_NewMap();
+EX void Sky_Init();
+
+EX bool nameInList(const s8 *list, const s8 *name);                   // model.c
+EX u8 *SV_FatPVS (vec3_t org, model_t *worldmodel);
+
+EX f32 cur_ent_alpha;                                              // d_polyse.c
+EX sspan_t spans[MAXHEIGHT + 1];                                   // d_sprite.c
+EX vec3_t lightcolor;                                               // r_light.c
+EX f32 r_avertexnormals[NUMVERTEXNORMALS][3];                       // r_alias.c
+EX vec3_t r_pright, r_pup, r_ppn;                                    // r_part.c
+EX u8 r_skypixels[6][SKYBOX_MAX_SIZE*SKYBOX_MAX_SIZE];                // r_sky.c
+EX u8 *Image_LoadImage (const s8 *name, s32 *width, s32 *height);     // image.c
+EX u32 sb_updates; // if >= vid.numpages, no update needed             // sbar.c
 #undef EX
 #endif

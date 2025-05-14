@@ -1,32 +1,22 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 #include "quakedef.h"
 
-u32 cacheoffset;
-s32 c_faceclip; // number of faces clipped
-zpointdesc_t r_zpointdesc;
-polydesc_t r_polydesc;
-clipplane_t *entity_clipplanes;
-clipplane_t view_clipplanes[4];
-clipplane_t world_clipplanes[16];
-medge_t tedge;
-medge_t *r_pedge;
-bool r_leftclipped, r_rightclipped;
-bool r_nearzionly;
-s32 sintable[SIN_BUFFER_SIZE];
-s32 intsintable[SIN_BUFFER_SIZE];
-mvertex_t r_leftenter, r_leftexit;
-mvertex_t r_rightenter, r_rightexit;
-s32 r_emitted;
-f32 r_nearzi;
-f32 r_u1, r_v1, r_lzi1;
-s32 r_ceilv1;
-bool r_lastvertvalid;
+static u32 cacheoffset;
+static clipplane_t *entity_clipplanes;
+static clipplane_t world_clipplanes[16];
+static medge_t tedge;
+static medge_t *r_pedge;
+static bool r_leftclipped, r_rightclipped;
+static bool r_nearzionly;
+static mvertex_t r_leftenter, r_leftexit;
+static mvertex_t r_rightenter, r_rightexit;
+static s32 r_emitted;
+static f32 r_nearzi;
+static f32 r_u1, r_v1, r_lzi1;
+static s32 r_ceilv1;
+static bool r_lastvertvalid;
 static bool makeleftedge, makerightedge;
-f32 winquake_surface_liquid_alpha;
 extern f32 cur_ent_alpha;
-
-extern void R_EmitSkyBox();
 
 void R_EmitEdge(mvertex_t *pv0, mvertex_t *pv1)
 {

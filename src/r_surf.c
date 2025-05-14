@@ -1,40 +1,31 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 // r_surf.c: surface-related refresh code
-
 #include "quakedef.h"
 
-drawsurf_t r_drawsurf;
-
-s32 lightleft, sourcesstep, blocksize, sourcetstep;
-s32 lightleft_g;
-s32 lightleft_b;
-s32 lightdelta, lightdeltastep;
-s32 lightright, lightleftstep, lightrightstep, blockdivshift;
-s32 lightright_g, lightleftstep_g, lightrightstep_g;
-s32 lightright_b, lightleftstep_b, lightrightstep_b;
-unsigned blockdivmask;
-void *prowdestbase;
-u8 *pbasesource;
-s32 surfrowbytes; // used by ASM files
-unsigned *r_lightptr;
-unsigned *r_lightptr_g;
-unsigned *r_lightptr_b;
-s32 r_stepback;
-s32 r_lightwidth;
-s32 r_numhblocks, r_numvblocks;
-u8 *r_source, *r_sourcemax;
-
-extern void init_color_conv();
-extern u8 rgbtoi_lab(u8 r, u8 g, u8 b);
-extern u8 rgbtoi(u8 r, u8 g, u8 b);
+static s32 lightleft, sourcesstep, blocksize, sourcetstep;
+static s32 lightleft_g;
+static s32 lightleft_b;
+static s32 lightdelta, lightdeltastep;
+static s32 lightright, lightleftstep, lightrightstep, blockdivshift;
+static s32 lightright_g, lightleftstep_g, lightrightstep_g;
+static s32 lightright_b, lightleftstep_b, lightrightstep_b;
+static unsigned blockdivmask;
+static void *prowdestbase;
+static u8 *pbasesource;
+static s32 surfrowbytes; // used by ASM files
+static unsigned *r_lightptr;
+static unsigned *r_lightptr_g;
+static unsigned *r_lightptr_b;
+static s32 r_stepback;
+static s32 r_lightwidth;
+static s32 r_numhblocks, r_numvblocks;
+static u8 *r_source, *r_sourcemax;
+static u32 blocklights[18 * 18];
+static u32 blocklights_g[18 * 18];
+static u32 blocklights_b[18 * 18];
 
 void R_DrawSurfaceBlock(s32 miplvl);
 void R_DrawSurfaceBlockRGB(s32 miplvl);
-
-u32 blocklights[18 * 18];
-u32 blocklights_g[18 * 18];
-u32 blocklights_b[18 * 18];
 
 void R_AddDynamicLights()
 {

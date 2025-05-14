@@ -1,11 +1,8 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 #include "quakedef.h"
 
-mnode_t *r_pefragtopnode;
-efrag_t **lastlink;
-vec3_t r_emins, r_emaxs;
-entity_t *r_addent;
+static efrag_t **lastlink;
+static entity_t *r_addent;
 
 void R_RemoveEfrags(entity_t *ent)
 {// Call when removing an object from the world or moving it to another position

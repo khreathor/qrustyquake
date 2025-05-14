@@ -2,17 +2,14 @@
 // Copyright (C) 2010-2011 O. Sezer <sezero@users.sourceforge.net>
 // Copyright (C) 2010-2014 QuakeSpasm developers
 // GPLv3 See LICENSE for details.
-
 // snd_mix.c -- portable code to mix sounds for snd_dma.c
-
 #include "quakedef.h"
 
-portable_samplepair_t paintbuffer[PAINTBUFFER_SIZE];
-s32		snd_scaletable[32][256];
-s32		*snd_p, snd_linear_count;
-s16		*snd_out;
-
-static s32	snd_vol;
+static portable_samplepair_t paintbuffer[PAINTBUFFER_SIZE];
+static s32 snd_scaletable[32][256];
+static s32 *snd_p, snd_linear_count;
+static s16 *snd_out;
+static s32 snd_vol;
 
 static void Snd_WriteLinearBlastStereo16 (void)
 {

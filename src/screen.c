@@ -1,37 +1,22 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 // screen.c -- master for refresh, status bar, console, chat, notify, etc
-
 #include "quakedef.h"
 
-extern viddef_t vid; // global video state
-bool scr_initialized; // ready to draw
-qpic_t *scr_ram;
-qpic_t *scr_net;
-qpic_t *scr_turtle;
-u32 scr_fullupdate;
-u32 clearconsole;
-u32 clearnotify;
-vrect_t scr_vrect;
-bool scr_disabled_for_loading;
-bool scr_drawloading;
-f32 scr_disabled_time;
-bool scr_skipupdate;
-bool block_drawing;
-void SCR_ScreenShot_f();
-s8 scr_centerstring[1024]; // center printing
-f32 scr_centertime_start; // for slow victory printing
-f32 scr_centertime_off;
-s32 scr_center_lines;
-s32 scr_erase_lines;
-u32 scr_erase_center;
-f32 scr_con_current;
-f32 scr_conlines; // lines of console to display
-f32 oldscreensize, oldfov;
-hudstyle_t hudstyle;
-extern s32 fog_initialized;
-extern s32 drawlayer;
+static bool scr_initialized; // ready to draw
+static qpic_t *scr_ram;
+static qpic_t *scr_net;
+static qpic_t *scr_turtle;
+static u32 clearconsole;
+static bool scr_drawloading;
+static f32 scr_disabled_time;
+static s8 scr_centerstring[1024]; // center printing
+static f32 scr_centertime_start; // for slow victory printing
+static s32 scr_center_lines;
+static s32 scr_erase_lines;
+static u32 scr_erase_center;
+static f32 oldscreensize, oldfov;
 
+void SCR_ScreenShot_f();
 void SCR_HUDStyle_f (cvar_t *cvar);
 
 void SCR_CenterPrint(const s8 *str) // Called for important messages

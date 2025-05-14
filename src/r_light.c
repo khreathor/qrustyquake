@@ -1,11 +1,7 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 #include "quakedef.h"
 
-u32 r_dlightframecount;
-vec3_t lightspot;
-
-extern s32 colored_aliaslight;
+static vec3_t lightspot;
 
 void R_AnimateLight() // light animations
 { // 'm' is normal light, 'a' is no light, 'z' is f64 bright

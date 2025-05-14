@@ -4,53 +4,26 @@
 // Copyright (C) 2010-2011 O. Sezer <sezero@users.sourceforge.net>
 // Copyright (C) 2010-2014 QuakeSpasm developers
 // GPLv3 See LICENSE for details.
-
 // snd_dma.c -- main control for any streaming sound output device
-
 #include "quakedef.h"
-//TODO#include "snd_codec.h"
-//TODO#include "bgmusic.h"
 
 static void S_Play (void);
 static void S_PlayVol (void);
 static void S_SoundList (void);
 static void S_Update_ (void);
-void S_StopAllSounds (bool clear);
 static void S_StopAllSoundsC (void);
-
-// =======================================================================
-// Internal sound data & structures
-// =======================================================================
-
-channel_t	snd_channels[MAX_CHANNELS];
-s32		total_channels;
-
-static s32	snd_blocked = 0;
-static bool	snd_initialized = false;
-
-static dma_t	sn;
-volatile dma_t	*shm = NULL;
-
-vec3_t		listener_origin;
-vec3_t		listener_forward;
-vec3_t		listener_right;
-vec3_t		listener_up;
-
-
-s32		soundtime;	// sample PAIRS
-s32		paintedtime;	// sample PAIRS
-
-s32		s_rawend;
-portable_samplepair_t	s_rawsamples[MAX_RAW_SAMPLES];
-
-
-static sfx_t	*known_sfx = NULL;	// hunk allocated [MAX_SFX]
-static s32	num_sfx;
-
-static sfx_t	*ambient_sfx[NUM_AMBIENTS];
-
-static bool	sound_started = false;
-
+static s32 snd_blocked = 0;
+static bool snd_initialized = false;
+static dma_t sn;
+static vec3_t listener_origin;
+static vec3_t listener_forward;
+static vec3_t listener_right;
+static vec3_t listener_up;
+static sfx_t *known_sfx = NULL; // hunk allocated [MAX_SFX]
+static s32 num_sfx;
+static sfx_t *ambient_sfx[NUM_AMBIENTS];
+static bool sound_started = false;
+static s32 soundtime; // sample PAIRS
 
 static void S_SoundInfo_f (void)
 {

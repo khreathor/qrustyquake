@@ -1,27 +1,5 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 #include "quakedef.h"
-
-extern f32 cur_ent_alpha;
-
-extern void Fog_FogCommand_f();
-extern void Fog_ParseWorldspawn();
-extern void Fog_SetPalIndex(cvar_t *cvar);
-extern void R_DrawFog();
-extern void R_ParseWorldspawn();
-extern void R_InitSkyBox(); // Manoel Kasimier - skyboxes 
-extern void Sky_NewMap();
-extern bool nameInList(const s8 *list, const s8 *name);
-
-extern void R_SetWateralpha_f(cvar_t *var);
-extern void R_SetLavaalpha_f(cvar_t *var);
-extern void R_SetTelealpha_f(cvar_t *var);
-extern void R_SetSlimealpha_f(cvar_t *var);
-
-void CreatePassages();
-void SetVisibilityByPassages();
-void R_MarkLeaves();
-void Sky_Init();
 
 void R_InitTextures()
 { // create a simple checkerboard texture for the default
@@ -118,7 +96,6 @@ void R_NewMap()
 {
 	R_InitSkyBox(); // Manoel Kasimier - skyboxes 
 	// clear out efrags in case the level hasn't been reloaded
-	// FIXME: is this one s16?
 	for(s32 i = 0; i < cl.worldmodel->numleafs; i++)
 		cl.worldmodel->leafs[i].efrags = NULL;
 	r_viewleaf = NULL;
@@ -538,11 +515,11 @@ void R_EdgeDrawing()
 		surf_max = &surfaces[r_cnumsurfs];
 	}
 	R_BeginEdgeFrame();
-	if(r_dspeeds.value) rw_time1 = Sys_FloatTime();
+	if(r_dspeeds.value) rw_time1 = Sys_DoubleTime();
 	R_RenderWorld();
-	if(r_dspeeds.value) db_time1 = rw_time2 = Sys_FloatTime();
+	if(r_dspeeds.value) db_time1 = rw_time2 = Sys_DoubleTime();
 	if(r_wateralphapass || r_pass || !((s32)r_twopass.value&1)) R_DrawBEntitiesOnList();
-	if(r_dspeeds.value) se_time2 = db_time2 = Sys_FloatTime();
+	if(r_dspeeds.value) se_time2 = db_time2 = Sys_DoubleTime();
 	R_ScanEdges();
 }
 

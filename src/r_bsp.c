@@ -1,25 +1,11 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 #include "quakedef.h"
-
-// current entity info
-bool insubmodel;
-entity_t *currententity;
-// modelorg is the viewpoint reletive to the currently rendering entity
-vec3_t modelorg, base_modelorg;
-vec3_t r_entorigin; // the currently rendering entity in world coordinates
-
-f32 entity_rotation[3][3];
-vec3_t r_worldmodelorg;
-s32 r_currentbkey;
 
 static mvertex_t *pbverts;
 static bedge_t *pbedges;
 static s32 numbverts, numbedges;
 static mvertex_t *pfrontenter, *pfrontexit;
 static bool makeclippededge;
-
-extern void R_EmitSkyBox(); // Manoel Kasimier - skyboxes
 
 void R_EntityRotate(vec3_t vec)
 {

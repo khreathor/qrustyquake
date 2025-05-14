@@ -2,49 +2,32 @@
 // Copyright (C) 2002-2009 John Fitzgibbons and others
 // Copyright (C) 2010-2014 QuakeSpasm developers
 // GPLv3 See LICENSE for details.
-
 // sv_edict.c -- entity dictionary
-
 #include "quakedef.h"
 
-dprograms_t		*progs;
-dfunction_t		*pr_functions;
+static s8 *pr_strings;
+static s32 pr_stringssize;
+static const s8 **pr_knownstrings;
+static s32 pr_maxknownstrings;
+static s32 pr_numknownstrings;
+static ddef_t *pr_fielddefs;
+static ddef_t *pr_globaldefs;
 
-static	s8		*pr_strings;
-static	s32		pr_stringssize;
-static	const s8	**pr_knownstrings;
-static	s32		pr_maxknownstrings;
-static	s32		pr_numknownstrings;
-static	ddef_t		*pr_fielddefs;
-static	ddef_t		*pr_globaldefs;
-
-bool	pr_alpha_supported; //johnfitz
-s32		pr_effects_mask; // only enable 2021 rerelease quad/penta dlights when applicable
-
-dstatement_t	*pr_statements;
-globalvars_t	*pr_global_struct;
-f32		*pr_globals;		// same as pr_global_struct
-s32		pr_edict_size;		// in bytes
-
-u16	pr_crc;
-
-const s32	type_size[NUM_TYPE_SIZES] = {
-	1,					// ev_void
-	1,	// sizeof(string_t) / 4		// ev_string
-	1,					// ev_float
-	3,					// ev_vector
-	1,					// ev_entity
-	1,					// ev_field
-	1,	// sizeof(func_t) / 4		// ev_function
-	1	// sizeof(void *) / 4		// ev_pointer
+const s32 type_size[NUM_TYPE_SIZES] = {
+ 1, // ev_void
+ 1, // sizeof(string_t) / 4 // ev_string
+ 1, // ev_float
+ 3, // ev_vector
+ 1, // ev_entity
+ 1, // ev_field
+ 1, // sizeof(func_t) / 4 // ev_function
+ 1 // sizeof(void *) / 4 // ev_pointer
 };
 
 static ddef_t	*ED_FieldAtOfs (s32 ofs);
 static bool	ED_ParseEpair (void *base, ddef_t *key, const s8 *s);
 
-
-static gefv_cache	gefvCache[GEFV_CACHESIZE] =
-{
+static gefv_cache	gefvCache[GEFV_CACHESIZE] = {
 		{ NULL,	"" },
 		{ NULL,	"" }
 };

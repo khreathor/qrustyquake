@@ -1,7 +1,5 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 // r_aclip.c: clip routines for drawing Alias models directly to the screen
-
 #include "quakedef.h"
 
 static finalvert_t fv[2][8];

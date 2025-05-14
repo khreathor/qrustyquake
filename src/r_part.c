@@ -1,22 +1,17 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 #include "quakedef.h"
 
-s32 ramp1[8] = { 0x6f, 0x6d, 0x6b, 0x69, 0x67, 0x65, 0x63, 0x61 };
-s32 ramp2[8] = { 0x6f, 0x6e, 0x6d, 0x6c, 0x6b, 0x6a, 0x68, 0x66 };
-s32 ramp3[8] = { 0x6d, 0x6b, 6, 5, 4, 3 };
-vec3_t avelocity = { 23, 7, 3 };
-f32 beamlength = 16;
-f32 partstep = 0.01;
-f32 timescale = 0.01;
-
-particle_t *active_particles, *free_particles;
-particle_t *particles;
-s32 r_numparticles;
-vec3_t r_pright, r_pup, r_ppn;
-vec3_t avelocities[NUMVERTEXNORMALS];
-
-extern f32 r_avertexnormals[NUMVERTEXNORMALS][3];
+static s32 ramp1[8] = { 0x6f, 0x6d, 0x6b, 0x69, 0x67, 0x65, 0x63, 0x61 };
+static s32 ramp2[8] = { 0x6f, 0x6e, 0x6d, 0x6c, 0x6b, 0x6a, 0x68, 0x66 };
+static s32 ramp3[8] = { 0x6d, 0x6b, 6, 5, 4, 3 };
+static vec3_t avelocity = { 23, 7, 3 };
+static f32 beamlength = 16;
+static f32 partstep = 0.01;
+static f32 timescale = 0.01;
+static particle_t *active_particles, *free_particles;
+static particle_t *particles;
+static s32 r_numparticles;
+static vec3_t avelocities[NUMVERTEXNORMALS];
 
 void R_InitParticles()
 {

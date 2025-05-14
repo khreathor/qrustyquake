@@ -1,9 +1,7 @@
 // Copyright (C) 1996-2001 Id Software, Inc.
 // Copyright (C) 2010-2011 O. Sezer <sezero@users.sourceforge.net>
 // GPLv3 See LICENSE for details.
-
 // snd_mem.c: sound caching
-
 #include "quakedef.h"
 
 /*

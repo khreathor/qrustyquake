@@ -23,9 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 
-void Cache_FreeLow (s32 new_low_hunk);
-void Cache_FreeHigh (s32 new_high_hunk);
-
 
 /*
 ==============================================================================
@@ -42,8 +39,18 @@ all big things are allocated on the hunk.
 ==============================================================================
 */
 
-static memzone_t	*mainzone;
+static memzone_t *mainzone;
+static u8 *hunk_base;
+static s32 hunk_size;
+static s32 hunk_low_used;
+static s32 hunk_high_used;
+static bool hunk_tempactive;
+static s32 hunk_tempmark;
+static cache_system_t	cache_head;
 
+void Cache_FreeLow (s32 new_low_hunk);
+void Cache_FreeHigh (s32 new_high_hunk);
+cache_system_t *Cache_TryAlloc (s32 size, bool nobottom);
 
 /*
 ========================
@@ -264,14 +271,6 @@ void Z_Print (memzone_t *zone)
 //============================================================================
 
 
-u8	*hunk_base;
-s32		hunk_size;
-
-s32		hunk_low_used;
-s32		hunk_high_used;
-
-bool	hunk_tempactive;
-s32		hunk_tempmark;
 
 /*
 ==============
@@ -556,10 +555,6 @@ CACHE MEMORY
 
 ===============================================================================
 */
-
-cache_system_t *Cache_TryAlloc (s32 size, bool nobottom);
-
-cache_system_t	cache_head;
 
 /*
 ===========

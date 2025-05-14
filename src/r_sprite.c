@@ -1,12 +1,9 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 #include "quakedef.h"
 
 static s32 clip_current;
 static vec5_t clip_verts[2][MAXWORKINGVERTS];
 static s32 sprite_width, sprite_height;
-
-spritedesc_t r_spritedesc;
 
 void R_RotateSprite(f32 beamlength)
 {

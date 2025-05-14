@@ -1,49 +1,46 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 #include "quakedef.h"
 
-#define SCL uiscale // make this file much more compact
+#define SCL uiscale // readability macros
 #define WW vid.width
-#define HH vid.height // these get udefed at the bottom of the file
+#define HH vid.height
 
-qpic_t *sb_nums[2][11];
-qpic_t *sb_colon, *sb_slash;
-qpic_t *sb_ibar;
-qpic_t *sb_sbar;
-qpic_t *sb_scorebar;
-qpic_t *sb_weapons[7][8]; // 0 is active, 1 is owned, 2-5 are flashes
-qpic_t *sb_ammo[4];
-qpic_t *sb_sigil[4];
-qpic_t *sb_armor[3];
-qpic_t *sb_items[32];
-qpic_t *sb_faces[7][2]; // 0 gibbed, 1 dead, 2-6 alive, 0 static, 1 temporary
-qpic_t *sb_face_invis;
-qpic_t *sb_face_quad;
-qpic_t *sb_face_invuln;
-qpic_t *sb_face_invis_invuln;
-qpic_t *rsb_invbar[2];
-qpic_t *rsb_weapons[5];
-qpic_t *rsb_items[2];
-qpic_t *rsb_ammo[3];
-qpic_t *rsb_teambord; // PGM 01/19/97 - team color border
-      //MED 01/04/97 added two more weapons + 3 alternates for grenade launcher
-qpic_t *hsb_weapons[7][5]; // 0 is active, 1 is owned, 2-5 are flashes
-bool sb_showscores;
-s32 sb_lines; // scan lines to draw
-s32 hipweapons[4] = //MED 01/04/97 added array to simplify weapon parsing
+static qpic_t *sb_nums[2][11];
+static qpic_t *sb_colon, *sb_slash;
+static qpic_t *sb_ibar;
+static qpic_t *sb_sbar;
+static qpic_t *sb_scorebar;
+static qpic_t *sb_weapons[7][8]; // 0 is active, 1 is owned, 2-5 are flashes
+static qpic_t *sb_ammo[4];
+static qpic_t *sb_sigil[4];
+static qpic_t *sb_armor[3];
+static qpic_t *sb_items[32];
+static qpic_t *sb_faces[7][2]; // 0 gibbed 1 dead 2-6 alive 0 static 1 temporary
+static qpic_t *sb_face_invis;
+static qpic_t *sb_face_quad;
+static qpic_t *sb_face_invuln;
+static qpic_t *sb_face_invis_invuln;
+static qpic_t *rsb_invbar[2];
+static qpic_t *rsb_weapons[5];
+static qpic_t *rsb_items[2];
+static qpic_t *rsb_ammo[3];
+static qpic_t *rsb_teambord; // PGM 01/19/97 - team color border
+static qpic_t *hsb_weapons[7][5]; // 0 is active, 1 is owned, 2-5 are flashes
+static bool sb_showscores;
+static qpic_t *hsb_items[2]; //MED 01/04/97 added hipnotic items array
+static s32 fragsort[MAX_SCOREBOARD];
+static s8 scoreboardtext[MAX_SCOREBOARD][20];
+static s32 scoreboardtop[MAX_SCOREBOARD];
+static s32 scoreboardbottom[MAX_SCOREBOARD];
+static s32 scoreboardcount[MAX_SCOREBOARD];
+static s32 scoreboardlines;
+static s32 npos[4][2]; // ammo count num
+static s32 wpos[9][2]; // weapons
+static s32 kpos[2][2]; // keys
+static s32 iposx[12]; // classic items
+static s32 iposy;
+static s32 hipweapons[4] = //MED 01/04/97 added array to simplify weapon parsing
 { HIT_LASER_CANNON_BIT, HIT_MJOLNIR_BIT, 4, HIT_PROXIMITY_GUN_BIT };
-qpic_t *hsb_items[2]; //MED 01/04/97 added hipnotic items array
-s32 fragsort[MAX_SCOREBOARD];
-s8 scoreboardtext[MAX_SCOREBOARD][20];
-s32 scoreboardtop[MAX_SCOREBOARD];
-s32 scoreboardbottom[MAX_SCOREBOARD];
-s32 scoreboardcount[MAX_SCOREBOARD];
-s32 scoreboardlines;
-s32 npos[4][2]; // ammo count num
-s32 wpos[9][2]; // weapons
-s32 kpos[2][2]; // keys
-s32 iposx[12]; // classic items
-s32 iposy;
 
 inline static s32 Sbar_ColorForMap(s32 m)
 { return m < 128 ? m + 8 : m + 8; }
