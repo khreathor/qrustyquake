@@ -294,11 +294,7 @@ void Draw_StringScaled (s32 x, s32 y, s8 *str, s32 scale);
 qpic_t *Draw_PicFromWad (s8 *name);
 qpic_t *Draw_CachePic (s8 *path);
 
-extern aliashdr_t *pheader;                                           // model.h
-extern stvert_t stverts[MAXALIASVERTS];
-extern mtriangle_t triangles[MAXALIASTRIS];
-extern trivertx_t *poseverts[MAXALIASFRAMES];
-void Mod_Init ();
+void Mod_Init ();                                          // model.h
 void Mod_ClearAll ();
 void Mod_ResetAll (); // for gamedir changes (Host_Game_f)
 model_t *Mod_ForName (const s8 *name, bool crash);
@@ -1075,5 +1071,9 @@ EX bool team_message;
 EX f32 cur_ent_alpha;                                              // d_polyse.c
 
 EX vec3_t lightcolor; //johnfitz -- lit support via lordhavoc       // r_light.c
+
+EX s32 dither_pat;                                                   // d_scan.c
+EX s32 lwmark;
+EX u8 *litwater_base;
 #undef EX
 #endif

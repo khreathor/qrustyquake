@@ -319,3 +319,7 @@ bool team_message = false;
 f32 cur_ent_alpha = 1;                                             // d_polyse.c
 
 vec3_t lightcolor; //johnfitz -- lit support via lordhavoc          // r_light.c
+
+s32 dither_pat = 0;                                                  // d_scan.c
+s32 lwmark = 0;
+u8 *litwater_base;

@@ -9,35 +9,29 @@
 
 #include "quakedef.h"
 
-aliashdr_t *pheader;
-stvert_t stverts[MAXALIASVERTS];
-mtriangle_t triangles[MAXALIASTRIS];
+static aliashdr_t *pheader;
+static stvert_t stverts[MAXALIASVERTS];
+static mtriangle_t triangles[MAXALIASTRIS];
 // a pose is a single set of vertexes. a frame may be an animating sequence of poses
-trivertx_t *poseverts[MAXALIASFRAMES];
+static trivertx_t *poseverts[MAXALIASFRAMES];
 static s32 posenum;
-
-model_t*	loadmodel;
+static model_t*	loadmodel;
 static s8	loadname[32];	// for hunk tags
 static u8	*mod_base;
-
 static void Mod_LoadSpriteModel (model_t *mod, void *buffer);
 static void Mod_LoadBrushModel (model_t *mod, void *buffer);
 static void Mod_LoadAliasModel (model_t *mod, void *buffer);
 static model_t *Mod_LoadModel (model_t *mod, bool crash);
-
 static void Mod_Print ();
-
 static u8	*mod_novis;
 static s32	mod_novis_capacity;
-
 static u8	*mod_decompressed;
 static s32	mod_decompressed_capacity;
-
 static model_t	mod_known[MAX_MOD_KNOWN];
 static s32		mod_numknown;
-
+static texture_t	*r_notexture_mip2; //johnfitz -- used for non-lightmapped surfs with a missing texture
+					   //
 extern texture_t	*r_notexture_mip;
-texture_t	*r_notexture_mip2; //johnfitz -- used for non-lightmapped surfs with a missing texture
 
 void Mod_Init ()
 {

@@ -1,20 +1,13 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 // d_scan.c: Portable C scan-level rasterization code, all pixel depths.
-
 #include "quakedef.h"
 
-u8 *r_turb_pbase, *r_turb_pdest;
-s32 r_turb_s, r_turb_t, r_turb_sstep, r_turb_tstep;
-s32 *r_turb_turb;
-s32 r_turb_spancount;
-s16 *pz; // Manoel Kasimier - translucent water
-s32 izi, izistep;
-s32 dither_pat = 0;
-u8 *litwater_base;
-s32 lwmark = 0;
-
-extern s32 fog_lut_built;
+static u8 *r_turb_pbase, *r_turb_pdest;
+static s32 r_turb_s, r_turb_t, r_turb_sstep, r_turb_tstep;
+static s32 *r_turb_turb;
+static s32 r_turb_spancount;
+static s16 *pz; // Manoel Kasimier - translucent water
+static s32 izi, izistep;
 
 void D_DrawTurbulent8Span();
 
