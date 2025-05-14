@@ -4,7 +4,6 @@
 
 u32 r_dlightframecount;
 vec3_t lightspot;
-vec3_t lightcolor; //johnfitz -- lit support via lordhavoc
 
 extern s32 colored_aliaslight;
 

@@ -5,40 +5,29 @@
 
 #include "quakedef.h"
 
-s32 r_p0[6], r_p1[6], r_p2[6];
-u8 *d_pcolormap;
-s32 d_xdenom;
-edgetable *pedgetable;
-// FIXME: some of these can become statics
-s32 a_sstepxfrac, a_tstepxfrac, r_lstepx, a_ststepxwhole;
-s32 r_sstepx, r_tstepx, r_lstepy, r_sstepy, r_tstepy;
-s32 r_zistepx, r_zistepy;
-s32 d_aspancount, d_countextrastep;
-spanpackage_t *a_spans;
-spanpackage_t *d_pedgespanpackage;
-u8 *d_pdest, *d_ptex;
-s16 *d_pz;
-s32 d_sfrac, d_tfrac, d_light, d_zi;
-s32 d_ptexextrastep, d_sfracextrastep;
-s32 d_tfracextrastep, d_lightextrastep, d_pdestextrastep;
-s32 d_lightbasestep, d_pdestbasestep, d_ptexbasestep;
-s32 d_sfracbasestep, d_tfracbasestep;
-s32 d_ziextrastep, d_zibasestep;
-s32 d_pzextrastep, d_pzbasestep;
-u8 *skintable[MAX_LBM_HEIGHT];
-s32 skinwidth;
-u8 *skinstart;
+static s32 r_p0[6], r_p1[6], r_p2[6];
+static u8 *d_pcolormap;
+static s32 d_xdenom;
+static edgetable *pedgetable;
+static s32 a_sstepxfrac, a_tstepxfrac, r_lstepx, a_ststepxwhole;
+static s32 r_sstepx, r_tstepx, r_lstepy, r_sstepy, r_tstepy;
+static s32 r_zistepx, r_zistepy;
+static s32 d_aspancount, d_countextrastep;
+static spanpackage_t *a_spans;
+static spanpackage_t *d_pedgespanpackage;
+static u8 *d_pdest, *d_ptex;
+static s16 *d_pz;
+static s32 d_sfrac, d_tfrac, d_light, d_zi;
+static s32 d_ptexextrastep, d_sfracextrastep;
+static s32 d_tfracextrastep, d_lightextrastep, d_pdestextrastep;
+static s32 d_lightbasestep, d_pdestbasestep, d_ptexbasestep;
+static s32 d_sfracbasestep, d_tfracbasestep;
+static s32 d_ziextrastep, d_zibasestep;
+static s32 d_pzextrastep, d_pzbasestep;
+static u8 *skintable[MAX_LBM_HEIGHT];
+static s32 skinwidth;
+static u8 *skinstart;
 static s32 ystart;
-f32 cur_ent_alpha = 1;
-
-extern u8 color_mix_lut[256][256][FOG_LUT_LEVELS];
-extern s32 fog_lut_built;
-extern vec3_t lightcolor;
-extern s32 colored_aliaslight;
-
-static adivtab_t adivtab[32 * 32] = {
-#include "adivtab.h"
-};
 
 edgetable edgetables[12] = {
 	{ 0, 1, r_p0, r_p2, NULL, 2, r_p0, r_p1, r_p2 },
@@ -368,17 +357,10 @@ void D_PolysetSetUpForLineScan(s32 startvertu, s32 startvertv,
 	errorterm = -1;
 	s32 tm = endvertu - startvertu;
 	s32 tn = endvertv - startvertv;
-	if (((tm <= 16) && (tm >= -15)) && ((tn <= 16) && (tn >= -15))) {
-		adivtab_t *ptemp = &adivtab[((tm + 15) << 5) + (tn + 15)];
-		ubasestep = ptemp->quotient;
-		erroradjustup = ptemp->remainder;
-		erroradjustdown = tn;
-	} else {
-		f64 dm = (f64)tm;
-		f64 dn = (f64)tn;
-		FloorDivMod(dm, dn, &ubasestep, &erroradjustup);
-		erroradjustdown = dn;
-	}
+	f64 dm = (f64)tm;
+	f64 dn = (f64)tn;
+	FloorDivMod(dm, dn, &ubasestep, &erroradjustup);
+	erroradjustdown = dn;
 }
 
 void D_PolysetCalcGradients(s32 skinwidth)

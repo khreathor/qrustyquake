@@ -1071,5 +1071,9 @@ EX s8 *keybindings[256];
 EX s32 key_repeats[256]; // if > 1, it is autorepeating
 EX s8 chat_buffer[32];
 EX bool team_message;
+
+EX f32 cur_ent_alpha;                                              // d_polyse.c
+
+EX vec3_t lightcolor; //johnfitz -- lit support via lordhavoc       // r_light.c
 #undef EX
 #endif

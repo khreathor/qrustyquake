@@ -315,3 +315,7 @@ s8 *keybindings[256];
 s32 key_repeats[256]; // if > 1, it is autorepeating
 s8 chat_buffer[32];
 bool team_message = false;
+
+f32 cur_ent_alpha = 1;                                             // d_polyse.c
+
+vec3_t lightcolor; //johnfitz -- lit support via lordhavoc          // r_light.c
