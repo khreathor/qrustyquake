@@ -1,18 +1,7 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 #include "quakedef.h"
 
-extern s32 screenwidth;
 static s32 miplevel;
-f32 scale_for_mip;
-s32 ubasestep, errorterm, erroradjustup, erroradjustdown;
-s32 vstartscan;
-vec3_t transformed_modelorg;
-extern f32 cur_ent_alpha;
-
-// FIXME: should go away
-extern void R_RotateBmodel();
-extern void R_TransformFrustum();
 
 s32 D_MipLevelForScale(f32 scale)
 {

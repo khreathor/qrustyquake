@@ -2,9 +2,7 @@
 // Copyright (C) 2002-2009 John Fitzgibbons and others
 // Copyright (C) 2010-2014 QuakeSpasm developers
 // GPLv3 See LICENSE for details.
-
 // cvar.c -- dynamic variable tracking
-
 #include "quakedef.h"
 
 static cvar_t	*cvar_vars;
@@ -15,8 +13,6 @@ static s8	cvar_null_string[] = "";
 //  USER COMMANDS
 //
 //==============================================================================
-
-void Cvar_Reset (const s8 *name); //johnfitz
 
 /*
 ============
@@ -150,11 +146,17 @@ void Cvar_Cycle_f (void)
 		Cvar_Set (Cmd_Argv(1), Cmd_Argv(i+1)); // matched earlier in list
 }
 
-/*
-============
-Cvar_Reset_f -- johnfitz
-============
-*/
+void Cvar_Reset (const s8 *name)
+{
+	cvar_t	*var;
+
+	var = Cvar_FindVar (name);
+	if (!var)
+		Con_Printf ("variable \"%s\" not found\n", name);
+	else
+		Cvar_SetQuick (var, var->default_string);
+}
+
 void Cvar_Reset_f (void)
 {
 	switch (Cmd_Argc())
@@ -349,22 +351,6 @@ const s8 *Cvar_CompleteVariable (const s8 *partial)
 	}
 
 	return NULL;
-}
-
-/*
-============
-Cvar_Reset -- johnfitz
-============
-*/
-void Cvar_Reset (const s8 *name)
-{
-	cvar_t	*var;
-
-	var = Cvar_FindVar (name);
-	if (!var)
-		Con_Printf ("variable \"%s\" not found\n", name);
-	else
-		Cvar_SetQuick (var, var->default_string);
 }
 
 void Cvar_SetQuick (cvar_t *var, const s8 *value)

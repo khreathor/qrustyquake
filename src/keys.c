@@ -1,26 +1,13 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 #include "quakedef.h"
-
 // key up events are sent even if in console mode
 
-s8 key_lines[32][MAXCMDLINE];
-s32 key_linepos;
-s32 shift_down = false;
-s32 key_lastpress;
-s32 edit_line = 0;
-s32 history_line = 0;
-keydest_t key_dest;
-s32 key_count; // incremented every key event
-s8 *keybindings[256];
-bool consolekeys[256]; // if true, can't be rebound while in console
-bool menubound[256]; // if true, can't be rebound while in menu
-s32 keyshift[256]; // key to map to if shift held down in console
-s32 key_repeats[256]; // if > 1, it is autorepeating
-bool keydown[256];
-s8 chat_buffer[32];
-bool team_message = false;
-
+static s32 shift_down = false;
+static s32 history_line = 0;
+static bool consolekeys[256]; // if true, can't be rebound while in console
+static bool menubound[256]; // if true, can't be rebound while in menu
+static s32 keyshift[256]; // key to map to if shift held down in console
+static bool keydown[256];
 
 keyname_t keynames[] = {
 	{ "TAB", K_TAB }, { "ENTER", K_ENTER }, { "ESCAPE", K_ESCAPE },

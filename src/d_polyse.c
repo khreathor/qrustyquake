@@ -7,7 +7,6 @@
 
 s32 r_p0[6], r_p1[6], r_p2[6];
 u8 *d_pcolormap;
-s32 d_aflatcolor;
 s32 d_xdenom;
 edgetable *pedgetable;
 // FIXME: some of these can become statics

@@ -1,14 +1,6 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 // d_surf.c: rasterization driver surface heap manager
-
 #include "quakedef.h"
-
-f32 surfscale;
-bool r_cache_thrash; // set if surface cache is thrashing
-u64 sc_size;
-surfcache_t *sc_rover, *sc_base;
-s32 lmonly; // render lightmap only, for lit water
 
 s32 D_SurfaceCacheForRes(s32 width, s32 height)
 {

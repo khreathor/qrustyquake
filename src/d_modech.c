@@ -1,13 +1,6 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 // d_modech.c: called when mode has just changed
-
 #include "quakedef.h"
-
-s32 d_vrectx, d_vrecty, d_vrectright_particle, d_vrectbottom_particle;
-s32 d_y_aspect_shift, d_pix_min, d_pix_max, d_pix_shift;
-s32 d_scantable[MAXHEIGHT];
-s16 *zspantable[MAXHEIGHT];
 
 void D_ViewChanged()
 {

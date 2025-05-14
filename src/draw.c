@@ -1,15 +1,8 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 // this is the only file outside the refresh that touches the vid buffer
 #include "quakedef.h"
 
-cachepic_t menu_cachepics[MAX_CACHED_PICS];
-s32 menu_numcachepics;
 static rectdesc_t r_rectdesc;
-u8 *draw_chars; // 8*8 graphic characters
-qpic_t *draw_disc;
-qpic_t *draw_backtile;
-s32 drawlayer = 0;
 
 qpic_t *Draw_PicFromWad(s8 *name)
 {

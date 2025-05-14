@@ -529,9 +529,7 @@ extern bool slistInProgress;
 extern bool slistSilent;
 extern bool slistLocal;
 extern s32 hostCacheCount;
-extern s32 ipxAvailable;
 extern bool tcpipAvailable;
-extern s8 my_ipx_address[NET_NAMELEN];
 extern s8 my_tcpip_address[NET_NAMELEN];
 void NET_Init();
 void NET_Shutdown();
@@ -916,6 +914,7 @@ EX kbutton_t in_strafe, in_speed, in_use, in_jump, in_attack;
 EX kbutton_t in_up, in_down;
 EX s32 in_impulse;
 EX void CL_AdjustAngles();
+EX void IN_MLookDown();
 
 EX f32 v_dmg_time, v_dmg_roll, v_dmg_pitch;                            // view.c
 EX vec3_t forward, right, up;
@@ -942,6 +941,7 @@ EX lightstyle_t cl_lightstyle[MAX_LIGHTSTYLES];
 EX dlight_t cl_dlights[MAX_DLIGHTS];
 EX s32 cl_numvisedicts;
 EX entity_t *cl_visedicts[MAX_VISEDICTS];
+EX void CL_AccumulateCmd();
 
 EX s32 bitcounts[16];                                              // cl_parse.c
 EX s8 *svc_strings[];
@@ -964,6 +964,7 @@ EX bool cmd_wait;
 EX sizebuf_t cmd_text;
 EX cmd_source_t cmd_source;
 EX cmd_function_t *cmd_functions;
+EX void Cbuf_Waited();
 
 EX s32 safemode;                                                     // common.c
 EX bool fitzmode;
@@ -1006,5 +1007,69 @@ EX s32 edit_line;
 EX s32 key_linepos;
 EX bool team_message;
 EX void M_Menu_Main_f();
+
+EX f32 scale_for_mip;                                                // d_edge.c
+EX s32 ubasestep, errorterm, erroradjustup, erroradjustdown;
+EX s32 vstartscan;
+EX vec3_t transformed_modelorg;
+
+EX surfcache_t *d_initial_rover;                                     // d_init.c
+EX bool d_roverwrapped;
+EX s32 d_minmip;
+EX f32 d_scalemip[NUM_MIPS - 1];
+
+EX s32 d_y_aspect_shift, d_pix_min, d_pix_max, d_pix_shift;        // d_modech.c
+EX s32 d_vrectx, d_vrecty, d_vrectright_particle, d_vrectbottom_particle;
+EX s32 d_scantable[MAXHEIGHT];
+EX s16 *zspantable[MAXHEIGHT];
+
+EX u32 sb_updates; // if >= vid.numpages, no update needed             // sbar.c
+
+EX sspan_t spans[MAXHEIGHT + 1];                                   // d_sprite.c
+
+EX f32 surfscale;                                                    // d_surf.c
+EX bool r_cache_thrash; // set if surface cache is thrashing
+EX u64 sc_size;
+EX surfcache_t *sc_rover, *sc_base;
+EX s32 lmonly; // render lightmap only, for lit water
+
+EX cachepic_t menu_cachepics[MAX_CACHED_PICS];                         // draw.c
+EX s32 menu_numcachepics;
+EX u8 *draw_chars; // 8*8 graphic characters
+EX qpic_t *draw_disc;
+EX qpic_t *draw_backtile;
+EX s32 drawlayer;
+
+EX quakeparms_t host_parms;                                            // host.c
+EX bool host_initialized; // true if into command execution
+EX bool isDedicated;
+EX f64 host_frametime;
+EX f64 host_rawframetime;
+EX f32 host_netinterval;
+EX f64 host_time;
+EX f64 realtime; // without any filtering or bounding
+EX f64 oldrealtime; // last frame run
+EX s32 host_framecount;
+EX s32 host_hunklevel;
+EX s32 minimum_memory;
+EX client_t *host_client; // current client
+EX jmp_buf host_abortserver;
+EX u8 *host_basepal;
+EX u8 *host_colormap;
+
+EX s32 current_skill;                                              // host_cmd.c
+EX bool noclip_anglehack;
+EX void M_Menu_Quit_f();
+
+EX s8 key_lines[32][MAXCMDLINE];                                       // keys.c
+EX s32 key_linepos;
+EX s32 key_lastpress;
+EX s32 edit_line;
+EX keydest_t key_dest;
+EX s32 key_count; // incremented every key event
+EX s8 *keybindings[256];
+EX s32 key_repeats[256]; // if > 1, it is autorepeating
+EX s8 chat_buffer[32];
+EX bool team_message;
 #undef EX
 #endif

@@ -1,36 +1,6 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 // host.c -- coordinates spawning and killing of local servers
-
 #include "quakedef.h"
-
-/*
-A server can allways be started, even if the system started out as a client
-to a remote system.
-A client can NOT be started if the system started as a dedicated server.
-Memory is cleared / released when a server or client begins, not when they end.
-*/
-
-quakeparms_t host_parms;
-bool host_initialized; // true if into command execution
-bool isDedicated;
-f64 host_frametime;
-f64 host_rawframetime;
-f32 host_netinterval;
-f64 host_time;
-f64 realtime; // without any filtering or bounding
-f64 oldrealtime; // last frame run
-s32 host_framecount;
-s32 host_hunklevel;
-s32 minimum_memory;
-client_t *host_client; // current client
-jmp_buf host_abortserver;
-u8 *host_basepal;
-u8 *host_colormap;
-
-extern void IN_MLookDown();
-extern void Cbuf_Waited();
-extern void CL_AccumulateCmd();
     
 static void Max_Fps_f (cvar_t *var)
 {

@@ -2,53 +2,50 @@
 
 #include "quakedef.h"
 
-s32 drawmousemenu = 0;
-s32 serialAvailable = 0;
-s32 ipxAvailable = 0;
-s32 m_save_demonum;
-s32 m_main_cursor;
-s32 m_singleplayer_cursor;
-s32 load_cursor; // 0 < load_cursor < MAX_SAVEGAMES
-s8 m_filenames[MAX_SAVEGAMES][MAX_OSPATH*2 + 1];
-s32 loadable[MAX_SAVEGAMES];
-s32 m_multiplayer_cursor;
-s32 setup_cursor = 4;
-s32 setup_cursor_table[] = { 40, 56, 80, 104, 140 };
-s8 setup_hostname[16];
-s8 setup_myname[16];
-s32 setup_oldtop;
-s32 setup_oldbottom;
-s32 setup_top;
-s32 setup_bottom;
-s32 m_net_cursor;
-s32 m_net_items;
-s32 m_net_saveHeight;
-s32 options_cursor;
-s32 keys_cursor;
-s32 bind_grab;
-s32 new_cursor;
-s8 customwidthstr[16];
-s8 customheightstr[16];
-s32 newwinmode;
-s32 msgNumber;
-s32 m_quit_prevstate;
-bool wasInMenus;
-s32 lanConfig_port;
-s8 lanConfig_portname[6];
-s8 lanConfig_joinname[22];
-s32 lanConfig_cursor = -1;
-s32 lanConfig_cursor_table[] = { 72, 92, 124 };
-s32 startepisode;
-s32 startlevel;
-s32 maxplayers;
-bool m_serverInfoMessage = false;
-f64 m_serverInfoMessageTime;
-s32 gameoptions_cursor_table[] = { 40, 56, 64, 72, 80, 88, 96, 112, 120 };
-s32 gameoptions_cursor;
-u8 identityTable[256];
-u8 translationTable[256];
-s32 fpslimits[] = { 30,60,72,100,120,144,165,180,200,240,300,360,500,999999 };
-
+static s32 drawmousemenu = 0;
+static s32 m_save_demonum;
+static s32 m_main_cursor;
+static s32 m_singleplayer_cursor;
+static s32 load_cursor; // 0 < load_cursor < MAX_SAVEGAMES
+static s8 m_filenames[MAX_SAVEGAMES][MAX_OSPATH*2 + 1];
+static s32 loadable[MAX_SAVEGAMES];
+static s32 m_multiplayer_cursor;
+static s32 setup_cursor = 4;
+static s32 setup_cursor_table[] = { 40, 56, 80, 104, 140 };
+static s8 setup_hostname[16];
+static s8 setup_myname[16];
+static s32 setup_oldtop;
+static s32 setup_oldbottom;
+static s32 setup_top;
+static s32 setup_bottom;
+static s32 m_net_cursor;
+static s32 m_net_items;
+static s32 m_net_saveHeight;
+static s32 options_cursor;
+static s32 keys_cursor;
+static s32 bind_grab;
+static s32 new_cursor;
+static s8 customwidthstr[16];
+static s8 customheightstr[16];
+static s32 newwinmode;
+static s32 msgNumber;
+static s32 m_quit_prevstate;
+static bool wasInMenus;
+static s32 lanConfig_port;
+static s8 lanConfig_portname[6];
+static s8 lanConfig_joinname[22];
+static s32 lanConfig_cursor = -1;
+static s32 lanConfig_cursor_table[] = { 72, 92, 124 };
+static s32 startepisode;
+static s32 startlevel;
+static s32 maxplayers;
+static bool m_serverInfoMessage = false;
+static f64 m_serverInfoMessageTime;
+static s32 gameoptions_cursor_table[] = { 40, 56, 64, 72, 80, 88, 96, 112, 120 };
+static s32 gameoptions_cursor;
+static u8 identityTable[256];
+static u8 translationTable[256];
+static s32 fpslimits[] = { 30,60,72,100,120,144,165,180,200,240,300,360,500,999999 };
 
 level_t levels[] = {
 	{ "start", "Entrance" }, // 0
@@ -651,7 +648,7 @@ void M_MultiPlayer_Draw()
 	s32 f = (s32)(realtime * 10) % 6;
 	M_DrawTransPic(54, 32 + m_multiplayer_cursor * 20,
 		       Draw_CachePic(va("gfx/menudot%i.lmp", f + 1)));
-	if (serialAvailable || ipxAvailable || tcpipAvailable)
+	if (tcpipAvailable)
 		return;
 	M_PrintWhite((320 / 2) - ((27 * 8) / 2), 148,
 		     "No Communications Available");
@@ -676,12 +673,12 @@ void M_MultiPlayer_Key(s32 key)
 	case K_ENTER:
 		m_entersound = true;
 		switch (m_multiplayer_cursor) {
-		case 0: //TODO get rid of serial and simplify related menus
-			if (serialAvailable || ipxAvailable || tcpipAvailable)
+		case 0:
+			if (tcpipAvailable)
 				M_Menu_Net_f();
 			break;
 		case 1:
-			if (serialAvailable || ipxAvailable || tcpipAvailable)
+			if (tcpipAvailable)
 				M_Menu_Net_f();
 			break;
 		case 2:
@@ -869,24 +866,15 @@ void M_Net_Draw()
 	qpic_t *p = Draw_CachePic("gfx/p_multi.lmp");
 	M_DrawTransPic((320 - p->width) / 2, 4, p);
 	s32 f = 32;
-	if (serialAvailable)
-		p = Draw_CachePic("gfx/netmen1.lmp");
-	else
-		p = Draw_CachePic("gfx/dim_modm.lmp");
+	p = Draw_CachePic("gfx/dim_modm.lmp");
 	if (p)
 		M_DrawTransPic(72, f, p);
 	f += 19;
-	if (serialAvailable)
-		p = Draw_CachePic("gfx/netmen2.lmp");
-	else
-		p = Draw_CachePic("gfx/dim_drct.lmp");
+	p = Draw_CachePic("gfx/dim_drct.lmp");
 	if (p)
 		M_DrawTransPic(72, f, p);
 	f += 19;
-	if (ipxAvailable)
-		p = Draw_CachePic("gfx/netmen3.lmp");
-	else
-		p = Draw_CachePic("gfx/dim_ipx.lmp");
+	p = Draw_CachePic("gfx/dim_ipx.lmp");
 	M_DrawTransPic(72, f, p);
 	f += 19;
 	if (tcpipAvailable)
@@ -949,11 +937,11 @@ again:
 			break; // multiprotocol
 		}
 	}
-	if (m_net_cursor == 0 && !serialAvailable)
+	if (m_net_cursor == 0)
 		goto again;
-	if (m_net_cursor == 1 && !serialAvailable)
+	if (m_net_cursor == 1)
 		goto again;
-	if (m_net_cursor == 2 && !ipxAvailable)
+	if (m_net_cursor == 2)
 		goto again;
 	if (m_net_cursor == 3 && !tcpipAvailable)
 		goto again;
@@ -1821,17 +1809,11 @@ void M_LanConfig_Draw()
 	else
 		startJoin = "Join Game";
 	s8 *protocol;
-	if (IPXConfig)
-		protocol = "IPX";
-	else
-		protocol = "TCP/IP";
+	protocol = "TCP/IP";
 	M_Print(basex, 32, va("%s - %s", startJoin, protocol));
 	basex += 8;
 	M_Print(basex, 52, "Address:");
-	if (IPXConfig)
-		M_Print(basex + 9 * 8, 52, my_ipx_address);
-	else
-		M_Print(basex + 9 * 8, 52, my_tcpip_address);
+	M_Print(basex + 9 * 8, 52, my_tcpip_address);
 	M_Print(basex, lanConfig_cursor_table[0], "Port");
 	M_DrawTextBox(basex + 8 * 8, lanConfig_cursor_table[0] - 8, 6, 1);
 	M_Print(basex + 9 * 8, lanConfig_cursor_table[0], lanConfig_portname);

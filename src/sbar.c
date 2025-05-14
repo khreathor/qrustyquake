@@ -33,7 +33,6 @@ s32 sb_lines; // scan lines to draw
 s32 hipweapons[4] = //MED 01/04/97 added array to simplify weapon parsing
 { HIT_LASER_CANNON_BIT, HIT_MJOLNIR_BIT, 4, HIT_PROXIMITY_GUN_BIT };
 qpic_t *hsb_items[2]; //MED 01/04/97 added hipnotic items array
-u32 sb_updates; // if >= vid.numpages, no update needed
 s32 fragsort[MAX_SCOREBOARD];
 s8 scoreboardtext[MAX_SCOREBOARD][20];
 s32 scoreboardtop[MAX_SCOREBOARD];

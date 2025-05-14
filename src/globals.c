@@ -252,3 +252,66 @@ bool con_debuglog;
 bool con_initialized;
 s32 con_notifylines; // scan lines to clear for notify lines
 f32 con_times[NUM_CON_TIMES];
+
+f32 scale_for_mip;                                                   // d_edge.c
+s32 ubasestep, errorterm, erroradjustup, erroradjustdown;
+s32 vstartscan;
+vec3_t transformed_modelorg;
+
+surfcache_t *d_initial_rover;                                        // d_init.c
+bool d_roverwrapped;
+s32 d_minmip;
+f32 d_scalemip[NUM_MIPS - 1];
+
+s32 d_y_aspect_shift, d_pix_min, d_pix_max, d_pix_shift;           // d_modech.c
+s32 d_vrectx, d_vrecty, d_vrectright_particle, d_vrectbottom_particle;
+s32 d_scantable[MAXHEIGHT];
+s16 *zspantable[MAXHEIGHT];
+
+u32 sb_updates; // if >= vid.numpages, no update needed                // sbar.c
+
+sspan_t spans[MAXHEIGHT + 1];                                      // d_sprite.c
+
+f32 surfscale;                                                       // d_surf.c
+bool r_cache_thrash; // set if surface cache is thrashing
+u64 sc_size;
+surfcache_t *sc_rover, *sc_base;
+s32 lmonly; // render lightmap only, for lit water
+
+cachepic_t menu_cachepics[MAX_CACHED_PICS];                            // draw.c
+s32 menu_numcachepics;
+u8 *draw_chars; // 8*8 graphic characters
+qpic_t *draw_disc;
+qpic_t *draw_backtile;
+s32 drawlayer = 0;
+
+quakeparms_t host_parms;                                               // host.c
+bool host_initialized; // true if into command execution
+bool isDedicated;
+f64 host_frametime;
+f64 host_rawframetime;
+f32 host_netinterval;
+f64 host_time;
+f64 realtime; // without any filtering or bounding
+f64 oldrealtime; // last frame run
+s32 host_framecount;
+s32 host_hunklevel;
+s32 minimum_memory;
+client_t *host_client; // current client
+jmp_buf host_abortserver;
+u8 *host_basepal;
+u8 *host_colormap;
+
+s32 current_skill;                                                 // host_cmd.c
+bool noclip_anglehack;
+
+s8 key_lines[32][MAXCMDLINE];                                          // keys.c
+s32 key_linepos;
+s32 key_lastpress;
+s32 edit_line = 0;
+keydest_t key_dest;
+s32 key_count; // incremented every key event
+s8 *keybindings[256];
+s32 key_repeats[256]; // if > 1, it is autorepeating
+s8 chat_buffer[32];
+bool team_message = false;

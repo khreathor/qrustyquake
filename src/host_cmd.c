@@ -1,16 +1,5 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 #include "quakedef.h"
-
-s32 current_skill;
-
-extern s8 *pr_strings;
-
-void Mod_Print();
-
-extern void M_Menu_Quit_f();
-
-bool noclip_anglehack;
 
 void Host_Quit_f()
 {
@@ -35,8 +24,6 @@ void Host_Status_f()
 	print("version: %4.2f\n", VERSION);
 	if (tcpipAvailable)
 		print("tcp/ip: %s\n", my_tcpip_address);
-	if (ipxAvailable)
-		print("ipx: %s\n", my_ipx_address);
 	print("map: %s\n", sv.name);
 	print("players: %i active (%i max)\n\n", net_activeconnections,
 			svs.maxclients);
@@ -492,50 +479,6 @@ void Host_Version_f()
 	Con_Printf("Version %4.2f\n", VERSION);
 	Con_Printf("Exe: " __TIME__ " " __DATE__ "\n");
 }
-
-#ifdef IDGODS
-void Host_Please_f()
-{
-	if (cmd_source != src_command)
-		return;
-	if ((Cmd_Argc() == 3) && Q_strcmp(Cmd_Argv(1), "#") == 0) {
-		s32 j = Q_atof(Cmd_Argv(2)) - 1;
-		if (j < 0 || j >= svs.maxclients)
-			return;
-		if (!svs.clients[j].active)
-			return;
-		cl = &svs.clients[j];
-		if (cl->privileged) {
-			cl->privileged = false;
-			cl->edict->v.flags =
-				(s32)cl->edict->v.
-				flags & ~(FL_GODMODE | FL_NOTARGET);
-			cl->edict->v.movetype = MOVETYPE_WALK;
-			noclip_anglehack = false;
-		} else
-			cl->privileged = true;
-	}
-	if (Cmd_Argc() != 2)
-		return;
-	s32 j = 0;
-	for (client_t *cl = svs.clients; j < svs.maxclients; j++, cl++) {
-		if (!cl->active)
-			continue;
-		if (Q_strcasecmp(cl->name, Cmd_Argv(1)) == 0) {
-			if (cl->privileged) {
-				cl->privileged = false;
-				cl->edict->v.flags =
-					(s32)cl->edict->v.
-					flags & ~(FL_GODMODE | FL_NOTARGET);
-				cl->edict->v.movetype = MOVETYPE_WALK;
-				noclip_anglehack = false;
-			} else
-				cl->privileged = true;
-			break;
-		}
-	}
-}
-#endif
 
 void Host_Say(bool teamonly)
 {
@@ -1168,8 +1111,4 @@ void Host_InitCommands()
 	Cmd_AddCommand("viewframe", Host_Viewframe_f);
 	Cmd_AddCommand("viewnext", Host_Viewnext_f);
 	Cmd_AddCommand("viewprev", Host_Viewprev_f);
-	//FIXMECmd_AddCommand("mcache", Mod_Print);
-#ifdef IDGODS
-	Cmd_AddCommand("please", Host_Please_f);
-#endif
 }

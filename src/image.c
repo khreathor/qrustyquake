@@ -2,10 +2,9 @@
 // Copyright (C) 2002-2009 John Fitzgibbons and others
 // Copyright (C) 2010-2014 QuakeSpasm developers
 // GPLv3 See LICENSE for details.
-
 #include "quakedef.h"
 
-static s8 loadfilename[MAX_OSPATH]; //file scope so that error messages can use it
+static s8 loadfilename[MAX_OSPATH];
 
 static stdio_buffer_t *Buf_Alloc(FILE *f)
 {

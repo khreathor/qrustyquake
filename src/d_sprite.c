@@ -1,13 +1,10 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 // software top-level rasterization driver module for drawing sprites
-
 #include "quakedef.h"
 
 static s32 sprite_height;
 static s32 minindex, maxindex;
 static sspan_t *sprite_spans;
-sspan_t spans[MAXHEIGHT + 1];
 
 void D_SpriteDrawSpans(sspan_t *pspan)
 {

@@ -1,15 +1,8 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
-
 // d_init.c: rasterization driver initialization
-
 #include "quakedef.h"
 
-surfcache_t *d_initial_rover;
-bool d_roverwrapped;
-s32 d_minmip;
-f32 d_scalemip[NUM_MIPS - 1];
 static f32 basemip[NUM_MIPS - 1] = { 1.0, 0.5 * 0.8, 0.25 * 0.8 };
-extern s32 d_aflatcolor;
 
 void D_Init()
 {
@@ -30,5 +23,4 @@ void D_SetupFrame()
 	d_minmip = CLAMP(0, d_minmip, 3);
 	for (s32 i = 0; i < (NUM_MIPS - 1); i++)
 		d_scalemip[i] = basemip[i] * d_mipscale.value;
-	d_aflatcolor = 0;
 }

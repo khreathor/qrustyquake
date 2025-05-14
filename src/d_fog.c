@@ -1,8 +1,5 @@
 #include "quakedef.h"
 
-extern s32 fog_lut_built;
-extern u32 sb_updates; // if >= vid.numpages, no update needed
-
 void Fog_SetPalIndex(cvar_t *cvar)
 {
 	fog_pal_index = rgbtoi_lab(fog_red * 255.0f*r_fogbrightness.value,
