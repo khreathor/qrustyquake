@@ -7,6 +7,8 @@
 // entities sent from the server may not include everything in the pvs,
 // especially when crossing a water boudnary.
 
+static u8 gammatable[256];
+
 f32 V_CalcRoll(vec3_t angles, vec3_t velocity)
 { // Used by view and sv_user
 	AngleVectors(angles, forward, right, up);

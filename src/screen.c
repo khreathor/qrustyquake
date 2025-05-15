@@ -15,6 +15,7 @@ static s32 scr_center_lines;
 static s32 scr_erase_lines;
 static u32 scr_erase_center;
 static f32 oldscreensize, oldfov;
+static f32 scr_conlines; // lines of console to display
 
 void SCR_ScreenShot_f();
 void SCR_HUDStyle_f (cvar_t *cvar);
@@ -429,8 +430,6 @@ s32 SCR_ModalMessage(s8 *text) // Displays a text string in the center
 void SCR_UpdateScreen() // This is called every frame,
 { // and can also be called explicitly to flush text to the screen.
 	static f32 oldscr_viewsize;
-	if (scr_skipupdate || block_drawing)
-		return;
 	if (scr_disabled_for_loading) {
 		if (realtime - scr_disabled_time > 60) {
 			scr_disabled_for_loading = false;

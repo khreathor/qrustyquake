@@ -4,21 +4,18 @@
 #define QGLOBALS_
 
 #define EX extern // globals.h only
-extern f64 host_time;                                             // quakedef
-extern bool noclip_anglehack;
-extern quakeparms_t host_parms;
-extern bool host_initialized; // true if into command execution
-extern f64 host_frametime;
-extern u8 *host_basepal;
-extern u8 *host_colormap;
-extern bool isDedicated;
-extern s32 minimum_memory;
-extern s32 host_framecount; // incremented every frame, never reset
-extern f64 realtime; //  never reset
-extern bool msg_suppress_1;
-extern s32 current_skill;
+EX f64 host_time;                                                    // quakedef
+EX bool noclip_anglehack;
+EX quakeparms_t host_parms;
+EX bool host_initialized; // true if into command execution
+EX f64 host_frametime;
+EX u8 *host_basepal;
+EX u8 *host_colormap;
+EX bool isDedicated;
+EX s32 host_framecount; // incremented every frame, never reset
+EX f64 realtime; //  never reset
+EX s32 current_skill;
 void Host_ClearMemory();
-void Host_ServerFrame();
 void Host_InitCommands();
 void Host_Init();
 void Host_Shutdown();
@@ -42,43 +39,30 @@ EX s32 color_conv_initialized;
 EX lab_t lab_palette[256];
 EX u8 rgb_lut[RGB_LUT_SIZE];
 EX s32 rgb_lut_built;
-EX void init_color_conv();
-EX u8 rgbtoi_lab(u8 r, u8 g, u8 b);
-EX u8 rgbtoi(u8 r, u8 g, u8 b);
-EX void build_color_mix_lut(cvar_t *cvar);
-EX void R_BuildLitLUT();
-EX u32 lfsr_random();
+u8 rgbtoi_lab(u8 r, u8 g, u8 b);
+u8 rgbtoi(u8 r, u8 g, u8 b);
+void build_color_mix_lut(cvar_t *cvar);
+void R_BuildLitLUT();
+u32 lfsr_random();
 
 EX s32 fog_initialized;                                               // d_fog.c
 EX u32 lfsr;
 EX f32 fog_density;
-EX f32 fog_red;
-EX f32 fog_green;
-EX f32 fog_blue;
 EX u8 fog_pal_index;
-EX f32 randarr[RANDARR_SIZE];
-EX void Fog_FogCommand_f();
-EX void Fog_ParseWorldspawn();
-EX void Fog_SetPalIndex(cvar_t *cvar);
-EX void R_DrawFog();
+void Fog_FogCommand_f();
+void Fog_ParseWorldspawn();
+void Fog_SetPalIndex(cvar_t *cvar);
+void R_DrawFog();
 
 EX u32 oldmodes[NUM_OLDMODES*2];                                    // vid_sdl.c
 EX s8 modelist[NUM_OLDMODES][8];
 EX SDL_Window *window;
 EX SDL_Surface *windowSurface;
-EX SDL_Renderer *renderer;
-EX SDL_Surface *argbbuffer;
-EX SDL_Texture *texture;
-EX SDL_Rect blitRect;
-EX SDL_Rect destRect;
-EX SDL_Surface *scaleBuffer;
 EX SDL_Surface *screen;
 EX SDL_Surface *screen1;
-EX u32 force_old_render;
 EX u32 SDLWindowFlags;
 EX u32 uiscale;
 EX u32 vimmode;
-EX s32 vid_line;
 EX s32 vid_modenum;
 EX s32 vid_testingmode;
 EX s32 vid_realmode;
@@ -91,22 +75,18 @@ EX cvar_t _windowed_mouse;
 EX cvar_t scr_uiscale;
 EX cvar_t newoptions;
 EX cvar_t sensitivityyscale;
-EX s32 VID_highhunkmark;
 EX s8 *VID_GetModeDescription(s32 mode);
-EX void VID_SetPalette(u8 *palette, SDL_Surface *dest);
-EX void VID_Init(u8 *palette);
-EX void VID_Shutdown();
-EX void VID_CalcScreenDimensions(cvar_t *cvar);
-EX void VID_RenderFrame();
-EX void VID_SetMode(s32 moden, s32 custw, s32 custh, s32 custwinm, u8 *pal);
-EX void VID_Update();
-EX void VID_VidSetModeCommand_f();
+void VID_SetPalette(u8 *palette, SDL_Surface *dest);
+void VID_Init(u8 *palette);
+void VID_Shutdown();
+void VID_CalcScreenDimensions(cvar_t *cvar);
+void VID_SetMode(s32 moden, s32 custw, s32 custh, s32 custwinm, u8 *pal);
+void VID_Update();
+void VID_VidSetModeCommand_f();
 
 EX u8 r_foundtranswater, r_wateralphapass;                         // r_main.c
 EX s32 r_pass;
 EX void *colormap;
-EX vec3_t viewlightvec;
-EX alight_t r_viewlighting;
 EX f32 r_time1;
 EX s32 r_numallocatededges;
 EX bool r_recursiveaffinetriangles;
@@ -115,15 +95,11 @@ EX f32 r_aliasuvscale;
 EX s32 r_outofsurfaces;
 EX s32 r_outofedges;
 EX bool r_dowarp, r_dowarpold, r_viewchanged;
-EX s32 numbtofpolys;
-EX btofpoly_t *pbtofpolys;
 EX mvertex_t *r_pcurrentvertbase;
 EX s32 c_surf;
-EX s32 r_maxsurfsseen, r_maxedgesseen, r_cnumsurfs;
-EX bool r_surfsonstack;
+EX s32 r_maxsurfsseen, r_maxedgesseen;
 EX s32 r_clipflags;
 EX u8 *r_warpbuffer;
-EX bool r_fov_greater_than_90;
 EX vec3_t vup, base_vup;
 EX vec3_t vpn, base_vpn;
 EX vec3_t vright, base_vright;
@@ -136,21 +112,15 @@ EX f32 xscaleshrink, yscaleshrink;
 EX f32 aliasxscale, aliasyscale, aliasxcenter, aliasycenter;
 EX s32 screenwidth;
 EX f32 pixelAspect;
-EX f32 screenAspect;
-EX f32 verticalFieldOfView;
-EX f32 xOrigin, yOrigin;
 EX mplane_t screenedge[4];
 EX u32 r_visframecount;
 EX u32 r_framecount;
-EX s32 d_spanpixcount;
 EX s32 r_polycount;
 EX s32 r_drawnpolycount;
 EX s32 r_wholepolycount;
-EX s8 viewmodname[VIEWMODNAME_LENGTH + 1];
 EX s32 modcount;
 EX s32 *pfrustum_indexes[4];
 EX s32 r_frustum_indexes[4 * 6];
-EX s32 reinit_surfcache;
 EX mleaf_t *r_viewleaf, *r_oldviewleaf;
 EX texture_t *r_notexture_mip;
 EX f32 r_aliastransition, r_resfudge;
@@ -159,37 +129,29 @@ EX f32 dp_time1, dp_time2, db_time1, db_time2, rw_time1, rw_time2;
 EX f32 se_time1, se_time2, de_time1, de_time2, dv_time1, dv_time2;
 EX s32 colored_aliaslight;
 
-EX s32 m_activenet;                                                    // menu.h
-EX void M_Init ();
+EX void M_Init ();                                                     // menu.h
 EX void M_Keydown (s32 key);
 EX void M_Draw ();
 EX void M_ToggleMenu_f ();
 
 EX s32 vgatext_main(SDL_Window *window, Uint16 *screen);            // vgatext.h
 
-EX u8 gammatable[256]; // palette is sent through this               // view.h
-EX u8 ramps[3][256];
-EX f32 v_blend[4];
-EX void V_Init ();
+EX void V_Init ();                                                     // view.h
 EX void V_RenderView ();
 EX f32 V_CalcRoll (vec3_t angles, vec3_t velocity);
 EX void V_UpdatePalette ();
 
 EX void IN_Init ();                                                   // input.h
 EX void IN_Shutdown ();
-EX void IN_Commands ();
 EX void IN_Move (usercmd_t *cmd);
-EX void IN_ClearStates ();
 EX void Sys_SendKeyEvents ();
 
 EX void CRC_Init(u16 *crcvalue);                                        // crc.h
 EX void CRC_ProcessByte(u16 *crcvalue, u8 data);
-EX u16 CRC_Value(u16 crcvalue);
 EX u16 CRC_Block (const u8 *start, s32 count); //johnfitz -- texture crc
 
 EX keydest_t key_dest;                                                 // keys.h
 EX s8 *keybindings[256];
-EX s32 key_repeats[256];
 EX s32 key_count; // incremented every key event
 EX s32 key_lastpress;
 EX void Key_Event(s32 key, bool down);
@@ -234,7 +196,6 @@ void Loop_Shutdown ();
 
 EX qsocket_t *net_activeSockets;                                   // net_defs.h
 EX qsocket_t *net_freeSockets;
-EX s32 net_numsockets;
 EX net_landriver_t net_landrivers[];
 EX const s32 net_numlandrivers;
 EX net_driver_t net_drivers[];
@@ -255,9 +216,7 @@ extern s32 con_totallines;                                          // console.h
 extern s32 con_backscroll;
 extern bool con_forcedup; // because no entities to refresh
 extern bool con_initialized;
-extern u8 *con_chars;
 extern s32 con_notifylines; // scan lines to clear for notify lines
-void Con_DrawCharacter (s32 cx, s32 line, s32 num);
 void Con_CheckResize (void);
 void Con_Init (void);
 void Con_DrawConsole (s32 lines, bool drawinput);
@@ -306,25 +265,18 @@ void *Mod_Extradata (model_t *mod); // handles caching
 void Mod_TouchModel (const s8 *name);
 mleaf_t *Mod_PointInLeaf (vec3_t p, model_t *model);
 u8 *Mod_LeafPVS (mleaf_t *leaf, model_t *model);
-u8 *Mod_NoVisPVS (model_t *model);
-void Mod_SetExtraFlags (model_t *mod);
 
 void SCR_Init ();                                                    // screen.h
 void SCR_UpdateScreen ();
-void SCR_SizeUp ();
-void SCR_SizeDown ();
 void SCR_CenterPrint (const s8 *str);
 void SCR_BeginLoadingPlaque ();
 void SCR_EndLoadingPlaque ();
 s32 SCR_ModalMessage (s8 *text);
 extern f32 scr_con_current;
-extern f32 scr_conlines; // lines of console to display
 extern s32 sb_lines;
 extern u32 scr_fullupdate; // set to 0 to force full redraw
 extern u32 clearnotify; // set to 0 whenever notify text is drawn
 extern bool scr_disabled_for_loading;
-extern bool scr_skipupdate;
-extern bool block_drawing;
 extern f32 scr_centertime_off;
 extern hudstyle_t hudstyle;
 
@@ -348,21 +300,15 @@ s32 UDP_GetSocketPort(struct qsockaddr *addr);
 s32 UDP_SetSocketPort(struct qsockaddr *addr, s32 port);
 
 void W_LoadWadFile (void); //johnfitz -- filename is now hard-coded     // wad.h
-void W_CleanupName (const s8 *in, s8 *out);
 void *W_GetLumpName (const s8 *name);
-void *W_GetLumpNum (s32 num);
 wad_t *W_LoadWadList (const s8 *names);
-void W_FreeWadList (wad_t *wads);
 lumpinfo_t *W_GetLumpinfoList (wad_t *wads, const s8 *name, wad_t **out_wad);
 void SwapPic (qpic_t *pic);
 
-extern s32 reinit_surfcache;                                         // render.h
-extern vec3_t r_origin, vpn, vright, vup;
-extern s32 reinit_surfcache;
+extern vec3_t r_origin, vpn, vright, vup;                           // render.h
 extern bool r_cache_thrash;
 void R_Init();
 void R_InitTextures();
-void R_InitEfrags();
 void R_RenderView();
 void R_ViewChanged(vrect_t *pvrect, s32 lineadj, f32 aspect);
 void R_InitSky(struct texture_s *mt);
@@ -381,18 +327,13 @@ void R_TeleportSplash(vec3_t org);
 void R_PushDlights();
 s32 D_SurfaceCacheForRes(s32 width, s32 height);
 void D_FlushCaches();
-void D_DeleteSurfaceCache();
 void D_InitCaches(void *buffer, s32 size);
 void R_SetVrect(vrect_t *pvrect, vrect_t *pvrectin, s32 lineadj);
 
-extern s32 d_spanpixcount;                                          // d_iface.h
-extern f32 r_aliasuvscale;
+extern f32 r_aliasuvscale;                                          // d_iface.h
 extern s32 r_pixbytes;
 extern affinetridesc_t r_affinetridesc;
 extern spritedesc_t r_spritedesc;
-extern zpointdesc_t r_zpointdesc;
-extern polydesc_t r_polydesc;
-extern s32 d_con_indirect;
 extern vec3_t r_pright, r_pup, r_ppn;
 extern void *acolormap;
 extern drawsurf_t r_drawsurf;
@@ -402,25 +343,19 @@ extern s32 c_surf;
 extern vrect_t scr_vrect;
 extern u8 *r_warpbuffer;
 extern u8 *r_skysource;
-void D_BeginDirectRect(s32 x, s32 y, u8 *pbitmap, s32 width, s32 height);
 void D_PolysetDraw();
 void D_PolysetDrawFinalVerts(finalvert_t *fv, s32 numverts);
 void D_DrawParticle(particle_t *pparticle);
-void D_DrawPoly();
 void D_DrawSprite();
 void D_DrawSurfaces();
 void D_Init();
 void D_ViewChanged();
 void D_SetupFrame();
-void D_TurnZOn();
 void D_WarpScreen();
-void D_FillRect(vrect_t *vrect, s32 color);
-void D_DrawRect();
 void R_DrawSurface();
 void D_PolysetUpdateTables();
 
 extern vec3_t vec3_origin;                                          // mathlib.h
-extern s32 nanmask;
 void VectorMA(vec3_t veca, f32 scale, vec3_t vecb, vec3_t vecc);
 vec_t Length(vec3_t v);
 void CrossProduct(vec3_t v1, vec3_t v2, vec3_t cross);
@@ -432,12 +367,12 @@ void R_ConcatTransforms(f32 in1[3][4], f32 in2[3][4], f32 out[3][4]);
 void FloorDivMod(f64 numer, f64 denom, s32 *quotient, s32 *rem);
 s32 GreatestCommonDivisor(s32 i1, s32 i2);
 void AngleVectors(vec3_t angles, vec3_t forward, vec3_t right, vec3_t up);
-s32 BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, struct mplane_s *plane);
 f32 anglemod(f32 a);
 vec_t VectorLength(vec3_t v);
 void VectorSubtract(const vec3_t a, const vec3_t b, vec3_t c);
 void VectorAdd(const vec3_t a, const vec3_t b, vec3_t c);
 void VectorCopy(const vec3_t a, vec3_t b);
+s32 BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, mplane_t *p);
 
 extern s32 cachewidth;                                             // r_shared.h
 extern u8 *cacheblock;
@@ -450,8 +385,6 @@ extern vec3_t vup, base_vup;
 extern vec3_t vpn, base_vpn;
 extern vec3_t vright, base_vright;
 extern entity_t *currententity;
-extern vec3_t sxformaxis[4]; // s axis transformed into viewspace
-extern vec3_t txformaxis[4]; // t axis transformed into viewspac
 extern vec3_t modelorg, base_modelorg;
 extern f32 xcenter, ycenter;
 extern f32 xscale, yscale;
@@ -460,21 +393,16 @@ extern f32 xscaleshrink, yscaleshrink;
 extern s32 d_lightstylevalue[256]; // 8.8 frac of base light value
 extern s32 r_skymade;
 extern s8 skybox_name[1024];
-extern s32 ubasestep, errorterm, erroradjustup, erroradjustdown;
 extern surf_t *surfaces, *surface_p, *surf_max;
 extern void TransformVector(vec3_t in, vec3_t out);
-extern void SetUpForLineScan(s32 startvertu, s32 startvertv,
-		s32 endvertu, s32 endvertv);
 extern void R_MakeSky();
 extern void Sky_LoadSkyBox (const s8 *name);
-extern void R_DrawLine(polyvert_t *polyvert0, polyvert_t *polyvert1);
 extern void R_EmitSkyBox();
 
 void SV_ClearWorld();                                                 // world.h
 void SV_UnlinkEdict(edict_t *ent);
 void SV_LinkEdict(edict_t *ent, bool touch_triggers);
 s32 SV_PointContents(vec3_t p);
-s32 SV_TruePointContents(vec3_t p);
 edict_t *SV_TestEntityPosition(edict_t *ent);
 trace_t SV_Move(vec3_t start, vec3_t mins, vec3_t maxs,
 		vec3_t end, s32 type, edict_t *passedict);
@@ -489,8 +417,7 @@ extern f32 d_sdivzorigin, d_tdivzorigin, d_ziorigin;
 extern s32 sadjust, tadjust;
 extern s32 bbextents, bbextentt;
 extern s16 *d_pzbuffer;
-extern u32 d_zrowbytes, d_zwidth;
-extern s32 *d_pscantable;
+extern u32 d_zwidth;
 extern s32 d_scantable[MAXHEIGHT];
 extern s32 d_vrectx, d_vrecty, d_vrectright_particle, d_vrectbottom_particle;
 extern s32 d_y_aspect_shift, d_pix_min, d_pix_max, d_pix_shift;
@@ -509,13 +436,9 @@ void D_DrawSpans8(espan_t *pspans);
 void D_DrawTransSpans8(espan_t *pspans, f32 opacity);
 void D_DrawZSpans(espan_t *pspans);
 void Turbulent8(espan_t *pspan, f32 opacity);
-void D_SpriteDrawSpans(sspan_t *pspan);
 void D_DrawSkyScans8(espan_t *pspan);
 void D_DrawSkyboxScans8(espan_t *pspans);
-void R_ShowSubDiv();
-extern void(*prealspandrawer)();
 surfcache_t *D_CacheSurface(msurface_t *surface, s32 miplevel);
-extern s32 D_MipLevelForScale(f32 scale);
 extern s32 dither_pat;
 extern s32 D_Dither(u8 *pos);
 
@@ -693,8 +616,6 @@ extern mplane_t screenedge[4];
 extern vec3_t r_origin;
 extern vec3_t r_entorigin;
 extern f32 screenAspect;
-extern f32 verticalFieldOfView;
-extern f32 xOrigin, yOrigin;
 extern u32 r_visframecount;
 extern s32 vstartscan;
 extern bool insubmodel; // current entity info
@@ -704,7 +625,6 @@ extern s32 r_polycount;
 extern s32 r_wholepolycount;
 extern model_t *cl_worldmodel;
 extern s32 *pfrustum_indexes[4];
-extern s32 ubasestep, errorterm, erroradjustup, erroradjustdown;
 extern s32 vstartscan;
 extern s32 sadjust, tadjust;
 extern s32 bbextents, bbextentt;
@@ -747,8 +667,7 @@ extern f32 r_time1;
 extern f32 dp_time1, dp_time2, db_time1, db_time2, rw_time1, rw_time2;
 extern f32 se_time1, se_time2, de_time1, de_time2, dv_time1, dv_time2;
 extern s32 r_frustum_indexes[4*6];
-extern s32 r_maxsurfsseen, r_maxedgesseen, r_cnumsurfs;
-extern bool r_surfsonstack;
+extern s32 r_maxsurfsseen, r_maxedgesseen;
 extern cshift_t cshift_water;
 extern bool r_dowarpold, r_viewchanged;
 extern mleaf_t *r_viewleaf, *r_oldviewleaf;
@@ -912,7 +831,6 @@ EX kbutton_t in_left, in_right, in_forward, in_back;
 EX kbutton_t in_lookup, in_lookdown, in_moveleft, in_moveright;
 EX kbutton_t in_strafe, in_speed, in_use, in_jump, in_attack;
 EX kbutton_t in_up, in_down;
-EX s32 in_impulse;
 EX void CL_AdjustAngles();
 EX void IN_MLookDown();
 
@@ -922,8 +840,6 @@ EX cshift_t cshift_empty;
 EX cshift_t cshift_water;
 EX cshift_t cshift_slime;
 EX cshift_t cshift_lava;
-EX u8 gammatable[256];
-EX s32 in_impulse;
 
 EX edict_t *sv_player;                                              // sv_user.c
 EX f32 *angles;
@@ -1009,7 +925,6 @@ EX bool team_message;
 EX void M_Menu_Main_f();
 
 EX f32 scale_for_mip;                                                // d_edge.c
-EX s32 ubasestep, errorterm, erroradjustup, erroradjustdown;
 EX s32 vstartscan;
 EX vec3_t transformed_modelorg;
 
@@ -1064,7 +979,6 @@ EX s32 edit_line;
 EX keydest_t key_dest;
 EX s32 key_count; // incremented every key event
 EX s8 *keybindings[256];
-EX s32 key_repeats[256]; // if > 1, it is autorepeating
 EX s8 chat_buffer[32];
 EX bool team_message;
 

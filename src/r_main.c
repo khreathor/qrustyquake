@@ -1,6 +1,13 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
 #include "quakedef.h"
 
+static vec3_t viewlightvec;
+static alight_t r_viewlighting = { 128, 192, viewlightvec };
+static bool r_surfsonstack;
+static s32 r_cnumsurfs;
+static f32 verticalFieldOfView;
+static f32 xOrigin, yOrigin;
+
 void R_InitTextures()
 { // create a simple checkerboard texture for the default
 	r_notexture_mip = Hunk_AllocName(sizeof(texture_t)
@@ -186,7 +193,7 @@ void R_ViewChanged(vrect_t *pvrect, s32 lineadj, f32 aspect)
 	pixelAspect = aspect;
 	xOrigin = r_refdef.xOrigin;
 	yOrigin = r_refdef.yOrigin;
-	screenAspect = r_refdef.vrect.width * pixelAspect /
+	f32 screenAspect = r_refdef.vrect.width * pixelAspect /
 	    r_refdef.vrect.height;
 	// 320*200 1.0 pixelAspect = 1.6 screenAspect
 	// 320*240 1.0 pixelAspect = 1.3333 screenAspect
@@ -238,7 +245,6 @@ void R_ViewChanged(vrect_t *pvrect, s32 lineadj, f32 aspect)
 		 (320.0 * 152.0)) * (2.0 / r_refdef.horizontalFieldOfView);
 	r_aliastransition = r_aliastransbase.value * res_scale;
 	r_resfudge = r_aliastransadj.value * res_scale;
-	r_fov_greater_than_90 = !(scr_fov.value <= 90.0);
 	D_ViewChanged();
 }
 

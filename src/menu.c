@@ -2,6 +2,7 @@
 
 #include "quakedef.h"
 
+static s32 vid_line;
 static s32 drawmousemenu = 0;
 static s32 m_save_demonum;
 static s32 m_main_cursor;

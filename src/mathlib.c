@@ -5,7 +5,6 @@
 #include "quakedef.h"
 
 vec3_t vec3_origin = { 0, 0, 0 };
-s32 nanmask = 255 << 23;
 
 void VectorSubtract(const vec3_t a, const vec3_t b, vec3_t c)
 { c[0] = a[0] - b[0]; c[1] = a[1] - b[1]; c[2] = a[2] - b[2]; }
@@ -38,7 +37,6 @@ f32 anglemod(f32 a)
 	a = (360.0 / 65536) * ((s32)(a * (65536 / 360.0)) & 65535);
 	return a;
 }
-
 
 s32 BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, mplane_t *p)
 { // Returns 1, 2, or 1 + 2

@@ -1,5 +1,14 @@
 #include "quakedef.h"
 
+static SDL_Renderer *renderer;
+static SDL_Surface *argbbuffer;
+static SDL_Texture *texture;
+static SDL_Rect blitRect;
+static SDL_Rect destRect;
+static SDL_Surface *scaleBuffer;
+static u32 force_old_render;
+static s32 VID_highhunkmark;
+
 void VID_CalcScreenDimensions(cvar_t *cvar);
 void VID_AllocBuffers();
 
@@ -151,10 +160,8 @@ void VID_Init(u8 *palette)
 		flags &= ~SDL_WINDOW_FULLSCREEN;
 	if(COM_CheckParm("-borderless"))
 		flags |= SDL_WINDOW_BORDERLESS;
-	if(COM_CheckParm("-forceoldrender"))
-		force_old_render = 1;
-	if(COM_CheckParm("-vimmode"))
-		vimmode = 1;
+	force_old_render = COM_CheckParm("-forceoldrender");
+	vimmode = COM_CheckParm("-vimmode");
 	if(vid.width > 1280 || vid.height > 1024)
 		Sys_Printf("vanilla maximum resolution is 1280x1024\n");
 	aspectr.value = 1.333333;

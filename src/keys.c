@@ -8,6 +8,7 @@ static bool consolekeys[256]; // if true, can't be rebound while in console
 static bool menubound[256]; // if true, can't be rebound while in menu
 static s32 keyshift[256]; // key to map to if shift held down in console
 static bool keydown[256];
+static s32 key_repeats[256]; // if > 1, it is autorepeating
 
 keyname_t keynames[] = {
 	{ "TAB", K_TAB }, { "ENTER", K_ENTER }, { "ESCAPE", K_ESCAPE },

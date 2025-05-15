@@ -257,7 +257,6 @@ void R_SetupFrame()
 	R_CheckVariables();
 	R_AnimateLight();
 	r_framecount++;
-	numbtofpolys = 0;
 	// build the transformation matrix for the given view angles
 	VectorCopy(r_refdef.vieworg, modelorg);
 	VectorCopy(r_refdef.vieworg, r_origin);
@@ -314,10 +313,8 @@ void R_SetupFrame()
 	R_SetUpFrustumIndexes();
 	r_cache_thrash = false;
 	c_faceclip = 0; // clear frame counts
-	d_spanpixcount = 0;
 	r_polycount = 0;
 	r_drawnpolycount = 0;
-	r_wholepolycount = 0;
 	r_amodels_drawn = 0;
 	r_outofsurfaces = 0;
 	r_outofedges = 0;

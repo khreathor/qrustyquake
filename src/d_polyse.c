@@ -28,6 +28,7 @@ static u8 *skintable[MAX_LBM_HEIGHT];
 static s32 skinwidth;
 static u8 *skinstart;
 static s32 ystart;
+static s32 ubasestep, errorterm, erroradjustup, erroradjustdown;
 
 edgetable edgetables[12] = {
 	{ 0, 1, r_p0, r_p2, NULL, 2, r_p0, r_p1, r_p2 },

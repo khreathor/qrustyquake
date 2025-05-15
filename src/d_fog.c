@@ -1,5 +1,10 @@
 #include "quakedef.h"
 
+static f32 fog_red; // CyanBun96: we store the actual RGB values in these,
+static f32 fog_green; // but they get quantized to a single index in the color
+static f32 fog_blue; // palette before use, stored in fog_pal_index
+static f32 randarr[RANDARR_SIZE];
+
 void Fog_SetPalIndex(cvar_t *cvar)
 {
 	fog_pal_index = rgbtoi_lab(fog_red * 255.0f*r_fogbrightness.value,

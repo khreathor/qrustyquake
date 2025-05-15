@@ -13,11 +13,7 @@ s32 rgb_lut_built = 0;
 s32 fog_initialized = 0;                                              // d_fog.c
 u32 lfsr = 0x1337; // non-zero seed
 f32 fog_density;
-f32 fog_red; // CyanBun96: we store the actual RGB values in these,
-f32 fog_green; // but they get quantized to a single index in the color
-f32 fog_blue; // palette before use, stored in fog_pal_index
 u8 fog_pal_index;
-f32 randarr[RANDARR_SIZE];
 
 u32 oldmodes[NUM_OLDMODES * 2] = {                                  // vid_sdl.c
         320, 240,       640, 480,       800, 600,
@@ -25,34 +21,23 @@ u32 oldmodes[NUM_OLDMODES * 2] = {                                  // vid_sdl.c
         640, 400,       640, 480,       800, 600 };
 SDL_Window *window;
 SDL_Surface *windowSurface;
-SDL_Renderer *renderer;
-SDL_Surface *argbbuffer;
-SDL_Texture *texture;
-SDL_Rect blitRect;
-SDL_Rect destRect;
-SDL_Surface *scaleBuffer;
 SDL_Surface *screen; // the main video buffer
 SDL_Surface *screen1; // used for scr_centerstring only ATM
 s8 modelist[NUM_OLDMODES][8]; // "320x240" etc. for menus
-u32 force_old_render = 0;
 u32 SDLWindowFlags;
 u32 uiscale;
 u32 vimmode;
-s32 vid_line;
 s32 vid_modenum;
 s32 vid_testingmode;
 s32 vid_realmode;
 s32 vid_default;
 f64 vid_testendtime;
 u8 vid_curpal[256 * 3];
-s32 VID_highhunkmark;
 viddef_t vid; // global video state
 
 u8 r_foundtranswater, r_wateralphapass;                              // r_main.c
 s32 r_pass; // CyanBun96: 1 - cutout textures 0 - everything else
 void *colormap;
-vec3_t viewlightvec;
-alight_t r_viewlighting = { 128, 192, viewlightvec };
 f32 r_time1;
 s32 r_numallocatededges;
 bool r_recursiveaffinetriangles = true;
@@ -61,15 +46,12 @@ f32 r_aliasuvscale = 1.0;
 s32 r_outofsurfaces;
 s32 r_outofedges;
 bool r_dowarp, r_dowarpold, r_viewchanged;
-s32 numbtofpolys;
 btofpoly_t *pbtofpolys;
 mvertex_t *r_pcurrentvertbase;
 s32 c_surf;
-s32 r_maxsurfsseen, r_maxedgesseen, r_cnumsurfs;
-bool r_surfsonstack;
+s32 r_maxsurfsseen, r_maxedgesseen;
 s32 r_clipflags;
 u8 *r_warpbuffer;
-bool r_fov_greater_than_90;
 vec3_t vup, base_vup; // view origin
 vec3_t vpn, base_vpn;
 vec3_t vright, base_vright;
@@ -82,22 +64,13 @@ f32 xscaleshrink, yscaleshrink;
 f32 aliasxscale, aliasyscale, aliasxcenter, aliasycenter;
 s32 screenwidth;
 f32 pixelAspect;
-f32 screenAspect;
-f32 verticalFieldOfView;
-f32 xOrigin, yOrigin;
 mplane_t screenedge[4];
 u32 r_visframecount; // refresh flags
 u32 r_framecount = 1; // so frame counts initialized to 0 don't match
-s32 d_spanpixcount;
 s32 r_polycount;
 s32 r_drawnpolycount;
-s32 r_wholepolycount;
-s8 viewmodname[VIEWMODNAME_LENGTH + 1];
-s32 modcount;
 s32 *pfrustum_indexes[4];
 s32 r_frustum_indexes[4 * 6];
-s32 reinit_surfcache = 1; // if 1, surface cache is currently empty and
-			// must be reinitialized for current cache size
 mleaf_t *r_viewleaf, *r_oldviewleaf;
 texture_t *r_notexture_mip;
 f32 r_aliastransition, r_resfudge;
@@ -114,7 +87,6 @@ u8 *cacheblock;
 s32 cachewidth;
 u8 *d_viewbuffer;
 s16 *d_pzbuffer;
-u32 d_zrowbytes;
 u32 d_zwidth;
 
 vec3_t chase_pos;                                                     // chase.c
@@ -134,8 +106,6 @@ cshift_t cshift_empty = { { 130, 80, 50 }, 0 }; // Palette flashes
 cshift_t cshift_water = { { 130, 80, 50 }, 128 };
 cshift_t cshift_slime = { { 0, 25, 5 }, 150 };
 cshift_t cshift_lava = { { 255, 80, 0 }, 150 };
-u8 gammatable[256]; // palette is sent through this
-s32 in_impulse;
 
 edict_t *sv_player;                                                 // sv_user.c
 f32 *angles;
@@ -254,7 +224,6 @@ s32 con_notifylines; // scan lines to clear for notify lines
 f32 con_times[NUM_CON_TIMES];
 
 f32 scale_for_mip;                                                   // d_edge.c
-s32 ubasestep, errorterm, erroradjustup, erroradjustdown;
 s32 vstartscan;
 vec3_t transformed_modelorg;
 
@@ -295,7 +264,6 @@ f64 realtime; // without any filtering or bounding
 f64 oldrealtime; // last frame run
 s32 host_framecount;
 s32 host_hunklevel;
-s32 minimum_memory;
 client_t *host_client; // current client
 jmp_buf host_abortserver;
 u8 *host_basepal;
@@ -311,7 +279,6 @@ s32 edit_line = 0;
 keydest_t key_dest;
 s32 key_count; // incremented every key event
 s8 *keybindings[256];
-s32 key_repeats[256]; // if > 1, it is autorepeating
 s8 chat_buffer[32];
 bool team_message = false;
 
@@ -337,8 +304,6 @@ vec3_t r_worldmodelorg;
 s32 r_currentbkey;
 
 s32 c_faceclip; // number of faces clipped                           // r_draw.c
-zpointdesc_t r_zpointdesc;
-polydesc_t r_polydesc;
 clipplane_t view_clipplanes[4];
 s32 sintable[SIN_BUFFER_SIZE];
 s32 intsintable[SIN_BUFFER_SIZE];
@@ -359,11 +324,8 @@ u32 scr_fullupdate;                                                  // screen.c
 u32 clearnotify;
 vrect_t scr_vrect;
 bool scr_disabled_for_loading;
-bool scr_skipupdate;
-bool block_drawing;
 f32 scr_centertime_off;
 f32 scr_con_current;
-f32 scr_conlines; // lines of console to display
 hudstyle_t hudstyle;
 
 mnode_t *r_pefragtopnode;                                           // r_efrag.c
