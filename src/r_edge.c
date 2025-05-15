@@ -16,8 +16,9 @@ static espan_t *span_p, *max_span_p;
 static edge_t edge_sentinel;
 static s32 current_iv;
 static s64 edge_head_u_shift20, edge_tail_u_shift20;
+static edge_t edge_head, edge_tail;
+static edge_t edge_aftertail;
 static f32 fv;
-
 static void (*pdrawfunc)();
 void R_GenerateSpans();
 void R_GenerateSpansBackward();
@@ -211,8 +212,6 @@ void R_TrailingEdge(surf_t *surf, edge_t *edge)
 	// don't generate a span if this is an inverted span, with the end edge
 	// preceding the start edge(that is, we haven't seen the start edge yet)
 	if (--surf->spanstate == 0) {
-		if (surf->insubmodel)
-			r_bmodelactive--;
 		if (surf == surfaces[1].next) {
 			s64 iu = edge->u >> 20; // emit a span
 			if (iu > surf->last_u) { // (current top going away)
@@ -243,8 +242,6 @@ void R_LeadingEdge (edge_t *edge)
 		// end edge)
 		if (++surf->spanstate == 1)
 		{
-			if (surf->insubmodel)
-				r_bmodelactive++;
 			surf2 = surfaces[1].next;
 			if (surf->key < surf2->key)
 				goto newtop;
@@ -319,7 +316,6 @@ gotposition:
 
 void R_GenerateSpans()
 {
-	r_bmodelactive = 0;
 	// clear active surfaces to just the background surface
 	surfaces[1].next = surfaces[1].prev = &surfaces[1];
 	surfaces[1].last_u = edge_head_u_shift20;
@@ -339,7 +335,6 @@ void R_GenerateSpans()
 
 void R_GenerateSpansBackward()
 {
-	r_bmodelactive = 0;
 	// clear active surfaces to just the background surface
 	surfaces[1].next = surfaces[1].prev = &surfaces[1];
 	surfaces[1].last_u = edge_head_u_shift20;

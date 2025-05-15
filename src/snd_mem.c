@@ -4,6 +4,7 @@
 // snd_mem.c: sound caching
 #include "quakedef.h"
 
+wavinfo_t GetWavinfo (const s8 *name, u8 *wav, s32 wavlength);
 /*
 ================
 ResampleSfx

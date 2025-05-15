@@ -8,6 +8,7 @@ static prstack_t pr_stack[MAX_STACK_DEPTH];
 static s32 pr_depth;
 static s32 localstack[LOCALSTACK_SIZE];
 static s32 localstack_used;
+static s32 pr_xstatement;
 
 static const s8 *pr_opnames[] = {
 	"DONE",

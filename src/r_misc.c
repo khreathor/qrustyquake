@@ -6,6 +6,8 @@ static f32 map_wateralpha;
 static f32 map_lavaalpha;
 static f32 map_telealpha;
 static f32 map_slimealpha;
+static f32 r_time1;
+static s32 r_frustum_indexes[4 * 6];
 
 void R_ParseWorldspawn()
 {

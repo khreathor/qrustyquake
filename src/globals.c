@@ -38,7 +38,6 @@ viddef_t vid; // global video state
 u8 r_foundtranswater, r_wateralphapass;                              // r_main.c
 s32 r_pass; // CyanBun96: 1 - cutout textures 0 - everything else
 void *colormap;
-f32 r_time1;
 s32 r_numallocatededges;
 bool r_recursiveaffinetriangles = true;
 s32 r_pixbytes = 1;
@@ -46,7 +45,6 @@ f32 r_aliasuvscale = 1.0;
 s32 r_outofsurfaces;
 s32 r_outofedges;
 bool r_dowarp, r_dowarpold, r_viewchanged;
-btofpoly_t *pbtofpolys;
 mvertex_t *r_pcurrentvertbase;
 s32 c_surf;
 s32 r_maxsurfsseen, r_maxedgesseen;
@@ -70,7 +68,6 @@ u32 r_framecount = 1; // so frame counts initialized to 0 don't match
 s32 r_polycount;
 s32 r_drawnpolycount;
 s32 *pfrustum_indexes[4];
-s32 r_frustum_indexes[4 * 6];
 mleaf_t *r_viewleaf, *r_oldviewleaf;
 texture_t *r_notexture_mip;
 f32 r_aliastransition, r_resfudge;
@@ -224,7 +221,6 @@ s32 con_notifylines; // scan lines to clear for notify lines
 f32 con_times[NUM_CON_TIMES];
 
 f32 scale_for_mip;                                                   // d_edge.c
-s32 vstartscan;
 vec3_t transformed_modelorg;
 
 surfcache_t *d_initial_rover;                                        // d_init.c
@@ -292,15 +288,12 @@ u8 *litwater_base;
 
 bool pr_trace;                                                      // pr_exec.c
 dfunction_t *pr_xfunction;
-s32 pr_xstatement;
 s32 pr_argc;
 
 bool insubmodel; // current entity info                               // r_bsp.c
 entity_t *currententity;
 vec3_t modelorg, base_modelorg; // viewpoint reletive to currently rendering ent
 vec3_t r_entorigin; // the currently rendering entity in world coordinates
-f32 entity_rotation[3][3];
-vec3_t r_worldmodelorg;
 s32 r_currentbkey;
 
 s32 c_faceclip; // number of faces clipped                           // r_draw.c
@@ -314,11 +307,7 @@ edge_t *r_edges, *edge_p, *edge_max;
 surf_t *surfaces, *surface_p, *surf_max;
 edge_t *newedges[MAXHEIGHT];
 edge_t *removeedges[MAXHEIGHT];
-edge_t edge_head;
-edge_t edge_tail;
-edge_t edge_aftertail;
 s32 r_currentkey;
-s32 r_bmodelactive;
 
 u32 scr_fullupdate;                                                  // screen.c
 u32 clearnotify;

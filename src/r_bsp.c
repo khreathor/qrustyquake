@@ -6,6 +6,8 @@ static bedge_t *pbedges;
 static s32 numbverts, numbedges;
 static mvertex_t *pfrontenter, *pfrontexit;
 static bool makeclippededge;
+static f32 entity_rotation[3][3];
+static btofpoly_t *pbtofpolys;
 
 void R_EntityRotate(vec3_t vec)
 {
