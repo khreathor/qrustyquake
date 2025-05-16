@@ -43,6 +43,10 @@ static u8	*loadbuf;
 static cache_user_t *loadcache;
 static s32	loadsize;
 static localization_t localization;
+static bool fitzmode;
+static s8 com_cmdline[CMDLINE_LENGTH];
+static searchpath_t *com_base_searchpaths;
+static searchpath_t *com_searchpaths;
 static u16 pop[] =
 { // this graphic needs to be in the pak file to use registered features
 	     0,     0,     0,     0,     0,     0,     0,     0,
@@ -79,6 +83,9 @@ static s32 q_isspace(s32 c)
 	}
 	return 0;
 }
+
+void COM_CloseFile (s32 h);
+
 // ClearLink is used for new headnodes
 void ClearLink (link_t *l)
 {
@@ -1457,47 +1464,13 @@ COM_Init
 */
 void COM_Init (void)
 {
-	s32	i = 0x12345678;
-		/*    U N I X */
-
-	/*
-	BE_ORDER:  12 34 56 78
-		   U  N  I  X
-
-	LE_ORDER:  78 56 34 12
-		   X  I  N  U
-
-	PDP_ORDER: 34 12 78 56
-		   N  U  X  I
-	*/
-	if ( *(s8 *)&i == 0x12 )
-		host_bigendian = true;
-	else if ( *(s8 *)&i == 0x78 )
-		host_bigendian = false;
-	else /* if ( *(s8 *)&i == 0x34 ) */
-		Sys_Error ("Unsupported endianism.");
-
-	if (host_bigendian)
-	{
-		BigShort = ShortNoSwap;
-		LittleShort = ShortSwap;
-		BigLong = LongNoSwap;
-		LittleLong = LongSwap;
-		BigFloat = FloatNoSwap;
-		LittleFloat = FloatSwap;
-	}
-	else /* assumed LITTLE_ENDIAN. */
-	{
-		BigShort = ShortSwap;
-		LittleShort = ShortNoSwap;
-		BigLong = LongSwap;
-		LittleLong = LongNoSwap;
-		BigFloat = FloatSwap;
-		LittleFloat = FloatNoSwap;
-	}
-
-	if (COM_CheckParm("-fitz"))
-		fitzmode = true;
+	BigShort = ShortSwap;
+	LittleShort = ShortNoSwap;
+	BigLong = LongSwap;
+	LittleLong = LongNoSwap;
+	BigFloat = FloatSwap;
+	LittleFloat = FloatNoSwap;
+	fitzmode = COM_CheckParm("-fitz");
 }
 
 

@@ -9,6 +9,10 @@ static s32 cmd_argc;
 static s8 *cmd_argv[MAX_ARGS];
 static s8 *cmd_null_string = "";
 static s8 *cmd_args = NULL;
+static cmdalias_t *cmd_alias;        
+static bool cmd_wait;
+static sizebuf_t cmd_text;
+static cmd_function_t *cmd_functions; // possible commands to execute
 
 void Cmd_ForwardToServer();
 

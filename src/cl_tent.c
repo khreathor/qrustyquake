@@ -5,6 +5,15 @@
 // cl_tent.c -- client side temporary entities
 #include "quakedef.h"
 
+static s32 num_temp_entities;                       
+static sfx_t *cl_sfx_wizhit;
+static sfx_t *cl_sfx_knighthit;
+static sfx_t *cl_sfx_tink1;
+static sfx_t *cl_sfx_ric1;
+static sfx_t *cl_sfx_ric2;
+static sfx_t *cl_sfx_ric3;
+static sfx_t *cl_sfx_r_exp3;
+
 /*
 =================
 CL_ParseTEnt

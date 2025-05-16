@@ -2,6 +2,9 @@
 // d_surf.c: rasterization driver surface heap manager
 #include "quakedef.h"
 
+static f32 surfscale;                                           
+static u64 sc_size;
+static surfcache_t *sc_base;
 s32 D_SurfaceCacheForRes(s32 width, s32 height)
 {
 	s32 size;

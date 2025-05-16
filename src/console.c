@@ -2,6 +2,15 @@
 
 #include "quakedef.h"
 
+static s32 con_current; // where next message will be printed
+static s8 *con_text = 0;
+static s32 con_linewidth;
+static f32 con_cursorspeed = 4;
+static s32 con_vislines;
+static bool con_debuglog;
+static f32 con_times[NUM_CON_TIMES];
+static s32 con_x; // offset in current line for next print
+
 void Con_ToggleConsole_f()
 {
 	if (key_dest == key_console) {

@@ -1,35 +1,7 @@
 #include "quakedef.h"
-
 #ifndef QGLOBALS_
 #define QGLOBALS_
-
-#define EX extern // globals.h only
-EX f64 host_time;                                                    // quakedef
-EX bool noclip_anglehack;
-EX quakeparms_t host_parms;
-EX bool host_initialized; // true if into command execution
-EX f64 host_frametime;
-EX u8 *host_basepal;
-EX u8 *host_colormap;
-EX bool isDedicated;
-EX s32 host_framecount; // incremented every frame, never reset
-EX f64 realtime; //  never reset
-EX s32 current_skill;
-void Host_ClearMemory();
-void Host_InitCommands();
-void Host_Init();
-void Host_Shutdown();
-void Host_Error(s8 *error, ...);
-void Host_EndGame(s8 *message, ...);
-void Host_Frame(f32 time);
-void Host_Quit_f();
-void Host_ClientCommands(s8 *fmt, ...);
-void Host_ShutdownServer(bool crash);
-f64 Host_GetFrameInterval();
-void Chase_Init();
-void Chase_Update();
-void Cvar_SetCallback(cvar_t *var, cvarcallback_t func);
-
+#define EX extern
 EX u8 color_mix_lut[256][256][FOG_LUT_LEVELS];                       // rgbtoi.c
 EX u8 lit_lut[LIT_LUT_RES*LIT_LUT_RES*LIT_LUT_RES];
 EX u8 lit_lut_initialized;
@@ -39,21 +11,15 @@ EX s32 color_conv_initialized;
 EX lab_t lab_palette[256];
 EX u8 rgb_lut[RGB_LUT_SIZE];
 EX s32 rgb_lut_built;
-u8 rgbtoi_lab(u8 r, u8 g, u8 b);
-u8 rgbtoi(u8 r, u8 g, u8 b);
 void build_color_mix_lut(cvar_t *cvar);
-void R_BuildLitLUT();
 u32 lfsr_random();
-
 EX s32 fog_initialized;                                               // d_fog.c
 EX u32 lfsr;
 EX f32 fog_density;
-EX u8 fog_pal_index;
 void Fog_FogCommand_f();
 void Fog_ParseWorldspawn();
 void Fog_SetPalIndex(cvar_t *cvar);
 void R_DrawFog();
-
 EX u32 oldmodes[NUM_OLDMODES*2];                                    // vid_sdl.c
 EX s8 modelist[NUM_OLDMODES][8];
 EX SDL_Window *window;
@@ -75,7 +41,7 @@ EX cvar_t _windowed_mouse;
 EX cvar_t scr_uiscale;
 EX cvar_t newoptions;
 EX cvar_t sensitivityyscale;
-EX s8 *VID_GetModeDescription(s32 mode);
+s8 *VID_GetModeDescription(s32 mode);
 void VID_SetPalette(u8 *palette, SDL_Surface *dest);
 void VID_Init(u8 *palette);
 void VID_Shutdown();
@@ -83,115 +49,67 @@ void VID_CalcScreenDimensions(cvar_t *cvar);
 void VID_SetMode(s32 moden, s32 custw, s32 custh, s32 custwinm, u8 *pal);
 void VID_Update();
 void VID_VidSetModeCommand_f();
-
-EX u8 r_foundtranswater, r_wateralphapass;                         // r_main.c
-EX s32 r_pass;
+EX u8 r_foundtranswater, r_wateralphapass;                           // r_main.c
 EX void *colormap;
-EX s32 r_numallocatededges;
 EX bool r_recursiveaffinetriangles;
-EX s32 r_pixbytes;
-EX f32 r_aliasuvscale;
-EX s32 r_outofsurfaces;
-EX s32 r_outofedges;
-EX bool r_dowarp, r_dowarpold, r_viewchanged;
-EX mvertex_t *r_pcurrentvertbase;
-EX s32 c_surf;
-EX s32 r_maxsurfsseen, r_maxedgesseen;
-EX s32 r_clipflags;
-EX u8 *r_warpbuffer;
-EX vec3_t vup, base_vup;
-EX vec3_t vpn, base_vpn;
-EX vec3_t vright, base_vright;
-EX vec3_t r_origin;
+EX bool r_dowarp;
 EX refdef_t r_refdef;
-EX f32 xcenter, ycenter;
-EX f32 xscale, yscale;
-EX f32 xscaleinv, yscaleinv;
-EX f32 xscaleshrink, yscaleshrink;
-EX f32 aliasxscale, aliasyscale, aliasxcenter, aliasycenter;
-EX s32 screenwidth;
-EX f32 pixelAspect;
-EX mplane_t screenedge[4];
-EX u32 r_visframecount;
 EX u32 r_framecount;
-EX s32 r_polycount;
-EX s32 r_drawnpolycount;
 EX s32 r_wholepolycount;
 EX s32 modcount;
-EX s32 *pfrustum_indexes[4];
-EX mleaf_t *r_viewleaf, *r_oldviewleaf;
 EX texture_t *r_notexture_mip;
-EX f32 r_aliastransition, r_resfudge;
-EX s32 d_lightstylevalue[256];
-EX f32 dp_time1, dp_time2, db_time1, db_time2, rw_time1, rw_time2;
-EX f32 se_time1, se_time2, de_time1, de_time2, dv_time1, dv_time2;
 EX s32 colored_aliaslight;
-
-EX void M_Init ();                                                     // menu.h
-EX void M_Keydown (s32 key);
-EX void M_Draw ();
-EX void M_ToggleMenu_f ();
-
-EX s32 vgatext_main(SDL_Window *window, Uint16 *screen);            // vgatext.h
-
-EX void V_Init ();                                                     // view.h
-EX void V_RenderView ();
-EX f32 V_CalcRoll (vec3_t angles, vec3_t velocity);
-EX void V_UpdatePalette ();
-
-EX void IN_Init ();                                                   // input.h
-EX void IN_Shutdown ();
-EX void IN_Move (usercmd_t *cmd);
-EX void Sys_SendKeyEvents ();
-
-EX void CRC_Init(u16 *crcvalue);                                        // crc.h
-EX void CRC_ProcessByte(u16 *crcvalue, u8 data);
-EX u16 CRC_Block (const u8 *start, s32 count); //johnfitz -- texture crc
-
+void M_Init();                                                         // menu.h
+void M_Keydown(s32 key);
+void M_Draw();
+void M_ToggleMenu_f();
+s32 vgatext_main(SDL_Window *window, Uint16 *screen);               // vgatext.h
+void V_Init();                                                         // view.h
+f32 V_CalcRoll(vec3_t angles, vec3_t velocity);
+void IN_Init();                                                       // input.h
+void IN_Shutdown();
+void IN_Move(usercmd_t *cmd);
+void Sys_SendKeyEvents();
+void CRC_Init(u16 *crcvalue);                                           // crc.h
+void CRC_ProcessByte(u16 *crcvalue, u8 data);
+u16 CRC_Block(const u8 *start, s32 count);
 EX keydest_t key_dest;                                                 // keys.h
-EX s8 *keybindings[256];
-EX s32 key_count; // incremented every key event
-EX s32 key_lastpress;
-EX void Key_Event(s32 key, bool down);
-EX void Key_Init();
-EX void Key_WriteBindings(FILE *f);
-EX void Key_SetBinding(s32 keynum, s8 *binding);
-
-EX s32 sb_lines; // scan lines to draw                                 // sbar.h
-EX void Sbar_Init();
-EX void Sbar_Changed();
-EX void Sbar_Draw(); // called every frame by screen
-EX void Sbar_IntermissionOverlay();
-EX void Sbar_FinaleOverlay();
-EX void Sbar_CalcPos(); // call on each sbar size change
-
-EX s32 Sys_FileType (const s8 *path); // File IO                        // sys.h
-EX s32 Sys_FileOpenRead (const s8 *path, s32 *hndl);
-EX s32 Sys_FileOpenWrite (const s8 *path);
-EX void Sys_FileClose (s32 handle);
-EX void Sys_FileSeek (s32 handle, s32 position);
-EX s32 Sys_FileRead (s32 handle, void *dest, s32 count);
-EX s32 Sys_FileWrite (s32 handle, const void *data, s32 count);
-EX s32 Sys_FileTime (const s8 *path);
-EX void Sys_mkdir (const s8 *path);
-EX void Sys_Error (const s8 *error, ...); // System IO
-EX void Sys_Printf (const s8 *fmt, ...);
-EX void Sys_Quit ();
-EX f64 Sys_DoubleTime ();
-
-s32 Loop_Init ();                                                  // net_loop.h
-void Loop_Listen (bool state);
-void Loop_SearchForHosts (bool xmit);
-qsocket_t *Loop_Connect (const s8 *host);
-qsocket_t *Loop_CheckNewConnections ();
-s32 Loop_GetMessage (qsocket_t *sock);
-s32 Loop_SendMessage (qsocket_t *sock, sizebuf_t *data);
-s32 Loop_SendUnreliableMessage (qsocket_t *sock, sizebuf_t *data);
-bool Loop_CanSendMessage (qsocket_t *sock);
-bool Loop_CanSendUnreliableMessage (qsocket_t *sock);
-void Loop_Close (qsocket_t *sock);
-void Loop_Shutdown ();
-
+void Key_Event(s32 key, bool down);
+void Key_Init();
+void Key_WriteBindings(FILE *f);
+void Key_SetBinding(s32 keynum, s8 *binding);
+EX s32 sb_lines;                                                       // sbar.h
+void Sbar_Init();
+void Sbar_Changed();
+void Sbar_Draw();
+void Sbar_IntermissionOverlay();
+void Sbar_FinaleOverlay();
+void Sbar_CalcPos();
+s32 Sys_FileType(const s8 *path);                                       // sys.h
+s32 Sys_FileOpenRead(const s8 *path, s32 *hndl);
+s32 Sys_FileOpenWrite(const s8 *path);
+void Sys_FileClose(s32 handle);
+void Sys_FileSeek(s32 handle, s32 position);
+s32 Sys_FileRead(s32 handle, void *dest, s32 count);
+s32 Sys_FileWrite(s32 handle, const void *data, s32 count);
+s32 Sys_FileTime(const s8 *path);
+void Sys_mkdir(const s8 *path);
+void Sys_Error(const s8 *error, ...);
+void Sys_Printf(const s8 *fmt, ...);
+void Sys_Quit();
+f64 Sys_DoubleTime();
+s32 Loop_Init();                                                   // net_loop.h
+void Loop_Listen(bool state);
+void Loop_SearchForHosts(bool xmit);
+qsocket_t *Loop_Connect(const s8 *host);
+qsocket_t *Loop_CheckNewConnections();
+s32 Loop_GetMessage(qsocket_t *sock);
+s32 Loop_SendMessage(qsocket_t *sock, sizebuf_t *data);
+s32 Loop_SendUnreliableMessage(qsocket_t *sock, sizebuf_t *data);
+bool Loop_CanSendMessage(qsocket_t *sock);
+bool Loop_CanSendUnreliableMessage(qsocket_t *sock);
+void Loop_Close(qsocket_t *sock);
+void Loop_Shutdown();
 EX qsocket_t *net_activeSockets;                                   // net_defs.h
 EX qsocket_t *net_freeSockets;
 EX net_landriver_t net_landrivers[];
@@ -203,81 +121,68 @@ EX s32 messagesSent;
 EX s32 messagesReceived;
 EX s32 unreliableMessagesSent;
 EX s32 unreliableMessagesReceived;
-EX s32 hostCacheCount;
 EX hostcache_t hostcache[HOSTCACHESIZE];
-qsocket_t *NET_NewQSocket ();
+qsocket_t *NET_NewQSocket();
 void NET_FreeQSocket(qsocket_t *);
 f64 SetNetTime();
 void SchedulePollProcedure(PollProcedure *pp, f64 timeOffset);
-
-extern s32 con_totallines;                                          // console.h
-extern s32 con_backscroll;
-extern bool con_forcedup; // because no entities to refresh
-extern bool con_initialized;
-extern s32 con_notifylines; // scan lines to clear for notify lines
-void Con_CheckResize (void);
-void Con_Init (void);
-void Con_DrawConsole (s32 lines, bool drawinput);
-void Con_Print (s8 *txt);
-void Con_Printf (const s8 *fmt, ...);
-void Con_DPrintf (s8 *fmt, ...);
-void Con_SafePrintf (s8 *fmt, ...);
-void Con_Clear_f (void);
-void Con_DrawNotify (void);
-void Con_ClearNotify (void);
-void Con_ToggleConsole_f (void);
-
-s32 Datagram_Init ();                                              // net_dgrm.h
-void Datagram_Listen (bool state);
-void Datagram_SearchForHosts (bool xmit);
-qsocket_t *Datagram_Connect (const s8 *host);
-qsocket_t *Datagram_CheckNewConnections ();
-s32 Datagram_GetMessage (qsocket_t *sock);
-s32 Datagram_SendMessage (qsocket_t *sock, sizebuf_t *data);
-s32 Datagram_SendUnreliableMessage (qsocket_t *sock, sizebuf_t *data);
-bool Datagram_CanSendMessage (qsocket_t *sock);
-bool Datagram_CanSendUnreliableMessage (qsocket_t *sock);
-void Datagram_Close (qsocket_t *sock);
-void Datagram_Shutdown ();
-
-extern qpic_t *draw_disc; // also used on sbar                         // draw.h
-void Draw_Init ();
-void Draw_CharacterScaled (s32 x, s32 y, s32 num, s32 scale);
-void Draw_PicScaled (s32 x, s32 y, qpic_t *pic, s32 scale);
+void Con_CheckResize();                                             // console.h
+void Con_Init();
+void Con_DrawConsole(s32 lines, bool drawinput);
+void Con_Print(s8 *txt);
+void Con_Printf(const s8 *fmt, ...);
+void Con_DPrintf(s8 *fmt, ...);
+void Con_SafePrintf(s8 *fmt, ...);
+void Con_Clear_f();
+void Con_DrawNotify();
+void Con_ClearNotify();
+void Con_ToggleConsole_f();
+s32 Datagram_Init();                                               // net_dgrm.h
+void Datagram_Listen(bool state);
+void Datagram_SearchForHosts(bool xmit);
+qsocket_t *Datagram_Connect(const s8 *host);
+qsocket_t *Datagram_CheckNewConnections();
+s32 Datagram_GetMessage(qsocket_t *sock);
+s32 Datagram_SendMessage(qsocket_t *sock, sizebuf_t *data);
+s32 Datagram_SendUnreliableMessage(qsocket_t *sock, sizebuf_t *data);
+bool Datagram_CanSendMessage(qsocket_t *sock);
+bool Datagram_CanSendUnreliableMessage(qsocket_t *sock);
+void Datagram_Close(qsocket_t *sock);
+void Datagram_Shutdown();
+EX qpic_t *draw_disc;                                                  // draw.h
+void Draw_Init();
+void Draw_CharacterScaled(s32 x, s32 y, s32 num, s32 scale);
+void Draw_PicScaled(s32 x, s32 y, qpic_t *pic, s32 scale);
 void Draw_PicScaledPartial(s32 x,s32 y,s32 l,s32 t,s32 w,s32 h,qpic_t *p,s32 s);
-void Draw_TransPicScaled (s32 x, s32 y, qpic_t *pic, s32 scale);
+void Draw_TransPicScaled(s32 x, s32 y, qpic_t *pic, s32 scale);
 void Draw_TransPicTranslateScaled(s32 x, s32 y, qpic_t *p, u8 *tl, s32 scale);
-void Draw_ConsoleBackground (s32 lines);
-void Draw_TileClear (s32 x, s32 y, s32 w, s32 h);
-void Draw_Fill (s32 x, s32 y, s32 w, s32 h, s32 c);
-void Draw_FadeScreen ();
-void Draw_StringScaled (s32 x, s32 y, s8 *str, s32 scale);
-qpic_t *Draw_PicFromWad (s8 *name);
-qpic_t *Draw_CachePic (s8 *path);
-
-void Mod_Init ();                                          // model.h
-void Mod_ClearAll ();
-void Mod_ResetAll (); // for gamedir changes (Host_Game_f)
-model_t *Mod_ForName (const s8 *name, bool crash);
-void *Mod_Extradata (model_t *mod); // handles caching
-void Mod_TouchModel (const s8 *name);
-mleaf_t *Mod_PointInLeaf (vec3_t p, model_t *model);
-u8 *Mod_LeafPVS (mleaf_t *leaf, model_t *model);
-
-void SCR_Init ();                                                    // screen.h
-void SCR_UpdateScreen ();
-void SCR_CenterPrint (const s8 *str);
-void SCR_BeginLoadingPlaque ();
-void SCR_EndLoadingPlaque ();
-s32 SCR_ModalMessage (s8 *text);
-extern f32 scr_con_current;
-extern s32 sb_lines;
-extern u32 scr_fullupdate; // set to 0 to force full redraw
-extern u32 clearnotify; // set to 0 whenever notify text is drawn
-extern bool scr_disabled_for_loading;
-extern f32 scr_centertime_off;
-extern hudstyle_t hudstyle;
-
+void Draw_ConsoleBackground(s32 lines);
+void Draw_TileClear(s32 x, s32 y, s32 w, s32 h);
+void Draw_Fill(s32 x, s32 y, s32 w, s32 h, s32 c);
+void Draw_FadeScreen();
+void Draw_StringScaled(s32 x, s32 y, s8 *str, s32 scale);
+qpic_t *Draw_PicFromWad(s8 *name);
+qpic_t *Draw_CachePic(s8 *path);
+void Mod_Init();                                                      // model.h
+void Mod_ClearAll();
+void Mod_ResetAll();
+model_t *Mod_ForName(const s8 *name, bool crash);
+void *Mod_Extradata(model_t *mod);
+void Mod_TouchModel(const s8 *name);
+mleaf_t *Mod_PointInLeaf(vec3_t p, model_t *model);
+u8 *Mod_LeafPVS(mleaf_t *leaf, model_t *model);
+void SCR_Init();                                                     // screen.h
+void SCR_UpdateScreen();
+void SCR_CenterPrint(const s8 *str);
+void SCR_BeginLoadingPlaque();
+void SCR_EndLoadingPlaque();
+s32 SCR_ModalMessage(s8 *text);
+EX f32 scr_con_current;
+EX u32 scr_fullupdate;
+EX u32 clearnotify;
+EX bool scr_disabled_for_loading;
+EX f32 scr_centertime_off;
+EX hudstyle_t hudstyle;
 sys_socket_t UDP_Init();                                            // net_udp.h
 void UDP_Shutdown();
 void UDP_Listen(bool state);
@@ -296,15 +201,12 @@ s32 UDP_GetAddrFromName(const s8 *name, struct qsockaddr *addr);
 s32 UDP_AddrCompare(struct qsockaddr *addr1, struct qsockaddr *addr2);
 s32 UDP_GetSocketPort(struct qsockaddr *addr);
 s32 UDP_SetSocketPort(struct qsockaddr *addr, s32 port);
-
-void W_LoadWadFile (void); //johnfitz -- filename is now hard-coded     // wad.h
-void *W_GetLumpName (const s8 *name);
-wad_t *W_LoadWadList (const s8 *names);
-lumpinfo_t *W_GetLumpinfoList (wad_t *wads, const s8 *name, wad_t **out_wad);
-void SwapPic (qpic_t *pic);
-
-extern vec3_t r_origin, vpn, vright, vup;                           // render.h
-extern bool r_cache_thrash;
+void W_LoadWadFile();                                                   // wad.h
+void *W_GetLumpName(const s8 *name);
+wad_t *W_LoadWadList(const s8 *names);
+lumpinfo_t *W_GetLumpinfoList(wad_t *wads, const s8 *name, wad_t **out_wad);
+void SwapPic(qpic_t *pic);
+EX vec3_t r_origin, vpn, vright, vup;                                // render.h
 void R_Init();
 void R_InitTextures();
 void R_RenderView();
@@ -327,37 +229,33 @@ s32 D_SurfaceCacheForRes(s32 width, s32 height);
 void D_FlushCaches();
 void D_InitCaches(void *buffer, s32 size);
 void R_SetVrect(vrect_t *pvrect, vrect_t *pvrectin, s32 lineadj);
-
-extern f32 r_aliasuvscale;                                          // d_iface.h
-extern s32 r_pixbytes;
-extern affinetridesc_t r_affinetridesc;
-extern spritedesc_t r_spritedesc;
-extern vec3_t r_pright, r_pup, r_ppn;
-extern void *acolormap;
-extern drawsurf_t r_drawsurf;
-extern f32 skyspeed, skyspeed2;
-extern f32 skytime;
-extern s32 c_surf;
-extern vrect_t scr_vrect;
-extern u8 *r_warpbuffer;
-extern u8 *r_skysource;
+EX f32 r_aliasuvscale;                                              // d_iface.h
+EX s32 r_pixbytes;
+EX affinetridesc_t r_affinetridesc;
+EX spritedesc_t r_spritedesc;
+EX void *acolormap;
+EX drawsurf_t r_drawsurf;
+EX f32 skyspeed, skyspeed2;
+EX f32 skytime;
+EX s32 c_surf;
+EX vrect_t scr_vrect;
+EX u8 *r_warpbuffer;
+EX u8 *r_skysource;
 void D_PolysetDraw();
 void D_PolysetDrawFinalVerts(finalvert_t *fv, s32 numverts);
 void D_DrawParticle(particle_t *pparticle);
 void D_DrawSprite();
-void D_DrawSurfaces();
 void D_Init();
 void D_ViewChanged();
 void D_SetupFrame();
 void D_WarpScreen();
 void R_DrawSurface();
 void D_PolysetUpdateTables();
-
-extern vec3_t vec3_origin;                                          // mathlib.h
+EX vec3_t vec3_origin;                                              // mathlib.h
 void VectorMA(vec3_t veca, f32 scale, vec3_t vecb, vec3_t vecc);
 vec_t Length(vec3_t v);
 void CrossProduct(vec3_t v1, vec3_t v2, vec3_t cross);
-f32 VectorNormalize(vec3_t v); // returns vector length
+f32 VectorNormalize(vec3_t v);
 void VectorInverse(vec3_t v);
 void VectorScale(vec3_t in, vec_t scale, vec3_t out);
 void R_ConcatRotations(f32 in1[3][3], f32 in2[3][3], f32 out[3][3]);
@@ -371,65 +269,44 @@ void VectorSubtract(const vec3_t a, const vec3_t b, vec3_t c);
 void VectorAdd(const vec3_t a, const vec3_t b, vec3_t c);
 void VectorCopy(const vec3_t a, vec3_t b);
 s32 BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, mplane_t *p);
-
-extern s32 cachewidth;                                             // r_shared.h
-extern u8 *cacheblock;
-extern s32 screenwidth;
-extern f32 pixelAspect;
-extern s32 r_drawnpolycount;
-extern s32 sintable[SIN_BUFFER_SIZE];
-extern s32 intsintable[SIN_BUFFER_SIZE];
-extern vec3_t vup, base_vup;
-extern vec3_t vpn, base_vpn;
-extern vec3_t vright, base_vright;
-extern entity_t *currententity;
-extern vec3_t modelorg, base_modelorg;
-extern f32 xcenter, ycenter;
-extern f32 xscale, yscale;
-extern f32 xscaleinv, yscaleinv;
-extern f32 xscaleshrink, yscaleshrink;
-extern s32 d_lightstylevalue[256]; // 8.8 frac of base light value
-extern s32 r_skymade;
-extern s8 skybox_name[1024];
-extern surf_t *surfaces, *surface_p, *surf_max;
-extern void TransformVector(vec3_t in, vec3_t out);
-extern void R_MakeSky();
-extern void Sky_LoadSkyBox (const s8 *name);
-extern void R_EmitSkyBox();
-
+EX s32 cachewidth;                                                 // r_shared.h
+EX u8 *cacheblock;
+EX f32 pixelAspect;
+EX s32 r_drawnpolycount;
+EX s32 sintable[SIN_BUFFER_SIZE];
+EX s32 intsintable[SIN_BUFFER_SIZE];
+EX vec3_t base_vup;
+EX vec3_t base_vpn;
+EX vec3_t base_vright;
+EX entity_t *currententity;
+EX vec3_t modelorg, base_modelorg;
+EX f32 xcenter, ycenter;
+EX f32 xscale, yscale;
+EX f32 xscaleinv, yscaleinv;
+EX f32 xscaleshrink, yscaleshrink;
+EX s32 d_lightstylevalue[256];
+EX s32 r_skymade;
+EX s8 skybox_name[1024];
+EX surf_t *surfaces, *surface_p, *surf_max;
+void TransformVector(vec3_t in, vec3_t out);
+void R_MakeSky();
+void Sky_LoadSkyBox(const s8 *name);
+void R_EmitSkyBox();
 void SV_ClearWorld();                                                 // world.h
 void SV_UnlinkEdict(edict_t *ent);
 void SV_LinkEdict(edict_t *ent, bool touch_triggers);
 s32 SV_PointContents(vec3_t p);
 edict_t *SV_TestEntityPosition(edict_t *ent);
-trace_t SV_Move(vec3_t start, vec3_t mins, vec3_t maxs,
-		vec3_t end, s32 type, edict_t *passedict);
-
-extern f32 scale_for_mip;                                         // d_local.h
-extern bool d_roverwrapped;
-extern surfcache_t *sc_rover;
-extern surfcache_t *d_initial_rover;
-extern f32 d_sdivzstepu, d_tdivzstepu, d_zistepu;
-extern f32 d_sdivzstepv, d_tdivzstepv, d_zistepv;
-extern f32 d_sdivzorigin, d_tdivzorigin, d_ziorigin;
-extern s32 sadjust, tadjust;
-extern s32 bbextents, bbextentt;
-extern s16 *d_pzbuffer;
-extern u32 d_zwidth;
-extern s32 d_scantable[MAXHEIGHT];
-extern s32 d_vrectx, d_vrecty, d_vrectright_particle, d_vrectbottom_particle;
-extern s32 d_y_aspect_shift, d_pix_min, d_pix_max, d_pix_shift;
-extern u8 *d_viewbuffer;
-extern s16 *zspantable[MAXHEIGHT];
-extern s32 d_minmip;
-extern f32 d_scalemip[3];
-extern s32 r_pass;
-extern f32 winquake_surface_liquid_alpha;
-extern u8 color_mix_lut[256][256][FOG_LUT_LEVELS];
-extern u8 fog_pal_index;
-extern s32 lmonly;
-extern u8 *litwater_base;
-extern s32 lwmark;
+trace_t SV_Move(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, s32 type, edict_t *passedict);
+EX f32 d_sdivzstepu, d_tdivzstepu, d_zistepu;                       // d_local.h
+EX f32 d_sdivzstepu, d_tdivzstepu, d_zistepu;
+EX f32 d_sdivzstepv, d_tdivzstepv, d_zistepv;
+EX f32 d_sdivzorigin, d_tdivzorigin, d_ziorigin;
+EX s16 *d_pzbuffer;
+EX u32 d_zwidth;
+EX u8 *d_viewbuffer;
+EX f32 winquake_surface_liquid_alpha;
+EX u8 fog_pal_index;
 void D_DrawSpans8(espan_t *pspans);
 void D_DrawTransSpans8(espan_t *pspans, f32 opacity);
 void D_DrawZSpans(espan_t *pspans);
@@ -437,20 +314,18 @@ void Turbulent8(espan_t *pspan, f32 opacity);
 void D_DrawSkyScans8(espan_t *pspan);
 void D_DrawSkyboxScans8(espan_t *pspans);
 surfcache_t *D_CacheSurface(msurface_t *surface, s32 miplevel);
-extern s32 dither_pat;
-extern s32 D_Dither(u8 *pos);
-
-extern s32 DEFAULTnet_hostport;                                         // net.h
-extern s32 net_hostport;
-extern f64 net_time;
-extern sizebuf_t net_message;
-extern s32 net_activeconnections;
-extern bool slistInProgress;
-extern bool slistSilent;
-extern bool slistLocal;
-extern s32 hostCacheCount;
-extern bool tcpipAvailable;
-extern s8 my_tcpip_address[NET_NAMELEN];
+s32 D_Dither(u8 *pos);
+EX s32 DEFAULTnet_hostport;                                             // net.h
+EX s32 net_hostport;
+EX f64 net_time;
+EX sizebuf_t net_message;
+EX s32 net_activeconnections;
+EX bool slistInProgress;
+EX bool slistSilent;
+EX bool slistLocal;
+EX s32 hostCacheCount;
+EX bool tcpipAvailable;
+EX s8 my_tcpip_address[NET_NAMELEN];
 void NET_Init();
 void NET_Shutdown();
 struct qsocket_s *NET_CheckNewConnections();
@@ -463,117 +338,102 @@ s32 NET_SendToAll(sizebuf_t *data, f64 blocktime);
 void NET_Close(struct qsocket_s *sock);
 void NET_Poll();
 void NET_Slist_f();
-
-extern dprograms_t *progs;                                            // progs.h
-extern dfunction_t *pr_functions;
-extern dstatement_t *pr_statements;
-extern globalvars_t *pr_global_struct;
-extern f32 *pr_globals; // same as pr_global_struct
-extern s32 pr_edict_size; // in bytes
-void PR_Init (void);
-void PR_ExecuteProgram (func_t fnum);
-void PR_LoadProgs (void);
-const s8 *PR_GetString (s32 num);
-s32 PR_SetEngineString (const s8 *s);
-s32 PR_AllocString (s32 bufferlength, s8 **ptr);
-void PR_Profile_f (void);
-edict_t *ED_Alloc (void);
-void ED_Free (edict_t *ed);
-void ED_Print (edict_t *ed);
-void ED_Write (FILE *f, edict_t *ed);
-const s8 *ED_ParseEdict (const s8 *data, edict_t *ent);
-void ED_WriteGlobals (FILE *f);
-const s8 *ED_ParseGlobals (const s8 *data);
-void ED_LoadFromFile (const s8 *data);
+void PR_Init();                                                       // progs.h
+void PR_ExecuteProgram(func_t fnum);
+void PR_LoadProgs();
+const s8 *PR_GetString(s32 num);
+s32 PR_SetEngineString(const s8 *s);
+s32 PR_AllocString(s32 bufferlength, s8 **ptr);
+void PR_Profile_f();
+edict_t *ED_Alloc();
+void ED_Free(edict_t *ed);
+void ED_Print(edict_t *ed);
+void ED_Write(FILE *f, edict_t *ed);
+const s8 *ED_ParseEdict(const s8 *data, edict_t *ent);
+void ED_WriteGlobals(FILE *f);
+const s8 *ED_ParseGlobals(const s8 *data);
+void ED_LoadFromFile(const s8 *data);
 edict_t *EDICT_NUM(s32);
 s32 NUM_FOR_EDICT(edict_t*);
-extern const s32 type_size[NUM_TYPE_SIZES];
-extern const builtin_t *pr_builtins;
-extern const s32 pr_numbuiltins;
-extern s32 pr_argc;
-extern bool pr_trace;
-extern dfunction_t *pr_xfunction;
-extern u16 pr_crc;
-void PR_RunError (const s8 *error, ...);
-void ED_PrintEdicts (void);
-void ED_PrintNum (s32 ent);
+EX const s32 type_size[NUM_TYPE_SIZES];
+EX const builtin_t *pr_builtins;
+EX const s32 pr_numbuiltins;
+EX s32 pr_argc;
+EX bool pr_trace;
+EX dfunction_t *pr_xfunction;
+void PR_RunError(const s8 *error, ...);
+void ED_PrintEdicts();
+void ED_PrintNum(s32 ent);
 eval_t *GetEdictFieldValue(edict_t *ed, const s8 *field);
-
-void Cvar_RegisterVariable (cvar_t *variable);                         // cvar.h
-void Cvar_SetCallback (cvar_t *var, cvarcallback_t func);
-void Cvar_Set (const s8 *var_name, const s8 *value);
-void Cvar_SetValue (const s8 *var_name, const f32 value);
-void Cvar_SetQuick (cvar_t *var, const s8 *value);
-f32 Cvar_VariableValue (const s8 *var_name);
-const s8 *Cvar_VariableString (const s8 *var_name);
-bool Cvar_Command (void);
-void Cvar_WriteVariables (FILE *f);
-cvar_t *Cvar_FindVar (const s8 *var_name);
-const s8 *Cvar_CompleteVariable (const s8 *partial);
-
-void Memory_Init (void *buf, s32 size);                                // zone.h
-void Z_Free (void *ptr);
-void *Z_Malloc (s32 size); // returns 0 filled memory
-void *Z_Realloc (void *ptr, s32 size);
-s8 *Z_Strdup (const s8 *s);
-void *Hunk_Alloc (s32 size); // returns 0 filled memory
-void *Hunk_AllocName (s32 size, const s8 *name);
-void *Hunk_HighAllocName (s32 size, const s8 *name);
-s32 Hunk_LowMark (void);
-void Hunk_FreeToLowMark (s32 mark);
-s32 Hunk_HighMark (void);
-void Hunk_FreeToHighMark (s32 mark);
-void *Hunk_TempAlloc (s32 size);
-void Hunk_Check (void);
-void Cache_Flush (void);
-void *Cache_Check (cache_user_t *c);
-void *Cache_Alloc (cache_user_t *c, s32 size, const s8 *name);
-void Cache_Report (void);
-
-extern cmd_source_t cmd_source;                                         // cmd.h
-void Cmd_Init ();
-void Cbuf_Init ();
-void Cbuf_AddText (const s8 *text);
-void Cbuf_InsertText (s8 *text);
-void Cbuf_Execute ();
-void Cmd_AddCommand (s8 *cmd_name, xcommand_t function);
-bool Cmd_Exists (const s8 *cmd_name);
-s8 *Cmd_CompleteCommand (s8 *partial);
-s32 Cmd_Argc ();
-s8 *Cmd_Argv (s32 arg);
-s8 *Cmd_Args ();
-void Cmd_ExecuteString (const s8 *text, cmd_source_t src);
-void Cmd_ForwardToServer ();
-
-void S_Init (void);                                                 // q_sound.h
-void S_Shutdown (void);
-void S_StartSound (s32 entnum, s32 entchannel, sfx_t *sfx, vec3_t origin, f32 fvol, f32 attenuation);
-void S_StaticSound (sfx_t *sfx, vec3_t origin, f32 vol, f32 attenuation);
-void S_StopSound (s32 entnum, s32 entchannel);
-void S_StopAllSounds(bool clear);
-void S_ClearBuffer (void);
-void S_Update (vec3_t origin, vec3_t forward, vec3_t right, vec3_t up);
-sfx_t *S_PrecacheSound (const s8 *sample);
-void S_TouchSound (const s8 *sample);
-void S_PaintChannels (s32 endtime);
+void Cvar_SetCallback(cvar_t *var, cvarcallback_t func);               // cvar.h
+void Cvar_Set(const s8 *var_name, const s8 *value);
+void Cvar_SetValue(const s8 *var_name, const f32 value);
+void Cvar_SetQuick(cvar_t *var, const s8 *value);
+f32 Cvar_VariableValue(const s8 *var_name);
+const s8 *Cvar_VariableString(const s8 *var_name);
+bool Cvar_Command();
+void Cvar_WriteVariables(FILE *f);
+cvar_t *Cvar_FindVar(const s8 *var_name);
+const s8 *Cvar_CompleteVariable(const s8 *partial);
+void Memory_Init(void *buf, s32 size);                                 // zone.h
+void Z_Free(void *ptr);
+void *Z_Malloc(s32 size);
+void *Z_Realloc(void *ptr, s32 size);
+s8 *Z_Strdup(const s8 *s);
+void *Hunk_Alloc(s32 size);
+void *Hunk_AllocName(s32 size, const s8 *name);
+void *Hunk_HighAllocName(s32 size, const s8 *name);
+s32 Hunk_LowMark();
+void Hunk_FreeToLowMark(s32 mark);
+s32 Hunk_HighMark();
+void Hunk_FreeToHighMark(s32 mark);
+void *Hunk_TempAlloc(s32 size);
+void Hunk_Check();
+void Cache_Flush();
+void *Cache_Check(cache_user_t *c);
+void *Cache_Alloc(cache_user_t *c, s32 size, const s8 *name);
+void Cache_Report();
+EX cmd_source_t cmd_source;                                             // cmd.h
+void Cmd_Init();
+void Cbuf_Init();
+void Cbuf_AddText(const s8 *text);
+void Cbuf_InsertText(s8 *text);
+void Cbuf_Execute();
+void Cmd_AddCommand(s8 *cmd_name, xcommand_t function);
+bool Cmd_Exists(const s8 *cmd_name);
+s8 *Cmd_CompleteCommand(s8 *partial);
+s32 Cmd_Argc();
+s8 *Cmd_Argv(s32 arg);
+s8 *Cmd_Args();
+void Cmd_ExecuteString(const s8 *text, cmd_source_t src);
+void Cmd_ForwardToServer();
+void S_Init();                                                      // q_sound.h
+void S_Shutdown();
+void S_StartSound(s32 entnum, s32 entchannel, sfx_t *sfx, vec3_t origin, f32 fvol, f32 attenuation);
+void S_StaticSound(sfx_t *sfx, vec3_t origin, f32 vol, f32 attenuation);
+void S_StopSound(s32 entnum, s32 entchannel);
+void S_ClearBuffer();
+void S_Update(vec3_t origin, vec3_t forward, vec3_t right, vec3_t up);
+sfx_t *S_PrecacheSound(const s8 *sample);
+void S_TouchSound(const s8 *sample);
+void S_PaintChannels(s32 endtime);
 bool SNDDMA_Init(dma_t *dma);
-s32 SNDDMA_GetDMAPos(void);
-void SNDDMA_Shutdown(void);
-void SNDDMA_LockBuffer(void);
-void SNDDMA_Submit(void);
-void SNDDMA_BlockSound(void);
-void SNDDMA_UnblockSound(void);
-extern channel_t snd_channels[MAX_CHANNELS];
-extern dma_t *shm;
-extern s32 total_channels;
-extern s32 paintedtime;
-extern s32 s_rawend;
-extern portable_samplepair_t s_rawsamples[MAX_RAW_SAMPLES];
-void S_LocalSound (const s8 *name);
-sfxcache_t *S_LoadSound (sfx_t *s);
-void SND_InitScaletable (void);
-void S_StopAllSounds (bool clear);
-
+s32 SNDDMA_GetDMAPos();
+void SNDDMA_Shutdown();
+void SNDDMA_LockBuffer();
+void SNDDMA_Submit();
+void SNDDMA_BlockSound();
+void SNDDMA_UnblockSound();
+EX channel_t snd_channels[MAX_CHANNELS];
+EX dma_t *shm;
+EX s32 total_channels;
+EX s32 paintedtime;
+EX s32 s_rawend;
+EX portable_samplepair_t s_rawsamples[MAX_RAW_SAMPLES];
+void S_LocalSound(const s8 *name);
+sfxcache_t *S_LoadSound(sfx_t *s);
+void SND_InitScaletable();
+void S_StopAllSounds(bool clear);
 EX bool pr_alpha_supported;                                        // pr_edict.c
 EX s32 pr_effects_mask;
 EX dprograms_t *progs;
@@ -583,50 +443,46 @@ EX globalvars_t *pr_global_struct;
 EX f32 *pr_globals;
 EX s32 pr_edict_size;
 EX u16 pr_crc;
-
-extern clipplane_t view_clipplanes[4];                              // r_local.h
-extern mplane_t screenedge[4];
-extern vec3_t r_origin;
-extern vec3_t r_entorigin;
-extern u32 r_visframecount;
-extern bool insubmodel; // current entity info
-extern s32 c_faceclip;
-extern s32 r_polycount;
-extern s32 *pfrustum_indexes[4];
-extern s32 sadjust, tadjust;
-extern s32 bbextents, bbextentt;
-extern s32 r_currentkey;
-extern s32 r_currentbkey;
-extern s32 numverts;
-extern mtriangle_t *ptriangles;
-extern s32 numtriangles;
-extern finalvert_t *pfinalverts;
-extern auxvert_t *pauxverts;
-extern s32 r_amodels_drawn;
-extern edge_t *auxedges;
-extern s32 r_numallocatededges;
-extern edge_t *r_edges, *edge_p, *edge_max;
-extern edge_t *newedges[MAXHEIGHT];
-extern edge_t *removeedges[MAXHEIGHT];
-extern s32 screenwidth;
-extern f32 aliasxscale, aliasyscale, aliasxcenter, aliasycenter;
-extern f32 r_aliastransition, r_resfudge;
-extern s32 r_outofsurfaces;
-extern s32 r_outofedges;
-extern mvertex_t *r_pcurrentvertbase;
-extern f32 dp_time1, dp_time2, db_time1, db_time2, rw_time1, rw_time2;
-extern f32 se_time1, se_time2, de_time1, de_time2, dv_time1, dv_time2;
-extern s32 r_maxsurfsseen, r_maxedgesseen;
-extern cshift_t cshift_water;
-extern bool r_dowarpold, r_viewchanged;
-extern mleaf_t *r_viewleaf, *r_oldviewleaf;
-extern vec3_t r_emins, r_emaxs;
-extern mnode_t *r_pefragtopnode;
-extern s32 r_clipflags;
-extern u32 r_dlightframecount;
-extern bool r_fov_greater_than_90;
-extern s32 r_pass;
-extern s32 lmonly;
+EX clipplane_t view_clipplanes[4];                                  // r_local.h
+EX mplane_t screenedge[4];
+EX vec3_t r_entorigin;
+EX u32 r_visframecount;
+EX bool insubmodel;
+EX s32 c_faceclip;
+EX s32 r_polycount;
+EX s32 *pfrustum_indexes[4];
+EX s32 sadjust, tadjust;
+EX s32 bbextents, bbextentt;
+EX s32 r_currentkey;
+EX s32 r_currentbkey;
+EX s32 numverts;
+EX mtriangle_t *ptriangles;
+EX s32 numtriangles;
+EX finalvert_t *pfinalverts;
+EX auxvert_t *pauxverts;
+EX s32 r_amodels_drawn;
+EX edge_t *auxedges;
+EX s32 r_numallocatededges;
+EX edge_t *r_edges, *edge_p, *edge_max;
+EX edge_t *newedges[MAXHEIGHT];
+EX edge_t *removeedges[MAXHEIGHT];
+EX s32 screenwidth;
+EX f32 aliasxscale, aliasyscale, aliasxcenter, aliasycenter;
+EX f32 r_aliastransition, r_resfudge;
+EX s32 r_outofsurfaces;
+EX s32 r_outofedges;
+EX mvertex_t *r_pcurrentvertbase;
+EX f32 dp_time1, dp_time2, db_time1, db_time2, rw_time1, rw_time2;
+EX f32 se_time1, se_time2, de_time1, de_time2, dv_time1, dv_time2;
+EX s32 r_maxsurfsseen, r_maxedgesseen;
+EX bool r_dowarpold, r_viewchanged;
+EX mleaf_t *r_viewleaf, *r_oldviewleaf;
+EX vec3_t r_emins, r_emaxs;
+EX mnode_t *r_pefragtopnode;
+EX s32 r_clipflags;
+EX u32 r_dlightframecount;
+EX bool r_fov_greater_than_90;
+EX s32 r_pass;
 void R_DrawSprite();
 void R_RenderFace(msurface_t *fa, s32 clipflags);
 void R_RenderBmodelFace(bedge_t *pedges, msurface_t *psurf);
@@ -656,279 +512,267 @@ void R_SplitEntityOnNode2(mnode_t *node);
 void R_MarkLights(dlight_t *light, s32 bit, mnode_t *node);
 u8 rgbtoi_lab(u8 r, u8 g, u8 b);
 u8 rgbtoi(u8 r, u8 g, u8 b);
-extern void R_BuildLitLUT();
-extern f32 R_WaterAlphaForTextureType(textype_t type);
-
-extern client_state_t cl;                                            // client.h
-extern efrag_t cl_efrags[MAX_EFRAGS];
-extern entity_t cl_entities[MAX_EDICTS];
-extern entity_t cl_static_entities[MAX_STATIC_ENTITIES];
-extern lightstyle_t cl_lightstyle[MAX_LIGHTSTYLES];
-extern dlight_t cl_dlights[MAX_DLIGHTS];
-extern entity_t cl_temp_entities[MAX_TEMP_ENTITIES];
-extern beam_t cl_beams[MAX_BEAMS];
-dlight_t *CL_AllocDlight (s32 key);
-void CL_DecayLights (void);
-void CL_Init (void);
-void CL_EstablishConnection (s8 *host);
-void CL_Signon1 (void);
-void CL_Signon2 (void);
-void CL_Signon3 (void);
-void CL_Signon4 (void);
-void CL_Disconnect (void);
-void CL_Disconnect_f (void);
-void CL_NextDemo (void);
-extern s32 cl_numvisedicts;
-extern entity_t *cl_visedicts[MAX_VISEDICTS];
-extern kbutton_t in_mlook, in_klook;
-extern kbutton_t in_strafe;
-extern kbutton_t in_speed;
-void CL_InitInput (void);
-void CL_SendCmd (void);
-void CL_SendMove (const usercmd_t *cmd);
-void CL_ParseTEnt (void);
-void CL_UpdateTEnts (void);
-void CL_ClearState (void);
-s32 CL_ReadFromServer (void);
-void CL_WriteToServer (usercmd_t *cmd);
-void CL_BaseMove (usercmd_t *cmd);
-f32 CL_KeyState (kbutton_t *key);
-s8 *Key_KeynumToString (s32 keynum);
-void CL_StopPlayback (void);
-s32 CL_GetMessage (void);
-void CL_Stop_f (void);
-void CL_Record_f (void);
-void CL_PlayDemo_f (void);
-void CL_TimeDemo_f (void);
-void CL_ParseServerMessage (void);
-void CL_NewTranslation (s32 slot);
-void V_StartPitchDrift (void);
-void V_StopPitchDrift (void);
-void V_RenderView (void);
-void V_UpdatePalette (void);
-void V_Register (void);
-void V_ParseDamage (void);
-void V_SetContentsColor (s32 contents);
-void CL_InitTEnts (void);
-void CL_SignonReply (void);
-
-extern server_static_t svs; // persistant server info                // server.h
-extern server_t sv; // local server
-extern client_t *host_client;
-extern edict_t *sv_player;
-void SV_Init (void);
-void SV_StartParticle (vec3_t org, vec3_t dir, s32 color, s32 count);
-void SV_StartSound (edict_t *entity, s32 channel, const s8 *sample, s32 volume, f32 attenuation);
-void SV_LocalSound (client_t *client, const s8 *sample);
-void SV_DropClient (bool crash);
-void SV_SendClientMessages (void);
-void SV_ClearDatagram (void);
-void SV_ReserveSignonSpace (s32 numbytes);
-s32 SV_ModelIndex (const s8 *name);
-void SV_SetIdealPitch (void);
-void SV_AddUpdates (void);
-void SV_ClientThink (void);
-void SV_AddClientToServer (struct qsocket_s *ret);
-void SV_ClientPrintf (const s8 *fmt, ...);
-void SV_BroadcastPrintf (const s8 *fmt, ...);
-void SV_Physics (void);
-bool SV_CheckBottom (edict_t *ent);
-bool SV_movestep (edict_t *ent, vec3_t move, bool relink);
-void SV_WriteClientdataToMessage (edict_t *ent, sizebuf_t *msg);
-void SV_MoveToGoal (void);
-void SV_CheckForNewClients (void);
-void SV_RunClients (void);
-void SV_SaveSpawnparms (void);
-void SV_SpawnServer (const s8 *server);
-
-extern vec3_t chase_pos;                                              // chase.c
-extern vec3_t chase_angles;
-extern vec3_t chase_dest;
-extern vec3_t chase_dest_angles;
-extern void Cvar_RegisterVariable (cvar_t *variable);
-extern bool SV_RecursiveHullCheck(hull_t *hull, s32 num, f32 p1f,
-			f32 p2f, vec3_t p1, vec3_t p2, trace_t *trace);
-
-EX kbutton_t in_mlook, in_klook;                                   // cl_input.c
-EX kbutton_t in_left, in_right, in_forward, in_back;
+void R_BuildLitLUT();
+f32 R_WaterAlphaForTextureType(textype_t type);
+EX client_state_t cl;                                                // client.h
+dlight_t *CL_AllocDlight(s32 key);
+void CL_DecayLights();
+void CL_Init();
+void CL_EstablishConnection(s8 *host);
+void CL_Disconnect();
+void CL_Disconnect_f();
+void CL_NextDemo();
+EX kbutton_t in_mlook, in_klook;
+void CL_InitInput();
+void CL_SendCmd();
+void CL_SendMove(const usercmd_t *cmd);
+void CL_ParseTEnt();
+void CL_UpdateTEnts();
+void CL_ClearState();
+s32 CL_ReadFromServer();
+void CL_BaseMove(usercmd_t *cmd);
+f32 CL_KeyState(kbutton_t *key);
+s8 *Key_KeynumToString(s32 keynum);
+void CL_StopPlayback();
+s32 CL_GetMessage();
+void CL_Stop_f();
+void CL_Record_f();
+void CL_PlayDemo_f();
+void CL_TimeDemo_f();
+void CL_ParseServerMessage();
+void V_StartPitchDrift();
+void V_StopPitchDrift();
+void V_RenderView();
+void V_UpdatePalette();
+void V_ParseDamage();
+void V_SetContentsColor(s32 contents);
+void CL_InitTEnts();
+void CL_SignonReply();
+EX server_static_t svs;                                              // server.h
+EX server_t sv;
+void SV_Init();
+void SV_StartParticle(vec3_t org, vec3_t dir, s32 color, s32 count);
+void SV_StartSound(edict_t *entity, s32 channel, const s8 *sample, s32 volume, f32 attenuation);
+void SV_LocalSound(client_t *client, const s8 *sample);
+void SV_DropClient(bool crash);
+void SV_SendClientMessages();
+void SV_ClearDatagram();
+void SV_ReserveSignonSpace(s32 numbytes);
+s32 SV_ModelIndex(const s8 *name);
+void SV_SetIdealPitch();
+void SV_ClientThink();
+void SV_ClientPrintf(const s8 *fmt, ...);
+void SV_BroadcastPrintf(const s8 *fmt, ...);
+void SV_Physics();
+bool SV_CheckBottom(edict_t *ent);
+bool SV_movestep(edict_t *ent, vec3_t move, bool relink);
+void SV_WriteClientdataToMessage(edict_t *ent, sizebuf_t *msg);
+void SV_MoveToGoal();
+void SV_CheckForNewClients();
+void SV_RunClients();
+void SV_SaveSpawnparms();
+void SV_SpawnServer(const s8 *server);
+EX vec3_t chase_angles;                                               // chase.c
+EX vec3_t chase_dest;
+void Cvar_RegisterVariable(cvar_t *variable);
+bool SV_RecursiveHullCheck(hull_t *hull, s32 num, f32 p1f, f32 p2f, vec3_t p1, vec3_t p2, trace_t *trace);
+void Chase_Init();
+void Chase_Update();
+EX kbutton_t in_left, in_right, in_forward, in_back;               // cl_input.c
 EX kbutton_t in_lookup, in_lookdown, in_moveleft, in_moveright;
 EX kbutton_t in_strafe, in_speed, in_use, in_jump, in_attack;
 EX kbutton_t in_up, in_down;
-EX void CL_AdjustAngles();
-EX void IN_MLookDown();
-
-EX f32 v_dmg_time, v_dmg_roll, v_dmg_pitch;                            // view.c
-EX vec3_t forward, right, up;
-EX cshift_t cshift_empty;
-EX cshift_t cshift_water;
-EX cshift_t cshift_slime;
-EX cshift_t cshift_lava;
-
+void CL_AdjustAngles();
+void IN_MLookDown();
 EX edict_t *sv_player;                                              // sv_user.c
 EX f32 *angles;
 EX f32 *origin;
 EX f32 *velocity;
 EX bool onground;
 EX usercmd_t cmd;
-
 EX client_static_t cls;                                             // cl_main.c
-EX client_state_t cl;
-EX efrag_t cl_efrags[MAX_EFRAGS];
 EX entity_t cl_entities[MAX_EDICTS];
-EX entity_t cl_static_entities[MAX_STATIC_ENTITIES];
 EX lightstyle_t cl_lightstyle[MAX_LIGHTSTYLES];
 EX dlight_t cl_dlights[MAX_DLIGHTS];
 EX s32 cl_numvisedicts;
 EX entity_t *cl_visedicts[MAX_VISEDICTS];
-EX void CL_AccumulateCmd();
-
-EX s32 bitcounts[16];                                              // cl_parse.c
-EX s8 *svc_strings[];
-
-EX s32 num_temp_entities;                                           // cl_tent.c
-EX entity_t cl_temp_entities[MAX_TEMP_ENTITIES];
+void CL_AccumulateCmd();
+EX entity_t cl_temp_entities[MAX_TEMP_ENTITIES];                    // cl_tent.c
 EX beam_t cl_beams[MAX_BEAMS];
-EX sfx_t *cl_sfx_wizhit;
-EX sfx_t *cl_sfx_knighthit;
-EX sfx_t *cl_sfx_tink1;
-EX sfx_t *cl_sfx_ric1;
-EX sfx_t *cl_sfx_ric2;
-EX sfx_t *cl_sfx_ric3;
-EX sfx_t *cl_sfx_r_exp3;
-
-EX cmdalias_t *cmd_alias;                                               // cmd.c
-EX s32 trashtest;
-EX s32 *trashspot;
-EX bool cmd_wait;
-EX sizebuf_t cmd_text;
-EX cmd_source_t cmd_source;
-EX cmd_function_t *cmd_functions;
-EX void Cbuf_Waited();
-
+void Cbuf_Waited();                                                     // cmd.c
 EX s32 safemode;                                                     // common.c
-EX bool fitzmode;
 EX s8 com_token[1024];
 EX s32 com_argc;
 EX s8 **com_argv;
-EX s8 com_cmdline[CMDLINE_LENGTH];
-EX bool standard_quake;
-EX bool host_bigendian;
 EX s32 msg_readcount;
 EX bool msg_badread;
-EX s32 com_filesize;
-EX s8 com_gamedir[MAX_OSPATH];
-EX s8 com_basedir[MAX_OSPATH];
-EX s32 file_from_pak;
-EX searchpath_t *com_searchpaths;
-EX searchpath_t *com_base_searchpaths;
-EX s16 (*BigShort) (s16 l);
-EX s16 (*LittleShort) (s16 l);
-EX s32 (*BigLong) (s32 l);
-EX s32 (*LittleLong) (s32 l);
-EX f32 (*BigFloat) (f32 l);
-EX f32 (*LittleFloat) (f32 l);
-
-EX bool con_forcedup; // because no entities to refresh             // console.c
-EX s32 con_totallines; // total lines in console scrollback
-EX s32 con_backscroll; // lines up from bottom to display
-EX s32 con_current; // where next message will be printed
-EX s32 con_x; // offset in current line for next print
-EX s8 *con_text;
-EX s32 con_linewidth;
-EX f32 con_cursorspeed;
-EX s32 con_vislines;
-EX bool con_debuglog;
-EX bool con_initialized;
-EX s32 con_notifylines; // scan lines to clear for notify lines
-EX f32 con_times[NUM_CON_TIMES];
 EX s8 key_lines[32][MAXCMDLINE];
 EX s32 edit_line;
 EX s32 key_linepos;
 EX bool team_message;
-EX void M_Menu_Main_f();
-
+EX s16(*BigShort) (s16 l);
+EX s16(*LittleShort) (s16 l);
+EX s32(*BigLong) (s32 l);
+EX s32(*LittleLong) (s32 l);
+EX f32(*BigFloat) (f32 l);
+EX f32(*LittleFloat) (f32 l);
+void Q_memset(void *dest, s32 fill, size_t count);
+void Q_memmove(void *dest, const void *src, size_t count);
+void Q_memcpy(void *dest, const void *src, size_t count);
+s32 Q_memcmp(const void *m1, const void *m2, size_t count);
+void Q_strcpy(s8 *dest, const s8 *src);
+void Q_strncpy(s8 *dest, const s8 *src, s32 count);
+s32 Q_strlen(const s8 *str);
+s8 *Q_strrchr(const s8 *s, s8 c);
+void Q_strcat(s8 *dest, const s8 *src);
+s32 Q_strcmp(const s8 *s1, const s8 *s2);
+s32 Q_strncmp(const s8 *s1, const s8 *s2, s32 count);
+s32 Q_atoi(const s8 *str);
+f32 Q_atof(const s8 *str);
+s32 COM_CheckParm(const s8 *parm);
+void COM_Init();
+void COM_InitArgv(s32 argc, s8 **argv);
+void COM_InitFilesystem();
+const s8 *COM_Parse(const s8 *data);
+const s8 *COM_ParseEx(const s8 *data, cpe_mode mode);
+const s8 *COM_SkipPath(const s8 *pathname);
+void COM_StripExtension(const s8 *in, s8 *out, size_t outsize);
+void COM_FileBase(const s8 *in, s8 *out, size_t outsize);
+void COM_AddExtension(s8 *path, const s8 *extension, size_t len);
+const s8 *COM_FileGetExtension(const s8 *in);
+void COM_ExtractExtension(const s8 *in, s8 *out, size_t outsize);
+void COM_CreatePath(s8 *path);
+void SZ_Alloc(sizebuf_t *buf, s32 startsize);
+void SZ_Free(sizebuf_t *buf);
+void SZ_Clear(sizebuf_t *buf);
+void *SZ_GetSpace(sizebuf_t *buf, s32 length);
+void SZ_Write(sizebuf_t *buf, const void *data, s32 length);
+void SZ_Print(sizebuf_t *buf, const s8 *data); 
+void ClearLink(link_t *l);
+void RemoveLink(link_t *l);
+void InsertLinkBefore(link_t *l, link_t *before);
+void InsertLinkAfter(link_t *l, link_t *after);
+void Vec_Grow(void **pvec, size_t element_size, size_t count);
+void Vec_Append(void **pvec,size_t element_size,const void *data,size_t count);
+void Vec_Clear(void **pvec);
+void Vec_Free(void **pvec);
+void MSG_WriteChar(sizebuf_t *sb, s32 c);
+void MSG_WriteByte(sizebuf_t *sb, s32 c);
+void MSG_WriteShort(sizebuf_t *sb, s32 c);
+void MSG_WriteLong(sizebuf_t *sb, s32 c);
+void MSG_WriteFloat(sizebuf_t *sb, f32 f);
+void MSG_WriteString(sizebuf_t *sb, const s8 *s);
+void MSG_WriteCoord(sizebuf_t *sb, f32 f, u32 flags);
+void MSG_WriteAngle(sizebuf_t *sb, f32 f, u32 flags);
+void MSG_WriteAngle16(sizebuf_t *sb, f32 f, u32 flags); 
+void MSG_BeginReading();
+s32 MSG_ReadChar();
+s32 MSG_ReadByte();
+s32 MSG_ReadShort();
+s32 MSG_ReadLong();
+f32 MSG_ReadFloat();
+const s8 *MSG_ReadString();
+f32 MSG_ReadCoord(u32 flags);
+f32 MSG_ReadAngle(u32 flags);
+f32 MSG_ReadAngle16(u32 flags); 
+s32 q_strcasecmp(const s8 * s1, const s8 * s2);
+s32 q_strncasecmp(const s8 *s1, const s8 *s2, size_t n);
+s8 *q_strcasestr(const s8 *haystack, const s8 *needle);
+s8 *q_strlwr(s8 *str);
+s8 *q_strupr(s8 *str);
+s8 *q_strdup(const s8 *str);
+s32 q_snprintf(s8 *str, size_t size, const s8 *format, ...);
+s32 q_vsnprintf(s8 *str, size_t size, const s8 *format, va_list args);
+s8 *va(const s8 *format, ...);
+void LOC_Init();
+const s8* LOC_GetString(const s8 *key);
+bool LOC_HasPlaceholders(const s8 *str);
+size_t LOC_Format(const s8*format,const s8*(*getarg_fn)(s32 idx,void*userdata),void*userdata,s8*out,size_t len);
+EX s32 com_filesize;
+EX s8 com_basedir[MAX_OSPATH];
+EX s8 com_gamedir[MAX_OSPATH];
+EX s32 file_from_pak; 
+void COM_WriteFile(const s8 *filename, const void *data, s32 len);
+s32 COM_OpenFile(const s8 *filename, s32 *handle, u32 *path_id);
+s32 COM_FOpenFile(const s8 *filename, FILE **file, u32 *path_id);
+u8 *COM_LoadStackFile(const s8 *path, void *buffer, s32 bufsize, u32 *path_id);
+u8 *COM_LoadHunkFile(const s8 *path, u32 *path_id);
+void COM_LoadCacheFile(const s8 *path, struct cache_user_s *cu, u32 *path_id);
+u8 *COM_LoadMallocFile(const s8 *path, u32 *path_id);
+size_t FS_fread(void *ptr, size_t size, size_t nmemb, fshandle_t *fh);
+s32 FS_fseek(fshandle_t *fh, s64 offset, s32 whence);
+s32 FS_ferror(fshandle_t *fh);
+s32 FS_fclose(fshandle_t *fh);
+s32 q_strlcpy(s8 *dst, const s8 *src, size_t siz);
+size_t q_strlcat(s8 *dst, const s8 *src, size_t siz);
+EX struct cvar_s registered;
+EX bool standard_quake, rogue, hipnotic;
+EX bool con_forcedup;                                               // console.c
+EX s32 con_totallines;
+EX s32 con_backscroll;
+EX bool con_initialized;
+EX s32 con_notifylines;
+void M_Menu_Main_f();
 EX f32 scale_for_mip;                                                // d_edge.c
-EX s32 vstartscan;
-EX vec3_t transformed_modelorg;
-
 EX surfcache_t *d_initial_rover;                                     // d_init.c
 EX bool d_roverwrapped;
 EX s32 d_minmip;
 EX f32 d_scalemip[NUM_MIPS - 1];
-
 EX s32 d_y_aspect_shift, d_pix_min, d_pix_max, d_pix_shift;        // d_modech.c
 EX s32 d_vrectx, d_vrecty, d_vrectright_particle, d_vrectbottom_particle;
 EX s32 d_scantable[MAXHEIGHT];
 EX s16 *zspantable[MAXHEIGHT];
-
-EX f32 surfscale;                                                    // d_surf.c
-EX bool r_cache_thrash; // set if surface cache is thrashing
-EX u64 sc_size;
-EX surfcache_t *sc_rover, *sc_base;
-EX s32 lmonly; // render lightmap only, for lit water
-
-EX cachepic_t menu_cachepics[MAX_CACHED_PICS];                         // draw.c
-EX s32 menu_numcachepics;
-EX u8 *draw_chars; // 8*8 graphic characters
-EX qpic_t *draw_disc;
-EX qpic_t *draw_backtile;
-EX s32 drawlayer;
-
+EX bool r_cache_thrash;                                              // d_surf.c
+EX surfcache_t *sc_rover;
+EX s32 lmonly;
+EX s32 drawlayer;                                                      // draw.c
 EX quakeparms_t host_parms;                                            // host.c
-EX bool host_initialized; // true if into command execution
+EX bool host_initialized;
 EX bool isDedicated;
 EX f64 host_frametime;
-EX f64 host_rawframetime;
-EX f32 host_netinterval;
-EX f64 host_time;
-EX f64 realtime; // without any filtering or bounding
-EX f64 oldrealtime; // last frame run
+EX f64 realtime;
 EX s32 host_framecount;
-EX s32 host_hunklevel;
-EX s32 minimum_memory;
-EX client_t *host_client; // current client
+EX client_t *host_client;
 EX jmp_buf host_abortserver;
 EX u8 *host_basepal;
 EX u8 *host_colormap;
-
+void Host_ClearMemory();
+void Host_InitCommands();
+void Host_Init();
+void Host_Shutdown();
+void Host_Error(s8 *error, ...);
+void Host_EndGame(s8 *message, ...);
+void Host_Frame(f32 time);
+void Host_Quit_f();
+void Host_ClientCommands(s8 *fmt, ...);
+void Host_ShutdownServer(bool crash);
+f64 Host_GetFrameInterval();
 EX s32 current_skill;                                              // host_cmd.c
 EX bool noclip_anglehack;
-EX void M_Menu_Quit_f();
-
-EX s8 key_lines[32][MAXCMDLINE];                                       // keys.c
-EX s32 key_linepos;
-EX s32 key_lastpress;
-EX s32 edit_line;
-EX keydest_t key_dest;
-EX s32 key_count; // incremented every key event
+void M_Menu_Quit_f();
+EX s32 key_lastpress;                                                  // keys.c
+EX s32 key_count;
 EX s8 *keybindings[256];
 EX s8 chat_buffer[32];
-EX bool team_message;
-
 EX s32 dither_pat;                                                   // d_scan.c
 EX s32 lwmark;
 EX u8 *litwater_base;
-
-EX void R_SetWateralpha_f(cvar_t *var);                              // r_misc.c
-EX void R_SetLavaalpha_f(cvar_t *var);
-EX void R_SetTelealpha_f(cvar_t *var);
-EX void R_SetSlimealpha_f(cvar_t *var);
-EX void R_ParseWorldspawn();
-
-EX void R_InitSkyBox();                                               // r_sky.c
-EX void Sky_NewMap();
-EX void Sky_Init();
-
-EX bool nameInList(const s8 *list, const s8 *name);                   // model.c
-EX u8 *SV_FatPVS (vec3_t org, model_t *worldmodel);
-
+void R_SetWateralpha_f(cvar_t *var);                                 // r_misc.c
+void R_SetLavaalpha_f(cvar_t *var);
+void R_SetTelealpha_f(cvar_t *var);
+void R_SetSlimealpha_f(cvar_t *var);
+void R_ParseWorldspawn();
+void R_InitSkyBox();                                                  // r_sky.c
+void Sky_NewMap();
+void Sky_Init();
 EX f32 cur_ent_alpha;                                              // d_polyse.c
 EX sspan_t spans[MAXHEIGHT + 1];                                   // d_sprite.c
 EX vec3_t lightcolor;                                               // r_light.c
 EX f32 r_avertexnormals[NUMVERTEXNORMALS][3];                       // r_alias.c
 EX vec3_t r_pright, r_pup, r_ppn;                                    // r_part.c
 EX u8 r_skypixels[6][SKYBOX_MAX_SIZE*SKYBOX_MAX_SIZE];                // r_sky.c
-EX u8 *Image_LoadImage (const s8 *name, s32 *width, s32 *height);     // image.c
 EX u32 sb_updates; // if >= vid.numpages, no update needed             // sbar.c
+u8 *Image_LoadImage(const s8 *name, s32 *width, s32 *height);         // image.c
+bool nameInList(const s8 *list, const s8 *name);                      // model.c
 #undef EX
 #endif

@@ -3,6 +3,10 @@
 #include "quakedef.h"
 
 static rectdesc_t r_rectdesc;
+static cachepic_t menu_cachepics[MAX_CACHED_PICS];
+static s32 menu_numcachepics;
+static u8 *draw_chars; // 8*8 graphic characters
+static qpic_t *draw_backtile;
 
 qpic_t *Draw_PicFromWad(s8 *name)
 {

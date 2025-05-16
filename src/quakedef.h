@@ -4,6 +4,5 @@
 #include "defines.h"
 #include "typedefs.h"
 #include "globals.h"
-#include "common.h"
 #include "cvarlist.h"
 #endif

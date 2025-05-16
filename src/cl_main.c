@@ -2,6 +2,8 @@
 // cl_main.c  -- client main loop
 #include "quakedef.h"
 
+static efrag_t cl_efrags[MAX_EFRAGS];
+
 void CL_ClearState()
 {
 	if (!sv.active)

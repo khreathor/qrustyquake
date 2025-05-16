@@ -1,7 +1,13 @@
 // Copyright (C) 1996-1997 Id Software, Inc. GPLv3 See LICENSE for details.
 // host.c -- coordinates spawning and killing of local servers
 #include "quakedef.h"
-    
+
+static f64 host_rawframetime;
+static f32 host_netinterval;
+static f64 host_time;
+static f64 oldrealtime; // last frame run
+static s32 host_hunklevel;
+
 static void Max_Fps_f (cvar_t *var)
 {
 	if (var->value > 72 || var->value <= 0) {

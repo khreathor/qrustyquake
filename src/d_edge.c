@@ -2,6 +2,7 @@
 #include "quakedef.h"
 
 static s32 miplevel;
+static vec3_t transformed_modelorg;
 
 s32 D_MipLevelForScale(f32 scale)
 {

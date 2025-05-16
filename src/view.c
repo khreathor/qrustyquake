@@ -8,6 +8,13 @@
 // especially when crossing a water boudnary.
 
 static u8 gammatable[256];
+static f32 v_dmg_time, v_dmg_roll, v_dmg_pitch;
+static vec3_t forward, right, up;
+static cshift_t cshift_empty = { { 130, 80, 50 }, 0 }; // Palette flashes 
+static cshift_t cshift_water = { { 130, 80, 50 }, 128 };
+static cshift_t cshift_slime = { { 0, 25, 5 }, 150 };
+static cshift_t cshift_lava = { { 255, 80, 0 }, 150 };
+
 
 f32 V_CalcRoll(vec3_t angles, vec3_t velocity)
 { // Used by view and sv_user
