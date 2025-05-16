@@ -6,65 +6,14 @@ static f32 fog_blue; // palette before use, stored in fog_pal_index
 static f32 randarr[RANDARR_SIZE];
 static u32 lfsr = 0x1337; // non-zero seed
 
-void Fog_SetPalIndex(cvar_t *cvar)
+void Fog_SetPalIndex(cvar_t */*cvar*/)
 {
 	fog_pal_index = rgbtoi_lab(fog_red * 255.0f*r_fogbrightness.value,
 				   fog_green*255.0f*r_fogbrightness.value,
 				   fog_blue *255.0f*r_fogbrightness.value);
 }
 
-void Fog_FogCommand_f () // yanked from Quakespasm, mostly
-{ // TODO time transitions
-	f32 d, r, g, b, t;
-	switch(Cmd_Argc()){
-		default:
-		case 1:
-			Con_Printf("usage:\n");
-			Con_Printf("   fog <density>\n");
-			Con_Printf("   fog <red> <green> <blue>\n");
-			Con_Printf("   fog <density> <red> <green> <blue>\n");
-			Con_Printf("current values:\n");
-			Con_Printf("   \"density\" is \"%f\"\n", fog_density);
-			Con_Printf("   \"red\" is \"%f\"\n", fog_red);
-			Con_Printf("   \"green\" is \"%f\"\n", fog_green);
-			Con_Printf("   \"blue\" is \"%f\"\n", fog_blue);
-			return;
-		case 2:
-			d = Q_atof(Cmd_Argv(1));
-			t = 0.0f;
-			r = fog_red;
-			g = fog_green;
-			b = fog_blue;
-			break;
-		case 3: //TEST
-			d = Q_atof(Cmd_Argv(1));
-			t = Q_atof(Cmd_Argv(2));
-			r = fog_red;
-			g = fog_green;
-			b = fog_blue;
-			break;
-		case 4:
-			d = fog_density;
-			t = 0.0f;
-			r = Q_atof(Cmd_Argv(1));
-			g = Q_atof(Cmd_Argv(2));
-			b = Q_atof(Cmd_Argv(3));
-			break;
-		case 5:
-			d = Q_atof(Cmd_Argv(1));
-			r = Q_atof(Cmd_Argv(2));
-			g = Q_atof(Cmd_Argv(3));
-			b = Q_atof(Cmd_Argv(4));
-			t = 0.0f;
-			break;
-		case 6: //TEST
-			d = Q_atof(Cmd_Argv(1));
-			r = Q_atof(Cmd_Argv(2));
-			g = Q_atof(Cmd_Argv(3));
-			b = Q_atof(Cmd_Argv(4));
-			t = Q_atof(Cmd_Argv(5));
-			break;
-	}
+void Fog_Update(f32 d, f32 r, f32 g, f32 b) {
 	if     (d < 0.0f) d = 0.0f;
 	if     (r < 0.0f) r = 0.0f;
 	else if(r > 1.0f) r = 1.0f;
@@ -81,6 +30,51 @@ void Fog_FogCommand_f () // yanked from Quakespasm, mostly
 	fog_initialized = 0;
 }
 
+void Fog_FogCommand_f () // yanked from Quakespasm, mostly
+{ // TODO time transitions
+	f32 d, r, g, b;
+	switch(Cmd_Argc()){
+		default:
+		case 1:
+			Con_Printf("usage:\n");
+			Con_Printf("   fog <density>\n");
+			Con_Printf("   fog <red> <green> <blue>\n");
+			Con_Printf("   fog <density> <red> <green> <blue>\n");
+			Con_Printf("current values:\n");
+			Con_Printf("   \"density\" is \"%f\"\n", fog_density);
+			Con_Printf("   \"red\" is \"%f\"\n", fog_red);
+			Con_Printf("   \"green\" is \"%f\"\n", fog_green);
+			Con_Printf("   \"blue\" is \"%f\"\n", fog_blue);
+			return;
+		case 2:
+			d = Q_atof(Cmd_Argv(1));
+			r = fog_red;
+			g = fog_green;
+			b = fog_blue;
+			break;
+		case 3: //TEST
+			d = Q_atof(Cmd_Argv(1));
+			r = fog_red;
+			g = fog_green;
+			b = fog_blue;
+			break;
+		case 4:
+			d = fog_density;
+			r = Q_atof(Cmd_Argv(1));
+			g = Q_atof(Cmd_Argv(2));
+			b = Q_atof(Cmd_Argv(3));
+			break;
+		case 5:
+			d = Q_atof(Cmd_Argv(1));
+			r = Q_atof(Cmd_Argv(2));
+			g = Q_atof(Cmd_Argv(3));
+			b = Q_atof(Cmd_Argv(4));
+			break;
+			break;
+	}
+	Fog_Update(d, r, g, b);
+}
+
 void Fog_ParseWorldspawn () // from Quakespasm
 { // called at map load
 	s8 key[128], value[4096];
@@ -88,12 +82,6 @@ void Fog_ParseWorldspawn () // from Quakespasm
 	fog_red = 0;
 	fog_green = 0;
 	fog_blue = 0;
-	/*TODOold_density = DEFAULT_DENSITY;
-	  old_red = DEFAULT_GRAY;
-	  old_green = DEFAULT_GRAY;
-	  old_blue = DEFAULT_GRAY;
-	  fade_time = 0.0;
-	  fade_done = 0.0;*/
 	const s8 *data = COM_Parse(cl.worldmodel->entities);
 	if(!data || com_token[0] != '{') return; // error
 	while(1){

@@ -8,7 +8,7 @@
 
 static s32	buffersize;
 
-static void SDLCALL paint_audio (void *unused, Uint8 *stream, s32 len)
+static void SDLCALL paint_audio (void */*unused*/, Uint8 *stream, s32 len)
 {
 	s32	pos, tobufend;
 	s32	len1, len2;

@@ -96,18 +96,18 @@ void Draw_PicScaled(s32 x, s32 y, qpic_t *pic, s32 scale)
 {
 	u8 *dest = vid.buffer + y * vid.width + x;
 	s32 maxwidth = pic->width;
-	if (x + pic->width * scale > vid.width)
+	if (x + pic->width * scale > (s32)vid.width)
 		maxwidth -= (x + pic->width * scale - vid.width) / scale;
 	s32 rowinc = vid.width;
-	if (y + pic->height * scale > vid.height)
+	if (y + pic->height * scale > (s32)vid.height)
 		return;
-	for (u32 v = 0; v < pic->height; v++) {
+	for (u32 v = 0; v < (u32)pic->height; v++) {
 		if (v * scale + y >= vid.height)
 			break;
 		u8 *source = pic->data + v * pic->width;
 		for (s32 k = 0; k < scale; k++) {
 			u8 *dest_row = dest + k * rowinc;
-			for (u32 i = 0; i < maxwidth; i++) {
+			for (u32 i = 0; i < (u32)maxwidth; i++) {
 				u8 pixel = source[i];
 				for (s32 j = 0; j < scale; j++)
 					dest_row[(i*scale) + j] = pixel;
@@ -121,14 +121,14 @@ void Draw_PicScaledPartial(s32 x,s32 y,s32 l,s32 t,s32 w,s32 h,qpic_t *p,s32 s)
 {
         u8 *source = p->data;
         u8 *dest = vid.buffer + y * vid.width + x;
-        for (u32 v = 0; v < p->height; v++) {
-                if (v * s + y >= vid.height || v > h)
+        for (u32 v = 0; v < (u32)p->height; v++) {
+                if (v * s + y >= vid.height || v > (u32)h)
                         return;
-                if (v < t)
+                if (v < (u32)t)
                         continue;
                 for (s32 k = 0; k < s; k++) {
-                        for (u32 i = 0; i < p->width; i++) {
-                                if (i < l || i >= w)
+                        for (u32 i = 0; i < (u32)p->width; i++) {
+                                if (i < (u32)l || i >= (u32)w)
                                         continue;
                                 for (s32 j = 0; j < s; j++)
                                         if (i * s + j + x < vid.width)
@@ -144,11 +144,11 @@ void Draw_TransPicScaled(s32 x, s32 y, qpic_t *pic, s32 scale)
 {
 	u8 *source = pic->data;
 	u8 *dest = vid.buffer + y * vid.width + x;
-	for (u32 v = 0; v < pic->height; v++) {
+	for (u32 v = 0; v < (u32)pic->height; v++) {
 		if (v * scale + y >= vid.height)
 			return;
 		for (s32 k = 0; k < scale; k++) {
-			for (u32 u = 0; u < pic->width; u++){
+			for (u32 u = 0; u < (u32)pic->width; u++){
 				u8 tbyte = source[u];
 				if (tbyte == TRANSPARENT_COLOR)
 					continue;
@@ -166,16 +166,16 @@ void Draw_TransPicTranslateScaled(s32 x, s32 y, qpic_t *p, u8 *tl, s32 scale)
 {
 	u8 *source = p->data;
 	u8 *dest = vid.buffer + y * vid.width + x;
-	for (u32 v = 0; v < p->height; v++) {
-		if (v * scale + y >= vid.height)
+	for (s32 v = 0; v < p->height; v++) {
+		if (v * scale + y >= (s32)vid.height)
 			return;
 		for (s32 k = 0; k < scale; k++) {
-			for (u32 u = 0; u < p->width; u++) {
+			for (s32 u = 0; u < p->width; u++) {
 				u8 tbyte = source[u];
 				if (tbyte == TRANSPARENT_COLOR)
 					continue;
 				for (s32 i = 0; i < scale; i++)
-					if (u * scale + i + x < vid.width)
+					if (u * scale + i + x < (s32)vid.width)
 						dest[u * scale + i] = tl[tbyte];
 			}
 			dest += vid.width;
@@ -230,7 +230,7 @@ void Draw_ConsoleBackground(s32 lines)
 	for (s32 y = 0; y < lines; y++, dest += vid.width) {
 		s32 v = (vid.height-lines+y)*conback->height/vid.height;
 		u8 *src = conback->data + v * conback->width;
-		if (vid.width == conback->width)
+		if ((s32)vid.width == conback->width)
 			memcpy(dest, src, vid.width);
 		else {
 			s32 f = 0;
@@ -252,7 +252,7 @@ void Draw_ConsoleBackground(s32 lines)
 void R_DrawRect(vrect_t *prect, s32 rowbytes, u8 *psrc, s32 transparent)
 {
 	u8 *pdest = vid.buffer + (prect->y * vid.width) + prect->x;
-	u64 maxdest = (u64)vid.buffer+vid.width*vid.height;
+	u64 maxdest = (u64)(unsigned long long)vid.buffer+vid.width*vid.height;
 	if (transparent) {
 		s32 srcdelta = rowbytes - prect->width;
 		s32 destdelta = vid.width - prect->width;
@@ -269,7 +269,7 @@ void R_DrawRect(vrect_t *prect, s32 rowbytes, u8 *psrc, s32 transparent)
 		}
 	} else {
 		for (s32 i = 0; i < prect->height; i++) {
-			if ((u64)pdest+prect->width >= maxdest) break;
+			if ((u64)(unsigned long long)pdest+prect->width >= maxdest) break;
 			memcpy(pdest, psrc, prect->width);
 			psrc += rowbytes;
 			pdest += vid.width;

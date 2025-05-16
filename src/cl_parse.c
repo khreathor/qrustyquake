@@ -2,7 +2,6 @@
 // cl_parse.c -- parse a message received from the server
 #include "quakedef.h"
 
-static const s8 *suf[6] = {"rt", "bk", "lf", "ft", "up", "dn"};
 static entity_t cl_static_entities[MAX_STATIC_ENTITIES];
 static s8 *svc_strings[] = {
 	"svc_bad",
@@ -65,33 +64,16 @@ void R_CheckEfrags (void)
         //FIXMEdev_peakstats.efrags = q_max(cl.num_efrags, dev_peakstats.efrags);
 }
 
-void R_TranslatePlayerSkin (s32 playernum)
-{
-        s32                     top, bottom;
-
-        top = (cl.scores[playernum].colors & 0xf0)>>4;
-        bottom = cl.scores[playernum].colors &15;
-
-        //FIXME: if gl_nocolors is on, then turned off, the textures may be out of sync with the scoreboard colors.
-        /*if (!gl_nocolors.value)
-        {
-                if (playertextures[playernum])
-                        TexMgr_ReloadImage (playertextures[playernum], top, bottom);
-        }*/
-}
-
 void Fog_ParseServerMessage (void)
 {
         f32 density, red, green, blue, time;
-
         density = MSG_ReadByte() / 255.0;
         red = MSG_ReadByte() / 255.0;
         green = MSG_ReadByte() / 255.0;
         blue = MSG_ReadByte() / 255.0;
         time = MSG_ReadShort() / 100.0;
         if (time < 0.0f) time = 0.0f;
-
-        //TODO Fog_Update (density, red, green, blue, time);
+        Fog_Update (density, red, green, blue);
 }
 
 entity_t        *CL_EntityNum (s32 num)
@@ -507,8 +489,6 @@ void CL_ParseUpdate (s32 bits)
         if (skin != ent->skinnum)
         {
                 ent->skinnum = skin;
-                if (num > 0 && num <= cl.maxclients)
-                        R_TranslatePlayerSkin (num - 1); //FIXME johnfitz -- was R_TranslatePlayerSkin
         }
         if (bits & U_EFFECTS)
                 ent->effects = MSG_ReadByte();
@@ -811,8 +791,6 @@ void CL_NewTranslation (s32 slot)
         memcpy (dest, vid.colormap, sizeof(cl.scores[slot].translations));
         top = cl.scores[slot].colors & 0xf0;
         bottom = (cl.scores[slot].colors &15)<<4;
-        R_TranslatePlayerSkin (slot);
-
         for (i = 0; i < VID_GRADES; i++, dest += 256, source+=256)
         {
                 if (top < 128)  // the artists made some backwards ranges.  sigh.
@@ -862,39 +840,6 @@ void CL_ParseStatic (s32 version) //johnfitz -- added a parameter
         R_AddEfrags (ent);
 }
 
-static void CL_DumpPacket (void)
-{
-        s32                     i, pos;
-        u8   *packet = net_message.data;
-
-        Con_Printf("CL_DumpPacket, BEGIN:\n");
-        pos = 0;
-        while (pos < net_message.cursize)
-        {
-                Con_Printf("%5i ", pos);
-                for (i = 0; i < 16; i++)
-                {
-                        if (pos >= net_message.cursize)
-                                Con_Printf(" X ");
-                        else    Con_Printf("%2x ", packet[pos]);
-                        pos++;
-                }
-                pos -= 16;
-                for (i = 0; i < 16; i++)
-                {
-                        if (pos >= net_message.cursize)
-                                Con_Printf("X");
-                        else if (packet[pos] == 0)
-                                Con_Printf(".");
-                        else    Con_Printf("%c", packet[pos]);
-                        pos++;
-                }
-                Con_Printf("\n");
-        }
-
-        Con_Printf("CL_DumpPacket, --- END ---\n");
-}
-
 void CL_ParseStaticSound (s32 version) //johnfitz -- added argument
 {
         vec3_t          org;
@@ -922,7 +867,7 @@ void CL_ParseServerMessage ()
 	s32 cmd;
 	s32 i;
 	const s8 *str; //johnfitz
-	s32 total, j, lastcmd; //johnfitz
+	s32 lastcmd; //johnfitz
 	// if recording demos, copy the message out
 	if (cl_shownet.value == 1)
 		Con_Printf ("%i ",net_message.cursize);
@@ -951,7 +896,7 @@ void CL_ParseServerMessage ()
 			CL_ParseUpdate (cmd&127);
 			continue;
 		}
-		if (cmd < (s32)Q_COUNTOF((char*)svc_strings)) {
+		if (cmd < (s32)Q_COUNTOF(svc_strings)) {
 			if(cl_shownet.value==2)
 				Con_Printf("%3i:%s\n",msg_readcount-1,
 						svc_strings[cmd]);
@@ -983,6 +928,7 @@ void CL_ParseServerMessage ()
 				break;
 			case svc_disconnect:
 				Host_EndGame ("Server disconnected\n");
+				break;
 			case svc_print:
 				Con_Printf ("%s", MSG_ReadString ());
 				break;

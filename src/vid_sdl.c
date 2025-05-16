@@ -72,7 +72,7 @@ void VID_SetPalette(u8 *palette, SDL_Surface *dest)
 	SDL_SetPaletteColors(dest->format->palette, colors, 0, 256);
 }
 
-void VID_Init(u8 *palette)
+void VID_Init(u8 */*palette*/)
 {
 	s32 pnum;
 	s32 flags;
@@ -218,7 +218,7 @@ void VID_Shutdown()
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
-void VID_CalcScreenDimensions(cvar_t *cvar)
+void VID_CalcScreenDimensions(cvar_t */*cvar*/)
 {
 	uiscale = (vid.width / 320);
 	if(uiscale * 200 > vid.height)

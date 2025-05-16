@@ -47,13 +47,10 @@ s32 vgatext_main(SDL_Window *window, Uint16 *screen)
 	Uint8 image0[400][640];
 	Uint8 image1[400][640];
 	Uint32 format;
-	SDL_Renderer *renderer;
-	SDL_Texture *texture;
 	SDL_Surface *surface8;
 	SDL_Surface **windowsurface;
 	SDL_Surface *windowsurface0;
 	SDL_Surface *windowsurface1;
-	SDL_Color colors[16];
 	SDL_Rect rect;
 
 	if (!window || !screen)

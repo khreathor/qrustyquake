@@ -13,6 +13,7 @@ EX f32 fog_density;
 void Fog_FogCommand_f();
 void Fog_ParseWorldspawn();
 void Fog_SetPalIndex(cvar_t *cvar);
+void Fog_Update(f32 d, f32 r, f32 g, f32 b);
 void R_DrawFog();
 EX u32 oldmodes[NUM_OLDMODES*2];                                    // vid_sdl.c
 EX s8 modelist[NUM_OLDMODES][8];
@@ -46,7 +47,7 @@ EX u8 r_foundtranswater, r_wateralphapass;                           // r_main.c
 EX void *colormap;
 EX bool r_dowarp;
 EX refdef_t r_refdef;
-EX u32 r_framecount;
+EX s64 r_framecount;
 EX s32 r_wholepolycount;
 EX s32 modcount;
 EX texture_t *r_notexture_mip;
@@ -436,7 +437,7 @@ EX u16 pr_crc;
 EX clipplane_t view_clipplanes[4];                                  // r_local.h
 EX mplane_t screenedge[4];
 EX vec3_t r_entorigin;
-EX u32 r_visframecount;
+EX s64 r_visframecount;
 EX bool insubmodel;
 EX s32 c_faceclip;
 EX s32 r_polycount;
@@ -470,7 +471,7 @@ EX mleaf_t *r_viewleaf, *r_oldviewleaf;
 EX vec3_t r_emins, r_emaxs;
 EX mnode_t *r_pefragtopnode;
 EX s32 r_clipflags;
-EX u32 r_dlightframecount;
+EX s32 r_dlightframecount;
 EX bool r_fov_greater_than_90;
 EX s32 r_pass;
 void R_DrawSprite();

@@ -2,10 +2,9 @@
 // r_surf.c: surface-related refresh code
 #include "quakedef.h"
 
-static s32 lightleft, sourcesstep, blocksize, sourcetstep;
+static s32 lightleft, blocksize, sourcetstep;
 static s32 lightleft_g;
 static s32 lightleft_b;
-static s32 lightdelta, lightdeltastep;
 static s32 lightright, lightleftstep, lightrightstep, blockdivshift;
 static s32 lightright_g, lightleftstep_g, lightrightstep_g;
 static s32 lightright_b, lightleftstep_b, lightrightstep_b;
@@ -119,7 +118,7 @@ void R_BuildLightMap()
 				*bl_b++ += *lightmap++ * scale;
 			}
 		}
-	if (surf->dlightframe == r_framecount) // add all the dynamic lights
+	if ((u32)surf->dlightframe == r_framecount) //add all the dynamic lights
 		R_AddDynamicLights();
 	for (s32 i = 0; i < size; i++) { // bound, invert, and shift
 		s32 t = (255 * 256 - (s32)blocklights[i]) >> (8 - VID_CBITS);

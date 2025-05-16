@@ -49,8 +49,8 @@ f32 aliasxscale, aliasyscale, aliasxcenter, aliasycenter;
 s32 screenwidth;
 f32 pixelAspect;
 mplane_t screenedge[4];
-u32 r_visframecount; // refresh flags
-u32 r_framecount = 1; // so frame counts initialized to 0 don't match
+s64 r_visframecount; // refresh flags
+s64 r_framecount = 1; // so frame counts initialized to 0 don't match
 s32 r_polycount;
 s32 r_drawnpolycount;
 s32 *pfrustum_indexes[4];
@@ -198,7 +198,7 @@ u8 *r_skysource;
 s32 r_skymade;
 s8 skybox_name[1024]; // name of current skybox, or "" if no skybox
 sspan_t spans[MAXHEIGHT + 1];                                      // d_sprite.c
-u32 r_dlightframecount;                                             // r_light.c
+s32 r_dlightframecount;                                             // r_light.c
 vec3_t r_pright, r_pup, r_ppn;                                       // r_part.c
 spritedesc_t r_spritedesc;                                         // r_sprite.c
 drawsurf_t r_drawsurf;                                               // r_surf.c

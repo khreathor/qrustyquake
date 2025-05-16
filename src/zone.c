@@ -800,7 +800,7 @@ Cache_Free
 Frees the memory and removes it from the LRU list
 ==============
 */
-void Cache_Free (cache_user_t *c, bool freetextures) //johnfitz -- added second argument
+void Cache_Free (cache_user_t *c, bool /*freetextures*/)
 {
 	cache_system_t	*cs;
 

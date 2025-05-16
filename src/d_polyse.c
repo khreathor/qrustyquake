@@ -415,7 +415,7 @@ void D_PolysetDrawSpans8(spanpackage_t *pspanpackage)
 			s32 ltfrac = pspanpackage->tfrac;
 			s32 llight = pspanpackage->light;
 			s32 lzi = pspanpackage->zi;
-			if (lpz + lcount - d_pzbuffer > vid.width * vid.height * sizeof(s16)) {
+			if ((u64)(lpz + lcount - d_pzbuffer) > vid.width * vid.height * sizeof(s16)) {
 				Con_DPrintf ("Invalid span length: %d %d\n", 
 					lpz + lcount - d_pzbuffer, vid.width * vid.height * sizeof(s16));
 				break;

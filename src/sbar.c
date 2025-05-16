@@ -29,10 +29,6 @@ static qpic_t *hsb_weapons[7][5]; // 0 is active, 1 is owned, 2-5 are flashes
 static bool sb_showscores;
 static qpic_t *hsb_items[2]; //MED 01/04/97 added hipnotic items array
 static s32 fragsort[MAX_SCOREBOARD];
-static s8 scoreboardtext[MAX_SCOREBOARD][20];
-static s32 scoreboardtop[MAX_SCOREBOARD];
-static s32 scoreboardbottom[MAX_SCOREBOARD];
-static s32 scoreboardcount[MAX_SCOREBOARD];
 static s32 scoreboardlines;
 static s32 npos[4][2]; // ammo count num
 static s32 wpos[9][2]; // weapons

@@ -10,8 +10,6 @@
 #include "quakedef.h"
 
 static aliashdr_t *pheader;
-static stvert_t stverts[MAXALIASVERTS];
-static mtriangle_t triangles[MAXALIASTRIS];
 // a pose is a single set of vertexes. a frame may be an animating sequence of poses
 static trivertx_t *poseverts[MAXALIASFRAMES];
 static s32 posenum;
@@ -232,152 +230,6 @@ model_t *Mod_ForName (const s8 *name, bool crash)
 { // Loads in a model for the given name
 	model_t	*mod = Mod_FindName (name);
 	return Mod_LoadModel (mod, crash);
-}
-
-static wad_t *Mod_LoadWadFiles (model_t *mod)
-{ // load all of the wads listed in the worldspawn "wad" field
-	s8 key[128], value[4096];
-	if (!external_textures.value)
-		return NULL;
-	// disregard if this isn't the world model
-	if (strcmp (mod->name, sv.modelname))
-		return NULL;
-	const s8 *data = COM_Parse (mod->entities);
-	if (!data)
-		return NULL; // error
-	if (com_token[0] != '{')
-		return NULL; // error
-	while (1) {
-		data = COM_Parse (data);
-		if (!data)
-			return NULL; // error
-		if (com_token[0] == '}')
-			break; // end of worldspawn
-		if (com_token[0] == '_')
-			q_strlcpy (key, com_token + 1, sizeof (key));
-		else
-			q_strlcpy (key, com_token, sizeof (key));
-		while (key[0] && key[strlen (key) - 1] == ' ') // remove trailing spaces
-			key[strlen (key) - 1] = 0;
-		data = COM_ParseEx (data, CPE_ALLOWTRUNC);
-		if (!data)
-			return NULL; // error
-		q_strlcpy (value, com_token, sizeof (value));
-		if (!strcmp ("wad", key)) {
-			return W_LoadWadList (value);
-		}
-	}
-	return NULL;
-}
-
-static texture_t *Mod_LoadWadTexture (model_t *mod, wad_t *wads, const s8 *name, bool *out_pal, s32 *out_pixels)
-{ // look for an external texture in any of the loaded map wads
-	// look for the lump in any of the loaded wads
-	wad_t *wad;
-	lumpinfo_t *info = W_GetLumpinfoList (wads, name, &wad);
-	// ensure we're dealing with a miptex
-	if (!info || (info->type != TYP_MIPTEX && (wad->id != WADID_VALVE || info->type != TYP_MIPTEX_PALETTE)))
-	{
-		printf ("Missing texture %s in %s!\n", name, mod->name);
-		return NULL;
-	}
-	// override the texture from the bsp file
-	miptex_t mt;
-	FS_fseek (&wad->fh, info->filepos, SEEK_SET);
-	FS_fread (&mt, 1, sizeof (miptex_t), &wad->fh);
-	mt.width = LittleLong (mt.width);
-	mt.height = LittleLong (mt.height);
-	for (s32 i = 0; i < MIPLEVELS; i++)
-		mt.offsets[i] = LittleLong (mt.offsets[i]);
-	if (mt.width == 0 || mt.height == 0) {
-		printf ("Zero sized texture %s in %s!\n", mt.name, wad->name);
-		return NULL;
-	}
-	if ((mt.width & 15) || (mt.height & 15)) {
-		if (mod->bspversion != BSPVERSION_QUAKE64)
-			printf ("Texture %s (%d x %d) is not 16 aligned\n", mt.name, mt.width, mt.height);
-		return NULL;
-	}
-	bool pal = wad->id == WADID_VALVE && info->type == TYP_MIPTEX_PALETTE;
-	s32 pixels = mt.width * mt.height; // only copy the first mip, the rest are auto-generated
-	s32 pixels_pos = info->filepos + sizeof (miptex_t);
-	// valve textures have a color palette immediately following the pixels
-	s32 palette, tex_bytes, lump_bytes, palette_pos;
-	if (pal) {
-		palette_pos = pixels_pos + pixels / 64 * 85;
-		// add space for the color count
-		palette = 2;
-		if ((pixels / 64 * 85 + 2) <= info->size) {
-			// the palette is basically garunteed to be 256 colors but,
-			// we might as well use the value since it *does* exist
-			FS_fseek (&wad->fh, palette_pos, SEEK_SET);
-			u16 colors;
-			FS_fread (&colors, 1, 2, &wad->fh);
-			colors = LittleShort (colors);
-			// add space for the color palette
-			palette += colors * 3;
-		}
-		tex_bytes = pixels + palette;
-		lump_bytes = pixels / 64 * 85 + palette;
-	}
-	else {
-		palette_pos = 0;
-		palette = 0;
-		tex_bytes = pixels;
-		lump_bytes = pixels;
-	}
-	texture_t *tx = (texture_t *)Hunk_AllocName (sizeof (texture_t) + tex_bytes, loadname);
-	memcpy (tx->name, mt.name, sizeof (tx->name));
-	tx->width = mt.width;
-	tx->height = mt.height;
-	// the pixels immediately follow the structures
-	// check for pixels extending past the end of the lump
-	if (lump_bytes > info->size) {
-		printf ("Texture %s extends past end of lump\n", mt.name);
-		lump_bytes = info->size;
-		if (pal)
-			palette = q_min(palette, q_max(0, lump_bytes - pixels / 64 * 85));
-		pixels = q_min(pixels, lump_bytes);
-	}
-	tx->update_warp = false; //johnfitz
-	//tx->warpimage = NULL; //johnfitz
-	//tx->fullbright = NULL; //johnfitz
-	tx->shift = 0;	// Q64 only
-	FS_fseek (&wad->fh, pixels_pos, SEEK_SET);
-	FS_fread (tx + 1, 1, pixels, &wad->fh);
-	if (pal && palette) {
-		FS_fseek (&wad->fh, palette_pos, SEEK_SET);
-		FS_fread ((u8 *)(tx + 1) + pixels, 1, palette, &wad->fh);
-	}
-	*out_pal = pal;
-	*out_pixels = pixels;
-	return tx;
-}
-
-static bool Mod_CheckFullbrights (u8 *pixels, s32 count)
-{ // -- johnfitz
-	for (s32 i = 0; i < count; i++) {
-		if (*pixels++ > 223)
-			return true;
-	}
-	return false;
-}
-
-static bool Mod_CheckFullbrightsValve (s8 *name, u8 *pixels, s32 count)
-{
-	if (name[0] == '~' || (name[2] == '~' && name[0] == '+'))
-		return Mod_CheckFullbrights (pixels, count);
-	return false;
-}
-
-
-static bool Mod_CheckAnimTextureArrayQ64(texture_t *anims[], s32 numTex)
-{ // Quake64 bsp - check if we have any missing textures in the array
-
-	for (s32 i = 0; i < numTex; i++)
-		if (!anims[i])
-			return false;
-	return true;
 }
 
 void Mod_LoadTextures(lump_t *l)
@@ -643,7 +495,7 @@ static void Mod_LoadVertexes (lump_t *l)
 static void Mod_LoadEntities (lump_t *l)
 {
 	s8	basemapname[MAX_QPATH];
-	s8	entfilename[MAX_QPATH];
+	s8	entfilename[MAX_QPATH+16];
 	s8		*ents;
 	s32		mark;
 	u32	path_id;
@@ -802,44 +654,6 @@ static void CalcSurfaceExtents (msurface_t *s)
 	}
 }
 
-
-/*
-================
-Mod_PolyForUnlitSurface -- johnfitz -- creates polys for unlightmapped surfaces (sky and water)
-
-TODO: merge this into BuildSurfaceDisplayList?
-================
-*/
-static void Mod_PolyForUnlitSurface (msurface_t *fa)
-{/*TODO
-	const s32	numverts = fa->numedges;
-	s32		i, lindex;
-	f32		*vec;
-	glpoly_t	*poly;
-	f32		texscale;
-
-	if (fa->flags & (SURF_DRAWTURB | SURF_DRAWSKY))
-		texscale = (1.0f/128.0f); //warp animation repeats every 128
-	else
-		texscale = (1.0f/32.0f); //to match r_notexture_mip
-
-	poly = (glpoly_t *) Hunk_Alloc (sizeof(glpoly_t) + (numverts-4) * VERTEXSIZE*sizeof(f32));
-	poly->next = NULL;
-	fa->polys = poly;
-	poly->numverts = numverts;
-	for (i=0; i<numverts; i++)
-	{
-		lindex = loadmodel->surfedges[fa->firstedge + i];
-		vec = (lindex > 0) ?
-			loadmodel->vertexes[loadmodel->edges[lindex].v[0]].position :
-			loadmodel->vertexes[loadmodel->edges[-lindex].v[1]].position;
-
-		VectorCopy (vec, poly->verts[i]);
-		poly->verts[i][3] = DotProduct(vec, fa->texinfo->vecs[0]) * texscale;
-		poly->verts[i][4] = DotProduct(vec, fa->texinfo->vecs[1]) * texscale;
-	}*/
-}
-
 static void Mod_CalcSurfaceBounds (msurface_t *s) // -- johnfitz
 { // calculate bounding box for per-surface frustum culling
 	s->mins[0] = s->mins[1] = s->mins[2] = FLT_MAX;
@@ -953,7 +767,6 @@ static void Mod_LoadFaces (lump_t *l, bool bsp2)
 		if (!q_strncasecmp(out->texinfo->texture->name,"sky",3)) // sky surface //also note -- was Q_strncmp, changed to match qbsp
 		{
 			out->flags |= (SURF_DRAWSKY | SURF_DRAWTILED);
-			Mod_PolyForUnlitSurface (out); //no more subdivision
 		}
 		else if (out->texinfo->texture->name[0] == '*' || out->texinfo->texture->name[0] == '!') // warp surface
 		{
@@ -983,7 +796,6 @@ static void Mod_LoadFaces (lump_t *l, bool bsp2)
 					out->extents[i] = 16384;
 					out->texturemins[i] = -8192;
 				}
-				Mod_PolyForUnlitSurface (out);
 				//GL_SubdivideSurface (out);
 			}
 		}
@@ -1001,7 +813,6 @@ static void Mod_LoadFaces (lump_t *l, bool bsp2)
 			else // not lightmapped
 			{
 				out->flags |= (SURF_NOTEXTURE | SURF_DRAWTILED);
-				Mod_PolyForUnlitSurface (out);
 			}
 		}
 		//johnfitz
@@ -1248,7 +1059,6 @@ static void Mod_LoadLeafs (lump_t *l, s32 bsp2)
 static void Mod_CheckWaterVis(void)
 {
 	mleaf_t     *leaf, *other;
-	msurface_t * surf;
 	s32 i, j, k;
 	s32 numclusters = loadmodel->submodels[0].visleafs;
 	s32 contentfound = 0;
@@ -1277,12 +1087,12 @@ static void Mod_CheckWaterVis(void)
 			for (contenttype = 0, j = 0; j < leaf->nummarksurfaces; j++)
 			{
 				break; // Nope, we can't get away with it. FIXME
-				surf = &loadmodel->surfaces[(u64)(leaf->firstmarksurface[j])];
+				/*surf = &loadmodel->surfaces[(u64)(leaf->firstmarksurface[j])];
 				if (surf->flags & (SURF_DRAWWATER|SURF_DRAWTELE))
 				{
 					contenttype = surf->flags & (SURF_DRAWWATER|SURF_DRAWTELE);
 					break;
-				}
+				}*/
 			}
 			//its possible that this leaf has absolutely no surfaces in it, turb or otherwise.
 			if (contenttype == 0)
@@ -1460,7 +1270,7 @@ static void Mod_LoadMarksurfaces (lump_t *l, s32 bsp2)
 		loadmodel->nummarksurfaces = count;
 		for (s32 i = 0; i < count; i++) {
 			u64 j = LittleLong(in[i]);
-			if (j >= loadmodel->numsurfaces)
+			if (j >= (u64)loadmodel->numsurfaces)
 				Host_Error ("Mod_LoadMarksurfaces: bad surface number");
 			out[i] = loadmodel->surfaces + j;
 		}
@@ -1639,7 +1449,7 @@ static void Mod_LoadBrushModel (model_t *mod, void *buffer)
 	loadmodel->type = mod_brush;
 	dheader_t *header = (dheader_t *)buffer;
 	mod->bspversion = LittleLong (header->version);
-	s32 bsp2;
+	s32 bsp2 = 0;
 	switch(mod->bspversion) {
 	case BSPVERSION:
 		bsp2 = false;
@@ -1750,7 +1560,7 @@ visdone:
 }
 
 void *Mod_LoadAliasFrame(void *pin, s32 *pframeindex, s32 numv,
-                trivertx_t *pbboxmin, trivertx_t *pbboxmax, aliashdr_t *pheader,
+                trivertx_t */*pbboxmin*/, trivertx_t */*pbboxmax*/, aliashdr_t *pheader,
 		s8 *name, maliasframedesc_t *frame, s32 recursed)
 {
         daliasframe_t *pdaliasframe = (daliasframe_t *) pin;
@@ -1782,7 +1592,7 @@ void *Mod_LoadAliasFrame(void *pin, s32 *pframeindex, s32 numv,
 }
 
 void *Mod_LoadAliasGroup(void *pin, s32 *pframeindex, s32 numv,
-                trivertx_t *pbboxmin, trivertx_t *pbboxmax,
+                trivertx_t */*pbboxmin*/, trivertx_t */*pbboxmax*/,
                 aliashdr_t *pheader, s8 *name, maliasframedesc_t *frame)
 {
         daliasgroup_t *pingroup = (daliasgroup_t *) pin;

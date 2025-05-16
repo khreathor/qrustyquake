@@ -18,7 +18,6 @@ static mvertex_t *r_skyverts;
 static medge_t *r_skyedges;
 static s32 *r_skysurfedges;
 static u8 *skyunderlay, *skyoverlay; // Manoel Kasimier - smooth sky
-static u8 bottomalpha[128*131]; // Manoel Kasimier - translucent sky
 static texture_t r_skytextures[6];
 static s8 last_skybox_name[1024];
 static u8 rgb_lut[RGB_LUT_SIZE];
@@ -266,7 +265,7 @@ void R_EmitSkyBox ()
 {
 	if (insubmodel)
 		return; // submodels should never have skies
-	if (r_skyframe == r_framecount) {
+	if ((u32)r_skyframe == r_framecount) {
 		return; // already set this frame
 	}
 	r_skyframe = r_framecount;

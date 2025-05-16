@@ -214,7 +214,6 @@ int main(int c, char **v)
 {
 	if(SDL_Init(SDL_INIT_EVERYTHING) < 0)
 		Sys_Error("SDL_Init failed: %s", SDL_GetError());
-	quakeparms_t parms;
 	host_parms.argc = c;
 	host_parms.argv = (s8**)v;
 	COM_InitArgv(host_parms.argc, (s8**)host_parms.argv);

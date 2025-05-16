@@ -126,7 +126,7 @@ void R_StoreEfrags(efrag_t **ppefrag)
 		case mod_brush:
 		case mod_sprite:
 			pent = pefrag->entity;
-			if ((pent->visframe != r_framecount) &&
+			if (((u32)pent->visframe != r_framecount) &&
 			    (cl_numvisedicts < MAX_VISEDICTS)) {
 				cl_visedicts[cl_numvisedicts++] = pent;
 			// mark that we've recorded this entity for this frame

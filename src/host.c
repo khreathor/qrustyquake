@@ -377,9 +377,9 @@ void _Host_Frame(f32 time)
 { // Runs all active servers
 	static f64 accumtime = 0;
 	static f64 time1, time2, time3;
-	bool ranserver = false;
 	if (setjmp(host_abortserver))
 		return;	// something bad happened, or the server disconnected
+	bool ranserver = false;
 	rand(); // keep the random time dependent
 	accumtime += host_netinterval?CLAMP(0.0, (f64)time, 0.2):0.0; // for renderer/server isolation
 	Host_AdvanceTime (time);
@@ -503,7 +503,6 @@ void Host_Init()
 		COM_FOpenFile ("gfx/custompalette.lmp", &f, NULL);
 		if (!f) COM_FOpenFile ("gfx/palette.lmp", &f, NULL);
 		if (!f) Sys_Error ("Couldn't load gfx/palette.lmp");
-		s32 mark = Hunk_LowMark ();
 		host_basepal = (u8 *) Hunk_AllocName (768, "basepal");
 		if (fread(host_basepal, 768, 1, f) != 1)
 			Sys_Error ("Failed reading gfx/palette.lmp");

@@ -33,50 +33,6 @@ static s8 *StrAddr(struct qsockaddr *addr)
 		sprintf(buf + n * 2, "%02x", *p++);
 	return buf;
 }
-static struct in_addr banAddr;
-static struct in_addr banMask;
-
-static void NET_Ban_f()
-{
-	s8 addrStr[32];
-	s8 maskStr[32];
-	//void (*print_fn)(const s8 *fmt, ...)FUNCP_PRINTF(1, 2);
-	if (cmd_source == src_command) {
-		if (!sv.active) {
-			Cmd_ForwardToServer();
-			return;
-		}
-		//print_fn = Con_Printf;
-	} else {
-		if (pr_global_struct->deathmatch)
-			return;
-		//print_fn = Con_Printf;	//SV_ClientPrintf;
-	}
-	switch (Cmd_Argc()) {
-	case 1:
-		if (banAddr.s_addr != INADDR_ANY) {
-			Q_strcpy(addrStr, inet_ntoa(banAddr));
-			Q_strcpy(maskStr, inet_ntoa(banMask));
-			//print_fn("Banning %s [%s]\n", addrStr, maskStr);
-		}// else
-			//print_fn("Banning not active\n");
-		break;
-	case 2:
-		if (q_strcasecmp(Cmd_Argv(1), "off") == 0)
-			banAddr.s_addr = INADDR_ANY;
-		else
-			banAddr.s_addr = inet_addr(Cmd_Argv(1));
-		banMask.s_addr = INADDR_NONE;
-		break;
-	case 3:
-		banAddr.s_addr = inet_addr(Cmd_Argv(1));
-		banMask.s_addr = inet_addr(Cmd_Argv(2));
-		break;
-	default:
-		//print_fn("BAN ip_address [mask]\n");
-		break;
-	}
-}
 
 s32 Datagram_SendMessage(qsocket_t *sock, sizebuf_t *data)
 {
@@ -497,7 +453,7 @@ static s32 test2Driver;
 static sys_socket_t test2Socket;
 static void Test2_Poll(void *);
 static PollProcedure test2PollProcedure = { NULL, 0.0, Test2_Poll, NULL };
-static void Test2_Poll(void *unused)
+static void Test2_Poll(void */*unused*/)
 {
 	struct qsockaddr clientaddr;
 	s32 control;

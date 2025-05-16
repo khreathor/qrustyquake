@@ -10,7 +10,6 @@
 #include <ctype.h>
 #include <math.h>
 #include <stdio.h>
-#include <stdint.h>
 #include <setjmp.h>
 #include <float.h>
 #include <time.h>

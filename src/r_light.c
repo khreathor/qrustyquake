@@ -34,7 +34,7 @@ void R_MarkLights(dlight_t *light, s32 bit, mnode_t *node)
 		return;
 	}
 	msurface_t *surf = cl.worldmodel->surfaces + node->firstsurface; // mark the polygons
-	for (s32 i = 0; i < node->numsurfaces; i++, surf++) {
+	for (u32 i = 0; i < node->numsurfaces; i++, surf++) {
 		if (surf->dlightframe != r_dlightframecount) {
 			surf->dlightbits = 0;
 			surf->dlightframe = r_dlightframecount;
@@ -84,11 +84,11 @@ loc0:
 	if (RecursiveLightPoint (color, node->children[front < 0], rayorg, start, mid, maxdist))
 		return true;	// hit something
 	else {
-		s32 i, ds, dt;
+		s32 ds, dt;
 		msurface_t *surf;
 		VectorCopy (mid, lightspot); // check for impact on this node
 		surf = cl.worldmodel->surfaces + node->firstsurface;
-		for (i = 0;i < node->numsurfaces;i++, surf++)
+		for (u32 i = 0;i < node->numsurfaces;i++, surf++)
 		{
 			f32 sfront, sback, dist;
 			vec3_t raydelta;

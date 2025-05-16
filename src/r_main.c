@@ -260,7 +260,7 @@ void R_MarkLeaves()
 		if(vis[i >> 3] & (1 << (i & 7))){
 			mnode_t *nd = (mnode_t *) & cl.worldmodel->leafs[i + 1];
 			do {
-				if(nd->visframe == r_visframecount)
+				if((u32)nd->visframe == r_visframecount)
 					break;
 				nd->visframe = r_visframecount;
 				nd = nd->parent;

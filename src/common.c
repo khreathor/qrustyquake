@@ -1271,7 +1271,7 @@ skipwhite:
 				com_token[len] = 0;
 				return data;
 			}
-			if (len < Q_COUNTOF(com_token) - 1)
+			if ((u64)len < Q_COUNTOF(com_token) - 1)
 				com_token[len++] = c;
 			else if (mode == CPE_NOTRUNC)
 				return NULL;
@@ -1281,7 +1281,7 @@ skipwhite:
 // parse single characters
 	if (c == '{' || c == '}'|| c == '('|| c == ')' || c == '\'' || c == ':')
 	{
-		if (len < Q_COUNTOF(com_token) - 1)
+		if ((u64)len < Q_COUNTOF(com_token) - 1)
 			com_token[len++] = c;
 		else if (mode == CPE_NOTRUNC)
 			return NULL;
@@ -1292,7 +1292,7 @@ skipwhite:
 // parse a regular word
 	do
 	{
-		if (len < Q_COUNTOF(com_token) - 1)
+		if ((u64)len < Q_COUNTOF(com_token) - 1)
 			com_token[len++] = c;
 		else if (mode == CPE_NOTRUNC)
 			return NULL;
@@ -2031,7 +2031,7 @@ static void COM_AddGameDirectory (const s8 *base, const s8 *dir)
 	u32 path_id;
 	searchpath_t *search;
 	pack_t *pak, *qspak;
-	s8 pakfile[MAX_OSPATH];
+	s8 pakfile[MAX_OSPATH+32];
 	bool been_here = false;
 
 	q_strlcpy (com_gamedir, va("%s/%s", base, dir), sizeof(com_gamedir));
@@ -2759,7 +2759,7 @@ fail:			mz_zip_reader_end(&archive);
 			}
 
 			++pos;
-			if (pos == localization.numindices)
+			if ((s32)pos == localization.numindices)
 				pos = 0;
 
 			if (pos == end)
@@ -2825,7 +2825,7 @@ const s8* LOC_GetRawString (const s8 *key)
 			return entry->value;
 
 		++pos;
-		if (pos == localization.numindices)
+		if ((s32)pos == localization.numindices)
 			pos = 0;
 	} while (pos != end);
 

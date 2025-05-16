@@ -103,7 +103,7 @@ void D_DrawSurfaces()
 		// 35, which leads to segfaults on any further checks while
 		// still passing s->entity != NULL check. Must be a symptom of
 		// some bigger issue that I can't be bothered to diagnose ATM.
-		u64 is_ent = (u64)s->entity & 0xffff000;
+		u64 is_ent = (u64)(unsigned long long)s->entity & 0xffff000;
 		// CyanBun96: a 0 in either of those causes an error. FIXME
 		if (!pface || !pface->extents[0] || !pface->extents[1]) {
 			if (pface)

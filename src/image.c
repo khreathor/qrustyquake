@@ -96,7 +96,7 @@ u8 *Image_LoadTGA (FILE *fin, s32 *width, s32 *height)
 	if (targa_header.image_type==1) // Uncompressed, paletted images
 	{
 		u8 palette[256*4];
-		s32 i;
+		u64 i;
 		//palette data comes first
 		for (i = 0; i < targa_header.colormap_length; i++)
 		{ //this palette data is bgr.

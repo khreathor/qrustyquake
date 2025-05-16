@@ -371,7 +371,7 @@ void Cvar_SetQuick (cvar_t *var, const s8 *value)
 
 		var->flags |= CVAR_CHANGED;
 		len = strlen (value);
-		if (len != strlen(var->string))
+		if ((u64)len != strlen(var->string))
 		{
 			Z_Free ((void *)var->string);
 			var->string = (s8 *) Z_Malloc (len + 1);

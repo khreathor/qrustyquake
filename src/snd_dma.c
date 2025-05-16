@@ -43,12 +43,12 @@ static void S_SoundInfo_f (void)
 }
 
 
-static void SND_Callback_sfxvolume (cvar_t *var)
+static void SND_Callback_sfxvolume (cvar_t */*var*/)
 {
 	SND_InitScaletable ();
 }
 
-static void SND_Callback_snd_filterquality (cvar_t *var)
+static void SND_Callback_snd_filterquality (cvar_t */*var*/)
 {
 	if (snd_filterquality.value < 1 || snd_filterquality.value > 5)
 	{

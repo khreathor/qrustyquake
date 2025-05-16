@@ -4,10 +4,7 @@
 static s32 ramp1[8] = { 0x6f, 0x6d, 0x6b, 0x69, 0x67, 0x65, 0x63, 0x61 };
 static s32 ramp2[8] = { 0x6f, 0x6e, 0x6d, 0x6c, 0x6b, 0x6a, 0x68, 0x66 };
 static s32 ramp3[8] = { 0x6d, 0x6b, 6, 5, 4, 3 };
-static vec3_t avelocity = { 23, 7, 3 };
 static f32 beamlength = 16;
-static f32 partstep = 0.01;
-static f32 timescale = 0.01;
 static particle_t *active_particles, *free_particles;
 static particle_t *particles;
 static s32 r_numparticles;

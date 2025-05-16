@@ -3,7 +3,6 @@
 static bool mouse_avail;
 static f32 mouse_x;
 static f32 mouse_y;
-static s32 mouse_oldbuttonstate;
 static s32 buttonremap[] = { K_MOUSE1, K_MOUSE3, K_MOUSE2, K_MOUSE4, K_MOUSE5 };
 
 void Sys_SendKeyEvents()

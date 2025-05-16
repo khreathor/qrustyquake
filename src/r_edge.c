@@ -381,7 +381,7 @@ void R_ScanEdges()
 	edge_aftertail.next = &edge_sentinel;
 	edge_aftertail.prev = &edge_tail;
 	// FIXME: do we need this now that we clamp x in r_draw.c?
-	edge_sentinel.u = ((uint64_t)2000) << 24; // make sure nothing sorts past this
+	edge_sentinel.u = ((u64)2000) << 24; // make sure nothing sorts past this
 	edge_sentinel.prev = &edge_aftertail;
 	s64 bottom = r_refdef.vrectbottom - 1; // process all scan lines
 	s64 iv = r_refdef.vrect.y;

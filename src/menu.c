@@ -21,7 +21,6 @@ static s32 setup_top;
 static s32 setup_bottom;
 static s32 m_net_cursor;
 static s32 m_net_items;
-static s32 m_net_saveHeight;
 static s32 options_cursor;
 static s32 keys_cursor;
 static s32 bind_grab;

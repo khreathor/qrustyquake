@@ -2,8 +2,6 @@
 #include "quakedef.h"
 
 static u32 cacheoffset;
-static clipplane_t *entity_clipplanes;
-static clipplane_t world_clipplanes[16];
 static medge_t tedge;
 static medge_t *r_pedge;
 static bool r_leftclipped, r_rightclipped;
