@@ -6,6 +6,10 @@
 #include "quakedef.h"
 
 static s32 in_impulse;
+static kbutton_t in_left, in_right, in_forward, in_back, in_klook;
+static kbutton_t in_lookup, in_lookdown, in_moveleft, in_moveright;
+static kbutton_t in_speed, in_use, in_jump, in_attack;
+static kbutton_t in_up, in_down;
 
 /*==============================================================================
 

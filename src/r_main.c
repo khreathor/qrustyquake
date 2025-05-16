@@ -181,12 +181,12 @@ void R_ViewChanged(vrect_t *pvrect, s32 lineadj, f32 aspect)
 	r_refdef.vrectbottom = r_refdef.vrect.y + r_refdef.vrect.height;
 	r_refdef.fvrectbottom = (f32)r_refdef.vrectbottom;
 	r_refdef.fvrectbottom_adj = (f32)r_refdef.vrectbottom - 0.5;
-	r_refdef.aliasvrect.x = (s32)(r_refdef.vrect.x * r_aliasuvscale);
-	r_refdef.aliasvrect.y = (s32)(r_refdef.vrect.y * r_aliasuvscale);
+	r_refdef.aliasvrect.x = (s32)(r_refdef.vrect.x);
+	r_refdef.aliasvrect.y = (s32)(r_refdef.vrect.y);
 	r_refdef.aliasvrect.width =
-	    (s32)(r_refdef.vrect.width * r_aliasuvscale);
+	    (s32)(r_refdef.vrect.width);
 	r_refdef.aliasvrect.height =
-	    (s32)(r_refdef.vrect.height * r_aliasuvscale);
+	    (s32)(r_refdef.vrect.height);
 	r_refdef.aliasvrectright =
 	    r_refdef.aliasvrect.x + r_refdef.aliasvrect.width;
 	r_refdef.aliasvrectbottom =
@@ -208,15 +208,15 @@ void R_ViewChanged(vrect_t *pvrect, s32 lineadj, f32 aspect)
 	// adjust the buffer origin to get an exact edge to edge fill
 	xcenter = ((f32)r_refdef.vrect.width * XCENTERING) +
 	    r_refdef.vrect.x - 0.5;
-	aliasxcenter = xcenter * r_aliasuvscale;
+	aliasxcenter = xcenter;
 	ycenter = ((f32)r_refdef.vrect.height * YCENTERING) +
 	    r_refdef.vrect.y - 0.5;
-	aliasycenter = ycenter * r_aliasuvscale;
+	aliasycenter = ycenter;
 	xscale = r_refdef.vrect.width / r_refdef.horizontalFieldOfView;
-	aliasxscale = xscale * r_aliasuvscale;
+	aliasxscale = xscale;
 	xscaleinv = 1.0 / xscale;
 	yscale = xscale * pixelAspect;
-	aliasyscale = yscale * r_aliasuvscale;
+	aliasyscale = yscale;
 	yscaleinv = 1.0 / yscale;
 	xscaleshrink =
 	    (r_refdef.vrect.width - 6) / r_refdef.horizontalFieldOfView;

@@ -21,6 +21,8 @@ static u8 *skyunderlay, *skyoverlay; // Manoel Kasimier - smooth sky
 static u8 bottomalpha[128*131]; // Manoel Kasimier - translucent sky
 static texture_t r_skytextures[6];
 static s8 last_skybox_name[1024];
+static u8 rgb_lut[RGB_LUT_SIZE];
+static s32 rgb_lut_built = 0;
 static s32 skybox_planes[12] = {2,-128, 0,-128, 2,128, 1,128, 0,128, 1,-128};
 static s32 box_surfedges[24] = { 1,2,3,4,  -1,5,6,7,  8,9,-6,10,  -2,-7,-9,11,
 				 12,-3,-11,-8,     -12,-10,-5,-4};

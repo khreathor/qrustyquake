@@ -6,15 +6,9 @@ EX u8 color_mix_lut[256][256][FOG_LUT_LEVELS];                       // rgbtoi.c
 EX u8 lit_lut[LIT_LUT_RES*LIT_LUT_RES*LIT_LUT_RES];
 EX u8 lit_lut_initialized;
 EX s32 fog_lut_built;
-EX f32 gamma_lut[256];
-EX s32 color_conv_initialized;
-EX lab_t lab_palette[256];
-EX u8 rgb_lut[RGB_LUT_SIZE];
-EX s32 rgb_lut_built;
 void build_color_mix_lut(cvar_t *cvar);
 u32 lfsr_random();
 EX s32 fog_initialized;                                               // d_fog.c
-EX u32 lfsr;
 EX f32 fog_density;
 void Fog_FogCommand_f();
 void Fog_ParseWorldspawn();
@@ -32,7 +26,6 @@ EX u32 vimmode;
 EX s32 vid_modenum;
 EX s32 vid_testingmode;
 EX s32 vid_realmode;
-EX s32 vid_default;
 EX f64 vid_testendtime;
 EX u8 vid_curpal[256 * 3];
 EX viddef_t vid;
@@ -51,7 +44,6 @@ void VID_Update();
 void VID_VidSetModeCommand_f();
 EX u8 r_foundtranswater, r_wateralphapass;                           // r_main.c
 EX void *colormap;
-EX bool r_recursiveaffinetriangles;
 EX bool r_dowarp;
 EX refdef_t r_refdef;
 EX u32 r_framecount;
@@ -229,9 +221,7 @@ s32 D_SurfaceCacheForRes(s32 width, s32 height);
 void D_FlushCaches();
 void D_InitCaches(void *buffer, s32 size);
 void R_SetVrect(vrect_t *pvrect, vrect_t *pvrectin, s32 lineadj);
-EX f32 r_aliasuvscale;                                              // d_iface.h
-EX s32 r_pixbytes;
-EX affinetridesc_t r_affinetridesc;
+EX affinetridesc_t r_affinetridesc;                                 // d_iface.h
 EX spritedesc_t r_spritedesc;
 EX void *acolormap;
 EX drawsurf_t r_drawsurf;
@@ -522,7 +512,7 @@ void CL_EstablishConnection(s8 *host);
 void CL_Disconnect();
 void CL_Disconnect_f();
 void CL_NextDemo();
-EX kbutton_t in_mlook, in_klook;
+EX kbutton_t in_mlook, in_strafe;
 void CL_InitInput();
 void CL_SendCmd();
 void CL_SendMove(const usercmd_t *cmd);
@@ -572,17 +562,11 @@ void SV_CheckForNewClients();
 void SV_RunClients();
 void SV_SaveSpawnparms();
 void SV_SpawnServer(const s8 *server);
-EX vec3_t chase_angles;                                               // chase.c
-EX vec3_t chase_dest;
 void Cvar_RegisterVariable(cvar_t *variable);
 bool SV_RecursiveHullCheck(hull_t *hull, s32 num, f32 p1f, f32 p2f, vec3_t p1, vec3_t p2, trace_t *trace);
 void Chase_Init();
 void Chase_Update();
-EX kbutton_t in_left, in_right, in_forward, in_back;               // cl_input.c
-EX kbutton_t in_lookup, in_lookdown, in_moveleft, in_moveright;
-EX kbutton_t in_strafe, in_speed, in_use, in_jump, in_attack;
-EX kbutton_t in_up, in_down;
-void CL_AdjustAngles();
+void CL_AdjustAngles();                                            // cl_input.c
 void IN_MLookDown();
 EX edict_t *sv_player;                                              // sv_user.c
 EX f32 *angles;
@@ -733,7 +717,6 @@ EX f64 host_frametime;
 EX f64 realtime;
 EX s32 host_framecount;
 EX client_t *host_client;
-EX jmp_buf host_abortserver;
 EX u8 *host_basepal;
 EX u8 *host_colormap;
 void Host_ClearMemory();

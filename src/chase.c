@@ -2,6 +2,8 @@
 // chase.c -- chase camera code
 #include "quakedef.h"
 
+static vec3_t chase_dest;
+
 void Chase_Init()
 {
 	Cvar_RegisterVariable((struct cvar_s *)&chase_back);

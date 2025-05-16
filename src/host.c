@@ -7,6 +7,7 @@ static f32 host_netinterval;
 static f64 host_time;
 static f64 oldrealtime; // last frame run
 static s32 host_hunklevel;
+static jmp_buf host_abortserver;
 
 static void Max_Fps_f (cvar_t *var)
 {

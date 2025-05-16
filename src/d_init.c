@@ -8,9 +8,6 @@ void D_Init()
 {
 	Cvar_RegisterVariable(&d_mipcap);
 	Cvar_RegisterVariable(&d_mipscale);
-	r_recursiveaffinetriangles = true;
-	r_pixbytes = 1;
-	r_aliasuvscale = 1.0;
 }
 
 void D_SetupFrame()

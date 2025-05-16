@@ -4,6 +4,7 @@ static f32 fog_red; // CyanBun96: we store the actual RGB values in these,
 static f32 fog_green; // but they get quantized to a single index in the color
 static f32 fog_blue; // palette before use, stored in fog_pal_index
 static f32 randarr[RANDARR_SIZE];
+static u32 lfsr = 0x1337; // non-zero seed
 
 void Fog_SetPalIndex(cvar_t *cvar)
 {

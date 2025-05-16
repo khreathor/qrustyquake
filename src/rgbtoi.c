@@ -1,5 +1,9 @@
 #include "quakedef.h"
 
+static f32 gamma_lut[256];
+static s32 color_conv_initialized = 0;
+static lab_t lab_palette[256];
+
 f32 lab_f(f32 t) // cube-root if > epsilon, linear otherwise
 { return (t > 0.008856f) ? cbrtf(t) : ((903.3f * t + 16.0f) / 116.0f); }
 

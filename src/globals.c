@@ -1,20 +1,11 @@
 #include "quakedef.h"
-
 u8 color_mix_lut[256][256][FOG_LUT_LEVELS];                          // rgbtoi.c
 s32 fog_lut_built = 0;
-f32 gamma_lut[256];
-s32 color_conv_initialized = 0;
-lab_t lab_palette[256];
 u8 lit_lut[LIT_LUT_RES*LIT_LUT_RES*LIT_LUT_RES];
 u8 lit_lut_initialized = 0;
-u8 rgb_lut[RGB_LUT_SIZE];
-s32 rgb_lut_built = 0;
-
 s32 fog_initialized = 0;                                              // d_fog.c
-u32 lfsr = 0x1337; // non-zero seed
 f32 fog_density;
 u8 fog_pal_index;
-
 u32 oldmodes[NUM_OLDMODES * 2] = {                                  // vid_sdl.c
         320, 240,       640, 480,       800, 600,
         320, 200,       320, 240,       640, 350,
@@ -30,18 +21,13 @@ u32 vimmode;
 s32 vid_modenum;
 s32 vid_testingmode;
 s32 vid_realmode;
-s32 vid_default;
 f64 vid_testendtime;
 u8 vid_curpal[256 * 3];
 viddef_t vid; // global video state
-
 u8 r_foundtranswater, r_wateralphapass;                              // r_main.c
 s32 r_pass; // CyanBun96: 1 - cutout textures 0 - everything else
 void *colormap;
 s32 r_numallocatededges;
-bool r_recursiveaffinetriangles = true;
-s32 r_pixbytes = 1;
-f32 r_aliasuvscale = 1.0;
 s32 r_outofsurfaces;
 s32 r_outofedges;
 bool r_dowarp, r_dowarpold, r_viewchanged;
@@ -75,7 +61,6 @@ s32 d_lightstylevalue[256]; // 8.8 fraction of base light value
 f32 dp_time1, dp_time2, db_time1, db_time2, rw_time1, rw_time2;
 f32 se_time1, se_time2, de_time1, de_time2, dv_time1, dv_time2;
 s32 colored_aliaslight;
-
 f32 d_sdivzstepu, d_tdivzstepu, d_zistepu;                         // d_vars.c
 f32 d_sdivzstepv, d_tdivzstepv, d_zistepv;
 f32 d_sdivzorigin, d_tdivzorigin, d_ziorigin;
@@ -85,23 +70,13 @@ s32 cachewidth;
 u8 *d_viewbuffer;
 s16 *d_pzbuffer;
 u32 d_zwidth;
-
-vec3_t chase_angles;                                                  // chase.c
-vec3_t chase_dest;
-
-kbutton_t in_mlook, in_klook;                                      // cl_input.c
-kbutton_t in_left, in_right, in_forward, in_back;
-kbutton_t in_lookup, in_lookdown, in_moveleft, in_moveright;
-kbutton_t in_strafe, in_speed, in_use, in_jump, in_attack;
-kbutton_t in_up, in_down;
-
+kbutton_t in_mlook, in_strafe;                                     // cl_input.c
 edict_t *sv_player;                                                 // sv_user.c
 f32 *angles;
 f32 *origin;
 f32 *velocity;
 bool onground;
 usercmd_t cmd;
-
 client_static_t cls;                                                // cl_main.c
 client_state_t cl;
 entity_t cl_entities[MAX_EDICTS];
@@ -109,12 +84,8 @@ lightstyle_t cl_lightstyle[MAX_LIGHTSTYLES];
 dlight_t cl_dlights[MAX_DLIGHTS];
 s32 cl_numvisedicts;
 entity_t *cl_visedicts[MAX_VISEDICTS];
-
 entity_t cl_temp_entities[MAX_TEMP_ENTITIES];                       // cl_tent.c
 beam_t cl_beams[MAX_BEAMS];
-
-cmd_source_t cmd_source;                                                // cmd.c
-
 s32 safemode;                                                        // common.c
 s8 com_token[1024];
 s32 com_argc;
@@ -132,35 +103,26 @@ s32 (*BigLong) (s32 l);
 s32 (*LittleLong) (s32 l);
 f32 (*BigFloat) (f32 l);
 f32 (*LittleFloat) (f32 l);
-
 bool con_forcedup; // because no entities to refresh                // console.c
 s32 con_totallines; // total lines in console scrollback
 s32 con_backscroll; // lines up from bottom to display
 bool con_initialized;
 s32 con_notifylines; // scan lines to clear for notify lines
-
-f32 scale_for_mip;                                                   // d_edge.c
-
 surfcache_t *d_initial_rover;                                        // d_init.c
 bool d_roverwrapped;
 s32 d_minmip;
 f32 d_scalemip[NUM_MIPS - 1];
-
 s32 d_y_aspect_shift, d_pix_min, d_pix_max, d_pix_shift;           // d_modech.c
 s32 d_vrectx, d_vrecty, d_vrectright_particle, d_vrectbottom_particle;
 s32 d_scantable[MAXHEIGHT];
 s16 *zspantable[MAXHEIGHT];
-
 u32 sb_updates; // if >= vid.numpages, no update needed                // sbar.c
 s32 sb_lines; // scan lines to draw
-
 bool r_cache_thrash; // set if surface cache is thrashing            // d_surf.c
 surfcache_t *sc_rover;
 s32 lmonly; // render lightmap only, for lit water
-
 s32 drawlayer = 0;                                                     // draw.c
 qpic_t *draw_disc;
-
 quakeparms_t host_parms;                                               // host.c
 bool host_initialized; // true if into command execution
 bool isDedicated;
@@ -168,13 +130,10 @@ f64 host_frametime;
 f64 realtime; // without any filtering or bounding
 s32 host_framecount;
 client_t *host_client; // current client
-jmp_buf host_abortserver;
 u8 *host_basepal;
 u8 *host_colormap;
-
 s32 current_skill;                                                 // host_cmd.c
 bool noclip_anglehack;
-
 s8 key_lines[32][MAXCMDLINE];                                          // keys.c
 s32 key_linepos;
 s32 key_lastpress;
@@ -184,38 +143,28 @@ s32 key_count; // incremented every key event
 s8 *keybindings[256];
 s8 chat_buffer[32];
 bool team_message = false;
-
-f32 cur_ent_alpha = 1;                                             // d_polyse.c
-
-vec3_t lightcolor; //johnfitz -- lit support via lordhavoc          // r_light.c
-
 s32 dither_pat = 0;                                                  // d_scan.c
 s32 lwmark = 0;
 u8 *litwater_base;
-
 bool pr_trace;                                                      // pr_exec.c
 dfunction_t *pr_xfunction;
 s32 pr_argc;
-
 bool insubmodel; // current entity info                               // r_bsp.c
 entity_t *currententity;
 vec3_t modelorg, base_modelorg; // viewpoint reletive to currently rendering ent
 vec3_t r_entorigin; // the currently rendering entity in world coordinates
 s32 r_currentbkey;
-
 s32 c_faceclip; // number of faces clipped                           // r_draw.c
 clipplane_t view_clipplanes[4];
 s32 sintable[SIN_BUFFER_SIZE];
 s32 intsintable[SIN_BUFFER_SIZE];
 f32 winquake_surface_liquid_alpha;
-
 edge_t *auxedges;                                                    // r_edge.c
 edge_t *r_edges, *edge_p, *edge_max;
 surf_t *surfaces, *surface_p, *surf_max;
 edge_t *newedges[MAXHEIGHT];
 edge_t *removeedges[MAXHEIGHT];
 s32 r_currentkey;
-
 u32 scr_fullupdate;                                                  // screen.c
 u32 clearnotify;
 vrect_t scr_vrect;
@@ -223,26 +172,16 @@ bool scr_disabled_for_loading;
 f32 scr_centertime_off;
 f32 scr_con_current;
 hudstyle_t hudstyle;
-
 mnode_t *r_pefragtopnode;                                           // r_efrag.c
 vec3_t r_emins, r_emaxs;
-
-sspan_t spans[MAXHEIGHT + 1];                                      // d_sprite.c
-u32 r_dlightframecount;                                             // r_light.c
-vec3_t r_pright, r_pup, r_ppn;                                       // r_part.c
-spritedesc_t r_spritedesc;                                         // r_sprite.c
-drawsurf_t r_drawsurf;                                               // r_surf.c
-
 dma_t *shm = NULL;                                                  // snd_dma.c
 channel_t snd_channels[MAX_CHANNELS];
 s32 total_channels;
 s32 paintedtime; // sample PAIRS
 s32 s_rawend;
 portable_samplepair_t s_rawsamples[MAX_RAW_SAMPLES];
-
 server_t sv;                                                        // sv_main.c
 server_static_t svs;
-
 bool pr_alpha_supported; //johnfitz                                // pr_edict.c
 s32 pr_effects_mask; // only enable rerelease quad/penta dlights when applicable
 dprograms_t *progs;
@@ -252,15 +191,21 @@ globalvars_t *pr_global_struct;
 f32 *pr_globals; // same as pr_global_struct
 s32 pr_edict_size; // in bytes
 u16 pr_crc;
-
 u8 r_skypixels[6][SKYBOX_MAX_SIZE*SKYBOX_MAX_SIZE];                   // r_sky.c
 f32 skyspeed, skyspeed2;
 f32 skytime;
 u8 *r_skysource;
 s32 r_skymade;
 s8 skybox_name[1024]; // name of current skybox, or "" if no skybox
-
-
+sspan_t spans[MAXHEIGHT + 1];                                      // d_sprite.c
+u32 r_dlightframecount;                                             // r_light.c
+vec3_t r_pright, r_pup, r_ppn;                                       // r_part.c
+spritedesc_t r_spritedesc;                                         // r_sprite.c
+drawsurf_t r_drawsurf;                                               // r_surf.c
+cmd_source_t cmd_source;                                                // cmd.c
+f32 scale_for_mip;                                                   // d_edge.c
+f32 cur_ent_alpha = 1;                                             // d_polyse.c
+vec3_t lightcolor; //johnfitz -- lit support via lordhavoc          // r_light.c
 f32 r_avertexnormals[NUMVERTEXNORMALS][3] = {                       // r_alias.c
 {-0.525731,0.0,0.850651},{-0.442863,0.238856,0.864188},
 {-0.295242,0.0,0.955423},{-0.309017,0.5,0.809017},

@@ -2155,7 +2155,7 @@ void *Mod_LoadSpriteFrame(void *pin, mspriteframe_t **ppframe)
 	height = LittleLong(pinframe->height);
 	size = width * height;
 	mspriteframe_t *pspriteframe = Hunk_AllocName(sizeof(mspriteframe_t) +
-			size * r_pixbytes, loadname);
+			size, loadname);
 	Q_memset(pspriteframe, 0, sizeof(mspriteframe_t) + size);
 	*ppframe = pspriteframe;
 	pspriteframe->width = width;
@@ -2166,11 +2166,7 @@ void *Mod_LoadSpriteFrame(void *pin, mspriteframe_t **ppframe)
 	pspriteframe->down = origin[1] - height;
 	pspriteframe->left = origin[0];
 	pspriteframe->right = width + origin[0];
-	if (r_pixbytes == 1)
-		Q_memcpy(&pspriteframe->pixels[0], (u8 *) (pinframe+1), size);
-	else {
-		Sys_Error ("Mod_LoadSpriteFrame: driver set invalid r_pixbytes: %d\n", r_pixbytes);
-	}
+	Q_memcpy(&pspriteframe->pixels[0], (u8 *) (pinframe+1), size);
 	return (void *)((u8 *) pinframe + sizeof(dspriteframe_t) + size);
 }
 
