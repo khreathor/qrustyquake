@@ -305,7 +305,9 @@ void R_DrawEntitiesOnList()
 						f32 add =
 							cl_dlights[lnum].radius
 							- Length(dist);
-						lighting.ambientlight += add;
+						if (add > 0)
+							lighting.ambientlight +=
+								add;
 					}
 				// clamp lighting so it doesn't overbright as much
 				if(lighting.ambientlight > 128)
