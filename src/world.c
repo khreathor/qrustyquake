@@ -572,15 +572,15 @@ bool SV_RecursiveHullCheck (hull_t *hull, s32 num, f32 p1f, f32 p2f, vec3_t p1, 
 	{
 		if (num != CONTENTS_SOLID)
 		{
-			trace->allsolid = false;
+			trace->allsolid = 0;
 			if (num == CONTENTS_EMPTY)
-				trace->inopen = true;
+				trace->inopen = 1;
 			else
-				trace->inwater = true;
+				trace->inwater = 1;
 		}
 		else
-			trace->startsolid = true;
-		return true;		// empty
+			trace->startsolid = 1;
+		return 1;		// empty
 	}
 
 	if (num < hull->firstclipnode || num > hull->lastclipnode)
@@ -633,14 +633,14 @@ bool SV_RecursiveHullCheck (hull_t *hull, s32 num, f32 p1f, f32 p2f, vec3_t p1, 
 
 // move up to the node
 	if (!SV_RecursiveHullCheck (hull, node->children[side], p1f, midf, p1, mid, trace) )
-		return false;
+		return 0;
 
 #ifdef PARANOID
 	if (SV_HullPointContents (sv_hullmodel, mid, node->children[side])
 	== CONTENTS_SOLID)
 	{
 		Con_Printf ("mid PointInHullSolid\n");
-		return false;
+		return 0;
 	}
 #endif
 
@@ -650,7 +650,7 @@ bool SV_RecursiveHullCheck (hull_t *hull, s32 num, f32 p1f, f32 p2f, vec3_t p1, 
 		return SV_RecursiveHullCheck (hull, node->children[side^1], midf, p2f, mid, p2, trace);
 
 	if (trace->allsolid)
-		return false;		// never got out of the solid area
+		return 0;		// never got out of the solid area
 
 //==================
 // the other side of the node is solid, this is the impact point
@@ -675,7 +675,7 @@ bool SV_RecursiveHullCheck (hull_t *hull, s32 num, f32 p1f, f32 p2f, vec3_t p1, 
 			trace->fraction = midf;
 			VectorCopy (mid, trace->endpos);
 			Con_DPrintf ("backup past 0\n");
-			return false;
+			return 0;
 		}
 		midf = p1f + (p2f - p1f)*frac;
 		for (i=0 ; i<3 ; i++)
@@ -685,7 +685,7 @@ bool SV_RecursiveHullCheck (hull_t *hull, s32 num, f32 p1f, f32 p2f, vec3_t p1, 
 	trace->fraction = midf;
 	VectorCopy (mid, trace->endpos);
 
-	return false;
+	return 0;
 }
 
 
@@ -707,7 +707,7 @@ trace_t SV_ClipMoveToEntity (edict_t *ent, vec3_t start, vec3_t mins, vec3_t max
 // fill in a default trace
 	memset (&trace, 0, sizeof(trace_t));
 	trace.fraction = 1;
-	trace.allsolid = true;
+	trace.allsolid = 1;
 	VectorCopy (end, trace.endpos);
 
 // get the clipping hull
@@ -793,13 +793,13 @@ void SV_ClipToLinks ( areanode_t *node, moveclip_t *clip )
 		 	if (clip->trace.startsolid)
 			{
 				clip->trace = trace;
-				clip->trace.startsolid = true;
+				clip->trace.startsolid = 1;
 			}
 			else
 				clip->trace = trace;
 		}
 		else if (trace.startsolid)
-			clip->trace.startsolid = true;
+			clip->trace.startsolid = 1;
 	}
 
 // recurse down both sides

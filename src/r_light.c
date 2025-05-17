@@ -63,7 +63,7 @@ s32 RecursiveLightPoint (vec3_t color, mnode_t *node, vec3_t rayorg, vec3_t star
 	vec3_t		mid;
 loc0:
 	if (node->contents < 0)
-		return false;		// didn't hit anything
+		return 0;		// didn't hit anything
 	if (node->plane->type < 3) { // calculate mid point
 		front = start[node->plane->type] - node->plane->dist;
 		back = end[node->plane->type] - node->plane->dist;
@@ -82,7 +82,7 @@ loc0:
 	mid[2] = start[2] + (end[2] - start[2])*frac;
 	// go down front side
 	if (RecursiveLightPoint (color, node->children[front < 0], rayorg, start, mid, maxdist))
-		return true;	// hit something
+		return 1;	// hit something
 	else {
 		s32 ds, dt;
 		msurface_t *surf;
@@ -145,7 +145,7 @@ loc0:
 				color[1] += (f32) ((s32) ((((((((g11-g10) * dsfrac) >> 4) + g10)-((((g01-g00) * dsfrac) >> 4) + g00)) * dtfrac) >> 4) + ((((g01-g00) * dsfrac) >> 4) + g00)));
 				color[2] += (f32) ((s32) ((((((((b11-b10) * dsfrac) >> 4) + b10)-((((b01-b00) * dsfrac) >> 4) + b00)) * dtfrac) >> 4) + ((((b01-b00) * dsfrac) >> 4) + b00)));
 			}
-			return true; // success
+			return 1; // success
 		}
 		return RecursiveLightPoint (color, node->children[front >= 0], rayorg, mid, end, maxdist); // go down back side
 	}

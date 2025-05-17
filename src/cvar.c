@@ -587,17 +587,17 @@ bool	Cvar_Command (void)
 // check variables
 	v = Cvar_FindVar (Cmd_Argv(0));
 	if (!v)
-		return false;
+		return 0;
 
 // perform a variable print or set
 	if (Cmd_Argc() == 1)
 	{
 		Con_Printf ("\"%s\" is \"%s\"\n", v->name, v->string);
-		return true;
+		return 1;
 	}
 
 	Cvar_Set (v->name, Cmd_Argv(1));
-	return true;
+	return 1;
 }
 
 
@@ -606,7 +606,7 @@ bool	Cvar_Command (void)
 Cvar_WriteVariables
 
 Writes lines containing "set variable value" for all variables
-with the archive flag set to true.
+with the archive flag set to 1.
 ============
 */
 void Cvar_WriteVariables (FILE *f)

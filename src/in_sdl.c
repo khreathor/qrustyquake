@@ -96,12 +96,12 @@ void Sys_SendKeyEvents()
 			break;
 		case SDL_MOUSEWHEEL:
 			if (event.wheel.y > 0) {
-				Key_Event(K_MWHEELUP, true);
-				Key_Event(K_MWHEELUP, false);
+				Key_Event(K_MWHEELUP, 1);
+				Key_Event(K_MWHEELUP, 0);
 			}
 			else if (event.wheel.y < 0) {
-				Key_Event(K_MWHEELDOWN, true);
-				Key_Event(K_MWHEELDOWN, false);
+				Key_Event(K_MWHEELDOWN, 1);
+				Key_Event(K_MWHEELDOWN, 0);
 			}
 			break;
 		case SDL_WINDOWEVENT:
@@ -118,7 +118,7 @@ void Sys_SendKeyEvents()
 			break;
 		case SDL_QUIT:
 			CL_Disconnect();
-			Host_ShutdownServer(false);
+			Host_ShutdownServer(0);
 			Sys_Quit();
 			break;
 		default:

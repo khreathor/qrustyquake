@@ -52,7 +52,7 @@ void *Mod_Extradata (model_t *mod)
 	void *r = Cache_Check (&mod->cache);
 	if (r)
 		return r;
-	Mod_LoadModel (mod, true);
+	Mod_LoadModel (mod, 1);
 	if (!mod->cache.data)
 		Sys_Error ("Mod_Extradata: caching failed");
 	return mod->cache.data;
@@ -102,7 +102,7 @@ static u8 *Mod_DecompressVis (u8 *in, model_t *model)
 		while (c) {
 			if (out == outend) {
 				if(!model->viswarn) {
-					model->viswarn = true;
+					model->viswarn = 1;
 					printf("Mod_DecompressVis: output overrun on model \"%s\"\n", model->name);
 				}
 				return mod_decompressed;
@@ -174,7 +174,7 @@ static model_t *Mod_FindName (const s8 *name)
 		if (mod_numknown == MAX_MOD_KNOWN)
 			Sys_Error ("mod_numknown == MAX_MOD_KNOWN");
 		q_strlcpy (mod->name, name, MAX_QPATH);
-		mod->needload = true;
+		mod->needload = 1;
 		mod_numknown++;
 	}
 	return mod;
@@ -210,7 +210,7 @@ static model_t *Mod_LoadModel (model_t *mod, bool crash)
 	COM_FileBase (mod->name, loadname, sizeof(loadname));
 	loadmodel = mod;
 	// fill it in, call the apropriate loader
-	mod->needload = false;
+	mod->needload = 0;
 	s32 mod_type = (buf[0] | (buf[1]<<8) | (buf[2]<<16) | (buf[3]<<24));
 	switch (mod_type) {
 	case IDPOLYHEADER:
@@ -433,7 +433,7 @@ static void Mod_LoadLighting (lump_t *l)
 
 static void Mod_LoadVisibility (lump_t *l)
 {
-	loadmodel->viswarn = false;
+	loadmodel->viswarn = 0;
 	if (!l->filelen)
 	{
 		loadmodel->visdata = NULL;
@@ -776,7 +776,7 @@ static void Mod_LoadFaces (lump_t *l, bool bsp2)
 			else if (out->samples && !loadmodel->haslitwater)
 			{
 				Con_DPrintf ("Map has lit water\n");
-				loadmodel->haslitwater = true;
+				loadmodel->haslitwater = 1;
 			}
 
 		// detect special liquid types
@@ -1452,11 +1452,11 @@ static void Mod_LoadBrushModel (model_t *mod, void *buffer)
 	s32 bsp2 = 0;
 	switch(mod->bspversion) {
 	case BSPVERSION:
-		bsp2 = false;
+		bsp2 = 0;
 		break;
 #ifdef BSP29_VALVE
 	case BSPVERSION_VALVE:
-		bsp2 = false;
+		bsp2 = 0;
 		break;
 #endif
 	case BSP2VERSION_2PSB:
@@ -1466,7 +1466,7 @@ static void Mod_LoadBrushModel (model_t *mod, void *buffer)
 		bsp2 = 2;	//sanitised revision
 		break;
 	case BSPVERSION_QUAKE64:
-		bsp2 = false;
+		bsp2 = 0;
 		break;
 	default:
 		Sys_Error ("Mod_LoadBrushModel: %s has unsupported version number (%i)", mod->name, mod->bspversion);
@@ -1664,11 +1664,11 @@ bool nameInList(const s8 *list, const s8 *name)
 		}
 		tmp[i] = '\0';
 		if (!strcmp(name, tmp)) //compare it to the model name
-			return true;
+			return 1;
 		while (*s && *s == ',')
 			s++; // search forwards to next comma or end of string
 	}
-	return false;
+	return 0;
 }
 
 void Mod_SetExtraFlags (model_t *mod)

@@ -52,7 +52,7 @@ s32 Datagram_SendMessage(qsocket_t *sock, sizebuf_t *data)
 	packetBuffer.length = BigLong(packetLen | (NETFLAG_DATA | eom));
 	packetBuffer.sequence = BigLong(sock->sendSequence++);
 	Q_memcpy(packetBuffer.data, sock->sendMessage, dataLen);
-	sock->canSend = false;
+	sock->canSend = 0;
 	if (sfunc.
 	    Write(sock->socket, (u8 *) & packetBuffer, packetLen,
 		  &sock->addr) == -1)
@@ -78,7 +78,7 @@ static s32 SendMessageNext(qsocket_t *sock)
 	packetBuffer.length = BigLong(packetLen | (NETFLAG_DATA | eom));
 	packetBuffer.sequence = BigLong(sock->sendSequence++);
 	Q_memcpy(packetBuffer.data, sock->sendMessage, dataLen);
-	sock->sendNext = false;
+	sock->sendNext = 0;
 	if (sfunc.
 	    Write(sock->socket, (u8 *) & packetBuffer, packetLen,
 		  &sock->addr) == -1)
@@ -104,7 +104,7 @@ static s32 ReSendMessage(qsocket_t *sock)
 	packetBuffer.length = BigLong(packetLen | (NETFLAG_DATA | eom));
 	packetBuffer.sequence = BigLong(sock->sendSequence - 1);
 	Q_memcpy(packetBuffer.data, sock->sendMessage, dataLen);
-	sock->sendNext = false;
+	sock->sendNext = 0;
 	if (sfunc.
 	    Write(sock->socket, (u8 *) & packetBuffer, packetLen,
 		  &sock->addr) == -1)
@@ -124,7 +124,7 @@ bool Datagram_CanSendMessage(qsocket_t *sock)
 bool Datagram_CanSendUnreliableMessage(qsocket_t *sock)
 {
 	(void)sock; // the other sock, i found it.
-	return true;
+	return 1;
 }
 
 s32 Datagram_SendUnreliableMessage(qsocket_t *sock, sizebuf_t *data)
@@ -220,10 +220,10 @@ s32 Datagram_GetMessage(qsocket_t *sock)
 				memmove(sock->sendMessage,
 					sock->sendMessage + MAX_DATAGRAM,
 					sock->sendMessageLength);
-				sock->sendNext = true;
+				sock->sendNext = 1;
 			} else {
 				sock->sendMessageLength = 0;
-				sock->canSend = true;
+				sock->canSend = 1;
 			}
 			continue;
 		}
@@ -333,7 +333,7 @@ static const s8 *Strip_Port(const s8 *host)
 	return noport;
 }
 
-static bool testInProgress = false;
+static bool testInProgress = 0;
 static s32 testPollCount;
 static s32 testDriver;
 static sys_socket_t testSocket;
@@ -385,7 +385,7 @@ static void Test_Poll(void *unused)
 		SchedulePollProcedure(&testPollProcedure, 0.1);
 	} else {
 		dfunc.Close_Socket(testSocket);
-		testInProgress = false;
+		testInProgress = 0;
 	}
 }
 
@@ -429,7 +429,7 @@ JustDoIt:
 	testSocket = dfunc.Open_Socket(0);
 	if (testSocket == INVALID_SOCKET)
 		return;
-	testInProgress = true;
+	testInProgress = 1;
 	testPollCount = 20;
 	testDriver = net_landriverlevel;
 	for (n = 0; n < maxusers; n++) {
@@ -448,7 +448,7 @@ JustDoIt:
 	SchedulePollProcedure(&testPollProcedure, 0.1);
 }
 
-static bool test2InProgress = false;
+static bool test2InProgress = 0;
 static s32 test2Driver;
 static sys_socket_t test2Socket;
 static void Test2_Poll(void *);
@@ -501,7 +501,7 @@ Error:
 	Con_Printf("Unexpected response to Rule Info request\n");
 Done:
 	dfunc.Close_Socket(test2Socket);
-	test2InProgress = false;
+	test2InProgress = 0;
 	return;
 }
 
@@ -543,7 +543,7 @@ JustDoIt:
 	test2Socket = dfunc.Open_Socket(0);
 	if (test2Socket == INVALID_SOCKET)
 		return;
-	test2InProgress = true;
+	test2InProgress = 1;
 	test2Driver = net_landriverlevel;
 	SZ_Clear(&net_message);
 	// save space for the header, filled in later
@@ -576,7 +576,7 @@ s32 Datagram_Init()
 		csock = net_landrivers[i].Init();
 		if (csock == INVALID_SOCKET)
 			continue;
-		net_landrivers[i].initialized = true;
+		net_landrivers[i].initialized = 1;
 		net_landrivers[i].controlSock = csock;
 		num_inited++;
 	}
@@ -597,7 +597,7 @@ void Datagram_Shutdown()
 	for (i = 0; i < net_numlandrivers; i++) {
 		if (net_landrivers[i].initialized) {
 			net_landrivers[i].Shutdown();
-			net_landrivers[i].initialized = false;
+			net_landrivers[i].initialized = 0;
 		}
 	}
 }
@@ -1100,7 +1100,7 @@ static qsocket_t *_Datagram_Connect(const s8 *host)
 		Q_strcpy(m_return_reason, reason);
 		goto ErrorReturn;
 	}
-	m_return_onerror = false;
+	m_return_onerror = 0;
 	return sock;
 ErrorReturn:
 	NET_FreeQSocket(sock);
@@ -1110,7 +1110,7 @@ ErrorReturn2:
 		//IN_DeactivateForMenu();
 		key_dest = key_menu;
 		//m_state = m_return_state;
-		m_return_onerror = false;
+		m_return_onerror = 0;
 	}
 	return NULL;
 }

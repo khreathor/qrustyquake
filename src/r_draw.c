@@ -155,10 +155,10 @@ void R_ClipEdge(mvertex_t *pv0, mvertex_t *pv1, clipplane_t *clip)
 				clipvert.position[2]=pv0->position[2]+f*
 					(pv1->position[2]-pv0->position[2]);
 				if (clip->leftedge) {
-					r_leftclipped = true;
+					r_leftclipped = 1;
 					r_leftexit = clipvert;
 				} else if (clip->rightedge) {
-					r_rightclipped = true;
+					r_rightclipped = 1;
 					r_rightexit = clipvert;
 				}
 				R_ClipEdge(pv0, &clipvert, clip->next);
@@ -170,7 +170,7 @@ void R_ClipEdge(mvertex_t *pv0, mvertex_t *pv1, clipplane_t *clip)
 					return;
 				}
 				// only point 0 is clipped
-				r_lastvertvalid = false;
+				r_lastvertvalid = 0;
 				// we don't cache partially clipped edges
 				cacheoffset = 0x7FFFFFFF;
 				f = d0 / (d0 - d1);
@@ -178,10 +178,10 @@ void R_ClipEdge(mvertex_t *pv0, mvertex_t *pv1, clipplane_t *clip)
 				clipvert.position[1] = pv0->position[1] + f * (pv1->position[1] - pv0->position[1]);
 				clipvert.position[2] = pv0->position[2] + f * (pv1->position[2] - pv0->position[2]);
 				if (clip->leftedge) {
-					r_leftclipped = true;
+					r_leftclipped = 1;
 					r_leftenter = clipvert;
 				} else if (clip->rightedge) {
-					r_rightclipped = true;
+					r_rightclipped = 1;
 					r_rightenter = clipvert;
 				}
 				R_ClipEdge(&clipvert, pv1, clip->next);
@@ -232,7 +232,7 @@ void R_RenderFace(msurface_t *fa, s32 clipflags)
         if (r_wateralphapass && winquake_surface_liquid_alpha == 1)
                 return;
         if (!r_wateralphapass && winquake_surface_liquid_alpha < 1) {
-                r_foundtranswater = true;
+                r_foundtranswater = 1;
                 return;
         }	
 	if ((surface_p) >= surf_max) { // skip out if no more surfs
@@ -256,11 +256,11 @@ void R_RenderFace(msurface_t *fa, s32 clipflags)
 	}
 	r_emitted = 0; // push the edges through
 	r_nearzi = 0;
-	r_nearzionly = false;
-	makeleftedge = makerightedge = false;
+	r_nearzionly = 0;
+	makeleftedge = makerightedge = 0;
 	medge_t *pedges, tedge;
 	pedges = currententity->model->edges;
-	r_lastvertvalid = false;
+	r_lastvertvalid = 0;
 	for (i = 0; i < fa->numedges; i++) {
 		s32 lindex = currententity->model->surfedges[fa->firstedge + i];
 		if (lindex > 0) {
@@ -270,29 +270,29 @@ void R_RenderFace(msurface_t *fa, s32 clipflags)
 				if (r_pedge-> cachededgeoffset & FULLY_CLIPPED_CACHED) {
 					if ((r_pedge-> cachededgeoffset & FRAMECOUNT_MASK)
 							== r_framecount) {
-						r_lastvertvalid = false;
+						r_lastvertvalid = 0;
 						continue;
 					}
 				} else {
 					if ((((uintptr_t) edge_p - (uintptr_t) r_edges) > r_pedge->cachededgeoffset) &&
 							(((edge_t *) ((uintptr_t) r_edges + r_pedge-> cachededgeoffset))-> owner == r_pedge)) {
 						R_EmitCachedEdge();
-						r_lastvertvalid = false;
+						r_lastvertvalid = 0;
 						continue;
 					}
 				}
 			}
 			// assume it's cacheable
 			cacheoffset = (u8 *) edge_p - (u8 *) r_edges;
-			r_leftclipped = r_rightclipped = false;
+			r_leftclipped = r_rightclipped = 0;
 			R_ClipEdge(&r_pcurrentvertbase[r_pedge->v[0]],
 					&r_pcurrentvertbase[r_pedge->v[1]], pclip);
 			r_pedge->cachededgeoffset = cacheoffset;
 			if (r_leftclipped)
-				makeleftedge = true;
+				makeleftedge = 1;
 			if (r_rightclipped)
-				makerightedge = true;
-			r_lastvertvalid = true;
+				makerightedge = 1;
+			r_lastvertvalid = 1;
 		} else {
 			lindex = -lindex;
 			r_pedge = &pedges[lindex];
@@ -300,7 +300,7 @@ void R_RenderFace(msurface_t *fa, s32 clipflags)
 			if (!insubmodel) {
 				if (r_pedge-> cachededgeoffset & FULLY_CLIPPED_CACHED) {
 					if ((r_pedge-> cachededgeoffset & FRAMECOUNT_MASK) == r_framecount) {
-						r_lastvertvalid = false;
+						r_lastvertvalid = 0;
 						continue;
 					}
 				} else {
@@ -309,22 +309,22 @@ void R_RenderFace(msurface_t *fa, s32 clipflags)
 					if ((((uintptr_t) edge_p - (uintptr_t) r_edges) > r_pedge->cachededgeoffset) &&
 							(((edge_t *) ((uintptr_t) r_edges + r_pedge-> cachededgeoffset))-> owner == r_pedge)) {
 						R_EmitCachedEdge();
-						r_lastvertvalid = false;
+						r_lastvertvalid = 0;
 						continue;
 					}
 				}
 			}
 			// assume it's cacheable
 			cacheoffset = (u8 *) edge_p - (u8 *) r_edges;
-			r_leftclipped = r_rightclipped = false;
+			r_leftclipped = r_rightclipped = 0;
 			R_ClipEdge(&r_pcurrentvertbase[r_pedge->v[1]],
 					&r_pcurrentvertbase[r_pedge->v[0]], pclip);
 			r_pedge->cachededgeoffset = cacheoffset;
 			if (r_leftclipped)
-				makeleftedge = true;
+				makeleftedge = 1;
 			if (r_rightclipped)
-				makerightedge = true;
-			r_lastvertvalid = true;
+				makerightedge = 1;
+			r_lastvertvalid = 1;
 		}
 	}
 	// if there was a clip off the left edge, add that edge too
@@ -332,14 +332,14 @@ void R_RenderFace(msurface_t *fa, s32 clipflags)
 	// FIXME: share clipped edges?
 	if (makeleftedge) {
 		r_pedge = &tedge;
-		r_lastvertvalid = false;
+		r_lastvertvalid = 0;
 		R_ClipEdge(&r_leftexit, &r_leftenter, pclip->next);
 	}
 	// if there was a clip off the right edge, get the right r_nearzi
 	if (makerightedge) {
 		r_pedge = &tedge;
-		r_lastvertvalid = false;
-		r_nearzionly = true;
+		r_lastvertvalid = 0;
+		r_nearzionly = 1;
 		R_ClipEdge(&r_rightexit, &r_rightenter,view_clipplanes[1].next);
 	}
 	// if no edges made it out, return without posting the surface
@@ -392,18 +392,18 @@ void R_RenderBmodelFace(bedge_t *pedges, msurface_t *psurf)
 	}
 	r_emitted = 0; // push the edges through
 	r_nearzi = 0;
-	r_nearzionly = false;
-	makeleftedge = makerightedge = false;
+	r_nearzionly = 0;
+	makeleftedge = makerightedge = 0;
 	// FIXME: keep clipped bmodel edges in clockwise order so last vertex
 	// caching can be used?
-	r_lastvertvalid = false;
+	r_lastvertvalid = 0;
 	for (; pedges; pedges = pedges->pnext) {
-		r_leftclipped = r_rightclipped = false;
+		r_leftclipped = r_rightclipped = 0;
 		R_ClipEdge(pedges->v[0], pedges->v[1], pclip);
 		if (r_leftclipped)
-			makeleftedge = true;
+			makeleftedge = 1;
 		if (r_rightclipped)
-			makerightedge = true;
+			makerightedge = 1;
 	}
 	// if there was a clip off the left edge, add that edge too
 	// FIXME: faster to do in screen space?
@@ -415,7 +415,7 @@ void R_RenderBmodelFace(bedge_t *pedges, msurface_t *psurf)
 	// if there was a clip off the right edge, get the right r_nearzi
 	if (makerightedge) {
 		r_pedge = &tedge;
-		r_nearzionly = true;
+		r_nearzionly = 1;
 		R_ClipEdge(&r_rightexit, &r_rightenter,
 				view_clipplanes[1].next);
 	}
@@ -426,7 +426,7 @@ void R_RenderBmodelFace(bedge_t *pedges, msurface_t *psurf)
 	surface_p->data = (void *)psurf;
 	surface_p->nearzi = r_nearzi;
 	surface_p->flags = psurf->flags;
-	surface_p->insubmodel = true;
+	surface_p->insubmodel = 1;
 	surface_p->spanstate = 0;
 	surface_p->entity = currententity;
 	surface_p->key = r_currentbkey;

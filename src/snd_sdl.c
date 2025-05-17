@@ -58,7 +58,7 @@ bool SNDDMA_Init (dma_t *dma)
 	if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0)
 	{
 		Con_Printf("Couldn't init SDL audio: %s\n", SDL_GetError());
-		return false;
+		return 0;
 	}
 
 	/* Set up the desired format */
@@ -83,7 +83,7 @@ bool SNDDMA_Init (dma_t *dma)
 	{
 		Con_Printf("Couldn't open SDL audio: %s\n", SDL_GetError());
 		SDL_QuitSubSystem(SDL_INIT_AUDIO);
-		return false;
+		return 0;
 	}
 
 	memset ((void *) dma, 0, sizeof(dma_t));
@@ -127,12 +127,12 @@ bool SNDDMA_Init (dma_t *dma)
 		SDL_QuitSubSystem(SDL_INIT_AUDIO);
 		shm = NULL;
 		Con_Printf ("Failed allocating memory for SDL audio\n");
-		return false;
+		return 0;
 	}
 
 	SDL_PauseAudio(0);
 
-	return true;
+	return 1;
 }
 
 s32 SNDDMA_GetDMAPos (void)

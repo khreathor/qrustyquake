@@ -6,8 +6,7 @@ static efrag_t cl_efrags[MAX_EFRAGS];
 
 void CL_ClearState()
 {
-	if (!sv.active)
-		Host_ClearMemory();
+	if (!sv.active) Host_ClearMemory();
 	memset(&cl, 0, sizeof(cl)); // wipe the entire cl structure
 	SZ_Clear(&cls.message);
 	memset(cl_efrags, 0, sizeof(cl_efrags)); // clear other arrays
@@ -24,17 +23,13 @@ void CL_ClearState()
 	cl.free_efrags[i].entnext = NULL;
 }
 
-
-
 void CL_Disconnect() // Sends a disconnect message to the server
 { // This is also called on Host_Error, so it shouldn't cause any errors
-	S_StopAllSounds(true); // stop sounds (especially looping!)
-
+	S_StopAllSounds(1); // stop sounds (especially looping!)
 	if (cls.demoplayback) // if running a local server, shut it down
 		CL_StopPlayback();
 	else if (cls.state == ca_connected) {
-		if (cls.demorecording)
-			CL_Stop_f();
+		if (cls.demorecording) CL_Stop_f();
 		Con_DPrintf("Sending clc_disconnect\n");
 		SZ_Clear(&cls.message);
 		MSG_WriteByte(&cls.message, clc_disconnect);
@@ -42,29 +37,24 @@ void CL_Disconnect() // Sends a disconnect message to the server
 		SZ_Clear(&cls.message);
 		NET_Close(cls.netcon);
 		cls.state = ca_disconnected;
-		if (sv.active)
-			Host_ShutdownServer(false);
+		if (sv.active) Host_ShutdownServer(0);
 	}
-	cls.demoplayback = cls.timedemo = false;
+	cls.demoplayback = cls.timedemo = 0;
 	cls.signon = 0;
 }
 
 void CL_Disconnect_f()
 {
 	CL_Disconnect();
-	if (sv.active)
-		Host_ShutdownServer(false);
+	if (sv.active) Host_ShutdownServer(0);
 }
-
 
 void CL_EstablishConnection(s8 *host)
 { // Host should be either "local" or a net address to be passed on
-	if (cls.state == ca_dedicated || cls.demoplayback)
-		return;
+	if (cls.state == ca_dedicated || cls.demoplayback) return;
 	CL_Disconnect();
 	cls.netcon = NET_Connect(host);
-	if (!cls.netcon)
-		Host_Error("CL_Connect: connect failed\n");
+	if (!cls.netcon) Host_Error("CL_Connect: connect failed\n");
 	Con_DPrintf("CL_EstablishConnection: connected to %s\n", host);
 	cls.demonum = -1; // not in the demo loop now
 	cls.state = ca_connected;
@@ -106,8 +96,7 @@ void CL_SignonReply()
 void CL_NextDemo()
 { // Called to play the next demo in the demo loop
 	s8 str[1024];
-	if (cls.demonum == -1)
-		return; // don't play demos
+	if (cls.demonum == -1) return; // don't play demos
 	SCR_BeginLoadingPlaque();
 	if (!cls.demos[cls.demonum][0] || cls.demonum == MAX_DEMOS) {
 		cls.demonum = 0;
@@ -127,10 +116,7 @@ void CL_PrintEntities_f()
 	entity_t *ent = cl_entities;
 	for (s32 i = 0; i < cl.num_entities; i++, ent++) {
 		Con_Printf("%3i:", i);
-		if (!ent->model) {
-			Con_Printf("EMPTY\n");
-			continue;
-		}
+		if (!ent->model) { Con_Printf("EMPTY\n"); continue; }
 		Con_Printf("%s:%2i  (%5.1f,%5.1f,%5.1f) [%5.1f %5.1f %5.1f]\n",
 			   ent->model->name, ent->frame, ent->origin[0],
 			   ent->origin[1], ent->origin[2], ent->angles[0],
@@ -153,8 +139,7 @@ dlight_t *CL_AllocDlight (s32 key)
                         }
                 }
         }
-// then look for anything else
-        dl = cl_dlights;
+        dl = cl_dlights; // then look for anything else
         for (i=0 ; i<MAX_DLIGHTS ; i++, dl++) {
                 if (dl->die < cl.time) {
                         memset (dl, 0, sizeof(*dl));
@@ -183,7 +168,6 @@ void CL_DecayLights()
 	}
 }
 
-
 f32 CL_LerpPoint() // Determines the fraction between the last two messages
 { // that the objects should be put at.
 	f32 f = cl.mtime[0] - cl.mtime[1];
@@ -197,12 +181,10 @@ f32 CL_LerpPoint() // Determines the fraction between the last two messages
 	}
 	f32 frac = (cl.time - cl.mtime[1]) / f;
 	if (frac < 0) {
-		if (frac < -0.01)
-			cl.time = cl.mtime[1];
+		if (frac < -0.01) cl.time = cl.mtime[1];
 		frac = 0;
 	} else if (frac > 1) {
-		if (frac > 1.01)
-			cl.time = cl.mtime[0];
+		if (frac > 1.01) cl.time = cl.mtime[0];
 		frac = 1;
 	}
 	return frac;
@@ -215,14 +197,11 @@ void CL_RelinkEntities()
 	for (s32 i = 0; i < 3; i++) // interpolate player info
 		cl.velocity[i] = cl.mvelocity[1][i] +
 		    frac * (cl.mvelocity[0][i] - cl.mvelocity[1][i]);
-
 	if (cls.demoplayback) {
 		for (s32 j = 0; j < 3; j++) { // interpolate the angles
 			f32 d = cl.mviewangles[0][j] - cl.mviewangles[1][j];
-			if (d > 180)
-				d -= 360;
-			else if (d < -180)
-				d += 360;
+			if (d > 180) d -= 360;
+			else if (d < -180) d += 360;
 			cl.viewangles[j] = cl.mviewangles[1][j] + frac * d;
 		}
 	}
@@ -234,8 +213,7 @@ void CL_RelinkEntities()
 			if (ent->forcelink)
 				R_RemoveEfrags(ent); // just became empty
 			continue;
-		}
-		// if the object wasn't included in the last packet, remove it
+		} // if the object wasn't included in the last packet, remove it
 		if (ent->msgtime != cl.mtime[0]) {
 			ent->model = NULL;
 			continue;
@@ -269,8 +247,7 @@ void CL_RelinkEntities()
 				ent->angles[j] = ent->msg_angles[1][j] + f * d;
 			}
 		}
-		// rotate binary objects locally
-		if (ent->model->flags & EF_ROTATE)
+		if (ent->model->flags & EF_ROTATE) // rotate bin objects locally
 			ent->angles[1] = bobjrotate;
 		if (ent->effects & EF_BRIGHTFIELD)
 			R_EntityParticles(ent);
@@ -281,7 +258,6 @@ void CL_RelinkEntities()
 			VectorCopy(ent->origin, dl->origin);
 			dl->origin[2] += 16;
 			AngleVectors(ent->angles, fv, rv, uv);
-
 			VectorMA(dl->origin, 18, fv, dl->origin);
 			dl->radius = 200 + (rand() & 31);
 			dl->minlight = 32;
@@ -318,7 +294,7 @@ void CL_RelinkEntities()
 			R_RocketTrail(oldorg, ent->origin, 1);
 		else if (ent->model->flags & EF_TRACER3)
 			R_RocketTrail(oldorg, ent->origin, 6);
-		ent->forcelink = false;
+		ent->forcelink = 0;
 		if (i == cl.viewentity && !chase_active.value)
 			continue;
 		if (cl_numvisedicts < MAX_VISEDICTS) {
@@ -326,7 +302,6 @@ void CL_RelinkEntities()
 			cl_numvisedicts++;
 		}
 	}
-
 }
 
 s32 CL_ReadFromServer()
@@ -357,7 +332,6 @@ void CL_AccumulateCmd () // Spike: split from CL_SendCmd, to do clientside
         IN_Move (&cl.pendingcmd); // accumulate movement from other devices
     }
 }
-
 void CL_SendCmd ()
 {
 	usercmd_t cmd;
@@ -413,8 +387,8 @@ void CL_Init()
 	Cvar_RegisterVariable(&m_yaw);
 	Cvar_RegisterVariable(&m_forward);
 	Cvar_RegisterVariable(&m_side);
-	Cvar_RegisterVariable (&cl_maxpitch); //johnfitz -- variable pitch clamping
-	Cvar_RegisterVariable (&cl_minpitch); //johnfitz -- variable pitch clamping
+	Cvar_RegisterVariable (&cl_maxpitch); //johnfitz -- variable pitch clamp
+	Cvar_RegisterVariable (&cl_minpitch); //johnfitz -- variable pitch clamp
 	Cmd_AddCommand("entities", CL_PrintEntities_f);
 	Cmd_AddCommand("disconnect", CL_Disconnect_f);
 	Cmd_AddCommand("record", CL_Record_f);

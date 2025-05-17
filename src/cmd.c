@@ -21,7 +21,7 @@ void Cmd_ForwardToServer();
 // bind g "impulse 5 ; +attack ; wait ; -attack ; impulse 2"
 void Cmd_Wait_f()
 {
-	cmd_wait = true;
+	cmd_wait = 1;
 }
 
 void Cbuf_Init() // Command Buffer
@@ -61,7 +61,7 @@ void Cbuf_InsertText(s8 *text)
 
 void Cbuf_Waited()
 { // Spike: for renderer/server isolation
-    cmd_wait = false;
+    cmd_wait = 0;
 }
 
 
@@ -84,7 +84,7 @@ void Cbuf_Execute ()
             if (text[i] == '"')
                 quotes++;
             if (text[i] == '/' && text[i + 1] == '/')
-                comment = true;
+                comment = 1;
             if (!(quotes&1) && !comment && text[i] == ';')
                 break;  // don't break if inside a quoted string
             if (text[i] == '\n')
@@ -130,17 +130,17 @@ void Cbuf_Execute ()
 void Cmd_StuffCmds_f() // Script Commands
 {
 	s8 cmds[CMDLINE_LENGTH];
-	s32 plus = false; // On Unix, argv[0] is command name
+	s32 plus = 0; // On Unix, argv[0] is command name
 	s32 j = 0;
 	for (s32 i = 0; cmdline.string[i]; i++) {
 		if (cmdline.string[i] == '+') {
-			plus = true;
+			plus = 1;
 			if (j > 0) {
 				cmds[j - 1] = ';';
 				cmds[j++] = ' ';
 			}
 		} else if (cmdline.string[i] == '-' && (i == 0 || cmdline.string[i - 1] == ' ')) // johnfitz -- allow hypenated map names with +map
-			plus = false;
+			plus = 0;
 		else if (plus)
 			cmds[j++] = cmdline.string[i];
 	}
@@ -390,8 +390,8 @@ bool Cmd_Exists(const s8 *cmd_name)
 {
 	for (cmd_function_t *cmd = cmd_functions; cmd; cmd = cmd->next)
 		if (!Q_strcmp(cmd_name, cmd->name))
-			return true;
-	return false;
+			return 1;
+	return 0;
 }
 
 s8 *Cmd_CompleteCommand(s8 *partial)

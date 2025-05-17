@@ -86,7 +86,7 @@ SV_RunThink
 Runs thinking code if time.  There is some play in the exact time the think
 function will be called, because it is called before any movement is done
 in a frame.  Not used for pushmove objects, because they must be exact.
-Returns false if the entity removed itself.
+Returns 0 if the entity removed itself.
 =============
 */
 bool SV_RunThink (edict_t *ent)
@@ -95,7 +95,7 @@ bool SV_RunThink (edict_t *ent)
 
 	thinktime = ent->v.nextthink;
 	if (thinktime <= 0 || thinktime > sv.time + host_frametime)
-		return true;
+		return 1;
 
 	if (thinktime < sv.time)
 		thinktime = sv.time;	// don't let things stay in the past.
@@ -226,7 +226,7 @@ s32 SV_FlyMove (edict_t *ent, f32 time, trace_t *steptrace)
 		for (i=0 ; i<3 ; i++)
 			end[i] = ent->v.origin[i] + time_left * ent->v.velocity[i];
 
-		trace = SV_Move (ent->v.origin, ent->v.mins, ent->v.maxs, end, false, ent);
+		trace = SV_Move (ent->v.origin, ent->v.mins, ent->v.maxs, end, 0, ent);
 
 		if (trace.allsolid)
 		{	// entity is trapped in another solid
@@ -383,7 +383,7 @@ trace_t SV_PushEntity (edict_t *ent, vec3_t push)
 		trace = SV_Move (ent->v.origin, ent->v.mins, ent->v.maxs, end, MOVE_NORMAL, ent);
 
 	VectorCopy (trace.endpos, ent->v.origin);
-	SV_LinkEdict (ent, true);
+	SV_LinkEdict (ent, 1);
 
 	if (trace.ent)
 		SV_Impact (ent, trace.ent);
@@ -428,7 +428,7 @@ void SV_PushMove (edict_t *pusher, f32 movetime)
 
 	VectorAdd (pusher->v.origin, move, pusher->v.origin);
 	pusher->v.ltime += movetime;
-	SV_LinkEdict (pusher, false);
+	SV_LinkEdict (pusher, 0);
 
 	//johnfitz -- dynamically allocate
 	mark = Hunk_LowMark ();
@@ -500,10 +500,10 @@ void SV_PushMove (edict_t *pusher, f32 movetime)
 			}
 
 			VectorCopy (entorig, check->v.origin);
-			SV_LinkEdict (check, true);
+			SV_LinkEdict (check, 1);
 
 			VectorCopy (pushorig, pusher->v.origin);
-			SV_LinkEdict (pusher, false);
+			SV_LinkEdict (pusher, 0);
 			pusher->v.ltime -= movetime;
 
 			// if the pusher has a "blocked" function, call it
@@ -519,7 +519,7 @@ void SV_PushMove (edict_t *pusher, f32 movetime)
 			for (i=0 ; i<num_moved ; i++)
 			{
 				VectorCopy (moved_from[i], moved_edict[i]->v.origin);
-				SV_LinkEdict (moved_edict[i], false);
+				SV_LinkEdict (moved_edict[i], 0);
 			}
 			Hunk_FreeToLowMark (mark); //johnfitz
 			return;
@@ -606,7 +606,7 @@ void SV_CheckStuck (edict_t *ent)
 	if (!SV_TestEntityPosition(ent))
 	{
 		Con_DPrintf ("Unstuck.\n");
-		SV_LinkEdict (ent, true);
+		SV_LinkEdict (ent, 1);
 		return;
 	}
 
@@ -620,7 +620,7 @@ void SV_CheckStuck (edict_t *ent)
 				if (!SV_TestEntityPosition(ent))
 				{
 					Con_DPrintf ("Unstuck.\n");
-					SV_LinkEdict (ent, true);
+					SV_LinkEdict (ent, 1);
 					return;
 				}
 			}
@@ -924,7 +924,7 @@ void SV_Physics_Client (edict_t	*ent, s32 num)
 //
 // call standard player post-think
 //
-	SV_LinkEdict (ent, true);
+	SV_LinkEdict (ent, 1);
 
 	pr_global_struct->time = sv.time;
 	pr_global_struct->self = EDICT_TO_PROG(ent);
@@ -962,7 +962,7 @@ void SV_Physics_Noclip (edict_t *ent)
 	VectorMA (ent->v.angles, host_frametime, ent->v.avelocity, ent->v.angles);
 	VectorMA (ent->v.origin, host_frametime, ent->v.velocity, ent->v.origin);
 
-	SV_LinkEdict (ent, false);
+	SV_LinkEdict (ent, 0);
 }
 
 /*
@@ -1101,14 +1101,14 @@ void SV_Physics_Step (edict_t *ent)
 	if ( ! ((s32)ent->v.flags & (FL_ONGROUND | FL_FLY | FL_SWIM) ) )
 	{
 		if (ent->v.velocity[2] < sv_gravity.value*-0.1)
-			hitsound = true;
+			hitsound = 1;
 		else
-			hitsound = false;
+			hitsound = 0;
 
 		SV_AddGravity (ent);
 		SV_CheckVelocity (ent);
 		SV_FlyMove (ent, host_frametime, NULL);
-		SV_LinkEdict (ent, true);
+		SV_LinkEdict (ent, 1);
 
 		if ( (s32)ent->v.flags & FL_ONGROUND )	// just hit ground
 		{
@@ -1164,7 +1164,7 @@ void SV_Physics (void)
 
 		if (pr_global_struct->force_retouch)
 		{
-			SV_LinkEdict (ent, true);	// force retouch even for stationary
+			SV_LinkEdict (ent, 1);	// force retouch even for stationary
 		}
 
 		if (i > 0 && i <= svs.maxclients)
@@ -1189,12 +1189,12 @@ void SV_Physics (void)
 	//johnfitz -- PROTOCOL_FITZQUAKE
 	//capture interval to nextthink here and send it to client for better
 	//lerp timing, but only if interval is not 0.1 (which client assumes)
-		ent->sendinterval = false;
+		ent->sendinterval = 0;
 		if (!ent->free && ent->v.nextthink > sv.time && (ent->v.movetype == MOVETYPE_STEP || ent->v.movetype == MOVETYPE_WALK || ent->v.frame != ent->oldframe))
 		{
 			s32 j = Q_rint((ent->v.nextthink-ent->oldthinktime)*255);
 			if (j >= 0 && j < 256 && j != 25 && j != 26) //25 and 26 are close enough to 0.1 to not send
-				ent->sendinterval = true;
+				ent->sendinterval = 1;
 		}
 	//johnfitz
 	}

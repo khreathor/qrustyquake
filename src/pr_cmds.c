@@ -162,7 +162,7 @@ static void PF_setorigin (void)
 	e = G_EDICT(OFS_PARM0);
 	org = G_VECTOR(OFS_PARM1);
 	VectorCopy (org, e->v.origin);
-	SV_LinkEdict (e, false);
+	SV_LinkEdict (e, 0);
 }
 
 
@@ -180,7 +180,7 @@ static void SetMinMaxSize (edict_t *e, f32 *minvec, f32 *maxvec, bool rotate)
 		if (minvec[i] > maxvec[i])
 			PR_RunError ("backwards mins/maxs");
 
-	rotate = false;		// FIXME: implement rotation properly again
+	rotate = 0;		// FIXME: implement rotation properly again
 
 	if (!rotate)
 	{
@@ -237,7 +237,7 @@ static void SetMinMaxSize (edict_t *e, f32 *minvec, f32 *maxvec, bool rotate)
 	VectorCopy (rmax, e->v.maxs);
 	VectorSubtract (maxvec, minvec, e->v.size);
 
-	SV_LinkEdict (e, false);
+	SV_LinkEdict (e, 0);
 }
 
 /*
@@ -257,7 +257,7 @@ static void PF_setsize (void)
 	e = G_EDICT(OFS_PARM0);
 	minvec = G_VECTOR(OFS_PARM1);
 	maxvec = G_VECTOR(OFS_PARM2);
-	SetMinMaxSize (e, minvec, maxvec, false);
+	SetMinMaxSize (e, minvec, maxvec, 0);
 }
 
 
@@ -292,19 +292,19 @@ static void PF_setmodel (void)
 	e->v.model = PR_SetEngineString(*check);
 	e->v.modelindex = i; //SV_ModelIndex (m);
 
-	mod = sv.models[ (s32)e->v.modelindex];  // Mod_ForName (m, true);
+	mod = sv.models[ (s32)e->v.modelindex];  // Mod_ForName (m, 1);
 
 	if (mod)
 	//johnfitz -- correct physics cullboxes for bmodels
 	{
 		if (mod->type == mod_brush)
-			SetMinMaxSize (e, mod->clipmins, mod->clipmaxs, true);
+			SetMinMaxSize (e, mod->clipmins, mod->clipmaxs, 1);
 		else
-			SetMinMaxSize (e, mod->mins, mod->maxs, true);
+			SetMinMaxSize (e, mod->mins, mod->maxs, 1);
 	}
 	//johnfitz
 	else
-		SetMinMaxSize (e, vec3_origin, vec3_origin, true);
+		SetMinMaxSize (e, vec3_origin, vec3_origin, 1);
 }
 
 /*
@@ -555,7 +555,7 @@ static void PF_ambientsound (void)
 	f32		*pos;
 	f32		vol, attenuation;
 	s32		i, soundnum;
-	s32		large = false; //johnfitz -- PROTOCOL_FITZQUAKE
+	s32		large = 0; //johnfitz -- PROTOCOL_FITZQUAKE
 
 	pos = G_VECTOR (OFS_PARM0);
 	samp = G_STRING(OFS_PARM1);
@@ -581,7 +581,7 @@ static void PF_ambientsound (void)
 		if (sv.protocol == PROTOCOL_NETQUAKE)
 			return; //don't send any info protocol can't support
 		else
-			large = true;
+			large = 1;
 	}
 	//johnfitz
 
@@ -714,7 +714,7 @@ static void PF_traceline (void)
 =================
 PF_checkpos
 
-Returns true if the given entity can move to the given position from it's
+Returns 1 if the given entity can move to the given position from it's
 current position by walking or rolling.
 FIXME: make work...
 scalar checkpos (entity, vector)
@@ -1119,7 +1119,7 @@ static void PF_precache_model (void)
 		if (!sv.model_precache[i])
 		{
 			sv.model_precache[i] = s;
-			sv.models[i] = Mod_ForName (s, true);
+			sv.models[i] = Mod_ForName (s, 1);
 			return;
 		}
 		if (!strcmp(sv.model_precache[i], s))
@@ -1136,12 +1136,12 @@ static void PF_coredump (void)
 
 static void PF_traceon (void)
 {
-	pr_trace = true;
+	pr_trace = 1;
 }
 
 static void PF_traceoff (void)
 {
-	pr_trace = false;
+	pr_trace = 0;
 }
 
 static void PF_eprint (void)
@@ -1184,7 +1184,7 @@ static void PF_walkmove (void)
 	oldf = pr_xfunction;
 	oldself = pr_global_struct->self;
 
-	G_FLOAT(OFS_RETURN) = SV_movestep(ent, move, true);
+	G_FLOAT(OFS_RETURN) = SV_movestep(ent, move, 1);
 
 
 // restore program state
@@ -1210,14 +1210,14 @@ static void PF_droptofloor (void)
 	VectorCopy (ent->v.origin, end);
 	end[2] -= 256;
 
-	trace = SV_Move (ent->v.origin, ent->v.mins, ent->v.maxs, end, false, ent);
+	trace = SV_Move (ent->v.origin, ent->v.mins, ent->v.maxs, end, 0, ent);
 
 	if (trace.fraction == 1 || trace.allsolid)
 		G_FLOAT(OFS_RETURN) = 0;
 	else
 	{
 		VectorCopy (trace.endpos, ent->v.origin);
-		SV_LinkEdict (ent, false);
+		SV_LinkEdict (ent, 0);
 		ent->v.flags = (s32)ent->v.flags | FL_ONGROUND;
 		ent->v.groundentity = EDICT_TO_PROG(trace.ent);
 		G_FLOAT(OFS_RETURN) = 1;
@@ -1372,7 +1372,7 @@ static void PF_aim (void)
 // try sending a trace straight
 	VectorCopy (pr_global_struct->v_forward, dir);
 	VectorMA (start, 2048, dir, end);
-	tr = SV_Move (start, vec3_origin, vec3_origin, end, false, ent);
+	tr = SV_Move (start, vec3_origin, vec3_origin, end, 0, ent);
 	if (tr.ent && tr.ent->v.takedamage == DAMAGE_AIM
 		&& (!teamplay.value || ent->v.team <= 0 || ent->v.team != tr.ent->v.team) )
 	{
@@ -1401,7 +1401,7 @@ static void PF_aim (void)
 		dist = DotProduct (dir, pr_global_struct->v_forward);
 		if (dist < bestdist)
 			continue;	// to far to turn
-		tr = SV_Move (start, vec3_origin, vec3_origin, end, false, ent);
+		tr = SV_Move (start, vec3_origin, vec3_origin, end, 0, ent);
 		if (tr.ent == check)
 		{	// can shoot at this one
 			bestdist = dist;
@@ -1676,7 +1676,7 @@ static void PF_changelevel (void)
 // make sure we don't issue two changelevels
 	if (svs.changelevel_issued)
 		return;
-	svs.changelevel_issued = true;
+	svs.changelevel_issued = 1;
 
 	s = G_STRING(OFS_PARM0);
 	Cbuf_AddText (va("changelevel %s\n",s));

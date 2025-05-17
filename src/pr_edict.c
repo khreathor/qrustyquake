@@ -42,7 +42,7 @@ Sets everything to NULL
 void ED_ClearEdict (edict_t *e)
 {
 	memset (&e->v, 0, progs->entityfields * 4);
-	e->free = false;
+	e->free = 0;
 }
 
 /*
@@ -96,7 +96,7 @@ void ED_Free (edict_t *ed)
 {
 	SV_UnlinkEdict (ed);		// unlink from world bsp
 
-	ed->free = true;
+	ed->free = 1;
 	ed->v.model = 0;
 	ed->v.takedamage = 0;
 	ed->v.modelindex = 0;
@@ -736,7 +736,7 @@ static string_t ED_NewString (const s8 *string)
 ED_ParseEval
 
 Can parse either fields or globals
-returns false if error
+returns 0 if error
 =============
 */
 static bool ED_ParseEpair (void *base, ddef_t *key, const s8 *s)
@@ -797,7 +797,7 @@ static bool ED_ParseEpair (void *base, ddef_t *key, const s8 *s)
 			//johnfitz -- HACK -- suppress error becuase fog/sky fields might not be mentioned in defs.qc
 			if (strncmp(s, "sky", 3) && strcmp(s, "fog"))
 				Con_DPrintf ("Can't find field %s\n", s);
-			return false;
+			return 0;
 		}
 		*(s32 *)d = G_INT(def->ofs);
 		break;
@@ -807,7 +807,7 @@ static bool ED_ParseEpair (void *base, ddef_t *key, const s8 *s)
 		if (!func)
 		{
 			Con_Printf ("Can't find function %s\n", s);
-			return false;
+			return 0;
 		}
 		*(func_t *)d = func - pr_functions;
 		break;
@@ -815,7 +815,7 @@ static bool ED_ParseEpair (void *base, ddef_t *key, const s8 *s)
 	default:
 		break;
 	}
-	return true;
+	return 1;
 }
 
 /*
@@ -834,7 +834,7 @@ const s8 *ED_ParseEdict (const s8 *data, edict_t *ent)
 	bool	anglehack, init;
 	s32		n;
 
-	init = false;
+	init = 0;
 
 	// clear it
 	if (ent != sv.edicts)	// hack
@@ -855,10 +855,10 @@ const s8 *ED_ParseEdict (const s8 *data, edict_t *ent)
 		if (!strcmp(com_token, "angle"))
 		{
 			strcpy (com_token, "angles");
-			anglehack = true;
+			anglehack = 1;
 		}
 		else
-			anglehack = false;
+			anglehack = 0;
 
 		// FIXME: change light to _light to get rid of this hack
 		if (!strcmp(com_token, "light"))
@@ -885,7 +885,7 @@ const s8 *ED_ParseEdict (const s8 *data, edict_t *ent)
 		if (com_token[0] == '}')
 			Host_Error ("ED_ParseEntity: closing brace without data");
 
-		init = true;
+		init = 1;
 
 		// keynames with a leading underscore are used for utility comments,
 		// and are immediately discarded by quake
@@ -918,7 +918,7 @@ const s8 *ED_ParseEdict (const s8 *data, edict_t *ent)
 	}
 
 	if (!init)
-		ent->free = true;
+		ent->free = 1;
 
 	return data;
 }
@@ -1197,7 +1197,7 @@ void PR_LoadProgs (void)
 		pr_globaldefs[i].s_name = LittleLong (pr_globaldefs[i].s_name);
 	}
 
-	pr_alpha_supported = false; //johnfitz
+	pr_alpha_supported = 0; //johnfitz
 
 	for (i = 0; i < progs->numfielddefs; i++)
 	{
@@ -1209,7 +1209,7 @@ void PR_LoadProgs (void)
 
 		//johnfitz -- detect alpha support in progs.dat
 		if (!strcmp(pr_strings + pr_fielddefs[i].s_name,"alpha"))
-			pr_alpha_supported = true;
+			pr_alpha_supported = 1;
 		//johnfitz
 	}
 

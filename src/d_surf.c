@@ -63,11 +63,11 @@ surfcache_t *D_SCAlloc(s32 width, uintptr_t size)
 	if (size > sc_size)
 		Sys_Error("D_SCAlloc: %i > cache size", size);
 	// if there is not size bytes after the rover, reset to the start
-	bool wrapped_this_time = false;
+	bool wrapped_this_time = 0;
 	if (!sc_rover || (u64)((u8 *) sc_rover - (u8 *) sc_base)
 			> sc_size - size) {
 		if (sc_rover) {
-			wrapped_this_time = true;
+			wrapped_this_time = 1;
 		}
 		sc_rover = sc_base;
 	}
@@ -100,9 +100,9 @@ surfcache_t *D_SCAlloc(s32 width, uintptr_t size)
 		new->height = (size - sizeof(*new) + sizeof(new->data)) / width;
 	new->owner = NULL; // should be set properly after return
 	if (d_roverwrapped && (wrapped_this_time || sc_rover >=d_initial_rover))
-			r_cache_thrash = true;
+			r_cache_thrash = 1;
 	else if (wrapped_this_time)
-		d_roverwrapped = true;
+		d_roverwrapped = 1;
 	return new;
 }
 

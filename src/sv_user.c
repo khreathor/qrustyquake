@@ -101,7 +101,7 @@ void SV_UserFriction (void)
 	start[2] = origin[2] + sv_player->v.mins[2];
 	stop[2] = start[2] - 34;
 
-	trace = SV_Move (start, vec3_origin, vec3_origin, stop, true, sv_player);
+	trace = SV_Move (start, vec3_origin, vec3_origin, stop, 1, sv_player);
 
 	if (trace.fraction == 1.0)
 		friction = sv_friction.value*sv_edgefriction.value;
@@ -437,7 +437,7 @@ void SV_ReadClientMove (usercmd_t *move)
 ===================
 SV_ReadClientMessage
 
-Returns false if the client should be killed
+Returns 0 if the client should be killed
 ===================
 */
 bool SV_ReadClientMessage (void)
@@ -453,22 +453,22 @@ nextmsg:
 		if (ret == -1)
 		{
 			Sys_Printf ("SV_ReadClientMessage: NET_GetMessage failed\n");
-			return false;
+			return 0;
 		}
 		if (!ret)
-			return true;
+			return 1;
 
 		MSG_BeginReading ();
 
 		while (1)
 		{
 			if (!host_client->active)
-				return false;	// a command caused an error
+				return 0;	// a command caused an error
 
 			if (msg_badread)
 			{
 				Sys_Printf ("SV_ReadClientMessage: badread\n");
-				return false;
+				return 0;
 			}
 
 			ccmd = MSG_ReadChar ();
@@ -480,7 +480,7 @@ nextmsg:
 
 			default:
 				Sys_Printf ("SV_ReadClientMessage: unknown command s8\n");
-				return false;
+				return 0;
 
 			case clc_nop:
 //				Sys_Printf ("clc_nop\n");
@@ -538,7 +538,7 @@ nextmsg:
 
 			case clc_disconnect:
 			//	Sys_Printf ("SV_ReadClientMessage: client disconnected\n");
-				return false;
+				return 0;
 
 			case clc_move:
 				SV_ReadClientMove (&host_client->cmd);
@@ -547,7 +547,7 @@ nextmsg:
 		}
 	} while (ret == 1);
 
-	return true;
+	return 1;
 }
 
 
@@ -569,7 +569,7 @@ void SV_RunClients (void)
 
 		if (!SV_ReadClientMessage ())
 		{
-			SV_DropClient (false);	// client misbehaved...
+			SV_DropClient (0);	// client misbehaved...
 			continue;
 		}
 

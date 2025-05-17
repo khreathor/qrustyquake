@@ -14,15 +14,15 @@ hostcache_t hostcache[HOSTCACHESIZE];
 qsocket_t *net_activeSockets = NULL;
 qsocket_t *net_freeSockets = NULL;
 s32 net_numsockets = 0;
-bool tcpipAvailable = false;
+bool tcpipAvailable = 0;
 s32 net_hostport;
 s32 DEFAULTnet_hostport = 26000;
 s8 my_ipx_address[NET_NAMELEN];
 s8 my_tcpip_address[NET_NAMELEN];
-static bool listening = false;
-bool slistInProgress = false;
-bool slistSilent = false;
-bool slistLocal = true;
+static bool listening = 0;
+bool slistInProgress = 0;
+bool slistSilent = 0;
+bool slistLocal = 1;
 static f64 slistStartTime;
 static s32 slistLastShown;
 sizebuf_t net_message;
@@ -58,14 +58,14 @@ qsocket_t *NET_NewQSocket()
 	// add it to active list
 	sock->next = net_activeSockets;
 	net_activeSockets = sock;
-	sock->disconnected = false;
+	sock->disconnected = 0;
 	sock->connecttime = net_time;
 	Q_strcpy(sock->address, "UNSET ADDRESS");
 	sock->driver = net_driverlevel;
 	sock->socket = 0;
 	sock->driverdata = NULL;
-	sock->canSend = true;
-	sock->sendNext = false;
+	sock->canSend = 1;
+	sock->sendNext = 0;
 	sock->lastMessageTime = net_time;
 	sock->ackSequence = 0;
 	sock->sendSequence = 0;
@@ -96,7 +96,7 @@ void NET_FreeQSocket(qsocket_t *sock)
 	// add it to free list
 	sock->next = net_freeSockets;
 	net_freeSockets = sock;
-	sock->disconnected = true;
+	sock->disconnected = 1;
 }
 
 static void NET_Listen_f()
@@ -105,10 +105,10 @@ static void NET_Listen_f()
 		Con_Printf("\"listen\" is \"%d\"\n", listening ? 1 : 0);
 		return;
 	}
-	listening = Q_atoi(Cmd_Argv(1)) ? true : false;
+	listening = Q_atoi(Cmd_Argv(1)) ? 1 : 0;
 	for (net_driverlevel = 0; net_driverlevel < net_numdrivers;
 	     net_driverlevel++) {
-		if (net_drivers[net_driverlevel].initialized == false)
+		if (net_drivers[net_driverlevel].initialized == 0)
 			continue;
 		dfunc.Listen(listening);
 	}
@@ -203,7 +203,7 @@ void NET_Slist_f()
 		Con_Printf("Looking for Quake servers...\n");
 		PrintSlistHeader();
 	}
-	slistInProgress = true;
+	slistInProgress = 1;
 	slistStartTime = Sys_DoubleTime();
 	SchedulePollProcedure(&slistSendProcedure, 0.0);
 	SchedulePollProcedure(&slistPollProcedure, 0.1);
@@ -217,9 +217,9 @@ static void Slist_Send(void *unused)
 	     net_driverlevel++) {
 		if (!slistLocal && IS_LOOP_DRIVER(net_driverlevel))
 			continue;
-		if (net_drivers[net_driverlevel].initialized == false)
+		if (net_drivers[net_driverlevel].initialized == 0)
 			continue;
-		dfunc.SearchForHosts(true);
+		dfunc.SearchForHosts(1);
 	}
 	if ((Sys_DoubleTime() - slistStartTime) < 0.5)
 		SchedulePollProcedure(&slistSendProcedure, 0.75);
@@ -232,9 +232,9 @@ static void Slist_Poll(void *unused)
 	     net_driverlevel++) {
 		if (!slistLocal && IS_LOOP_DRIVER(net_driverlevel))
 			continue;
-		if (net_drivers[net_driverlevel].initialized == false)
+		if (net_drivers[net_driverlevel].initialized == 0)
 			continue;
-		dfunc.SearchForHosts(false);
+		dfunc.SearchForHosts(0);
 	}
 	if (!slistSilent)
 		PrintSlist();
@@ -244,9 +244,9 @@ static void Slist_Poll(void *unused)
 	}
 	if (!slistSilent)
 		PrintSlistTrailer();
-	slistInProgress = false;
-	slistSilent = false;
-	slistLocal = true;
+	slistInProgress = 0;
+	slistSilent = 0;
+	slistLocal = 1;
 }
 
 qsocket_t *NET_Connect(const s8 *host)
@@ -272,7 +272,7 @@ qsocket_t *NET_Connect(const s8 *host)
 				goto JustDoIt;
 		}
 	}
-	slistSilent = host ? true : false;
+	slistSilent = host ? 1 : 0;
 	NET_Slist_f();
 	while (slistInProgress)
 		NET_Poll();
@@ -294,7 +294,7 @@ qsocket_t *NET_Connect(const s8 *host)
 JustDoIt:
 	for (net_driverlevel = 0; net_driverlevel < numdrivers;
 	     net_driverlevel++) {
-		if (net_drivers[net_driverlevel].initialized == false)
+		if (net_drivers[net_driverlevel].initialized == 0)
 			continue;
 		ret = dfunc.Connect(host);
 		if (ret)
@@ -315,9 +315,9 @@ qsocket_t *NET_CheckNewConnections()
 	SetNetTime();
 	for (net_driverlevel = 0; net_driverlevel < net_numdrivers;
 	     net_driverlevel++) {
-		if (net_drivers[net_driverlevel].initialized == false)
+		if (net_drivers[net_driverlevel].initialized == 0)
 			continue;
-		if (!IS_LOOP_DRIVER(net_driverlevel) && listening == false)
+		if (!IS_LOOP_DRIVER(net_driverlevel) && listening == 0)
 			continue;
 		ret = dfunc.CheckNewConnections();
 		if (ret) {
@@ -410,14 +410,14 @@ s32 NET_SendUnreliableMessage(qsocket_t *sock, sizebuf_t *data)
 	return r;
 }
 
-// Returns true or false if the given qsocket can currently accept a
+// Returns 1 or 0 if the given qsocket can currently accept a
 // message to be transmitted.
 bool NET_CanSendMessage(qsocket_t *sock)
 {
 	if (!sock)
-		return false;
+		return 0;
 	if (sock->disconnected)
-		return false;
+		return 0;
 	SetNetTime();
 	return sfunc.CanSendMessage(sock);
 }
@@ -434,16 +434,16 @@ s32 NET_SendToAll(sizebuf_t *data, f64 blocktime)
 			if (IS_LOOP_DRIVER(host_client->netconnection->driver)){
 				NET_SendMessage(host_client->netconnection,
 						data);
-				msg_init[i] = true;
-				msg_sent[i] = true;
+				msg_init[i] = 1;
+				msg_sent[i] = 1;
 				continue;
 			}
 			count++;
-			msg_init[i] = false;
-			msg_sent[i] = false;
+			msg_init[i] = 0;
+			msg_sent[i] = 0;
 		} else {
-			msg_init[i] = true;
-			msg_sent[i] = true;
+			msg_init[i] = 1;
+			msg_sent[i] = 1;
 		}
 	}
 	start = Sys_DoubleTime();
@@ -454,7 +454,7 @@ s32 NET_SendToAll(sizebuf_t *data, f64 blocktime)
 			if (!msg_init[i]) {
 				if (NET_CanSendMessage
 				    (host_client->netconnection)) {
-					msg_init[i] = true;
+					msg_init[i] = 1;
 					NET_SendMessage(host_client->
 							netconnection, data);
 				} else {
@@ -467,7 +467,7 @@ s32 NET_SendToAll(sizebuf_t *data, f64 blocktime)
 			if (!msg_sent[i]) {
 				if (NET_CanSendMessage
 				    (host_client->netconnection)) {
-					msg_sent[i] = true;
+					msg_sent[i] = 1;
 				} else {
 					NET_GetMessage(host_client->
 						       netconnection);
@@ -503,13 +503,13 @@ void NET_Init()
 	if (cls.state != ca_dedicated)
 		net_numsockets++;
 	if (COM_CheckParm("-listen") || cls.state == ca_dedicated)
-		listening = true;
+		listening = 1;
 	SetNetTime();
 	for (i = 0; i < net_numsockets; i++) {
 		s = (qsocket_t *) Hunk_AllocName(sizeof(qsocket_t), "qsocket");
 		s->next = net_freeSockets;
 		net_freeSockets = s;
-		s->disconnected = true;
+		s->disconnected = 1;
 	}
 	// allocate space for network message buffer
 	SZ_Alloc(&net_message, NET_MAXMESSAGE);
@@ -525,9 +525,9 @@ void NET_Init()
 		if (net_drivers[net_driverlevel].Init() == -1)
 			continue;
 		i++;
-		net_drivers[net_driverlevel].initialized = true;
+		net_drivers[net_driverlevel].initialized = 1;
 		if (listening)
-			net_drivers[net_driverlevel].Listen(true);
+			net_drivers[net_driverlevel].Listen(1);
 	}
 	/* Loop_Init() returns -1 for dedicated server case,
 	 * therefore the i == 0 check is correct */
@@ -551,9 +551,9 @@ void NET_Shutdown()
 	// shutdown the drivers
 	for (net_driverlevel = 0; net_driverlevel < net_numdrivers;
 	     net_driverlevel++) {
-		if (net_drivers[net_driverlevel].initialized == true) {
+		if (net_drivers[net_driverlevel].initialized == 1) {
 			net_drivers[net_driverlevel].Shutdown();
-			net_drivers[net_driverlevel].initialized = false;
+			net_drivers[net_driverlevel].initialized = 0;
 		}
 	}
 }

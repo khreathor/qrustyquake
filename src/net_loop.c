@@ -4,7 +4,7 @@
 
 #include "quakedef.h"
 
-static bool localconnectpending = false;
+static bool localconnectpending = 0;
 static qsocket_t *loop_client = NULL;
 static qsocket_t *loop_server = NULL;
 
@@ -45,7 +45,7 @@ qsocket_t *Loop_Connect(const s8 *host)
 {
 	if (Q_strcmp(host, "local") != 0)
 		return NULL;
-	localconnectpending = true;
+	localconnectpending = 1;
 	if (!loop_client) {
 		if ((loop_client = NET_NewQSocket()) == NULL) {
 			Con_Printf("Loop_Connect: no qsocket available\n");
@@ -55,7 +55,7 @@ qsocket_t *Loop_Connect(const s8 *host)
 	}
 	loop_client->receiveMessageLength = 0;
 	loop_client->sendMessageLength = 0;
-	loop_client->canSend = true;
+	loop_client->canSend = 1;
 	if (!loop_server) {
 		if ((loop_server = NET_NewQSocket()) == NULL) {
 			Con_Printf("Loop_Connect: no qsocket available\n");
@@ -65,7 +65,7 @@ qsocket_t *Loop_Connect(const s8 *host)
 	}
 	loop_server->receiveMessageLength = 0;
 	loop_server->sendMessageLength = 0;
-	loop_server->canSend = true;
+	loop_server->canSend = 1;
 	loop_client->driverdata = (void *)loop_server;
 	loop_server->driverdata = (void *)loop_client;
 	return loop_client;
@@ -75,13 +75,13 @@ qsocket_t *Loop_CheckNewConnections()
 {
 	if (!localconnectpending)
 		return NULL;
-	localconnectpending = false;
+	localconnectpending = 0;
 	loop_server->sendMessageLength = 0;
 	loop_server->receiveMessageLength = 0;
-	loop_server->canSend = true;
+	loop_server->canSend = 1;
 	loop_client->sendMessageLength = 0;
 	loop_client->receiveMessageLength = 0;
-	loop_client->canSend = true;
+	loop_client->canSend = 1;
 	return loop_server;
 }
 
@@ -105,7 +105,7 @@ s32 Loop_GetMessage(qsocket_t *sock)
 		memmove(sock->receiveMessage, &sock->receiveMessage[length],
 			sock->receiveMessageLength);
 	if (sock->driverdata && ret == 1)
-		((qsocket_t *) sock->driverdata)->canSend = true;
+		((qsocket_t *) sock->driverdata)->canSend = 1;
 	return ret;
 }
 
@@ -124,7 +124,7 @@ s32 Loop_SendMessage(qsocket_t *sock, sizebuf_t *data)
 	buffer++; // align
 	Q_memcpy(buffer, data->data, data->cursize); // message
 	*bufferLength = IntAlign(*bufferLength + data->cursize + 4);
-	sock->canSend = false;
+	sock->canSend = 0;
 	return 1;
 }
 
@@ -151,14 +151,14 @@ s32 Loop_SendUnreliableMessage(qsocket_t *sock, sizebuf_t *data)
 bool Loop_CanSendMessage(qsocket_t *sock)
 {
 	if (!sock->driverdata)
-		return false;
+		return 0;
 	return sock->canSend;
 }
 
 bool Loop_CanSendUnreliableMessage(qsocket_t *sock)
 {
 	(void)sock;
-	return true;
+	return 1;
 }
 
 void Loop_Close(qsocket_t *sock)
@@ -167,7 +167,7 @@ void Loop_Close(qsocket_t *sock)
 		((qsocket_t *) sock->driverdata)->driverdata = NULL;
 	sock->receiveMessageLength = 0;
 	sock->sendMessageLength = 0;
-	sock->canSend = true;
+	sock->canSend = 1;
 	if (sock == loop_client)
 		loop_client = NULL;
 	else

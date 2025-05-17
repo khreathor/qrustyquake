@@ -41,13 +41,13 @@ void Con_ClearNotify()
 void Con_MessageMode_f()
 {
 	key_dest = key_message;
-	team_message = false;
+	team_message = 0;
 }
 
 void Con_MessageMode2_f()
 {
 	key_dest = key_message;
-	team_message = true;
+	team_message = 1;
 }
 
 void Con_CheckResize()
@@ -129,7 +129,7 @@ void Con_Init()
 	Cmd_AddCommand("messagemode", Con_MessageMode_f);
 	Cmd_AddCommand("messagemode2", Con_MessageMode2_f);
 	Cmd_AddCommand("clear", Con_Clear_f);
-	con_initialized = true;
+	con_initialized = 1;
 }
 
 void Con_Linefeed()
@@ -170,7 +170,7 @@ void Con_Print(s8 *txt)
 		txt++;
 		if (cr) {
 			con_current--;
-			cr = false;
+			cr = 0;
 		}
 		if (!con_x) {
 			Con_Linefeed();
@@ -234,9 +234,9 @@ void Con_Printf(const s8 *fmt, ...) // FIXME make a buffer size safe vsprintf?
 	//	// protect against infinite loop if something in
 	//	// SCR_UpdateScreen calls Con_Printd
 	//	if (!inupdate) {
-	//		inupdate = true;
+	//		inupdate = 1;
 	//		SCR_UpdateScreen ();
-	//		inupdate = false;
+	//		inupdate = 0;
 	//	}
 	// }
 }
@@ -261,7 +261,7 @@ void Con_SafePrintf(s8 *fmt, ...)
 	vsprintf(msg, fmt, argptr);
 	va_end(argptr);
 	s32 temp = scr_disabled_for_loading;
-	scr_disabled_for_loading = true;
+	scr_disabled_for_loading = 1;
 	Con_Printf("%s", msg);
 	scr_disabled_for_loading = temp;
 }

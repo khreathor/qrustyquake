@@ -344,7 +344,7 @@ void SV_SendServerinfo (client_t *client)
 	MSG_WriteByte (&client->message, 1);
 
 	client->sendsignon = PRESPAWN_FLUSH;
-	client->spawned = false;		// need prespawn, spawn, etc
+	client->spawned = 0;		// need prespawn, spawn, etc
 }
 
 /*
@@ -381,12 +381,12 @@ void SV_ConnectClient (s32 clientnum)
 	client->netconnection = netconnection;
 
 	strcpy (client->name, "unconnected");
-	client->active = true;
-	client->spawned = false;
+	client->active = 1;
+	client->spawned = 0;
 	client->edict = ent;
 	client->message.data = client->msgbuf;
 	client->message.maxsize = sizeof(client->msgbuf);
-	client->message.allowoverflow = true;		// we can catch it
+	client->message.allowoverflow = 1;		// we can catch it
 
 	if (sv.loadgame)
 		memcpy (client->spawn_parms, spawn_parms, sizeof(spawn_parms));
@@ -550,9 +550,9 @@ bool SV_VisibleToClient (edict_t *client, edict_t *test, model_t *worldmodel)
 
 	for (i=0 ; i < test->num_leafs ; i++)
 		if (pvs[test->leafnums[i] >> 3] & (1 << (test->leafnums[i]&7) ))
-			return true;
+			return 1;
 
-	return false;
+	return 0;
 }
 
 //=============================================================================
@@ -1000,11 +1000,11 @@ bool SV_SendClientDatagram (client_t *client)
 // send the datagram
 	if (NET_SendUnreliableMessage (client->netconnection, &msg) == -1)
 	{
-		SV_DropClient (true);// if the message couldn't send, kick off
-		return false;
+		SV_DropClient (1);// if the message couldn't send, kick off
+		return 0;
 	}
 
-	return true;
+	return 1;
 }
 
 /*
@@ -1066,7 +1066,7 @@ void SV_SendNop (client_t *client)
 	MSG_WriteChar (&msg, svc_nop);
 
 	if (NET_SendUnreliableMessage (client->netconnection, &msg) == -1)
-		SV_DropClient (true);	// if the message couldn't send, kick off
+		SV_DropClient (1);	// if the message couldn't send, kick off
 	client->last_message = realtime;
 }
 
@@ -1141,8 +1141,8 @@ void SV_SendClientMessages (void)
 		// changes level
 		if (host_client->message.overflowed)
 		{
-			SV_DropClient (true);
-			host_client->message.overflowed = false;
+			SV_DropClient (1);
+			host_client->message.overflowed = 0;
 			continue;
 		}
 
@@ -1155,12 +1155,12 @@ void SV_SendClientMessages (void)
 			}
 
 			if (host_client->dropasap)
-				SV_DropClient (false);	// went to another level
+				SV_DropClient (0);	// went to another level
 			else
 			{
 				if (NET_SendMessage (host_client->netconnection
 				, &host_client->message) == -1)
-					SV_DropClient (true);	// if the message couldn't send, kick off
+					SV_DropClient (1);	// if the message couldn't send, kick off
 				SZ_Clear (&host_client->message);
 				host_client->last_message = realtime;
 				if (host_client->sendsignon == PRESPAWN_FLUSH)
@@ -1429,7 +1429,7 @@ void SV_SpawnServer (const s8 *server)
 	scr_centertime_off = 0;
 
 	Con_DPrintf ("SpawnServer: %s\n",server);
-	svs.changelevel_issued = false;		// now safe to issue another
+	svs.changelevel_issued = 0;		// now safe to issue another
 
 //
 // tell all connected clients that we are going to a new level
@@ -1498,18 +1498,18 @@ void SV_SpawnServer (const s8 *server)
 	}
 
 	sv.state = ss_loading;
-	sv.paused = false;
+	sv.paused = 0;
 	sv.nomonsters = (nomonsters.value != 0.f);
 
 	sv.time = 1.0;
 
 	q_strlcpy (sv.name, server, sizeof(sv.name));
 	snprintf (sv.modelname, sizeof(sv.modelname), "maps/%s.bsp", server);
-	sv.worldmodel = Mod_ForName (sv.modelname, false);
+	sv.worldmodel = Mod_ForName (sv.modelname, 0);
 	if (!sv.worldmodel)
 	{
 		Con_Printf ("Couldn't spawn server %s\n", sv.modelname);
-		sv.active = false;
+		sv.active = 0;
 		return;
 	}
 	sv.models[1] = sv.worldmodel;
@@ -1525,7 +1525,7 @@ void SV_SpawnServer (const s8 *server)
 	for (i=1 ; i<sv.worldmodel->numsubmodels ; i++)
 	{
 		sv.model_precache[1+i] = localmodels[i];
-		sv.models[i+1] = Mod_ForName (localmodels[i], false);
+		sv.models[i+1] = Mod_ForName (localmodels[i], 0);
 	}
 
 //
@@ -1533,7 +1533,7 @@ void SV_SpawnServer (const s8 *server)
 //
 	ent = EDICT_NUM(0);
 	memset (&ent->v, 0, progs->entityfields * 4);
-	ent->free = false;
+	ent->free = 0;
 	ent->v.model = PR_SetEngineString(sv.worldmodel->name);
 	ent->v.modelindex = 1;		// world model
 	ent->v.solid = SOLID_BSP;
@@ -1551,7 +1551,7 @@ void SV_SpawnServer (const s8 *server)
 
 	ED_LoadFromFile (sv.worldmodel->entities);
 
-	sv.active = true;
+	sv.active = 1;
 
 // all setup is completed, any further precache statements are errors
 	sv.state = ss_active;

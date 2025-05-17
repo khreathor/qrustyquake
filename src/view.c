@@ -2,7 +2,7 @@
 // view.c -- player eye positioning
 #include "quakedef.h"
 
-// The view is allowed to move slightly from it's true position for bobbing,
+// The view is allowed to move slightly from it's 1 position for bobbing,
 // but if it exceeds 8 pixels linear distance (spherical, not box), the list of
 // entities sent from the server may not include everything in the pvs,
 // especially when crossing a water boudnary.
@@ -55,7 +55,7 @@ void V_StartPitchDrift()
 	}
 	if (cl.nodrift || !cl.pitchvel) {
 		cl.pitchvel = v_centerspeed.value;
-		cl.nodrift = false;
+		cl.nodrift = 0;
 		cl.driftmove = 0;
 	}
 }
@@ -63,7 +63,7 @@ void V_StartPitchDrift()
 void V_StopPitchDrift()
 {
 	cl.laststop = cl.time;
-	cl.nodrift = true;
+	cl.nodrift = 1;
 	cl.pitchvel = 0;
 }
 
@@ -132,11 +132,11 @@ bool V_CheckGamma()
 {
 	static f32 oldgammavalue;
 	if (v_gamma.value == oldgammavalue)
-		return false;
+		return 0;
 	oldgammavalue = v_gamma.value;
 	BuildGammaTable(v_gamma.value);
 	vid.recalc_refdef = 1; // force a surface cache flush
-	return true;
+	return 1;
 }
 
 void V_ParseDamage (void)
@@ -269,16 +269,16 @@ void V_UpdatePalette()
 {
 	V_CalcPowerupCshift();
 	f32 frametime = fabs (cl.time - cl.oldtime);
-	bool new = false;
+	bool new = 0;
 	for (s32 i = 0; i < NUM_CSHIFTS; i++) {
 		if (cl.cshifts[i].percent != cl.prev_cshifts[i].percent) {
-			new = true;
+			new = 1;
 			cl.prev_cshifts[i].percent = cl.cshifts[i].percent;
 		}
 		for (s32 j = 0; j < 3; j++)
 			if (cl.cshifts[i].destcolor[j] !=
 			    cl.prev_cshifts[i].destcolor[j]) {
-				new = true;
+				new = 1;
 				cl.prev_cshifts[i].destcolor[j] =
 				    cl.cshifts[i].destcolor[j];
 			}

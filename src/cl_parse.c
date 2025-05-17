@@ -341,7 +341,7 @@ void CL_ParseServerInfo()
 
         for (i = 1; i < nummodels; i++)
         {
-                cl.model_precache[i] = Mod_ForName (model_precache[i], false);
+                cl.model_precache[i] = Mod_ForName (model_precache[i], 0);
                 if (cl.model_precache[i] == NULL)
                 {
                         Host_Error ("Model %s not found", model_precache[i]);
@@ -369,9 +369,9 @@ void CL_ParseServerInfo()
 
         Hunk_Check ();          // make sure nothing is hurt
 
-        noclip_anglehack = false;               // noclip is turned off at start
+        noclip_anglehack = 0;               // noclip is turned off at start
 
-        //FIXMEwarn_about_nehahra_protocol = true; //johnfitz -- warn about nehahra protocol hack once per server connection
+        //FIXMEwarn_about_nehahra_protocol = 1; //johnfitz -- warn about nehahra protocol hack once per server connection
 
 //johnfitz -- reset developer stats
         //FIXMEmemset(&dev_stats, 0, sizeof(dev_stats));
@@ -445,9 +445,9 @@ void CL_ParseUpdate (s32 bits)
         ent = CL_EntityNum (num);
 
         if (ent->msgtime != cl.mtime[1])
-                forcelink = true;       // no previous frame to lerp from
+                forcelink = 1;       // no previous frame to lerp from
         else
-                forcelink = false;
+                forcelink = 0;
 
         //johnfitz -- lerping
         if (ent->msgtime + 0.2 < cl.mtime[0]) //more than 0.2 seconds since the last message (most entities think every 0.1 sec)
@@ -530,7 +530,7 @@ void CL_ParseUpdate (s32 bits)
         if (bits & U_STEP)
         {
                 ent->lerpflags |= LERP_MOVESTEP;
-                ent->forcelink = true;
+                ent->forcelink = 1;
         }
         else
                 ent->lerpflags &= ~LERP_MOVESTEP;
@@ -569,7 +569,7 @@ void CL_ParseUpdate (s32 bits)
                         //if (warn_about_nehahra_protocol)
                         //{
                         //        Con_Warning ("nonstandard update bit, assuming Nehahra protocol\n");
-                        //        warn_about_nehahra_protocol = false;
+                        //        warn_about_nehahra_protocol = 0;
                         //}
 
                         a = MSG_ReadFloat();
@@ -599,7 +599,7 @@ void CL_ParseUpdate (s32 bits)
                                 ent->syncbase = 0.0;
                 }
                 else
-                        forcelink = true;       // hack to make null model players work
+                        forcelink = 1;       // hack to make null model players work
                 //if (num > 0 && num <= cl.maxclients)
                 //        R_TranslateNewPlayerSkin (num - 1); //johnfitz -- was R_TranslatePlayerSkin
 
@@ -613,7 +613,7 @@ void CL_ParseUpdate (s32 bits)
                 VectorCopy (ent->msg_origins[0], ent->origin);
                 VectorCopy (ent->msg_angles[0], ent->msg_angles[1]);
                 VectorCopy (ent->msg_angles[0], ent->angles);
-                ent->forcelink = true;
+                ent->forcelink = 1;
         }
 }
 
@@ -873,7 +873,7 @@ void CL_ParseServerMessage ()
 		Con_Printf ("%i ",net_message.cursize);
 	else if (cl_shownet.value == 2)
 		Con_Printf ("------------------\n");
-	// cl.onground = false; // unless the server says otherwise
+	// cl.onground = 0; // unless the server says otherwise
 	// parse the message
 	MSG_BeginReading ();
 	lastcmd = 0;
@@ -947,7 +947,7 @@ void CL_ParseServerMessage ()
 				break;
 			case svc_serverinfo:
 				CL_ParseServerInfo ();
-				vid.recalc_refdef = true; // leave intermission full screen
+				vid.recalc_refdef = 1; // leave intermission full screen
 				break;
 			case svc_setangle:
 				for (i=0 ; i<3 ; i++)
@@ -1068,20 +1068,20 @@ void CL_ParseServerMessage ()
 				cl.cdtrack = MSG_ReadByte ();
 				cl.looptrack = MSG_ReadByte ();
 				//FIXMEif ( (cls.demoplayback || cls.demorecording) && (cls.forcetrack != -1) )
-				//FIXME BGM_PlayCDtrack ((u8)cls.forcetrack, true);
+				//FIXME BGM_PlayCDtrack ((u8)cls.forcetrack, 1);
 				//FIXMEelse
-				//FIXME BGM_PlayCDtrack ((u8)cl.cdtrack, true);
+				//FIXME BGM_PlayCDtrack ((u8)cl.cdtrack, 1);
 				break;
 			case svc_intermission:
 				cl.intermission = 1;
 				cl.completed_time = cl.time;
-				vid.recalc_refdef = true; // go to full screen
+				vid.recalc_refdef = 1; // go to full screen
 				V_RestoreAngles ();
 				break;
 			case svc_finale:
 				cl.intermission = 2;
 				cl.completed_time = cl.time;
-				vid.recalc_refdef = true; // go to full screen
+				vid.recalc_refdef = 1; // go to full screen
 							  //johnfitz -- log centerprints to console
 				str = MSG_ReadString ();
 				SCR_CenterPrint (str);
@@ -1092,7 +1092,7 @@ void CL_ParseServerMessage ()
 			case svc_cutscene:
 				cl.intermission = 3;
 				cl.completed_time = cl.time;
-				vid.recalc_refdef = true; // go to full screen
+				vid.recalc_refdef = 1; // go to full screen
 							  //johnfitz -- log centerprints to console
 				str = MSG_ReadString ();
 				SCR_CenterPrint (str);

@@ -60,8 +60,8 @@ bool R_AliasCheckBBox()
 	// z worldspace coordinates
 	bp[0][2]=bp[1][2]=bp[4][2]=bp[5][2]=(f32)pframedesc->bboxmin.v[2];
 	bp[2][2]=bp[3][2]=bp[6][2]=bp[7][2]=(f32)pframedesc->bboxmax.v[2];
-	bool zclipped = false;
-	bool zfullyclipped = true;
+	bool zclipped = 0;
+	bool zfullyclipped = 1;
 	s32 minz = 9999;
 	finalvert_t *pv0, *pv1, viewpts[16];
 	auxvert_t *pa0, *pa1, viewaux[16];
@@ -70,16 +70,16 @@ bool R_AliasCheckBBox()
 		if (viewaux[i].fv[2] < ALIAS_Z_CLIP_PLANE) {
 		// we must clip points that are closer than the near clip plane
 			viewpts[i].flags = ALIAS_Z_CLIP;
-			zclipped = true;
+			zclipped = 1;
 		} else {
 			if (viewaux[i].fv[2] < minz)
 				minz = viewaux[i].fv[2];
 			viewpts[i].flags = 0;
-			zfullyclipped = false;
+			zfullyclipped = 0;
 		}
 	}
 	if (zfullyclipped)
-		return false; // everything was near-z-clipped
+		return 0; // everything was near-z-clipped
 	s32 numv = 8;
 	// organize points by edges, use edges to get new points
 	for (s32 i = 0; zclipped && i < 12; i++) { // (possible trivial reject)
@@ -122,12 +122,12 @@ bool R_AliasCheckBBox()
 		allclip &= flags;
 	}
 	if (allclip)
-		return false; // trivial reject off one side
+		return 0; // trivial reject off one side
 	currententity->trivial_accept = !anyclip & !zclipped;
 	if (currententity->trivial_accept &&
 		minz > (r_aliastransition + (pmdl->size * r_resfudge)))
 			currententity->trivial_accept |= 2;
-	return true;
+	return 1;
 }
 
 void R_AliasTransformVector(vec3_t in, vec3_t out)

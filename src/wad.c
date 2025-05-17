@@ -145,14 +145,14 @@ static bool W_OpenWadFile (const s8 *filename, fshandle_t *fh)
 
 	length = (s64)COM_FOpenFile (filename, &f, NULL);
 	if (length == -1)
-		return false;
+		return 0;
 
 	fh->file = f;
 	fh->start = ftell (f);
 	fh->pos = 0;
 	fh->length = length;
 	fh->pak = file_from_pak;
-	return true;
+	return 1;
 }
 
 /*

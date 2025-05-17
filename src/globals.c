@@ -90,7 +90,7 @@ s32 safemode;                                                        // common.c
 s8 com_token[1024];
 s32 com_argc;
 s8 **com_argv;
-bool standard_quake = true, rogue, hipnotic;
+bool standard_quake = 1, rogue, hipnotic;
 s32 msg_readcount;
 bool msg_badread;
 s32 com_filesize;
@@ -124,7 +124,7 @@ s32 lmonly; // render lightmap only, for lit water
 s32 drawlayer = 0;                                                     // draw.c
 qpic_t *draw_disc;
 quakeparms_t host_parms;                                               // host.c
-bool host_initialized; // true if into command execution
+bool host_initialized; // 1 if into command execution
 bool isDedicated;
 f64 host_frametime;
 f64 realtime; // without any filtering or bounding
@@ -142,7 +142,7 @@ keydest_t key_dest;
 s32 key_count; // incremented every key event
 s8 *keybindings[256];
 s8 chat_buffer[32];
-bool team_message = false;
+bool team_message = 0;
 s32 dither_pat = 0;                                                  // d_scan.c
 s32 lwmark = 0;
 u8 *litwater_base;

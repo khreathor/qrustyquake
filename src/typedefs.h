@@ -27,8 +27,8 @@ typedef vec_t vec4_t[4];
 typedef vec_t vec5_t[5];
 
 typedef struct sizebuf_s {                                           // common.h
-	bool allowoverflow; // if false, do a Sys_Error
-	bool overflowed;  // set to true if the buffer size failed
+	bool allowoverflow; // if 0, do a Sys_Error
+	bool overflowed;  // set to 1 if the buffer size failed
 	u8  *data;
 	s32  maxsize;
 	s32  cursize;
@@ -212,7 +212,7 @@ typedef struct {
         u32 height;
         f32 aspect; // width / height -- < 0 is taller than wide
         u32 numpages;
-        u32 recalc_refdef; // if true, recalc vid-based stuff
+        u32 recalc_refdef; // if 1, recalc vid-based stuff
 } viddef_t;
 
 typedef struct {                                                      // model.h
@@ -262,7 +262,7 @@ typedef struct msurface_s {
 	s32 lightmaptexturenum;
 	u8 styles[MAXLIGHTMAPS];
 	s32 cached_light[MAXLIGHTMAPS]; // values currently used in lightmap
-	bool cached_dlight; // true if dynamic light in cache
+	bool cached_dlight; // 1 if dynamic light in cache
 	u8 *samples; // [numstyles*surfsize]
 	struct surfcache_s *cachespots[MIPLEVELS]; // surface generation data
 } msurface_t;
@@ -444,6 +444,8 @@ typedef struct entity_s {                                            // render.h
 	vec3_t previousorigin; //johnfitz -- transform lerping
 	vec3_t currentorigin; //johnfitz -- transform lerping
 	vec3_t previousangles; //johnfitz -- transform lerping
+	f32 traildelay;	// time left until next particle trail update
+	vec3_t trailorg; // previous particle trail point
 } entity_t;
 typedef struct efrag_s {
 	struct mleaf_s *leaf;
@@ -1171,8 +1173,8 @@ typedef struct {                                                      // world.h
 	f32 dist;
 } plane_t;
 typedef struct {
-	bool allsolid; // if true, plane is not valid
-	bool startsolid; // if true, the initial point was in a solid area
+	bool allsolid; // if 1, plane is not valid
+	bool startsolid; // if 1, the initial point was in a solid area
 	bool inopen, inwater;
 	f32 fraction; // time completed, 1.0 = didn't hit anything
 	vec3_t endpos; // final position
@@ -1353,7 +1355,7 @@ typedef struct {                                                     // client.h
 } server_static_t;
 typedef enum {ss_loading, ss_active} server_state_t;
 typedef struct {
-	bool active; // false if only a net client
+	bool active; // 0 if only a net client
 	bool paused;
 	bool loadgame; // handle connections specially
 	bool nomonsters; // server started with 'nomonsters' cvar active
@@ -1388,8 +1390,8 @@ enum sendsignon_e {
 	PRESPAWN_SIGNONMSG,
 };
 typedef struct client_s {
-	bool active; // false = client is free
-	bool spawned; // false = don't send datagrams
+	bool active; // 0 = client is free
+	bool spawned; // 0 = don't send datagrams
 	bool dropasap; // has been told to go to another level
 	enum sendsignon_e sendsignon; // only valid before spawned
 	s32 signonidx;

@@ -78,13 +78,13 @@ sys_socket_t UDP_Init()
 	if (tst)
 		*tst = 0;
 	Con_SafePrintf("UDP Initialized\n");
-	tcpipAvailable = true;
+	tcpipAvailable = 1;
 	return net_controlsocket;
 }
 
 void UDP_Shutdown()
 {
-	UDP_Listen(false);
+	UDP_Listen(0);
 	UDP_CloseSocket(net_controlsocket);
 }
 

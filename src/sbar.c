@@ -41,9 +41,9 @@ static s32 hipweapons[4] = //MED 01/04/97 added array to simplify weapon parsing
 inline static s32 Sbar_ColorForMap(s32 m)
 { return m < 128 ? m + 8 : m + 8; }
 inline static void Sbar_ShowScores() // Tab key down
-{ if (sb_showscores) return; sb_showscores = true; sb_updates = 0; }
+{ if (sb_showscores) return; sb_showscores = 1; sb_updates = 0; }
 inline static void Sbar_DontShowScores() // Tab key up
-{ sb_showscores = false; sb_updates = 0; }
+{ sb_showscores = 0; sb_updates = 0; }
 void Sbar_Changed() // update next frame
 { sb_updates = 0; }
 

@@ -167,13 +167,13 @@ sys_socket_t WINS_Init()
 	broadcastaddr.sin_addr.s_addr = INADDR_BROADCAST;
 	broadcastaddr.sin_port = htons((u16)net_hostport);
 	Con_SafePrintf("UDP Initialized\n");
-	tcpipAvailable = true;
+	tcpipAvailable = 1;
 	return net_controlsocket;
 }
 
 void WINS_Shutdown()
 {
-	WINS_Listen(false);
+	WINS_Listen(0);
 	WINS_CloseSocket(net_controlsocket);
 	if (--winsock_initialized == 0)
 		WSACleanup();

@@ -387,7 +387,7 @@ Hunk_Print_f -- johnfitz -- console command to call hunk_print
 */
 void Hunk_Print_f (void)
 {
-	Hunk_Print (false);
+	Hunk_Print (0);
 }
 
 /*
@@ -448,7 +448,7 @@ s32	Hunk_HighMark (void)
 {
 	if (hunk_tempactive)
 	{
-		hunk_tempactive = false;
+		hunk_tempactive = 0;
 		Hunk_FreeToHighMark (hunk_tempmark);
 	}
 
@@ -459,7 +459,7 @@ void Hunk_FreeToHighMark (s32 mark)
 {
 	if (hunk_tempactive)
 	{
-		hunk_tempactive = false;
+		hunk_tempactive = 0;
 		Hunk_FreeToHighMark (hunk_tempmark);
 	}
 	if (mark < 0 || mark > hunk_high_used)
@@ -484,7 +484,7 @@ void *Hunk_HighAllocName (s32 size, const s8 *name)
 	if (hunk_tempactive)
 	{
 		Hunk_FreeToHighMark (hunk_tempmark);
-		hunk_tempactive = false;
+		hunk_tempactive = 0;
 	}
 
 #ifdef PARANOID
@@ -529,14 +529,14 @@ void *Hunk_TempAlloc (s32 size)
 	if (hunk_tempactive)
 	{
 		Hunk_FreeToHighMark (hunk_tempmark);
-		hunk_tempactive = false;
+		hunk_tempactive = 0;
 	}
 
 	hunk_tempmark = Hunk_HighMark ();
 
 	buf = Hunk_HighAllocName (size, "temp");
 
-	hunk_tempactive = true;
+	hunk_tempactive = 1;
 
 	return buf;
 }
@@ -567,7 +567,7 @@ void Cache_Move ( cache_system_t *c)
 	cache_system_t		*new_cs;
 
 // we are clearing up space at the bottom, so only allocate it late
-	new_cs = Cache_TryAlloc (c->size, true);
+	new_cs = Cache_TryAlloc (c->size, 1);
 	if (new_cs)
 	{
 //		Con_Printf ("cache_move ok\n");
@@ -575,14 +575,14 @@ void Cache_Move ( cache_system_t *c)
 		Q_memcpy ( new_cs+1, c+1, c->size - sizeof(cache_system_t) );
 		new_cs->user = c->user;
 		Q_memcpy (new_cs->name, c->name, sizeof(new_cs->name));
-		Cache_Free (c->user, false); //johnfitz -- added second argument
+		Cache_Free (c->user, 0); //johnfitz -- added second argument
 		new_cs->user->data = (void *)(new_cs+1);
 	}
 	else
 	{
 //		Con_Printf ("cache_move failed\n");
 
-		Cache_Free (c->user, true); // tough luck... //johnfitz -- added second argument
+		Cache_Free (c->user, 1); // tough luck... //johnfitz -- added second argument
 	}
 }
 
@@ -628,7 +628,7 @@ void Cache_FreeHigh (s32 new_high_hunk)
 		if ( (u8 *)c + c->size <= hunk_base + hunk_size - new_high_hunk)
 			return;		// there is space to grow the hunk
 		if (c == prev)
-			Cache_Free (c->user, true);	// didn't move out of the way //johnfitz -- added second argument
+			Cache_Free (c->user, 1);	// didn't move out of the way //johnfitz -- added second argument
 		else
 		{
 			Cache_Move (c);	// try to move it
@@ -749,7 +749,7 @@ Throw everything out, so new data will be demand cached
 void Cache_Flush (void)
 {
 	while (cache_head.next != &cache_head)
-		Cache_Free ( cache_head.next->user, true); // reclaim the space //johnfitz -- added second argument
+		Cache_Free ( cache_head.next->user, 1); // reclaim the space //johnfitz -- added second argument
 }
 
 /*
@@ -868,7 +868,7 @@ void *Cache_Alloc (cache_user_t *c, s32 size, const s8 *name)
 // find memory for it
 	while (1)
 	{
-		cs = Cache_TryAlloc (size, false);
+		cs = Cache_TryAlloc (size, 0);
 		if (cs)
 		{
 			q_strlcpy (cs->name, name, CACHENAME_LEN);
@@ -881,7 +881,7 @@ void *Cache_Alloc (cache_user_t *c, s32 size, const s8 *name)
 		if (cache_head.lru_prev == &cache_head)
 			Sys_Error ("Cache_Alloc: out of memory"); // not enough memory at all
 
-		Cache_Free (cache_head.lru_prev->user, true); //johnfitz -- added second argument
+		Cache_Free (cache_head.lru_prev->user, 1); //johnfitz -- added second argument
 	}
 
 	return Cache_Check (c);

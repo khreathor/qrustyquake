@@ -25,7 +25,7 @@ void Chase_Update()
 	vec3_t forward, up, right, dest, stop;
 	// if can't see player, reset
 	AngleVectors(cl.viewangles, forward, right, up);
-	for (s32 i = 0; i < 3; i++) // calc exact destination
+	for(s32 i = 0; i < 3; i++) // calc exact destination
 		chase_dest[i] = r_refdef.vieworg[i]
 		    - forward[i] * chase_back.value
 		    - right[i] * chase_right.value;
@@ -36,9 +36,7 @@ void Chase_Update()
 	// calculate pitch to look at the same spot from camera
 	VectorSubtract(stop, r_refdef.vieworg, stop);
 	f32 dist = DotProduct(stop, forward);
-	if (dist < 1)
-		dist = 1;
+	if(dist < 1) dist = 1;
 	r_refdef.viewangles[PITCH] = -atan(stop[2] / dist) / M_PI * 180;
-	// move towards destination
-	VectorCopy(chase_dest, r_refdef.vieworg);
+	VectorCopy(chase_dest, r_refdef.vieworg); // move towards destination
 }

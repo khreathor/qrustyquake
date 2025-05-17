@@ -109,10 +109,10 @@ s32 R_LoadSkybox (const s8 *name)
 {
 	if (!name || !name[0]) {
 		skybox_name[0] = 0;
-		return false;
+		return 0;
 	}
 	if (!strcmp (name, skybox_name)) // the same skybox we are using now
-		return true;
+		return 1;
 	q_strlcpy (skybox_name, name, sizeof(skybox_name));
 	s32 mark = Hunk_LowMark ();
 	for (s32 i = 0 ; i < 6 ; i++) {
@@ -140,7 +140,7 @@ s32 R_LoadSkybox (const s8 *name)
 		pic = final_pic;
 		if (!pic) {
 			Con_Printf ("Couldn't load %s", pathname);
-			return false;
+			return 0;
 		}
 		switch (width) { // Manoel Kasimier - hi-res skyboxes - begin
 			case 1024: // falls through
@@ -153,7 +153,7 @@ s32 R_LoadSkybox (const s8 *name)
 				Hunk_FreeToLowMark (mark);
 				if (final_pic != origpic)
 					free(final_pic);
-				return false;
+				return 0;
 		}
 		switch (height) {
 			case 1024: // falls through
@@ -166,7 +166,7 @@ s32 R_LoadSkybox (const s8 *name)
 				Hunk_FreeToLowMark (mark);
 				if (final_pic != origpic)
 					free(final_pic);
-				return false;
+				return 0;
 		}
 		r_skytexinfo[i].texture = &r_skytextures[i];
 		r_skytexinfo[i].texture->width = width;
@@ -200,7 +200,7 @@ s32 R_LoadSkybox (const s8 *name)
 		if (final_pic != origpic)
 			free(final_pic);
 	}
-	return true;
+	return 1;
 }
 
 // Manoel Kasimier - skyboxes - begin

@@ -14,7 +14,7 @@ void D_SetupFrame()
 {
 	d_viewbuffer = r_dowarp ? r_warpbuffer : (void *)vid.buffer;
 	screenwidth = r_dowarp ? WARP_WIDTH : vid.width;
-	d_roverwrapped = false;
+	d_roverwrapped = 0;
 	d_initial_rover = sc_rover;
 	d_minmip = d_mipcap.value;
 	d_minmip = CLAMP(0, d_minmip, 3);

@@ -13,7 +13,7 @@ static void S_SoundList (void);
 static void S_Update_ (void);
 static void S_StopAllSoundsC (void);
 static s32 snd_blocked = 0;
-static bool snd_initialized = false;
+static bool snd_initialized = 0;
 static dma_t sn;
 static vec3_t listener_origin;
 static vec3_t listener_forward;
@@ -22,7 +22,7 @@ static vec3_t listener_up;
 static sfx_t *known_sfx = NULL; // hunk allocated [MAX_SFX]
 static s32 num_sfx;
 static sfx_t *ambient_sfx[NUM_AMBIENTS];
-static bool sound_started = false;
+static bool sound_started = 0;
 static s32 soundtime; // sample PAIRS
 
 static void S_SoundInfo_f (void)
@@ -147,7 +147,7 @@ void S_Init (void)
 	known_sfx = (sfx_t *) Hunk_AllocName (MAX_SFX*sizeof(sfx_t), "sfx_t");
 	num_sfx = 0;
 
-	snd_initialized = true;
+	snd_initialized = 1;
 
 	S_Startup ();
 	if (sound_started == 0)
@@ -162,7 +162,7 @@ void S_Init (void)
 
 	//todo?S_CodecInit ();
 
-	S_StopAllSounds (true);
+	S_StopAllSounds (1);
 }
 
 
@@ -480,7 +480,7 @@ void S_StopAllSounds (bool clear)
 
 static void S_StopAllSoundsC (void)
 {
-	S_StopAllSounds (true);
+	S_StopAllSounds (1);
 }
 
 void S_ClearBuffer (void)
@@ -812,7 +812,7 @@ static void GetSoundtime (void)
 		{	// time to chop things off to avoid 32 bit limits
 			buffers = 0;
 			paintedtime = fullsamples;
-			S_StopAllSounds (true);
+			S_StopAllSounds (1);
 		}
 	}
 	oldsamplepos = samplepos;

@@ -272,7 +272,7 @@ void PR_ExecuteProgram (func_t fnum)
 
 	f = &pr_functions[fnum];
 
-	pr_trace = false;
+	pr_trace = 0;
 
 	// make a stack frame
 	exitdepth = pr_depth;

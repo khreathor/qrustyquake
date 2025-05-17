@@ -810,7 +810,7 @@ struct mz_zip_internal_state_tag
     /* MZ_TRUE if the archive has a zip64 end of central directory headers, etc. */
     mz_bool m_zip64;
 
-    /* MZ_TRUE if we found zip64 extended info in the central directory (m_zip64 will also be slammed to true too, even if we didn't find a zip64 end of central dir header, etc.) */
+    /* MZ_TRUE if we found zip64 extended info in the central directory (m_zip64 will also be slammed to 1 too, even if we didn't find a zip64 end of central dir header, etc.) */
     mz_bool m_zip64_has_extended_info_fields;
 
     void *m_pMem;

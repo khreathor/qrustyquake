@@ -163,7 +163,7 @@ void SCR_Init()
 	Cmd_AddCommand("screenshot", SCR_ScreenShot_f);
 	Cmd_AddCommand("sizeup", SCR_SizeUp_f);
 	Cmd_AddCommand("sizedown", SCR_SizeDown_f);
-	scr_initialized = true;
+	scr_initialized = 1;
 }
 
 void SCR_DrawFPS()
@@ -286,7 +286,7 @@ void SCR_SetUpToDrawConsole()
 void SCR_DrawConsole()
 {
 	if (scr_con_current) {
-		Con_DrawConsole(scr_con_current, true);
+		Con_DrawConsole(scr_con_current, 1);
 		clearconsole = 0;
 	} else
 		if (key_dest == key_game || key_dest == key_message)
@@ -360,25 +360,25 @@ void SCR_ScreenShot_f()
 
 void SCR_BeginLoadingPlaque()
 {
-	S_StopAllSounds(true);
+	S_StopAllSounds(1);
 	if (cls.state != ca_connected || cls.signon != SIGNONS)
 		return;
 	Con_ClearNotify(); // redraw with no console and the loading plaque
 	scr_centertime_off = 0;
 	scr_con_current = 0;
-	scr_drawloading = true;
+	scr_drawloading = 1;
 	scr_fullupdate = 0;
 	Sbar_Changed();
 	SCR_UpdateScreen();
-	scr_drawloading = false;
-	scr_disabled_for_loading = true;
+	scr_drawloading = 0;
+	scr_disabled_for_loading = 1;
 	scr_disabled_time = realtime;
 	scr_fullupdate = 0;
 }
 
 void SCR_EndLoadingPlaque()
 {
-	scr_disabled_for_loading = false;
+	scr_disabled_for_loading = 0;
 	scr_fullupdate = 0;
 	Con_ClearNotify();
 }
@@ -410,12 +410,12 @@ void SCR_DrawNotifyString()
 s32 SCR_ModalMessage(s8 *text) // Displays a text string in the center
 { // of the screen and waits for a Y or N keypress.  
 	if (cls.state == ca_dedicated)
-		return true;
+		return 1;
 	scr_notifystring = text;
 	scr_fullupdate = 0; // draw a fresh screen
-	scr_drawdialog = true;
+	scr_drawdialog = 1;
 	SCR_UpdateScreen();
-	scr_drawdialog = false;
+	scr_drawdialog = 0;
 	S_ClearBuffer(); // so dma doesn't loop current sound
 	do {
 		key_count = -1; // wait for a key down and up
@@ -432,7 +432,7 @@ void SCR_UpdateScreen() // This is called every frame,
 	static f32 oldscr_viewsize;
 	if (scr_disabled_for_loading) {
 		if (realtime - scr_disabled_time > 60) {
-			scr_disabled_for_loading = false;
+			scr_disabled_for_loading = 0;
 			Con_Printf("load failed.\n");
 		} else
 			return;
@@ -445,11 +445,11 @@ void SCR_UpdateScreen() // This is called every frame,
 	}
 	if (oldfov != scr_fov.value) { // check for vid changes
 		oldfov = scr_fov.value;
-		vid.recalc_refdef = true;
+		vid.recalc_refdef = 1;
 	}
 	if (oldscreensize != scr_viewsize.value) {
 		oldscreensize = scr_viewsize.value;
-		vid.recalc_refdef = true;
+		vid.recalc_refdef = 1;
 	}
 	if (vid.recalc_refdef) { // something changed, so reorder the screen
 		SCR_CalcRefdef();

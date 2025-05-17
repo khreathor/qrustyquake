@@ -303,7 +303,7 @@ void R_SetupFrame()
 			vrect.height = vid.height;
 			R_ViewChanged(&vrect, sb_lines, vid.aspect);
 		}
-		r_viewchanged = false;
+		r_viewchanged = 0;
 	}
 	// start off with just the four screen edge clip planes
 	R_TransformFrustum();
@@ -313,7 +313,7 @@ void R_SetupFrame()
 	VectorCopy(modelorg, base_modelorg);
 	R_SetSkyFrame();
 	R_SetUpFrustumIndexes();
-	r_cache_thrash = false;
+	r_cache_thrash = 0;
 	c_faceclip = 0; // clear frame counts
 	r_polycount = 0;
 	r_drawnpolycount = 0;

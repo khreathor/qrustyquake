@@ -35,7 +35,7 @@ quality sound edition.  Because they are added at the end, they will not
 override an explicit setting on the original command line.
 */
 
-static bool		com_modified;	// set true if using non-id files
+static bool		com_modified;	// set 1 if using non-id files
 static s8	*largv[MAX_NUM_ARGVS + 1];
 static s8	argvdummy[] = " ";
 static void COM_Path_f (void);
@@ -816,7 +816,7 @@ void MSG_WriteAngle16 (sizebuf_t *sb, f32 f, u32 flags)
 void MSG_BeginReading (void)
 {
 	msg_readcount = 0;
-	msg_badread = false;
+	msg_badread = 0;
 }
 
 // returns -1 and sets msg_badread if no more characters are available
@@ -826,7 +826,7 @@ s32 MSG_ReadChar (void)
 
 	if (msg_readcount+1 > net_message.cursize)
 	{
-		msg_badread = true;
+		msg_badread = 1;
 		return -1;
 	}
 
@@ -842,7 +842,7 @@ s32 MSG_ReadByte (void)
 
 	if (msg_readcount+1 > net_message.cursize)
 	{
-		msg_badread = true;
+		msg_badread = 1;
 		return -1;
 	}
 
@@ -858,7 +858,7 @@ s32 MSG_ReadShort (void)
 
 	if (msg_readcount+2 > net_message.cursize)
 	{
-		msg_badread = true;
+		msg_badread = 1;
 		return -1;
 	}
 
@@ -876,7 +876,7 @@ s32 MSG_ReadLong (void)
 
 	if (msg_readcount+4 > net_message.cursize)
 	{
-		msg_badread = true;
+		msg_badread = 1;
 		return -1;
 	}
 
@@ -1015,7 +1015,7 @@ void *SZ_GetSpace (sizebuf_t *buf, s32 length)
 		if (length > buf->maxsize)
 			Sys_Error ("SZ_GetSpace: %i is > full buffer size", length);
 
-		buf->overflowed = true;
+		buf->overflowed = 1;
 		Con_Printf ("SZ_GetSpace: overflow\n");
 		SZ_Clear (buf);
 	}
@@ -1446,14 +1446,14 @@ void COM_InitArgv (s32 argc, s8 **argv)
 
 	if (COM_CheckParm ("-rogue"))
 	{
-		rogue = true;
-		standard_quake = false;
+		rogue = 1;
+		standard_quake = 0;
 	}
 
 	if (COM_CheckParm ("-hipnotic") || COM_CheckParm ("-quoth")) //johnfitz -- "-quoth" support
 	{
-		hipnotic = true;
-		standard_quake = false;
+		hipnotic = 1;
+		standard_quake = 0;
 	}
 }
 
@@ -1719,7 +1719,7 @@ Returns whether the file is found in the quake filesystem.
 bool COM_FileExists (const s8 *filename, u32 *path_id)
 {
 	s32 ret = COM_FindFile (filename, NULL, NULL, path_id);
-	return (ret == -1) ? false : true;
+	return (ret == -1) ? 0 : 1;
 }
 
 /*
@@ -1987,7 +1987,7 @@ static pack_t *COM_LoadPackFile (const s8 *packfile)
 		Sys_Error ("%s has %i files", packfile, numpackfiles);
 
 	if (numpackfiles != PAK0_COUNT)
-		com_modified = true;	// not the original file
+		com_modified = 1;	// not the original file
 
 	newfiles = (packfile_t *) Z_Malloc(numpackfiles * sizeof(packfile_t));
 
@@ -2000,7 +2000,7 @@ static pack_t *COM_LoadPackFile (const s8 *packfile)
 	for (i = 0; i < header.dirlen; i++)
 		CRC_ProcessByte (&crc, ((u8 *)info)[i]);
 	if (crc != PAK0_CRC_V106 && crc != PAK0_CRC_V101 && crc != PAK0_CRC_V100)
-		com_modified = true;
+		com_modified = 1;
 
 	// parse the directory
 	for (i = 0; i < numpackfiles; i++)
@@ -2032,7 +2032,7 @@ static void COM_AddGameDirectory (const s8 *base, const s8 *dir)
 	searchpath_t *search;
 	pack_t *pak, *qspak;
 	s8 pakfile[MAX_OSPATH+32];
-	bool been_here = false;
+	bool been_here = 0;
 
 	q_strlcpy (com_gamedir, va("%s/%s", base, dir), sizeof(com_gamedir));
 
@@ -2082,7 +2082,7 @@ _add_path:
 
 	if (0 && !been_here && host_parms.userdir != host_parms.basedir)
 	{
-		been_here = true;
+		been_here = 1;
 		// CyanBun96: this would prepend "(null)" for some reason, breaking stuff
 		// should be: ./id1        with this: (null)/id1
 		//q_strlcpy(com_gamedir, va("%s/%s", host_parms.userdir, dir), sizeof(com_gamedir));
@@ -2155,11 +2155,11 @@ static void COM_Game_f (void)
 			}
 		}
 
-		com_modified = true;
+		com_modified = 1;
 
 		//Kill the server
 		CL_Disconnect ();
-		Host_ShutdownServer(true);
+		Host_ShutdownServer(1);
 
 		//Write config file
 		//FIXMEHost_WriteConfiguration ();
@@ -2177,19 +2177,19 @@ static void COM_Game_f (void)
 			Z_Free (com_searchpaths);
 			com_searchpaths = search;
 		}
-		hipnotic = false;
-		rogue = false;
-		standard_quake = true;
+		hipnotic = 0;
+		rogue = 0;
+		standard_quake = 1;
 
 		if (q_strcasecmp(p, GAMENAME)) //game is not id1
 		{
 			if (*p2) {
 				COM_AddGameDirectory (com_basedir, &p2[1]);
-				standard_quake = false;
+				standard_quake = 0;
 				if (!strcmp(p2,"-hipnotic") || !strcmp(p2,"-quoth"))
-					hipnotic = true;
+					hipnotic = 1;
 				else if (!strcmp(p2,"-rogue"))
-					rogue = true;
+					rogue = 1;
 				if (q_strcasecmp(p, &p2[1])) //don't load twice
 					COM_AddGameDirectory (com_basedir, p);
 			}
@@ -2197,12 +2197,12 @@ static void COM_Game_f (void)
 				COM_AddGameDirectory (com_basedir, p);
 				// QuakeSpasm extension: treat '-game missionpack' as '-missionpack'
 				if (!q_strcasecmp(p,"hipnotic") || !q_strcasecmp(p,"quoth")) {
-					hipnotic = true;
-					standard_quake = false;
+					hipnotic = 1;
+					standard_quake = 0;
 				}
 				else if (!q_strcasecmp(p,"rogue")) {
-					rogue = true;
-					standard_quake = false;
+					rogue = 1;
+					standard_quake = 0;
 				}
 			}
 		}
@@ -2287,7 +2287,7 @@ void COM_InitFilesystem (void) //johnfitz -- modified based on topaz's tutorial
 		const s8 *p = com_argv[i + 1];
 		if (!*p || !strcmp(p, ".") || strstr(p, "..") || strstr(p, "/") || strstr(p, "\\") || strstr(p, ":"))
 			Sys_Error ("gamedir should be a single directory name, not a path\n");
-		com_modified = true;
+		com_modified = 1;
 		// don't load mission packs twice
 		if (COM_CheckParm ("-rogue") && !q_strcasecmp(p, "rogue")) p = NULL;
 		if (p && COM_CheckParm ("-hipnotic") && !q_strcasecmp(p, "hipnotic")) p = NULL;
@@ -2296,12 +2296,12 @@ void COM_InitFilesystem (void) //johnfitz -- modified based on topaz's tutorial
 			COM_AddGameDirectory (com_basedir, p);
 			// QuakeSpasm extension: treat '-game missionpack' as '-missionpack'
 			if (!q_strcasecmp(p,"rogue")) {
-				rogue = true;
-				standard_quake = false;
+				rogue = 1;
+				standard_quake = 0;
 			}
 			if (!q_strcasecmp(p,"hipnotic") || !q_strcasecmp(p,"quoth")) {
-				hipnotic = true;
-				standard_quake = false;
+				hipnotic = 1;
+				standard_quake = 0;
 			}
 		}
 	}
@@ -2553,7 +2553,7 @@ bool LOC_LoadFile (const s8 *file)
 	localization.numindices = 0;
 
 	if (!file || !*file)
-		return false;
+		return 0;
 
 	memset(&archive, 0, sizeof(archive));
 	q_snprintf(path, sizeof(path), "%s", file);
@@ -2585,7 +2585,7 @@ bool LOC_LoadFile (const s8 *file)
 fail:			mz_zip_reader_end(&archive);
 			if (rw) SDL_RWclose(rw);
 			Con_Printf("Couldn't load '%s'\n", file);
-			return false;
+			return 0;
 		}
 		SDL_RWread(rw, localization.text, 1, sz);
 		SDL_RWclose(rw);
@@ -2645,7 +2645,7 @@ fail:			mz_zip_reader_end(&archive);
 				value++;
 
 			leading_quote = (*value == '\"');
-			trailing_quote = false;
+			trailing_quote = 0;
 			value += leading_quote;
 
 			// transform escape sequences in-place
@@ -2680,7 +2680,7 @@ fail:			mz_zip_reader_end(&archive);
 
 				if (*value_src == '\"')
 				{
-					trailing_quote = true;
+					trailing_quote = 1;
 					*value_dst = 0;
 					break;
 				}
@@ -2739,7 +2739,7 @@ fail:			mz_zip_reader_end(&archive);
 	if (localization.numindices == 0)
 	{
 		Con_Printf("No localized strings in file '%s'\n", file);
-		return false;
+		return 0;
 	}
 
 	localization.indices = (unsigned*) realloc(localization.indices, localization.numindices * sizeof(*localization.indices));
@@ -2769,7 +2769,7 @@ fail:			mz_zip_reader_end(&archive);
 
 	Con_SafePrintf ("[skipnotify]Loaded %d strings from '%s'\n", localization.numentries, path);
 
-	return true;
+	return 1;
 }
 
 
@@ -2884,14 +2884,14 @@ LOC_HasPlaceholders
 bool LOC_HasPlaceholders (const s8 *str)
 {
 	if (!localization.numindices)
-		return false;
+		return 0;
 	while (*str)
 	{
 		if (LOC_ParseArg(&str) >= 0)
-			return true;
+			return 1;
 		str++;
 	}
-	return false;
+	return 0;
 }
 
 /*

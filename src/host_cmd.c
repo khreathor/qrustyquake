@@ -8,7 +8,7 @@ void Host_Quit_f()
 		return;
 	}
 	CL_Disconnect();
-	Host_ShutdownServer(false);
+	Host_ShutdownServer(0);
 	Sys_Quit();
 }
 
@@ -84,11 +84,11 @@ void Host_Noclip_f()
 	if (pr_global_struct->deathmatch/*FIXME && !host_client->privileged*/)
 		return;
 	if (sv_player->v.movetype != MOVETYPE_NOCLIP) {
-		noclip_anglehack = true;
+		noclip_anglehack = 1;
 		sv_player->v.movetype = MOVETYPE_NOCLIP;
 		SV_ClientPrintf("noclip ON\n");
 	} else {
-		noclip_anglehack = false;
+		noclip_anglehack = 0;
 		sv_player->v.movetype = MOVETYPE_WALK;
 		SV_ClientPrintf("noclip OFF\n");
 	}
@@ -170,7 +170,7 @@ static void Host_Map_f (void)
         cls.demonum = -1;               // stop demo loop in case this fails
 
         CL_Disconnect ();
-        Host_ShutdownServer(false);
+        Host_ShutdownServer(0);
 
         //if (cls.state != ca_dedicated)
         //        IN_Activate();
@@ -376,8 +376,8 @@ void Host_Loadgame_f()
 		Con_Printf("Couldn't load map\n");
 		return;
 	}
-	sv.paused = true; // pause until all clients connect
-	sv.loadgame = true;
+	sv.paused = 1; // pause until all clients connect
+	sv.loadgame = 1;
 	s32 i = 0;
 	for (; i < MAX_LIGHTSTYLES; i++) { // load the light styles
 		fscanf(f, "%s\n", str);
@@ -412,10 +412,10 @@ void Host_Loadgame_f()
 		} else { // parse an edict
 			edict_t *ent = EDICT_NUM(entnum);
 			memset(&ent->v, 0, progs->entityfields * 4);
-			ent->free = false;
+			ent->free = 0;
 			ED_ParseEdict(start, ent);
 			if (!ent->free) // link it into the bsp tree
-				SV_LinkEdict(ent, false);
+				SV_LinkEdict(ent, 0);
 		}
 		entnum++;
 	}
@@ -483,11 +483,11 @@ void Host_Version_f()
 void Host_Say(bool teamonly)
 {
 	s8 text[64];
-	bool fromServer = false;
+	bool fromServer = 0;
 	if (cmd_source == src_command) {
 		if (cls.state == ca_dedicated) {
-			fromServer = true;
-			teamonly = false;
+			fromServer = 1;
+			teamonly = 0;
 		} else {
 			Cmd_ForwardToServer();
 			return;
@@ -524,8 +524,8 @@ void Host_Say(bool teamonly)
 	Sys_Printf("%s", &text[1]);
 }
 
-void Host_Say_f() { Host_Say(false); }
-void Host_Say_Team_f() { Host_Say(true); }
+void Host_Say_f() { Host_Say(0); }
+void Host_Say_Team_f() { Host_Say(1); }
 void Host_Tell_f()
 {
 	s8 text[64];
@@ -649,7 +649,7 @@ void Host_PreSpawn_f()
 	//SZ_Write(&host_client->message, sv.signon.data, sv.signon.cursize);
 	//MSG_WriteByte(&host_client->message, svc_signonnum);
 	//MSG_WriteByte(&host_client->message, 2);
-	//host_client->sendsignon = true;
+	//host_client->sendsignon = 1;
 	host_client->sendsignon = PRESPAWN_SIGNONBUFS;
         host_client->signonidx = 0;
 }
@@ -677,7 +677,7 @@ static void Host_Spawn_f (void)
         if (sv.loadgame)
         {       // loaded games are fully inited already
                 // if this is the last client to be connected, unpause
-                sv.paused = false;
+                sv.paused = 0;
         }
         else
         {
@@ -775,7 +775,7 @@ void Host_Begin_f()
 		Con_Printf("begin is not valid from the console\n");
 		return;
 	}
-	host_client->spawned = true;
+	host_client->spawned = 1;
 }
 
 void Host_Kick_f() // Kicks a user off of the server
@@ -784,7 +784,7 @@ void Host_Kick_f() // Kicks a user off of the server
 	const s8 *message = NULL;
 	client_t *save;
 	s32 i;
-	bool byNumber = false;
+	bool byNumber = 0;
 	if (cmd_source == src_command) {
 		if (!sv.active) {
 			Cmd_ForwardToServer();
@@ -800,7 +800,7 @@ void Host_Kick_f() // Kicks a user off of the server
 		if (!svs.clients[i].active)
 			return;
 		host_client = &svs.clients[i];
-		byNumber = true;
+		byNumber = 1;
 	} else {
 		for (i = 0, host_client = svs.clients; i < svs.maxclients;
 				i++, host_client++) {
@@ -832,7 +832,7 @@ void Host_Kick_f() // Kicks a user off of the server
 			SV_ClientPrintf("Kicked by %s: %s\n", who, message);
 		else
 			SV_ClientPrintf("Kicked by %s\n", who);
-		SV_DropClient(false);
+		SV_DropClient(0);
 	}
 	host_client = save;
 }
@@ -979,7 +979,7 @@ void Host_Viewmodel_f()
 	edict_t *e = FindViewthing();
 	if (!e)
 		return;
-	model_t *m = Mod_ForName(Cmd_Argv(1), false);
+	model_t *m = Mod_ForName(Cmd_Argv(1), 0);
 	if (!m) {
 		Con_Printf("Can't load %s\n", Cmd_Argv(1));
 		return;

@@ -34,7 +34,7 @@ void Host_EndGame(s8 *message, ...)
 	va_end(argptr);
 	Con_DPrintf("Host_EndGame: %s\n", string);
 	if (sv.active)
-		Host_ShutdownServer(false);
+		Host_ShutdownServer(0);
 	if (cls.state == ca_dedicated) // dedicated servers exit
 		Sys_Error("Host_EndGame: %s\n", string);
 	cls.demonum != -1 ? CL_NextDemo() : CL_Disconnect();
@@ -45,22 +45,22 @@ void Host_Error(s8 *error, ...)
 {
 	va_list argptr;
 	s8 string[1024];
-	static bool inerror = false;
+	static bool inerror = 0;
 	if (inerror)
 		Sys_Error("Host_Error: recursively entered");
-	inerror = true;
+	inerror = 1;
 	SCR_EndLoadingPlaque();	// reenable screen updates
 	va_start(argptr, error);
 	vsprintf(string, error, argptr);
 	va_end(argptr);
 	Con_Printf("Host_Error: %s\n", string);
 	if (sv.active)
-		Host_ShutdownServer(false);
+		Host_ShutdownServer(0);
 	if (cls.state == ca_dedicated) // dedicated servers exit
 		Sys_Error("Host_Error: %s\n", string);
 	CL_Disconnect();
 	cls.demonum = -1;
-	inerror = false;
+	inerror = 0;
 	longjmp(host_abortserver, 1);
 }
 
@@ -189,7 +189,7 @@ void Host_ClientCommands(s8 *fmt, ...)
 
 void SV_DropClient(bool crash)
 { // Called when the player is getting totally kicked off the host
-  // if (crash = true), don't bother sending signofs
+  // if (crash = 1), don't bother sending signofs
 	s32 i;
 	client_t *client;
 	if (!crash) {
@@ -214,7 +214,7 @@ void SV_DropClient(bool crash)
 	NET_Close(host_client->netconnection);
 	host_client->netconnection = NULL;
 	// free the client (the body stays around)
-	host_client->active = false;
+	host_client->active = 0;
 	host_client->name[0] = 0;
 	host_client->old_frags = -999999;
 	net_activeconnections--;
@@ -240,7 +240,7 @@ void Host_ShutdownServer(bool crash)
 	s32 i;
 	if (!sv.active)
 		return;
-	sv.active = false;
+	sv.active = 0;
 	if (cls.state == ca_connected) // stop all client sounds immediately
 		CL_Disconnect();
 	// flush any pending messages - like the score!!!
@@ -379,7 +379,7 @@ void _Host_Frame(f32 time)
 	static f64 time1, time2, time3;
 	if (setjmp(host_abortserver))
 		return;	// something bad happened, or the server disconnected
-	bool ranserver = false;
+	bool ranserver = 0;
 	rand(); // keep the random time dependent
 	accumtime += host_netinterval?CLAMP(0.0, (f64)time, 0.2):0.0; // for renderer/server isolation
 	Host_AdvanceTime (time);
@@ -406,7 +406,7 @@ void _Host_Frame(f32 time)
 			Host_ServerFrame ();
 		host_frametime = realframetime;
 		Cbuf_Waited();
-		ranserver = true;
+		ranserver = 1;
 	}
 	if (cls.state == ca_connected) // fetch results from server
 		CL_ReadFromServer();
@@ -528,7 +528,7 @@ void Host_Init()
 	IN_MLookDown();
 	Hunk_AllocName(0, "-HOST_HUNKLEVEL-");
 	host_hunklevel = Hunk_LowMark();
-	host_initialized = true;
+	host_initialized = 1;
 	Sys_Printf("========Quake Initialized=========\n");
 }
 
@@ -536,14 +536,14 @@ void Host_Init()
 // to run quit through here before the final handoff to the sys code.
 void Host_Shutdown()
 {
-	static bool isdown = false;
+	static bool isdown = 0;
 	if (isdown) {
 		printf("recursive shutdown\n");
 		return;
 	}
-	isdown = true;
+	isdown = 1;
 	// keep Con_Printf from trying to update the screen
-	scr_disabled_for_loading = true;
+	scr_disabled_for_loading = 1;
 	Host_WriteConfiguration();
 	NET_Shutdown();
 	S_Shutdown();

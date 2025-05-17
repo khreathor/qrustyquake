@@ -87,12 +87,12 @@ void R_Init()
 	Cvar_SetCallback(&r_slimealpha, R_SetSlimealpha_f);
 	Cvar_SetValue("r_maxedges", (f32)NUMSTACKEDGES);
 	Cvar_SetValue("r_maxsurfs", (f32)NUMSTACKSURFACES);
-	view_clipplanes[0].leftedge = true;
-	view_clipplanes[1].rightedge = true;
+	view_clipplanes[0].leftedge = 1;
+	view_clipplanes[1].rightedge = 1;
 	view_clipplanes[1].leftedge = view_clipplanes[2].leftedge =
-	    view_clipplanes[3].leftedge = false;
+	    view_clipplanes[3].leftedge = 0;
 	view_clipplanes[0].rightedge = view_clipplanes[2].rightedge =
-	    view_clipplanes[3].rightedge = false;
+	    view_clipplanes[3].rightedge = 0;
 	r_refdef.xOrigin = XCENTERING;
 	r_refdef.yOrigin = YCENTERING;
 	R_InitParticles();
@@ -116,12 +116,12 @@ void R_NewMap()
 		    Hunk_AllocName(r_cnumsurfs * sizeof(surf_t), "surfaces");
 		surface_p = surfaces;
 		surf_max = &surfaces[r_cnumsurfs];
-		r_surfsonstack = false;
+		r_surfsonstack = 0;
 		// surface 0 doesn't really exist; it's just a dummy because
 		// index 0 is used to indicate no edge attached to surface
 		surfaces--;
 	} else
-		r_surfsonstack = true;
+		r_surfsonstack = 1;
 	r_maxedgesseen = 0;
 	r_maxsurfsseen = 0;
 	r_numallocatededges = r_maxedges.value;
@@ -129,8 +129,8 @@ void R_NewMap()
 		r_numallocatededges = MINEDGES;
 	auxedges = r_numallocatededges <= NUMSTACKEDGES ? NULL
 		: Hunk_AllocName(r_numallocatededges * sizeof(edge_t), "edges");
-	r_dowarpold = false;
-	r_viewchanged = false;
+	r_dowarpold = 0;
+	r_viewchanged = 0;
 	skybox_name[0] = 0;
 	r_skymade = 0;
 	Sky_NewMap();
@@ -164,7 +164,7 @@ void R_SetVrect(vrect_t *pvrectin, vrect_t *pvrect, s32 lineadj)
 void R_ViewChanged(vrect_t *pvrect, s32 lineadj, f32 aspect)
 { // Called every time the vid structure or r_refdef changes.
  // Guaranteed to be called before the first refresh
-	r_viewchanged = true;
+	r_viewchanged = 1;
 	R_SetVrect(pvrect, &r_refdef.vrect, lineadj);
 	r_refdef.horizontalFieldOfView = 2.0 * tan(r_refdef.fov_x / 360 * M_PI);
 	r_refdef.fvrectx = (f32)r_refdef.vrect.x;
@@ -414,7 +414,7 @@ void R_DrawBEntitiesOnList()
 		return;
 	vec3_t oldorigin;
 	VectorCopy(modelorg, oldorigin);
-	insubmodel = true;
+	insubmodel = 1;
 	r_dlightframecount = r_framecount;
 	model_t *clmodel; // keep here for the OpenBSD compiler
 	for(s32 i = 0; i < cl_numvisedicts; i++){
@@ -497,7 +497,7 @@ void R_DrawBEntitiesOnList()
 			break;
 		}
 	}
-	insubmodel = false;
+	insubmodel = 0;
 	cur_ent_alpha = 1;
 }
 
@@ -536,7 +536,7 @@ void R_RenderView() // r_refdef must be set before the first call
 	R_MarkLeaves(); // done here so we know if we're in water
 	if(!cl_entities[0].model || !cl.worldmodel)
 		Sys_Error("R_RenderView: NULL worldmodel");
-	r_foundtranswater =  r_wateralphapass = false; // Manoel Kasimier - translucent water
+	r_foundtranswater =  r_wateralphapass = 0; // Manoel Kasimier - translucent water
 	r_pass = 0;
 	R_EdgeDrawing();
 	if((s32)r_twopass.value&1){
@@ -545,7 +545,7 @@ void R_RenderView() // r_refdef must be set before the first call
 	}
 	R_DrawEntitiesOnList();
 	if(r_foundtranswater && (r_twopass.value + r_entalpha.value)){
-		r_wateralphapass = true;
+		r_wateralphapass = 1;
 		R_EdgeDrawing ();
 	}
 	R_DrawViewModel();

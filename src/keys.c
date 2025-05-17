@@ -2,10 +2,10 @@
 #include "quakedef.h"
 // key up events are sent even if in console mode
 
-static s32 shift_down = false;
+static s32 shift_down = 0;
 static s32 history_line = 0;
-static bool consolekeys[256]; // if true, can't be rebound while in console
-static bool menubound[256]; // if true, can't be rebound while in menu
+static bool consolekeys[256]; // if 1, can't be rebound while in console
+static bool menubound[256]; // if 1, can't be rebound while in menu
 static s32 keyshift[256]; // key to map to if shift held down in console
 static bool keydown[256];
 static s32 key_repeats[256]; // if > 1, it is autorepeating
@@ -300,21 +300,21 @@ void Key_Init()
 	}
 	key_linepos = 1;
 	for(s32 i = 32; i < 128; i++) // init ascii characters in console mode
-		consolekeys[i] = true;
-	consolekeys[K_ENTER] = true;
-	consolekeys[K_TAB] = true;
-	consolekeys[K_LEFTARROW] = true;
-	consolekeys[K_RIGHTARROW] = true;
-	consolekeys[K_UPARROW] = true;
-	consolekeys[K_DOWNARROW] = true;
-	consolekeys[K_BACKSPACE] = true;
-	consolekeys[K_PGUP] = true;
-	consolekeys[K_PGDN] = true;
-	consolekeys[K_SHIFT] = true;
-	consolekeys[K_MWHEELUP] = true;
-	consolekeys[K_MWHEELDOWN] = true;
-	consolekeys['`'] = false;
-	consolekeys['~'] = false;
+		consolekeys[i] = 1;
+	consolekeys[K_ENTER] = 1;
+	consolekeys[K_TAB] = 1;
+	consolekeys[K_LEFTARROW] = 1;
+	consolekeys[K_RIGHTARROW] = 1;
+	consolekeys[K_UPARROW] = 1;
+	consolekeys[K_DOWNARROW] = 1;
+	consolekeys[K_BACKSPACE] = 1;
+	consolekeys[K_PGUP] = 1;
+	consolekeys[K_PGDN] = 1;
+	consolekeys[K_SHIFT] = 1;
+	consolekeys[K_MWHEELUP] = 1;
+	consolekeys[K_MWHEELDOWN] = 1;
+	consolekeys['`'] = 0;
+	consolekeys['~'] = 0;
 	for(s32 i = 0; i < 256; i++)
 		keyshift[i] = i;
 	for(s32 i = 'a'; i <= 'z'; i++)
@@ -340,9 +340,9 @@ void Key_Init()
 	keyshift[']'] = '}';
 	keyshift['`'] = '~';
 	keyshift['\\'] = '|';
-	menubound[K_ESCAPE] = true;
+	menubound[K_ESCAPE] = 1;
 	for(s32 i = 0; i < 12; i++)
-		menubound[K_F1 + i] = true;
+		menubound[K_F1 + i] = 1;
 	Cmd_AddCommand("bind", Key_Bind_f);
 	Cmd_AddCommand("unbind", Key_Unbind_f);
 	Cmd_AddCommand("unbindall", Key_Unbindall_f);
