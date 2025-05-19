@@ -11,8 +11,11 @@ static s32 izi, izistep;
 
 void D_DrawTurbulent8Span();
 
-s32 D_Dither(u8 *pos)
+s32 D_Dither(u8 *pos, f32 opacity)
 {
+	if (opacity >= 1.0f) return 1;
+	if (opacity <= 0.01f) return 0;
+	s32 dither_pat = opacity * 7.2f;
 	u64 d = pos - vid.buffer;
 	u64 x = d % vid.width;
 	u64 y = d / vid.width;
@@ -141,19 +144,12 @@ void D_DrawTurbulent8SpanAlpha (f32 opacity)
 		} while (--r_turb_spancount > 0);
 		return;
 	}
-	if (opacity >= 0.83f) dither_pat = 0;
-	else if (opacity >= 0.75f) dither_pat = 1;
-	else if (opacity >= 0.66f) dither_pat = 2;
-	else if (opacity >= 0.50f) dither_pat = 3;
-	else if (opacity >= 0.33f) dither_pat = 4;
-	else if (opacity >= 0.25f) dither_pat = 5;
-	else dither_pat = 6;
 	if (!lmonly) {
 		do {
 			if (*pz <= (izi >> 16)) {
 				s32 s=((r_turb_s+r_turb_turb[(r_turb_t>>16)&(CYCLE-1)])>>16)&63;
 				s32 t=((r_turb_t+r_turb_turb[(r_turb_s>>16)&(CYCLE-1)])>>16)&63;
-				if (D_Dither(r_turb_pdest))
+				if (D_Dither(r_turb_pdest, 1-opacity))
 					*r_turb_pdest = *(r_turb_pbase + (t << 6) + s);
 			}
 			r_turb_pdest++;
@@ -167,7 +163,7 @@ void D_DrawTurbulent8SpanAlpha (f32 opacity)
 			if (*pz <= (izi >> 16)) {
 				s32 s=((r_turb_s+r_turb_turb[(r_turb_t>>16)&(CYCLE-1)])>>16)&63;
 				s32 t=((r_turb_t+r_turb_turb[(r_turb_s>>16)&(CYCLE-1)])>>16)&63;
-				if (D_Dither(r_turb_pdest)) {
+				if (D_Dither(r_turb_pdest, 1-opacity)) {
 					s32 pix = *(r_turb_pbase + (t << 6) + s);
 					s32 lit = *(litwater_base+(r_turb_pdest-d_viewbuffer));
 					u8 rp = host_basepal[pix * 3 + 0];
@@ -610,7 +606,7 @@ void D_DrawTransSpans8(espan_t *pspan, f32 opacity)
 			}
 			else {
 				do {
-					if (*pz <= (izi >> 16) && D_Dither(pdest)) {
+					if (*pz <= (izi >> 16) && D_Dither(pdest, opacity)) {
 						u8 pix = *(pbase + (s >> 16) +
 							(t >> 16) * cachewidth);
 						*pdest = pix;

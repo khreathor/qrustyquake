@@ -305,7 +305,7 @@ void Turbulent8(espan_t *pspan, f32 opacity);
 void D_DrawSkyScans8(espan_t *pspan);
 void D_DrawSkyboxScans8(espan_t *pspans);
 surfcache_t *D_CacheSurface(msurface_t *surface, s32 miplevel);
-s32 D_Dither(u8 *pos);
+s32 D_Dither(u8 *pos, f32 opacity);
 EX s32 DEFAULTnet_hostport;                                             // net.h
 EX s32 net_hostport;
 EX f64 net_time;
@@ -738,8 +738,7 @@ EX s32 key_lastpress;                                                  // keys.c
 EX s32 key_count;
 EX s8 *keybindings[256];
 EX s8 chat_buffer[32];
-EX s32 dither_pat;                                                   // d_scan.c
-EX s32 lwmark;
+EX s32 lwmark;                                                       // d_scan.c
 EX u8 *litwater_base;
 void R_SetWateralpha_f(cvar_t *var);                                 // r_misc.c
 void R_SetLavaalpha_f(cvar_t *var);

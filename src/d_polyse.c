@@ -58,18 +58,8 @@ void D_PolysetDraw()
 {
 	if (r_alphastyle.value == 0 && cur_ent_alpha != 1 && !fog_lut_built)
 		build_color_mix_lut(0);
-	if (r_alphastyle.value == 1 && cur_ent_alpha != 1) {
-		if (cur_ent_alpha >= 0.83f) dither_pat = 6;
-		else if (cur_ent_alpha >= 0.75f) dither_pat = 5;
-		else if (cur_ent_alpha >= 0.66f) dither_pat = 4;
-		else if (cur_ent_alpha >= 0.50f) dither_pat = 3;
-		else if (cur_ent_alpha >= 0.33f) dither_pat = 2;
-		else if (cur_ent_alpha >= 0.25f) dither_pat = 1;
-		else dither_pat = 0;
-	}
 	spanpackage_t spans[DPS_MAXSPANS + 1 +
-		((CACHE_SIZE - 1) / sizeof(spanpackage_t)) + 1]/*
-		__attribute__((aligned(CACHE_SIZE)))*/;
+		((CACHE_SIZE - 1) / sizeof(spanpackage_t)) + 1];
 	a_spans = (spanpackage_t *)
 		(((uintptr_t) & spans[0] + CACHE_SIZE - 1) & ~(CACHE_SIZE - 1));
 	if (r_affinetridesc.drawtype)
@@ -118,7 +108,7 @@ void D_PolysetDrawFinalVerts(finalvert_t *fv, s32 numverts)
 					[(s32)((1-cur_ent_alpha)*FOG_LUT_LEVELS)];
 			}
 			else if (r_alphastyle.value == 1 && cur_ent_alpha != 1) {
-				if (D_Dither(&d_viewbuffer[d_scantable[fv->v[1]] + fv->v[0]]))
+				if (D_Dither(&d_viewbuffer[d_scantable[fv->v[1]] + fv->v[0]], 1-cur_ent_alpha))
 					d_viewbuffer[d_scantable[fv->v[1]] + fv->v[0]] = pix;
 			}
 			else
@@ -280,7 +270,7 @@ split: // split this edge
 				[(s32)((1-cur_ent_alpha)*FOG_LUT_LEVELS)];
 		}
 		else if (r_alphastyle.value == 1 && cur_ent_alpha != 1) {
-			if (D_Dither(&d_viewbuffer[d_scantable[new[1]] + new[0]]))
+			if (D_Dither(&d_viewbuffer[d_scantable[new[1]] + new[0]], 1-cur_ent_alpha))
 				d_viewbuffer[d_scantable[new[1]] + new[0]] = pix;
 		}
 		else
@@ -445,7 +435,7 @@ void D_PolysetDrawSpans8(spanpackage_t *pspanpackage)
 							[(s32)((1-cur_ent_alpha)*FOG_LUT_LEVELS)];
 					}
 					else if (r_alphastyle.value == 1 && cur_ent_alpha != 1) {
-						if (D_Dither(lpdest))
+						if (D_Dither(lpdest, 1-cur_ent_alpha))
 							*lpdest = pix;
 					}
 					else
