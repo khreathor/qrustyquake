@@ -1727,7 +1727,7 @@ Con_Printf("LOC_LoadFile: unrecognized escape sequence \\%c on line %d\n",
 			if (pos == end) Sys_Error("LOC_LoadFile failed");
 		}
 	}
-	Con_SafePrintf ("[skipnotify]Loaded %d strings from '%s'\n",
+	Con_SafePrintf ("Loaded %d strings from '%s'\n",
 			localization.numentries, path);
 	return 1;
 }
