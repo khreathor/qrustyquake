@@ -1,6 +1,6 @@
 #ifndef QTYPEDEFS_
 #define QTYPEDEFS_
-typedef unsigned char  u8;                                     // standard types
+typedef unsigned char  u8;
 typedef char           s8;
 typedef unsigned short u16;
 typedef short          s16;
@@ -21,21 +21,21 @@ typedef struct { // specified by the host system                   // quakedef.h
 	s32 memsize;
 } quakeparms_t;
 
-typedef f32   vec_t;                                               // q_stdinc.h
+typedef f32 vec_t;                                                 // q_stdinc.h
 typedef vec_t vec3_t[3];
 typedef vec_t vec4_t[4];
 typedef vec_t vec5_t[5];
 
 typedef struct sizebuf_s {                                           // common.h
 	bool allowoverflow; // if 0, do a Sys_Error
-	bool overflowed;  // set to 1 if the buffer size failed
-	u8  *data;
-	s32  maxsize;
-	s32  cursize;
+	bool overflowed; // set to 1 if the buffer size failed
+	u8 *data;
+	s32 maxsize;
+	s32 cursize;
 } sizebuf_t;
 typedef enum {
-	CPE_NOTRUNC,		// return parse error in case of overflow
-	CPE_ALLOWTRUNC		// truncate com_token in case of overflow
+	CPE_NOTRUNC, // return parse error in case of overflow
+	CPE_ALLOWTRUNC // truncate com_token in case of overflow
 } cpe_mode;
 typedef struct link_s {
 	struct link_s *prev, *next;
@@ -46,18 +46,18 @@ typedef struct vec_header_t {
 } vec_header_t;
 typedef struct {
 	s8 name[MAX_QPATH];
-	s32  filepos, filelen;
+	s32 filepos, filelen;
 } packfile_t;
 typedef struct pack_s {
 	s8 filename[MAX_OSPATH];
-	s32  handle;
-	s32  numfiles;
+	s32 handle;
+	s32 numfiles;
 	packfile_t *files;
 } pack_t;
 typedef struct searchpath_s {
 	u32 path_id; // identifier assigned to the game directory
 	s8 filename[MAX_OSPATH];
-	pack_t *pack;   // only one of filename / pack will be used
+	pack_t *pack; // only one of filename / pack will be used
 	struct searchpath_s *next;
 } searchpath_t;
 typedef struct _fshandle_t {
@@ -132,7 +132,8 @@ typedef struct texinfo_s {
 	s32 miptex;
 	s32 flags;
 } texinfo_t;
-typedef struct { // note that edge 0 is never used, because negative edge nums are used for counterclockwise use of the edge in a face
+typedef struct { // note that edge 0 is never used, because negative edge nums
+		 // are used for counterclockwise use of the edge in a face
 	u16 v[2]; // vertex numbers
 } dedge_t;
 typedef struct {
@@ -157,7 +158,8 @@ typedef struct {
 	u8 styles[MAXLIGHTMAPS];
 	s32 lightofs; // start of [numstyles*surfsize] samples
 } dlface_t;
-typedef struct { // leaf 0 is the generic CONTENTS_SOLID leaf, used for all solid areas, all other leafs need visibility info
+typedef struct { // leaf 0 is the generic CONTENTS_SOLID leaf, used for all
+		 // solid areas, all other leafs need visibility info
 	s32 contents;
 	s32 visofs; // -1 = no visibility info
 	s16 mins[3]; // for frustum culling
@@ -188,13 +190,13 @@ typedef struct {
 typedef struct cvar_s cvar_t;                                          // cvar.h
 typedef void (*cvarcallback_t)(cvar_t *);
 struct cvar_s {
-    const s8      *name;
-    const s8      *string;
-    u32    flags;
-    f32           value;
-    const s8      *default_string; //johnfitz -- remember defaults for reset function
-    cvarcallback_t  callback;
-    cvar_t          *next;
+	const s8 *name;
+	const s8 *string;
+	u32 flags;
+	f32  value;
+	const s8 *default_string; // remember defaults for reset function
+	cvarcallback_t callback;
+	cvar_t  *next;
 };
 
 // d*_t structures are on-disk representations
@@ -203,16 +205,16 @@ struct cvar_s {
 typedef struct { f32 l, a, b; } lab_t;                               // rgbtoi.h
 
 typedef struct vrect_s {                                                // vid.h
-        s32 x,y,width,height; struct vrect_s *pnext;
+	s32 x,y,width,height; struct vrect_s *pnext;
 } vrect_t;
 typedef struct {
-        u8  *buffer; // invisible buffer
-        u8  *colormap; // 256 * VID_GRADES size
-        u32 width;
-        u32 height;
-        f32 aspect; // width / height -- < 0 is taller than wide
-        u32 numpages;
-        u32 recalc_refdef; // if 1, recalc vid-based stuff
+	u8 *buffer; // invisible buffer
+	u8 *colormap; // 256 * VID_GRADES size
+	u32 width;
+	u32 height;
+	f32 aspect; // width / height -- < 0 is taller than wide
+	u32 numpages;
+	u32 recalc_refdef; // if 1, recalc vid-based stuff
 } viddef_t;
 
 typedef struct {                                                      // model.h
@@ -388,25 +390,25 @@ typedef struct { spriteframetype_t type; } dspriteframetype_t;
 
 typedef struct cache_user_s                                            // zone.h
 {
-	void	*data;
+	void *data;
 } cache_user_t;
 
 typedef struct {                                                   // protocol.h
-	vec3_t          origin;
-	vec3_t          angles;
-	u16  modelindex;     //johnfitz -- was s32
-	u16  frame;          //johnfitz -- was s32
-	u8   colormap;       //johnfitz -- was s32
-	u8   skin;           //johnfitz -- was s32
-	u8   alpha;          //johnfitz -- added
-	u8   scale;          //Quakespasm: for model scale support.
-	s32             effects;
+	vec3_t  origin;
+	vec3_t  angles;
+	u16 modelindex; //johnfitz -- was s32
+	u16 frame;  //johnfitz -- was s32
+	u8 colormap; //johnfitz -- was s32
+	u8 skin;  //johnfitz -- was s32
+	u8 alpha;  //johnfitz -- added
+	u8 scale;  //Quakespasm: for model scale support.
+	s32  effects;
 } entity_state_t;
 typedef struct {
-	vec3_t  viewangles;
-	f32   forwardmove; // intended velocities
-	f32   sidemove;
-	f32   upmove;
+	vec3_t viewangles;
+	f32 forwardmove; // intended velocities
+	f32 sidemove;
+	f32 upmove;
 } usercmd_t;
 
 typedef struct entity_s {                                            // render.h
@@ -436,7 +438,7 @@ typedef struct entity_s {                                            // render.h
 	u8 lerpflags; //johnfitz -- lerping
 	f32 lerpstart; //johnfitz -- animation lerping
 	f32 lerptime; //johnfitz -- animation lerping
-	f32 lerpfinish; //johnfitz -- lerping -- server sent us a more accurate interval, use it instead of 0.1
+	f32 lerpfinish; //johnfitz -- lerping
 	s16 previouspose; //johnfitz -- animation lerping
 	s16 currentpose; //johnfitz -- animation lerping
 	s16 futurepose; //johnfitz -- animation lerping
@@ -444,7 +446,7 @@ typedef struct entity_s {                                            // render.h
 	vec3_t previousorigin; //johnfitz -- transform lerping
 	vec3_t currentorigin; //johnfitz -- transform lerping
 	vec3_t previousangles; //johnfitz -- transform lerping
-	f32 traildelay;	// time left until next particle trail update
+	f32 traildelay; // time left until next particle trail update
 	vec3_t trailorg; // previous particle trail point
 } entity_t;
 typedef struct efrag_s {
@@ -460,17 +462,17 @@ typedef struct {
 	s64 vrectright, vrectbottom; // right & bottom screen coords
 	s64 aliasvrectright, aliasvrectbottom; // scaled Alias versions
 	f32 vrectrightedge; // rightmost right edge we care about,
-			      // for use in edge list
+			    // for use in edge list
 	f32 fvrectx, fvrecty; // for floating-point compares
 	f32 fvrectx_adj, fvrecty_adj; // left and top edges, for clamping
 	s64 vrect_x_adj_shift20; //(vrect.x + 0.5 - epsilon) << 20
 	s64 vrectright_adj_shift20; //(vrectright + 0.5 - epsilon) << 20
 	f32 fvrectright_adj, fvrectbottom_adj; // right and bottom edges,
-						 // for clamping
+					       // for clamping
 	f32 fvrectright; // rightmost edge, for Alias clamping
 	f32 fvrectbottom; // bottommost edge, for Alias clamping
 	f32 horizontalFieldOfView; // at Z = 1.0, this many X is visible 
-				     // 2.0 = 90 degrees
+				   // 2.0 = 90 degrees
 	f32 xOrigin; // should probably allways be 0.5
 	f32 yOrigin; // between be around 0.3 to 0.5
 
@@ -728,7 +730,8 @@ typedef struct {                                                    // d_iface.h
 	f32 zi;
 } emitpoint_t;
 typedef enum {
-	pt_static, pt_grav, pt_slowgrav, pt_fire, pt_explode, pt_explode2, pt_blob, pt_blob2
+	pt_static, pt_grav, pt_slowgrav, pt_fire,
+	pt_explode, pt_explode2, pt_blob, pt_blob2
 } ptype_t;
 typedef struct particle_s {
 	// driver-usable fields
@@ -809,27 +812,27 @@ struct qsockaddr {                                                 // net_defs.h
 };
 typedef struct qsocket_s {
 	struct qsocket_s *next;
-	f64  connecttime;
-	f64  lastMessageTime;
-	f64  lastSendTime;
+	f64 connecttime;
+	f64 lastMessageTime;
+	f64 lastSendTime;
 	bool disconnected;
 	bool canSend;
 	bool sendNext;
-	s32  driver;
-	s32  landriver;
+	s32 driver;
+	s32 landriver;
 	sys_socket_t socket;
-	void  *driverdata;
+	void *driverdata;
 	u32 ackSequence;
 	u32 sendSequence;
 	u32 unreliableSendSequence;
-	s32  sendMessageLength;
-	u8  sendMessage [NET_MAXMESSAGE];
+	s32 sendMessageLength;
+	u8 sendMessage [NET_MAXMESSAGE];
 	u32 receiveSequence;
 	u32 unreliableReceiveSequence;
-	s32  receiveMessageLength;
-	u8  receiveMessage [NET_MAXMESSAGE];
+	s32 receiveMessageLength;
+	u8 receiveMessage [NET_MAXMESSAGE];
 	struct qsockaddr addr;
-	s8  address[NET_NAMELEN];
+	s8 address[NET_NAMELEN];
 
 } qsocket_t;
 typedef struct {
@@ -837,55 +840,55 @@ typedef struct {
 	bool initialized;
 	sys_socket_t controlSock;
 	sys_socket_t (*Init) ();
-	void  (*Shutdown) ();
-	void  (*Listen) (bool state);
+	void (*Shutdown) ();
+	void (*Listen) (bool state);
 	sys_socket_t (*Open_Socket) (s32 port);
-	s32  (*Close_Socket) (sys_socket_t socketid);
-	s32  (*Connect) (sys_socket_t socketid, struct qsockaddr *addr);
+	s32 (*Close_Socket) (sys_socket_t socketid);
+	s32 (*Connect) (sys_socket_t socketid, struct qsockaddr *addr);
 	sys_socket_t (*CheckNewConnections) ();
-	s32  (*Read) (sys_socket_t socketid, u8 *buf, s32 len, struct qsockaddr *addr);
-	s32  (*Write) (sys_socket_t socketid, u8 *buf, s32 len, struct qsockaddr *addr);
-	s32  (*Broadcast) (sys_socket_t socketid, u8 *buf, s32 len);
+	s32 (*Read) (sys_socket_t socketid, u8 *buf, s32 len, struct qsockaddr *addr);
+	s32 (*Write) (sys_socket_t socketid, u8 *buf, s32 len, struct qsockaddr *addr);
+	s32 (*Broadcast) (sys_socket_t socketid, u8 *buf, s32 len);
 	const s8 * (*AddrToString) (struct qsockaddr *addr);
-	s32  (*StringToAddr) (const s8 *string, struct qsockaddr *addr);
-	s32  (*GetSocketAddr) (sys_socket_t socketid, struct qsockaddr *addr);
-	s32  (*GetNameFromAddr) (struct qsockaddr *addr, s8 *name);
-	s32  (*GetAddrFromName) (const s8 *name, struct qsockaddr *addr);
-	s32  (*AddrCompare) (struct qsockaddr *addr1, struct qsockaddr *addr2);
-	s32  (*GetSocketPort) (struct qsockaddr *addr);
-	s32  (*SetSocketPort) (struct qsockaddr *addr, s32 port);
+	s32 (*StringToAddr) (const s8 *string, struct qsockaddr *addr);
+	s32 (*GetSocketAddr) (sys_socket_t socketid, struct qsockaddr *addr);
+	s32 (*GetNameFromAddr) (struct qsockaddr *addr, s8 *name);
+	s32 (*GetAddrFromName) (const s8 *name, struct qsockaddr *addr);
+	s32 (*AddrCompare) (struct qsockaddr *addr1, struct qsockaddr *addr2);
+	s32 (*GetSocketPort) (struct qsockaddr *addr);
+	s32 (*SetSocketPort) (struct qsockaddr *addr, s32 port);
 } net_landriver_t;
 typedef struct {
 	const s8 *name;
 	bool initialized;
-	s32  (*Init) ();
-	void  (*Listen) (bool state);
-	void  (*SearchForHosts) (bool xmit);
+	s32 (*Init) ();
+	void (*Listen) (bool state);
+	void (*SearchForHosts) (bool xmit);
 	qsocket_t *(*Connect) (const s8 *host);
 	qsocket_t *(*CheckNewConnections) ();
-	s32  (*QGetMessage) (qsocket_t *sock);
-	s32  (*QSendMessage) (qsocket_t *sock, sizebuf_t *data);
-	s32  (*SendUnreliableMessage) (qsocket_t *sock, sizebuf_t *data);
+	s32 (*QGetMessage) (qsocket_t *sock);
+	s32 (*QSendMessage) (qsocket_t *sock, sizebuf_t *data);
+	s32 (*SendUnreliableMessage) (qsocket_t *sock, sizebuf_t *data);
 	bool (*CanSendMessage) (qsocket_t *sock);
 	bool (*CanSendUnreliableMessage) (qsocket_t *sock);
-	void  (*Close) (qsocket_t *sock);
-	void  (*Shutdown) ();
+	void (*Close) (qsocket_t *sock);
+	void (*Shutdown) ();
 } net_driver_t;
 typedef struct {
 	s8 name[16];
 	s8 map[16];
 	s8 cname[32];
-	s32  users;
-	s32  maxusers;
-	s32  driver;
-	s32  ldriver;
+	s32 users;
+	s32 maxusers;
+	s32 driver;
+	s32 ldriver;
 	struct qsockaddr addr;
 } hostcache_t;
 typedef struct _PollProcedure {
 	struct _PollProcedure *next;
-	f64    nextTime;
-	void    (*procedure)(void *);
-	void    *arg;
+	f64 nextTime;
+	void (*procedure)(void *);
+	void *arg;
 } PollProcedure;
 
 typedef enum hudstyle_t {                                            // screen.h
@@ -946,7 +949,7 @@ typedef enum {
 	ev_vector, ev_entity, ev_field, ev_function,
 	ev_pointer
 } etype_t;
-enum {  OP_DONE, OP_MUL_F, OP_MUL_V, OP_MUL_FV, OP_MUL_VF,
+enum { OP_DONE, OP_MUL_F, OP_MUL_V, OP_MUL_FV, OP_MUL_VF,
 	OP_DIV_F, OP_ADD_F, OP_ADD_V, OP_SUB_F, OP_SUB_V,
 	OP_EQ_F, OP_EQ_V, OP_EQ_S, OP_EQ_E, OP_EQ_FNC,
 	OP_NE_F, OP_NE_V, OP_NE_S, OP_NE_E, OP_NE_FNC,
@@ -1003,140 +1006,140 @@ typedef struct {
 } dprograms_t;
 
 typedef struct {                                                   // progdefs.h
-	s32	pad[28];
-	s32	self;
-	s32	other;
-	s32	world;
-	f32	time;
-	f32	frametime;
-	f32	force_retouch;
-	string_t	mapname;
-	f32	deathmatch;
-	f32	coop;
-	f32	teamplay;
-	f32	serverflags;
-	f32	total_secrets;
-	f32	total_monsters;
-	f32	found_secrets;
-	f32	killed_monsters;
-	f32	parm1;
-	f32	parm2;
-	f32	parm3;
-	f32	parm4;
-	f32	parm5;
-	f32	parm6;
-	f32	parm7;
-	f32	parm8;
-	f32	parm9;
-	f32	parm10;
-	f32	parm11;
-	f32	parm12;
-	f32	parm13;
-	f32	parm14;
-	f32	parm15;
-	f32	parm16;
-	vec3_t	v_forward;
-	vec3_t	v_up;
-	vec3_t	v_right;
-	f32	trace_allsolid;
-	f32	trace_startsolid;
-	f32	trace_fraction;
-	vec3_t	trace_endpos;
-	vec3_t	trace_plane_normal;
-	f32	trace_plane_dist;
-	s32	trace_ent;
-	f32	trace_inopen;
-	f32	trace_inwater;
-	s32	msg_entity;
-	func_t	main;
-	func_t	StartFrame;
-	func_t	PlayerPreThink;
-	func_t	PlayerPostThink;
-	func_t	ClientKill;
-	func_t	ClientConnect;
-	func_t	PutClientInServer;
-	func_t	ClientDisconnect;
-	func_t	SetNewParms;
-	func_t	SetChangeParms;
+	s32 pad[28];
+	s32 self;
+	s32 other;
+	s32 world;
+	f32 time;
+	f32 frametime;
+	f32 force_retouch;
+	string_t mapname;
+	f32 deathmatch;
+	f32 coop;
+	f32 teamplay;
+	f32 serverflags;
+	f32 total_secrets;
+	f32 total_monsters;
+	f32 found_secrets;
+	f32 killed_monsters;
+	f32 parm1;
+	f32 parm2;
+	f32 parm3;
+	f32 parm4;
+	f32 parm5;
+	f32 parm6;
+	f32 parm7;
+	f32 parm8;
+	f32 parm9;
+	f32 parm10;
+	f32 parm11;
+	f32 parm12;
+	f32 parm13;
+	f32 parm14;
+	f32 parm15;
+	f32 parm16;
+	vec3_t v_forward;
+	vec3_t v_up;
+	vec3_t v_right;
+	f32 trace_allsolid;
+	f32 trace_startsolid;
+	f32 trace_fraction;
+	vec3_t trace_endpos;
+	vec3_t trace_plane_normal;
+	f32 trace_plane_dist;
+	s32 trace_ent;
+	f32 trace_inopen;
+	f32 trace_inwater;
+	s32 msg_entity;
+	func_t main;
+	func_t StartFrame;
+	func_t PlayerPreThink;
+	func_t PlayerPostThink;
+	func_t ClientKill;
+	func_t ClientConnect;
+	func_t PutClientInServer;
+	func_t ClientDisconnect;
+	func_t SetNewParms;
+	func_t SetChangeParms;
 } globalvars_t;
 typedef struct {
-	f32	modelindex;
-	vec3_t	absmin;
-	vec3_t	absmax;
-	f32	ltime;
-	f32	movetype;
-	f32	solid;
-	vec3_t	origin;
-	vec3_t	oldorigin;
-	vec3_t	velocity;
-	vec3_t	angles;
-	vec3_t	avelocity;
-	vec3_t	punchangle;
-	string_t	classname;
-	string_t	model;
-	f32	frame;
-	f32	skin;
-	f32	effects;
-	vec3_t	mins;
-	vec3_t	maxs;
-	vec3_t	size;
-	func_t	touch;
-	func_t	use;
-	func_t	think;
-	func_t	blocked;
-	f32	nextthink;
-	s32	groundentity;
-	f32	health;
-	f32	frags;
-	f32	weapon;
-	string_t	weaponmodel;
-	f32	weaponframe;
-	f32	currentammo;
-	f32	ammo_shells;
-	f32	ammo_nails;
-	f32	ammo_rockets;
-	f32	ammo_cells;
-	f32	items;
-	f32	takedamage;
-	s32	chain;
-	f32	deadflag;
-	vec3_t	view_ofs;
-	f32	button0;
-	f32	button1;
-	f32	button2;
-	f32	impulse;
-	f32	fixangle;
-	vec3_t	v_angle;
-	f32	idealpitch;
-	string_t	netname;
-	s32	enemy;
-	f32	flags;
-	f32	colormap;
-	f32	team;
-	f32	max_health;
-	f32	teleport_time;
-	f32	armortype;
-	f32	armorvalue;
-	f32	waterlevel;
-	f32	watertype;
-	f32	ideal_yaw;
-	f32	yaw_speed;
-	s32	aiment;
-	s32	goalentity;
-	f32	spawnflags;
-	string_t	target;
-	string_t	targetname;
-	f32	dmg_take;
-	f32	dmg_save;
-	s32	dmg_inflictor;
-	s32	owner;
-	vec3_t	movedir;
-	string_t	message;
-	f32	sounds;
-	string_t	noise;
-	string_t	noise1;
-	string_t	noise2;
-	string_t	noise3;
+	f32 modelindex;
+	vec3_t absmin;
+	vec3_t absmax;
+	f32 ltime;
+	f32 movetype;
+	f32 solid;
+	vec3_t origin;
+	vec3_t oldorigin;
+	vec3_t velocity;
+	vec3_t angles;
+	vec3_t avelocity;
+	vec3_t punchangle;
+	string_t classname;
+	string_t model;
+	f32 frame;
+	f32 skin;
+	f32 effects;
+	vec3_t mins;
+	vec3_t maxs;
+	vec3_t size;
+	func_t touch;
+	func_t use;
+	func_t think;
+	func_t blocked;
+	f32 nextthink;
+	s32 groundentity;
+	f32 health;
+	f32 frags;
+	f32 weapon;
+	string_t weaponmodel;
+	f32 weaponframe;
+	f32 currentammo;
+	f32 ammo_shells;
+	f32 ammo_nails;
+	f32 ammo_rockets;
+	f32 ammo_cells;
+	f32 items;
+	f32 takedamage;
+	s32 chain;
+	f32 deadflag;
+	vec3_t view_ofs;
+	f32 button0;
+	f32 button1;
+	f32 button2;
+	f32 impulse;
+	f32 fixangle;
+	vec3_t v_angle;
+	f32 idealpitch;
+	string_t netname;
+	s32 enemy;
+	f32 flags;
+	f32 colormap;
+	f32 team;
+	f32 max_health;
+	f32 teleport_time;
+	f32 armortype;
+	f32 armorvalue;
+	f32 waterlevel;
+	f32 watertype;
+	f32 ideal_yaw;
+	f32 yaw_speed;
+	s32 aiment;
+	s32 goalentity;
+	f32 spawnflags;
+	string_t target;
+	string_t targetname;
+	f32 dmg_take;
+	f32 dmg_save;
+	s32 dmg_inflictor;
+	s32 owner;
+	vec3_t movedir;
+	string_t message;
+	f32 sounds;
+	string_t noise;
+	string_t noise1;
+	string_t noise2;
+	string_t noise3;
 } entvars_t;
 
 typedef union eval_s {                                                // progs.h
@@ -1166,7 +1169,7 @@ typedef struct {
 	s32 first_statement;
 	s32 patch_statement;
 } exbuiltin_t;
-typedef void (*builtin_t) (void);
+typedef void (*builtin_t) ();
 
 typedef struct {                                                      // world.h
 	vec3_t normal;
@@ -1184,14 +1187,14 @@ typedef struct {
 
 typedef void (*xcommand_t) ();                                          // cmd.h
 typedef struct cmdalias_s {
-        struct cmdalias_s *next;
-        s8 name[MAX_ALIAS_NAME];
-        s8 *value;
+	struct cmdalias_s *next;
+	s8 name[MAX_ALIAS_NAME];
+	s8 *value;
 } cmdalias_t;
 typedef struct cmd_function_s {
-        struct cmd_function_s *next;
-        s8 *name;
-        xcommand_t function;
+	struct cmd_function_s *next;
+	s8 *name;
+	xcommand_t function;
 } cmd_function_t;
 typedef enum { src_client, src_command } cmd_source_t;
 
@@ -1346,6 +1349,7 @@ typedef struct {
 	s32 down[2]; // key nums holding it down
 	s32 state; // low bit is down state
 } kbutton_t;
+
 typedef struct {                                                     // client.h
 	s32 maxclients;
 	s32 maxclientslimit;
@@ -1438,7 +1442,7 @@ typedef struct vispatch_s { // External VIS file support              // model.c
 
 typedef struct { s32 s; dfunction_t *f; } prstack_t;                // pr_exec.c
 
-typedef struct { s8 *name; s8 *description; } level_t;             // menu.c
+typedef struct { s8 *name; s8 *description; } level_t;                 // menu.c
 typedef struct { s8 *description; s32 firstLevel; s32 levels; } episode_t;
 
 typedef struct {                                                     // screen.c
@@ -1483,80 +1487,80 @@ typedef struct {
 } edgetable;
 
 typedef struct cache_system_s {                                        // zone.c
-	s32			size;		// including this header
-	cache_user_t		*user;
-	s8			name[CACHENAME_LEN];
-	struct cache_system_s	*prev, *next;
-	struct cache_system_s	*lru_prev, *lru_next;	// for LRU flushing
+	s32 size; // including this header
+	cache_user_t *user;
+	s8 name[CACHENAME_LEN];
+	struct cache_system_s *prev, *next;
+	struct cache_system_s *lru_prev, *lru_next; // for LRU flushing
 } cache_system_t;
 typedef struct memblock_s {
-	s32	size;		// including the header and possibly tiny fragments
-	s32	tag;		// a tag of 0 is a free block
-	s32	id;		// should be ZONEID
-	s32	pad;		// pad to 64 bit boundary
-	struct	memblock_s	*next, *prev;
+	s32 size; // including the header and possibly tiny fragments
+	s32 tag; // a tag of 0 is a free block
+	s32 id; // should be ZONEID
+	s32 pad; // pad to 64 bit boundary
+	struct memblock_s *next, *prev;
 } memblock_t;
 typedef struct {
-	s32		size;		// total bytes malloced, including header
-	memblock_t	blocklist;	// start / end cap for linked list
-	memblock_t	*rover;
+	s32 size; // total bytes malloced, including header
+	memblock_t blocklist; // start / end cap for linked list
+	memblock_t *rover;
 } memzone_t;
 typedef struct {
-	s32		sentinel;
-	s32		size;		// including sizeof(hunk_t), -1 = not allocated
-	s8	name[HUNKNAME_LEN];
+	s32 sentinel;
+	s32 size; // including sizeof(hunk_t), -1 = not allocated
+	s8 name[HUNKNAME_LEN];
 } hunk_t;
 
 typedef struct { // on-disk pakfile                                  // common.c
-	s8	name[56];
-	s32		filepos, filelen;
+	s8 name[56];
+	s32 filepos, filelen;
 } dpackfile_t;
 typedef struct {
-	s8	id[4];
-	s32		dirofs;
-	s32		dirlen;
+	s8 id[4];
+	s32 dirofs;
+	s32 dirlen;
 } dpackheader_t;
 typedef struct {
 	s8 *key;
 	s8 *value;
 } locentry_t;
 typedef struct {
-	s32			numentries;
-	s32			maxnumentries;
-	s32			numindices;
-	unsigned	*indices;
-	locentry_t	*entries;
-	s8		*text;
+	s32 numentries;
+	s32 maxnumentries;
+	s32 numindices;
+	unsigned *indices;
+	locentry_t *entries;
+	s8 *text;
 } localization_t;
 
 typedef struct stdio_buffer_s {                                       // image.c
-        FILE *f;
-        u8 buffer[1024];
-        s32 size;
-        s32 pos;
+	FILE *f;
+	u8 buffer[1024];
+	s32 size;
+	s32 pos;
 } stdio_buffer_t;
 typedef struct targaheader_s {
-        u8   id_length, colormap_type, image_type;
-        u16  colormap_index, colormap_length;
-        u8   colormap_size;
-        u16  x_origin, y_origin, width, height;
-        u8   pixel_size, attributes;
+	u8 id_length, colormap_type, image_type;
+	u16 colormap_index, colormap_length;
+	u8 colormap_size;
+	u16 x_origin, y_origin, width, height;
+	u8 pixel_size, attributes;
 } targaheader_t;
 
 typedef struct {                                                      // world.c
-	vec3_t		boxmins, boxmaxs; // enclose the test object along entire move
-	f32		*mins, *maxs;	// size of the moving object
-	vec3_t		mins2, maxs2;	// size when clipping against mosnters
-	f32		*start, *end;
-	trace_t		trace;
-	s32			type;
-	edict_t		*passedict;
+	vec3_t boxmins, boxmaxs; // enclose the test object along entire move
+	f32 *mins, *maxs; // size of the moving object
+	vec3_t mins2, maxs2; // size when clipping against mosnters
+	f32 *start, *end;
+	trace_t trace;
+	s32 type;
+	edict_t *passedict;
 } moveclip_t;
 typedef struct areanode_s {
-	s32		axis;		// -1 = leaf node
-	f32	dist;
-	struct areanode_s	*children[2];
-	link_t	trigger_edicts;
-	link_t	solid_edicts;
+	s32 axis; // -1 = leaf node
+	f32 dist;
+	struct areanode_s *children[2];
+	link_t trigger_edicts;
+	link_t solid_edicts;
 } areanode_t;
 #endif
