@@ -1563,4 +1563,13 @@ typedef struct areanode_s {
 	link_t trigger_edicts;
 	link_t solid_edicts;
 } areanode_t;
+
+typedef struct {                                                    // snd_mix.c
+	f32 *memory; // kernelsize floats
+	f32 *kernel; // kernelsize floats
+	s32 kernelsize; // M+1, rounded up to be a multiple of 16
+	s32 M; // M value used to make kernel, even
+	s32 parity; // 0-3
+	f32 f_c; // cutoff frequency, [0..1], fraction of sample rate
+} filter_t;
 #endif
