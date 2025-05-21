@@ -15,18 +15,12 @@ void VectorCopy(const vec3_t a, vec3_t b)
 vec_t VectorLength(vec3_t v) { return sqrt(DotProduct(v,v)); }
 void ProjectPointOnPlane(vec3_t dst, const vec3_t p, const vec3_t normal)
 {
-	f32 d;
 	vec3_t n;
-	f32 inv_denom;
-
-	inv_denom = 1.0F / DotProduct(normal, normal);
-
-	d = DotProduct(normal, p) * inv_denom;
-
+	f32 inv_denom = 1.0F / DotProduct(normal, normal);
+	f32 d = DotProduct(normal, p) * inv_denom;
 	n[0] = normal[0] * inv_denom;
 	n[1] = normal[1] * inv_denom;
 	n[2] = normal[2] * inv_denom;
-
 	dst[0] = p[0] - d * n[0];
 	dst[1] = p[1] - d * n[1];
 	dst[2] = p[2] - d * n[2];
@@ -79,10 +73,8 @@ s32 BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, mplane_t *p)
 		break;
 	}
 	s32 sides = 0;
-	if (dist1 >= p->dist)
-		sides = 1;
-	if (dist2 < p->dist)
-		sides |= 2;
+	if (dist1 >= p->dist) sides = 1;
+	if (dist2 < p->dist) sides |= 2;
 	return sides;
 }
 
@@ -127,14 +119,14 @@ vec_t Length(vec3_t v)
 	f32 length = 0;
 	for (s32 i = 0; i < 3; i++)
 		length += v[i] * v[i];
-	length = sqrt(length); // FIXME
+	length = sqrt(length);
 	return length;
 }
 
 f32 VectorNormalize(vec3_t v)
 {
 	f32 length = v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
-	length = sqrt(length); // FIXME
+	length = sqrt(length);
 	if (length) {
 		f32 ilength = 1 / length;
 		v[0] *= ilength;
@@ -173,18 +165,18 @@ void R_ConcatRotations(f32 in1[3][3], f32 in2[3][3], f32 out[3][3])
 
 void R_ConcatTransforms(f32 in1[3][4], f32 in2[3][4], f32 out[3][4])
 {
-	out[0][0]=in1[0][0]*in2[0][0]+in1[0][1]*in2[1][0]+in1[0][2]*in2[2][0];
-	out[0][1]=in1[0][0]*in2[0][1]+in1[0][1]*in2[1][1]+in1[0][2]*in2[2][1];
-	out[0][2]=in1[0][0]*in2[0][2]+in1[0][1]*in2[1][2]+in1[0][2]*in2[2][2];
-	out[0][3]=in1[0][0]*in2[0][3]+in1[0][1]*in2[1][3]+in1[0][2]*in2[2][3]+in1[0][3];
-	out[1][0]=in1[1][0]*in2[0][0]+in1[1][1]*in2[1][0]+in1[1][2]*in2[2][0];
-	out[1][1]=in1[1][0]*in2[0][1]+in1[1][1]*in2[1][1]+in1[1][2]*in2[2][1];
-	out[1][2]=in1[1][0]*in2[0][2]+in1[1][1]*in2[1][2]+in1[1][2]*in2[2][2];
-	out[1][3]=in1[1][0]*in2[0][3]+in1[1][1]*in2[1][3]+in1[1][2]*in2[2][3]+in1[1][3];
-	out[2][0]=in1[2][0]*in2[0][0]+in1[2][1]*in2[1][0]+in1[2][2]*in2[2][0];
-	out[2][1]=in1[2][0]*in2[0][1]+in1[2][1]*in2[1][1]+in1[2][2]*in2[2][1];
-	out[2][2]=in1[2][0]*in2[0][2]+in1[2][1]*in2[1][2]+in1[2][2]*in2[2][2];
-	out[2][3]=in1[2][0]*in2[0][3]+in1[2][1]*in2[1][3]+in1[2][2]*in2[2][3]+in1[2][3];
+out[0][0]=in1[0][0]*in2[0][0]+in1[0][1]*in2[1][0]+in1[0][2]*in2[2][0];
+out[0][1]=in1[0][0]*in2[0][1]+in1[0][1]*in2[1][1]+in1[0][2]*in2[2][1];
+out[0][2]=in1[0][0]*in2[0][2]+in1[0][1]*in2[1][2]+in1[0][2]*in2[2][2];
+out[0][3]=in1[0][0]*in2[0][3]+in1[0][1]*in2[1][3]+in1[0][2]*in2[2][3]+in1[0][3];
+out[1][0]=in1[1][0]*in2[0][0]+in1[1][1]*in2[1][0]+in1[1][2]*in2[2][0];
+out[1][1]=in1[1][0]*in2[0][1]+in1[1][1]*in2[1][1]+in1[1][2]*in2[2][1];
+out[1][2]=in1[1][0]*in2[0][2]+in1[1][1]*in2[1][2]+in1[1][2]*in2[2][2];
+out[1][3]=in1[1][0]*in2[0][3]+in1[1][1]*in2[1][3]+in1[1][2]*in2[2][3]+in1[1][3];
+out[2][0]=in1[2][0]*in2[0][0]+in1[2][1]*in2[1][0]+in1[2][2]*in2[2][0];
+out[2][1]=in1[2][0]*in2[0][1]+in1[2][1]*in2[1][1]+in1[2][2]*in2[2][1];
+out[2][2]=in1[2][0]*in2[0][2]+in1[2][1]*in2[1][2]+in1[2][2]*in2[2][2];
+out[2][3]=in1[2][0]*in2[0][3]+in1[2][1]*in2[1][3]+in1[2][2]*in2[2][3]+in1[2][3];
 }
 
 // Returns mathematically correct (floor-based) quotient and remainder for
@@ -213,12 +205,10 @@ void FloorDivMod(f64 numer, f64 denom, s32 *quotient, s32 *rem)
 s32 GreatestCommonDivisor(s32 i1, s32 i2)
 {
 	if (i1 > i2) {
-		if (i2 == 0)
-			return (i1);
+		if (i2 == 0) return (i1);
 		return GreatestCommonDivisor(i2, i1 % i2);
 	} else {
-		if (i1 == 0)
-			return (i2);
+		if (i1 == 0) return (i2);
 		return GreatestCommonDivisor(i1, i2 % i1);
 	}
 }

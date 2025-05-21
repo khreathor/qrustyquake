@@ -129,21 +129,16 @@ void Sys_SendKeyEvents()
 
 void IN_Init()
 {
-	if (COM_CheckParm("-nomouse"))
-		return;
+	if (COM_CheckParm("-nomouse")) return;
 	mouse_x = mouse_y = 0.0;
 	mouse_avail = 1;
 }
 
-void IN_Shutdown()
-{
-	mouse_avail = 0;
-}
+void IN_Shutdown() { mouse_avail = 0; }
 
 void IN_Move(usercmd_t *cmd)
 {
-	if (!mouse_avail)
-		return;
+	if (!mouse_avail) return;
 	if (!(SDLWindowFlags & (SDL_WINDOW_FULLSCREEN
 		| SDL_WINDOW_FULLSCREEN_DESKTOP)) && !_windowed_mouse.value) {
 		SDL_SetRelativeMouseMode(SDL_FALSE);

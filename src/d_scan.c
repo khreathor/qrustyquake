@@ -11,25 +11,6 @@ static s32 izi, izistep;
 
 void D_DrawTurbulent8Span();
 
-s32 D_Dither(u8 *pos, f32 opacity)
-{
-	if (opacity >= 1.0f) return 1;
-	if (opacity <= 0.01f) return 0;
-	s32 dither_pat = opacity * 7.2f;
-	u64 d = pos - vid.buffer;
-	u64 x = d % vid.width;
-	u64 y = d / vid.width;
-	switch (dither_pat) {
-		case 0: return !(d % 6); // 1/6
-		case 1: return (y&1) && ((y&3) == 3 ? (x&1) : !(x&1)); // 1/4
-		case 2: return !(d % 3); // 1/3
-		case 3: return (x + y) & 1; // 1/2
-		case 4: return d % 3; // 2/3
-		case 5: return !((y&1) && ((y&3) == 3 ? (x&1) : !(x&1))); // 3/4
-		default: case 6: return d % 6; // 5/6
-	}
-}
-
 void D_WarpScreen() // this performs a slight compression of the screen at the
 { // same time as the sine warp, to keep the edges from wrapping
 	s32 w = r_refdef.vrect.width;
