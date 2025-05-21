@@ -16,6 +16,8 @@ static s32 scr_erase_lines;
 static u32 scr_erase_center;
 static f32 oldscreensize, oldfov;
 static f32 scr_conlines; // lines of console to display
+static s8 *scr_notifystring;
+static bool scr_drawdialog;
 
 void SCR_ScreenShot_f();
 void SCR_HUDStyle_f (cvar_t *cvar);
@@ -262,7 +264,6 @@ void SCR_SetUpToDrawConsole()
 		scr_conlines = vid.height / 2; // half screen
 	else
 		scr_conlines = 0; // none visible
-
 	if (scr_conlines < scr_con_current) {
 		scr_con_current -= scr_conspeed.value * host_frametime *uiscale;
 		if (scr_conlines > scr_con_current)
@@ -382,9 +383,6 @@ void SCR_EndLoadingPlaque()
 	scr_fullupdate = 0;
 	Con_ClearNotify();
 }
-
-s8 *scr_notifystring;
-bool scr_drawdialog;
 
 void SCR_DrawNotifyString()
 {
