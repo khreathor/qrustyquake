@@ -757,5 +757,6 @@ EX u8 r_skypixels[6][SKYBOX_MAX_SIZE*SKYBOX_MAX_SIZE];                // r_sky.c
 EX u32 sb_updates; // if >= vid.numpages, no update needed             // sbar.c
 u8 *Image_LoadImage(const s8 *name, s32 *width, s32 *height);         // image.c
 bool nameInList(const s8 *list, const s8 *name);                      // model.c
+void PF_changeyaw();                                                // pr_cmds.c
 #undef EX
 #endif
