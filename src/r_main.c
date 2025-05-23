@@ -76,6 +76,7 @@ void R_Init()
 	Cvar_RegisterVariable(&r_fognoise);
 	Cvar_RegisterVariable(&r_fullbright_list);
 	Cvar_RegisterVariable(&r_litwater);
+	Cvar_RegisterVariable(&r_novis);
 	Cvar_RegisterVariable(&vid_cwidth);
 	Cvar_RegisterVariable(&vid_cheight);
 	Cvar_RegisterVariable(&vid_cwmode);
