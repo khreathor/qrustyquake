@@ -329,7 +329,7 @@ void Host_PrintTimes(const f64 t[],const s8 *names[], s32 count, bool showtotal)
 void _Host_Frame(f32 time)
 { // Runs all active servers
 	static f64 accumtime = 0;
-	f64 time1, time2, time3;
+	static f64 time1, time2, time3;
 	time1 = Sys_DoubleTime();
 	if(setjmp(host_abortserver))
 		return;	// something bad happened, or the server disconnected

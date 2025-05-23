@@ -15,12 +15,9 @@ void Sys_Quit()
 {
 	Host_Shutdown();
         Uint16 *screen; // erysdren (it/its)
-        if(registered.value)
-                screen = (Uint16 *)COM_LoadHunkFile("end2.bin", 0);
-        else
-                screen = (Uint16 *)COM_LoadHunkFile("end1.bin", 0);
-        if(screen)
-                vgatext_main(window, screen);
+        if(registered.value) screen = (Uint16 *)COM_LoadHunkFile("end2.bin", 0);
+        else screen = (Uint16 *)COM_LoadHunkFile("end1.bin", 0);
+        if(screen) vgatext_main(window, screen);
 	exit(0);
 }
 
@@ -43,8 +40,7 @@ void Sys_Error(const s8 *error, ...)
 s32 findhandle()
 {
 	for(s32 i = 1; i < MAX_HANDLES; i++)
-		if(!sys_handles[i])
-			return i;
+		if(!sys_handles[i]) return i;
 	Sys_Error("out of handles");
 	return -1;
 }
@@ -64,64 +60,38 @@ static f64 Sys_WaitUntil (f64 endtime)
 	static f64 mean = 1e-3;
 	static f64 m2 = 0.0;
 	static f64 count = 1.0;
-
-	f64 now = Sys_DoubleTime ();
+	f64 now = Sys_DoubleTime();
 	f64 before, observed, delta, stddev;
-
 	endtime -= 1e-6; // allow finishing 1 microsecond earlier than requested
-
-	while(now + estimate < endtime)
-	{
+	while(now + estimate < endtime) {
 		before = now;
-		SDL_Delay (1);
-		now = Sys_DoubleTime ();
-
-		// Determine Sleep(1) mean duration & variance using Welford's algorithm
-		// https://blog.bearcats.nl/accurate-sleep-function/
-		if(count < 1e6) // skip this if we already have more than enough samples
-		{
-			++count;
-			observed = now - before;
-			delta = observed - mean;
-			mean += delta / count;
-			m2 += delta * (observed - mean);
-			stddev = sqrt (m2 / (count - 1.0));
-			estimate = mean + 1.5 * stddev;
-
-			// Previous frame-limiting code assumed a duration of 2 msec.
-			// We don't want to burn more cycles in order to be more accurate
-			// in case the actual duration is higher.
-			estimate = q_min (estimate, 2e-3);
-		}
+		SDL_Delay(1);
+		now = Sys_DoubleTime();
+	// Determine Sleep(1) mean duration & variance using Welford's algorithm
+	// https://blog.bearcats.nl/accurate-sleep-function/
+		if(count >= 1e6) continue;
+		// skip this if we already have more than enough samples
+		++count;
+		observed = now - before;
+		delta = observed - mean;
+		mean += delta / count;
+		m2 += delta * (observed - mean);
+		stddev = sqrt(m2 / (count - 1.0));
+		estimate = mean + 1.5 * stddev;
+		estimate = q_min(estimate, 2e-3);
 	}
-
-	while(now < endtime)
-	{
-#ifdef USE_SSE2
-		_mm_pause (); _mm_pause (); _mm_pause (); _mm_pause ();
-		_mm_pause (); _mm_pause (); _mm_pause (); _mm_pause ();
-		_mm_pause (); _mm_pause (); _mm_pause (); _mm_pause ();
-		_mm_pause (); _mm_pause (); _mm_pause (); _mm_pause ();
-#endif
-		now = Sys_DoubleTime ();
-	}
-
+	while(now < endtime) { now = Sys_DoubleTime (); }
 	return now;
 }
 
 static f64 Sys_Throttle (f64 oldtime)
-{
-	return Sys_WaitUntil (oldtime + Host_GetFrameInterval ());
-}
+{ return Sys_WaitUntil (oldtime + Host_GetFrameInterval ()); }
 
 s32 Sys_FileOpenRead(const s8 *path, s32 *hndl)
 {
 	s32 i = findhandle();
 	FILE *f = fopen(path, "rb");
-	if(!f){
-		*hndl = -1;
-		return -1;
-	}
+	if(!f){ *hndl = -1; return -1; }
 	sys_handles[i] = f;
 	*hndl = i;
 	return Qfilelength(f);
@@ -129,33 +99,23 @@ s32 Sys_FileOpenRead(const s8 *path, s32 *hndl)
 
 
 void Sys_FileClose(s32 handle)
-{
-	fclose(sys_handles[handle]);
-	sys_handles[handle] = NULL;
-}
+{ fclose(sys_handles[handle]); sys_handles[handle] = NULL; }
 
 void Sys_FileSeek(s32 handle, s32 position)
-{
-	fseek(sys_handles[handle], position, SEEK_SET);
-}
+{ fseek(sys_handles[handle], position, SEEK_SET); }
 
 s32 Sys_FileRead(s32 handle, void *dst, s32 count)
-{
-	return fread(dst, 1, count, sys_handles[handle]);
-}
+{ return fread(dst, 1, count, sys_handles[handle]); }
+
+s32 Sys_FileWrite(s32 handle, const void *src, s32 count)
+{ return fwrite(src, 1, count, sys_handles[handle]); }
 
 s32 Sys_FileTime(const s8 *path)
 {
 	FILE *f = fopen(path, "rb");
-	if(f){
-		fclose(f);
-		return 1;
-	}
+	if(f){ fclose(f); return 1; }
 	return -1;
 }
-
-s32 Sys_FileWrite(s32 handle, const void *src, s32 count)
-{ return fwrite(src, 1, count, sys_handles[handle]); }
 
 s32 Sys_FileOpenWrite(const s8 *path)
 {
@@ -191,6 +151,7 @@ f64 Sys_DoubleTime()
 
 void Sys_mkdir(const s8 *path) { mkdir(path, 0777); }
 #else
+
 s32 Sys_FileType (const s8 *path)
 {
         s32 result = GetFileAttributes(path);
@@ -202,8 +163,7 @@ s32 Sys_FileType (const s8 *path)
 f64 Sys_DoubleTime()
 {
 	static s32 starttime = 0;
-	if(!starttime)
-		starttime = clock();
+	if(!starttime) starttime = clock();
 	return (clock() - starttime) * 1.0 / 1024;
 }
 
@@ -220,8 +180,7 @@ int main(int c, char **v)
 	host_parms.memsize = DEFAULT_MEMORY;
 	if(COM_CheckParm("-heapsize")){
 		s32 t = COM_CheckParm("-heapsize") + 1;
-		if(t < c)
-			host_parms.memsize = Q_atoi(v[t]) * 1024;
+		if(t < c) host_parms.memsize = Q_atoi(v[t]) * 1024;
 	}
 	host_parms.membase = malloc(host_parms.memsize);
 	host_parms.basedir = ".";
@@ -230,12 +189,9 @@ int main(int c, char **v)
 	while(1){
 		f64 newtime = Sys_Throttle(oldtime);
 		f64 deltatime = newtime - oldtime;
-		if(cls.state == ca_dedicated)
-			deltatime = sys_ticrate.value;
-		if(deltatime > sys_ticrate.value * 2)
-			oldtime = newtime;
-		else
-			oldtime += deltatime;
+		if(cls.state == ca_dedicated) deltatime = sys_ticrate.value;
+		if(deltatime > sys_ticrate.value * 2) oldtime = newtime;
+		else oldtime += deltatime;
 		Host_Frame(deltatime);
 	}
 }
