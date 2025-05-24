@@ -452,8 +452,6 @@ EX s32 numtriangles;
 EX finalvert_t *pfinalverts;
 EX auxvert_t *pauxverts;
 EX s32 r_amodels_drawn;
-EX edge_t *auxedges;
-EX s32 r_numallocatededges;
 EX edge_t *r_edges, *edge_p, *edge_max;
 EX edge_t *newedges[MAXHEIGHT];
 EX edge_t *removeedges[MAXHEIGHT];

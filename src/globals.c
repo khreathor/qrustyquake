@@ -27,7 +27,6 @@ viddef_t vid; // global video state
 u8 r_foundtranswater, r_wateralphapass;                              // r_main.c
 s32 r_pass; // CyanBun96: 1 - cutout textures 0 - everything else
 void *colormap;
-s32 r_numallocatededges;
 s32 r_outofsurfaces;
 s32 r_outofedges;
 bool r_dowarp, r_dowarpold, r_viewchanged;
@@ -158,8 +157,7 @@ clipplane_t view_clipplanes[4];
 s32 sintable[SIN_BUFFER_SIZE];
 s32 intsintable[SIN_BUFFER_SIZE];
 f32 winquake_surface_liquid_alpha;
-edge_t *auxedges;                                                    // r_edge.c
-edge_t *r_edges, *edge_p, *edge_max;
+edge_t *r_edges, *edge_p, *edge_max;                                 // r_edge.c
 surf_t *surfaces, *surface_p, *surf_max;
 edge_t *newedges[MAXHEIGHT];
 edge_t *removeedges[MAXHEIGHT];

@@ -3,8 +3,6 @@
 
 static vec3_t viewlightvec;
 static alight_t r_viewlighting = { 128, 192, viewlightvec };
-static bool r_surfsonstack;
-static s32 r_cnumsurfs;
 static f32 verticalFieldOfView;
 static f32 xOrigin, yOrigin;
 void R_InitTurb();
@@ -52,10 +50,8 @@ void R_Init()
 	Cvar_RegisterVariable(&r_aliasstats);
 	Cvar_RegisterVariable(&r_dspeeds);
 	Cvar_RegisterVariable(&r_reportsurfout);
-	Cvar_RegisterVariable(&r_maxsurfs);
 	Cvar_RegisterVariable(&r_numsurfs);
 	Cvar_RegisterVariable(&r_reportedgeout);
-	Cvar_RegisterVariable(&r_maxedges);
 	Cvar_RegisterVariable(&r_numedges);
 	Cvar_RegisterVariable(&r_aliastransbase);
 	Cvar_RegisterVariable(&r_aliastransadj);
@@ -86,8 +82,6 @@ void R_Init()
 	Cvar_SetCallback(&r_lavaalpha, R_SetLavaalpha_f);
 	Cvar_SetCallback(&r_telealpha, R_SetTelealpha_f);
 	Cvar_SetCallback(&r_slimealpha, R_SetSlimealpha_f);
-	Cvar_SetValue("r_maxedges", (f32)NUMSTACKEDGES);
-	Cvar_SetValue("r_maxsurfs", (f32)NUMSTACKSURFACES);
 	view_clipplanes[0].leftedge = 1;
 	view_clipplanes[1].rightedge = 1;
 	view_clipplanes[1].leftedge = view_clipplanes[2].leftedge =
@@ -109,27 +103,8 @@ void R_NewMap()
 		cl.worldmodel->leafs[i].efrags = NULL;
 	r_viewleaf = NULL;
 	R_ClearParticles();
-	r_cnumsurfs = r_maxsurfs.value;
-	if(r_cnumsurfs <= MINSURFACES)
-		r_cnumsurfs = MINSURFACES;
-	if(r_cnumsurfs > NUMSTACKSURFACES){
-		surfaces =
-		    Hunk_AllocName(r_cnumsurfs * sizeof(surf_t), "surfaces");
-		surface_p = surfaces;
-		surf_max = &surfaces[r_cnumsurfs];
-		r_surfsonstack = 0;
-		// surface 0 doesn't really exist; it's just a dummy because
-		// index 0 is used to indicate no edge attached to surface
-		surfaces--;
-	} else
-		r_surfsonstack = 1;
 	r_maxedgesseen = 0;
 	r_maxsurfsseen = 0;
-	r_numallocatededges = r_maxedges.value;
-	if(r_numallocatededges < MINEDGES)
-		r_numallocatededges = MINEDGES;
-	auxedges = r_numallocatededges <= NUMSTACKEDGES ? NULL
-		: Hunk_AllocName(r_numallocatededges * sizeof(edge_t), "edges");
 	r_dowarpold = 0;
 	r_viewchanged = 0;
 	skybox_name[0] = 0;
@@ -504,24 +479,16 @@ void R_DrawBEntitiesOnList()
 	cur_ent_alpha = 1;
 }
 
-edge_t ledges[NUMSTACKEDGES + ((CACHE_SIZE - 1) / sizeof(edge_t)) + 1]/*
-	__attribute__((aligned(CACHE_SIZE)))*/;
-surf_t lsurfs[NUMSTACKSURFACES + ((CACHE_SIZE - 1) / sizeof(surf_t)) +
-1] /*__attribute__((aligned(CACHE_SIZE)))*/;
+edge_t ledges[NUMSTACKEDGES + ((CACHE_SIZE - 1) / sizeof(edge_t)) + 1];
+surf_t lsurfs[NUMSTACKSURFACES + ((CACHE_SIZE - 1) / sizeof(surf_t)) + 1];
 
 void R_EdgeDrawing()
 {
-	// CyanBun96: windows would crash all over the place with the original
-	// alignment code, this might be compiler-dependent but it works
-	// Align the arrays themselves
-	// Accessing them directly without pointer adjustment
-	r_edges = auxedges ? auxedges : &ledges[0]; // already aligned
-	if(r_surfsonstack){
-		// surface 0 doesn't really exist; it's just a dummy because
-		// index 0 is used to indicate no edge attached to surface
-		surfaces = &lsurfs[1]; // Point to the first "real" surface
-		surf_max = &surfaces[r_cnumsurfs];
-	}
+	r_edges = &ledges[0];
+	// surface 0 doesn't really exist; it's just a dummy because
+	// index 0 is used to indicate no edge attached to surface
+	surfaces = &lsurfs[1]; // Point to the first "real" surface
+	surf_max = &surfaces[NUMSTACKSURFACES];
 	R_BeginEdgeFrame();
 	if(r_dspeeds.value) rw_time1 = Sys_DoubleTime();
 	R_RenderWorld();

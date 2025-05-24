@@ -29,7 +29,7 @@ void R_TrailingEdge(surf_t *surf, edge_t *edge);
 void R_BeginEdgeFrame()
 {
 	edge_p = r_edges;
-	edge_max = &r_edges[r_numallocatededges];
+	edge_max = &r_edges[NUMSTACKEDGES];
 	surface_p = &surfaces[2]; // background is surface 1,
 	// surface 0 is a dummy
 	surfaces[1].spans = NULL; // no background spans yet
