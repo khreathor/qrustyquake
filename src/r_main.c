@@ -479,16 +479,8 @@ void R_DrawBEntitiesOnList()
 	cur_ent_alpha = 1;
 }
 
-edge_t ledges[NUMSTACKEDGES + ((CACHE_SIZE - 1) / sizeof(edge_t)) + 1];
-surf_t lsurfs[NUMSTACKSURFACES + ((CACHE_SIZE - 1) / sizeof(surf_t)) + 1];
-
 void R_EdgeDrawing()
 {
-	r_edges = &ledges[0];
-	// surface 0 doesn't really exist; it's just a dummy because
-	// index 0 is used to indicate no edge attached to surface
-	surfaces = &lsurfs[1]; // Point to the first "real" surface
-	surf_max = &surfaces[NUMSTACKSURFACES];
 	R_BeginEdgeFrame();
 	if(r_dspeeds.value) rw_time1 = Sys_DoubleTime();
 	R_RenderWorld();

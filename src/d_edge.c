@@ -164,7 +164,7 @@ void D_DrawSurfaces()
 			d_zistepv = 0;
 			d_ziorigin = -0.9;
 			D_DrawZSpans (s->spans);
-		} else if (s->flags & SURF_DRAWBACKGROUND) {
+		} else if (s->flags & SURF_DRAWBACKGROUND) { // FIXME
 			// set up a gradient for the background surface that places it
 			// effectively at infinity distance from the viewpoint
 			if (skybox_name[0] || r_wateralphapass)

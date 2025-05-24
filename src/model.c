@@ -879,7 +879,7 @@ static void Mod_CheckWaterVis()
 	s32 numclusters = loadmodel->submodels[0].visleafs;
 	s32 contentfound = 0;
 	s32 contenttransparent = 0;
-	s32 contenttype;
+	s32 contenttype = 0;
 	unsigned hascontents = 0;
 	if(r_novis.value) { //all can be
 		loadmodel->contentstransparent = (SURF_DRAWWATER|SURF_DRAWTELE
