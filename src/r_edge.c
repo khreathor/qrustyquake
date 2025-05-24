@@ -38,11 +38,9 @@ void R_BeginEdgeFrame()
 	edge_p = r_edges;
 	edge_max = &r_edges[NUMSTACKEDGES];
 	surface_p = &surfaces[2]; // background is surface 1,
-	// surface 0 is a dummy
 	surfaces[1].spans = NULL; // no background spans yet
 	surfaces[1].flags = SURF_DRAWBACKGROUND;
-	// put the background behind everything in the world
-	if (r_draworder.value) {
+	if (r_draworder.value) { //put background behind everything in the world
 		pdrawfunc = R_GenerateSpansBackward;
 		surfaces[1].key = 0;
 		r_currentkey = 1;
@@ -51,10 +49,10 @@ void R_BeginEdgeFrame()
 		surfaces[1].key = 0x7FFFFFFF;
 		r_currentkey = 0;
 	}
-	// FIXME: set with memset
-	for (s32 v = r_refdef.vrect.y; v < r_refdef.vrectbottom; v++) {
-		newedges[v] = removeedges[v] = NULL;
-	}
+	memset(newedges + r_refdef.vrect.y, 0, (r_refdef.vrectbottom - 
+				r_refdef.vrect.y) * sizeof(*newedges));
+	memset(removeedges + r_refdef.vrect.y, 0, (r_refdef.vrectbottom - 
+				r_refdef.vrect.y) * sizeof(*removeedges));
 }
 
 // Adds the edges in the linked list edgestoadd, adding them to the edges in the
