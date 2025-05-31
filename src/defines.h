@@ -1,6 +1,7 @@
 #ifndef GLOBDEFINES_
 #define GLOBDEFINES_
 
+#define MAXTHREADS 16
 #define	q_min(a, b)	(((a) < (b)) ? (a) : (b))                    // common.h
 #define	q_max(a, b)	(((a) > (b)) ? (a) : (b))
 #define	CLAMP(_minval, x, _maxval)		\

@@ -74,6 +74,44 @@ void D_CalcGradients(msurface_t *pface)
 	bbextentt = ((pface->extents[1] << 16) >> miplevel) - 1;
 }
 
+typedef struct {
+	surf_t *start;
+	surf_t *end;
+} thread_arg_t;
+
+void *worker(void *arg) {
+	thread_arg_t *targ = (thread_arg_t *)arg;
+	for (surf_t *s = targ->start; s < targ->end; s++) {
+		if (!s->spans) continue;
+		D_DrawSolidSurface(s, (uintptr_t)s->data & 0xFF);
+		D_DrawZSpans(s);
+	}
+	return NULL;
+}
+
+void parallel_surface_processing(surf_t *surfaces, int surflisti) {
+	pthread_t threads[MAXTHREADS];
+	thread_arg_t args[MAXTHREADS];
+
+	int total = (surflisti) - 1; // Exclude surfaces[0]
+	int chunk = (total + MAXTHREADS - 1) / MAXTHREADS;
+
+	for (int i = 0; i < MAXTHREADS; i++) {
+		int start_idx = 1 + i * chunk;
+		int end_idx = start_idx + chunk;
+		if (end_idx > surflisti) end_idx = surflisti;
+
+		args[i].start = &surfaces[start_idx];
+		args[i].end = &surfaces[end_idx];
+
+		pthread_create(&threads[i], NULL, worker, &args[i]);
+	}
+
+	for (int i = 0; i < MAXTHREADS; i++) {
+		pthread_join(threads[i], NULL);
+	}
+}
+
 void D_DrawSurfaces()
 { // CyanBun96: TODO make this less huge, maybe split into several functions
 	currententity = &cl_entities[0];
@@ -82,23 +120,20 @@ void D_DrawSurfaces()
 	VectorCopy(transformed_modelorg, world_transformed_modelorg);
 	// TODO: could preset a lot of this at mode set time
 	if (r_drawflat.value) {
+		//parallel_surface_processing(&surfaces[1], (surface_p-&surfaces[1]));
 		for (surf_t *s = &surfaces[1]; s < surface_p; s++) {
-			if (!s->spans)
-				continue;
-			d_zistepu = s->d_zistepu;
-			d_zistepv = s->d_zistepv;
-			d_ziorigin = s->d_ziorigin;
+			if (!s->spans) continue;
 			D_DrawSolidSurface(s, (uintptr_t) s->data & 0xFF);
-			D_DrawZSpans(s->spans);
+			D_DrawZSpans(s);
 		}
 		return;
 	}
 	for (surf_t *s = &surfaces[1]; s < surface_p; s++) {
-		if (!s->spans)
-			continue;
+		if (!s->spans) continue;
 		r_drawnpolycount++;
 		msurface_t *pface = s->data;
 		if (pface == 0) continue;
+		Con_DPrintf("drawing surf %d\n", s - &surfaces[1]);
 		// CyanBun96: some entities are assigned an invalid address like
 		// 35, which leads to segfaults on any further checks while
 		// still passing s->entity != NULL check. Must be a symptom of
@@ -145,7 +180,7 @@ void D_DrawSurfaces()
 			if (!r_skymade)
 				R_MakeSky();
 			D_DrawSkyScans8(s->spans);
-			D_DrawZSpans(s->spans);
+			D_DrawZSpans(s);
 		} else if (s->flags & SURF_DRAWSKYBOX) {
 			// Manoel Kasimier - hi-res skyboxes - edited
 			extern u8 r_skypixels[6][SKYBOX_MAX_SIZE*SKYBOX_MAX_SIZE];
@@ -163,7 +198,7 @@ void D_DrawSurfaces()
 			d_zistepu = 0;
 			d_zistepv = 0;
 			d_ziorigin = -0.9;
-			D_DrawZSpans (s->spans);
+			D_DrawZSpans (s);
 		} else if (s->flags & SURF_DRAWBACKGROUND) { // FIXME
 			// set up a gradient for the background surface that places it
 			// effectively at infinity distance from the viewpoint
@@ -175,7 +210,7 @@ void D_DrawSurfaces()
 			if (!r_pass || (s32)r_twopass.value&1)
 				D_DrawSolidSurface(s, (s32)r_clearcolor.value & 0xFF);
 			else D_DrawSolidSurface(s, 0xFF);
-			D_DrawZSpans(s->spans);
+			D_DrawZSpans(s);
 		} else if (s->flags & SURF_DRAWTURB && (!s->entity->model->haslitwater
 				|| !r_litwater.value)) {
 			miplevel = 0;
@@ -206,7 +241,7 @@ void D_DrawSurfaces()
 			else if (s->flags & SURF_DRAWTELE) opacity -= R_WaterAlphaForTextureType(TEXTYPE_TELE);
 			Turbulent8(s->spans, opacity);
 			if (!r_wateralphapass) // Manoel Kasimier - translucent water
-				D_DrawZSpans(s->spans);
+				D_DrawZSpans(s);
 			if (s->insubmodel) {
 				// restore the old drawing state
 				// FIXME: we don't want to do this every time!
@@ -298,7 +333,7 @@ void D_DrawSurfaces()
 				opacity = 1 - r_telealpha.value;
 			Turbulent8(s->spans, opacity);
 			if (!r_wateralphapass) // Manoel Kasimier - translucent water
-				D_DrawZSpans(s->spans);
+				D_DrawZSpans(s);
 			if (s->insubmodel) {
 				// restore the old drawing state
 				// FIXME: we don't want to do this every time!
@@ -336,7 +371,7 @@ void D_DrawSurfaces()
 			D_CalcGradients(pface);
 			D_DrawSpans8(s->spans);
 			if (!(pface->flags&SURF_DRAWCUTOUT))
-				D_DrawZSpans(s->spans);
+				D_DrawZSpans(s);
 			if (s->insubmodel) {
 				// restore the old drawing state
 				// FIXME: we don't want to do this every time!

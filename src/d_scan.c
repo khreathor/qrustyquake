@@ -587,7 +587,7 @@ void D_DrawTransSpans8(espan_t *pspan, f32 opacity)
 			}
 			else {
 				do {
-					if (*pz <= (izi >> 16) && D_Dither(pdest, opacity)) {
+					if (*pz <= (izi >> 16) && D_Dither(pdest, 1-opacity)) {
 						u8 pix = *(pbase + (s >> 16) +
 							(t >> 16) * cachewidth);
 						*pdest = pix;
@@ -605,15 +605,16 @@ void D_DrawTransSpans8(espan_t *pspan, f32 opacity)
 	} while ((pspan = pspan->pnext) != NULL);
 }
 
-void D_DrawZSpans(espan_t *pspan)
+void D_DrawZSpans(surf_t *s)
 {
-	s32 izistep = (s32)(d_zistepu * 0x8000 * 0x10000);
+	espan_t *pspan = s->spans;
+	s32 izistep = (s32)(s->d_zistepu * 0x8000 * 0x10000);
 	do {
 		s16 *pdest = d_pzbuffer + (d_zwidth * pspan->v) + pspan->u;
 		s32 count = pspan->count;
 		f32 du = (f32)pspan->u; // calculate the initial 1/z
 		f32 dv = (f32)pspan->v;
-		f64 zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
+		f64 zi = s->d_ziorigin + dv * s->d_zistepv + du * s->d_zistepu;
 		s32 izi = (s32)(zi * 0x8000 * 0x10000);
 		if ((intptr_t) pdest & 0x02) {
 			*pdest++ = (s16)(izi >> 16);
