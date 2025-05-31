@@ -335,8 +335,9 @@ void D_DrawSurfaces()
 			cachewidth = pcurrentcache->width;
 			D_CalcGradients(pface);
 			D_DrawSpans8(s->spans);
-			if (!(pface->flags&SURF_DRAWCUTOUT))
-				D_DrawZSpans(s->spans);
+			if ((pface->flags&SURF_DRAWCUTOUT) && r_pass == 1)
+				D_DrawZSpansTrans(s->spans);
+			else D_DrawZSpans(s->spans);
 			if (s->insubmodel) {
 				// restore the old drawing state
 				// FIXME: we don't want to do this every time!

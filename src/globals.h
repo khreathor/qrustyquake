@@ -301,6 +301,7 @@ EX u8 fog_pal_index;
 void D_DrawSpans8(espan_t *pspans);
 void D_DrawTransSpans8(espan_t *pspans, f32 opacity);
 void D_DrawZSpans(espan_t *pspans);
+void D_DrawZSpansTrans(espan_t *pspans);
 void Turbulent8(espan_t *pspan, f32 opacity);
 void D_DrawSkyScans8(espan_t *pspan);
 void D_DrawSkyboxScans8(espan_t *pspans);
