@@ -74,7 +74,6 @@ void D_CalcGradients(msurface_t *pface)
 	bbextentt = ((pface->extents[1] << 16) >> miplevel) - 1;
 }
 
-extern s32 surflisti;
 void D_DrawSurfaces()
 { // CyanBun96: TODO make this less huge, maybe split into several functions
 	currententity = &cl_entities[0];
@@ -83,8 +82,9 @@ void D_DrawSurfaces()
 	VectorCopy(transformed_modelorg, world_transformed_modelorg);
 	// TODO: could preset a lot of this at mode set time
 	if (r_drawflat.value) {
-		for (surf_t *s = &surfaces[1]; s < &surfaces[surflisti+2]; s++) {
-			if (!s->spans) continue;
+		for (surf_t *s = &surfaces[1]; s < surface_p; s++) {
+			if (!s->spans)
+				continue;
 			d_zistepu = s->d_zistepu;
 			d_zistepv = s->d_zistepv;
 			d_ziorigin = s->d_ziorigin;
@@ -93,12 +93,12 @@ void D_DrawSurfaces()
 		}
 		return;
 	}
-	for (surf_t *s = &surfaces[1]; s < &surfaces[surflisti+2]; s++) {
-		if (!s->spans) continue;
+	for (surf_t *s = &surfaces[1]; s < surface_p; s++) {
+		if (!s->spans)
+			continue;
 		r_drawnpolycount++;
 		msurface_t *pface = s->data;
 		if (pface == 0) continue;
-		Con_DPrintf("drawing surf %d\n", s - &surfaces[1]);
 		// CyanBun96: some entities are assigned an invalid address like
 		// 35, which leads to segfaults on any further checks while
 		// still passing s->entity != NULL check. Must be a symptom of
