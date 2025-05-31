@@ -587,7 +587,7 @@ void D_DrawTransSpans8(espan_t *pspan, f32 opacity)
 			}
 			else {
 				do {
-					if (*pz <= (izi >> 16) && D_Dither(pdest, opacity)) {
+					if (*pz <= (izi >> 16) && D_Dither(pdest, 1-opacity)) {
 						u8 pix = *(pbase + (s >> 16) +
 							(t >> 16) * cachewidth);
 						*pdest = pix;
