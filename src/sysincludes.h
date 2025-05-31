@@ -1,4 +1,3 @@
-#include <pthread.h>
 #include <stdatomic.h>
 #include <errno.h>
 #include <stddef.h>

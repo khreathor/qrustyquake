@@ -605,16 +605,15 @@ void D_DrawTransSpans8(espan_t *pspan, f32 opacity)
 	} while ((pspan = pspan->pnext) != NULL);
 }
 
-void D_DrawZSpans(surf_t *s)
+void D_DrawZSpans(espan_t *pspan)
 {
-	espan_t *pspan = s->spans;
-	s32 izistep = (s32)(s->d_zistepu * 0x8000 * 0x10000);
+	s32 izistep = (s32)(d_zistepu * 0x8000 * 0x10000);
 	do {
 		s16 *pdest = d_pzbuffer + (d_zwidth * pspan->v) + pspan->u;
 		s32 count = pspan->count;
 		f32 du = (f32)pspan->u; // calculate the initial 1/z
 		f32 dv = (f32)pspan->v;
-		f64 zi = s->d_ziorigin + dv * s->d_zistepv + du * s->d_zistepu;
+		f64 zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
 		s32 izi = (s32)(zi * 0x8000 * 0x10000);
 		if ((intptr_t) pdest & 0x02) {
 			*pdest++ = (s16)(izi >> 16);
