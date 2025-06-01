@@ -102,7 +102,8 @@ void R_TimeRefresh_f()
 	f32 start = Sys_DoubleTime();
 	for (s32 i = 0; i < 128; i++) {
 		r_refdef.viewangles[1] = i / 128.0 * 360.0;
-		R_RenderView();
+		if((s32)r_twopass.value&1) R_RenderViewMultiPass();
+		else R_RenderViewSinglePass();
 		VID_Update();
 	}
 	f32 stop = Sys_DoubleTime();

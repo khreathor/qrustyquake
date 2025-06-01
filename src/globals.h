@@ -202,7 +202,8 @@ void SwapPic(qpic_t *pic);
 EX vec3_t r_origin, vpn, vright, vup;                                // render.h
 void R_Init();
 void R_InitTextures();
-void R_RenderView();
+void R_RenderViewMultiPass();
+void R_RenderViewSinglePass();
 void R_ViewChanged(vrect_t *pvrect, s32 lineadj, f32 aspect);
 void R_InitSky(struct texture_s *mt);
 void R_AddEfrags(entity_t *ent);

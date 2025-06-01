@@ -5,6 +5,7 @@ static vec3_t viewlightvec;
 static alight_t r_viewlighting = { 128, 192, viewlightvec };
 static f32 verticalFieldOfView;
 static f32 xOrigin, yOrigin;
+static u8 warpbuffer[WARP_WIDTH * WARP_HEIGHT];
 void R_InitTurb();
 
 void R_InitTextures()
@@ -479,40 +480,70 @@ void R_DrawBEntitiesOnList()
 	cur_ent_alpha = 1;
 }
 
-void R_EdgeDrawing()
+void R_EdgeDrawingMultiPass1()
 {
+	r_foundtranswater =  r_wateralphapass = 0;
+	r_pass = 0;
+	R_BeginEdgeFrame();
+	R_RenderWorld();
+	R_ScanEdges();
+}
+
+void R_EdgeDrawingMultiPass2()
+{
+	r_pass = 1;
+	R_BeginEdgeFrame();
+	R_RenderWorld();
+	R_DrawBEntitiesOnList();
+	R_ScanEdges();
+}
+
+void R_EdgeDrawingMultiPass3()
+{
+	if(!r_foundtranswater || !r_entalpha.value) return;
+	r_wateralphapass = 1;
+	R_BeginEdgeFrame();
+	R_RenderWorld();
+	R_DrawBEntitiesOnList();
+	R_ScanEdges();
+}
+
+void R_RenderViewMultiPass()
+{
+	R_SetupFrame();
+	R_MarkLeaves(); // done here so we know if we're in water
+	R_EdgeDrawingMultiPass1();
+	R_EdgeDrawingMultiPass2();
+	R_DrawEntitiesOnList();
+	R_EdgeDrawingMultiPass3();
+	R_DrawViewModel();
+	R_DrawParticles();
+	if(r_dowarp) D_WarpScreen();
+        if(!r_dowarp && fog_density < 1) R_DrawFog();
+	V_SetContentsColor(r_viewleaf->contents);
+}
+
+void R_EdgeDrawingSinglePass()
+{
+	r_foundtranswater =  r_wateralphapass = r_pass = 0;
 	R_BeginEdgeFrame();
 	if(r_dspeeds.value) rw_time1 = Sys_DoubleTime();
 	R_RenderWorld();
 	if(r_dspeeds.value) db_time1 = rw_time2 = Sys_DoubleTime();
-	if(r_wateralphapass || r_pass || !((s32)r_twopass.value&1)) R_DrawBEntitiesOnList();
+	R_DrawBEntitiesOnList();
 	if(r_dspeeds.value) se_time1 = db_time2 = Sys_DoubleTime();
 	R_ScanEdges();
 }
 
-void R_RenderView() // r_refdef must be set before the first call
-{ // CyanBun96: three-pass rendering. consider *not* doing that, or doing it less sloppily
-	u8 warpbuffer[WARP_WIDTH * WARP_HEIGHT];
-	r_warpbuffer = warpbuffer;
+void R_RenderViewSinglePass()
+{
 	if(r_timegraph.value || r_speeds.value || r_dspeeds.value)
 		r_time1 = Sys_DoubleTime();
 	R_SetupFrame();
 	R_MarkLeaves(); // done here so we know if we're in water
-	if(!cl_entities[0].model || !cl.worldmodel)
-		Sys_Error("R_RenderView: NULL worldmodel");
-	r_foundtranswater =  r_wateralphapass = 0; // Manoel Kasimier - translucent water
-	r_pass = 0;
-	R_EdgeDrawing();
-	if((s32)r_twopass.value&1){
-		r_pass = 1;
-		R_EdgeDrawing();
-	}
+	R_EdgeDrawingSinglePass();
 	if(r_dspeeds.value) de_time1 = se_time2 = Sys_DoubleTime();
 	R_DrawEntitiesOnList();
-	if(r_foundtranswater && (r_twopass.value + r_entalpha.value)){
-		r_wateralphapass = 1;
-		R_EdgeDrawing ();
-	}
 	if(r_dspeeds.value) dv_time1 = de_time2 = Sys_DoubleTime();
 	R_DrawViewModel();
 	if(r_dspeeds.value) dp_time1 = dv_time2 = Sys_DoubleTime();
@@ -522,17 +553,13 @@ void R_RenderView() // r_refdef must be set before the first call
         if(!r_dowarp && fog_density < 1) // broken underwater, fixme?
                 R_DrawFog();
 	V_SetContentsColor(r_viewleaf->contents);
-	if(r_dspeeds.value) R_PrintDSpeeds();
-	if(r_reportsurfout.value && r_outofsurfaces)
-		Con_Printf("s16 %d surfaces\n", r_outofsurfaces);
-	if(r_reportedgeout.value && r_outofedges)
-		Con_Printf("s16 roughly %d edges\n", r_outofedges * 2 / 3);
 }
 
 void R_InitTurb()
 {
 	for(s32 i = 0; i < (SIN_BUFFER_SIZE); i++){
 		sintable[i] = AMP + sin(i * 3.14159 * 2 / CYCLE) * AMP;
-		intsintable[i] = AMP2 + sin(i * 3.14159 * 2 / CYCLE) * AMP2; // AMP2, not 20
+		intsintable[i] = AMP2 + sin(i * 3.14159 * 2 / CYCLE) * AMP2;
 	}
+	r_warpbuffer = warpbuffer;
 }

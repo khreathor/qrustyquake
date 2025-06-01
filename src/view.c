@@ -442,8 +442,16 @@ void V_RenderView() // The player's clipping box goes from(-16 -16 -24) to(16
 	}
 	if(cl.intermission) V_CalcIntermissionRefdef();
 	else if(!cl. paused) V_CalcRefdef();
+	if(!cl_entities[0].model || !cl.worldmodel)
+		Sys_Error("R_RenderView: NULL worldmodel");
 	R_PushDlights();
-	R_RenderView();
+	if((s32)r_twopass.value&1) R_RenderViewMultiPass();
+	else R_RenderViewSinglePass();
+	if(r_dspeeds.value) R_PrintDSpeeds();
+	if(r_reportsurfout.value && r_outofsurfaces)
+		Con_Printf("s16 %d surfaces\n", r_outofsurfaces);
+	if(r_reportedgeout.value && r_outofedges)
+		Con_Printf("s16 roughly %d edges\n", r_outofedges * 2 / 3);
 	if(!crosshair.value) return;
 	Draw_CharacterScaled(scr_vrect.x + scr_vrect.width / 2 - uiscale*4
 			+ cl_crossx.value, scr_vrect.y + scr_vrect.height / 2
