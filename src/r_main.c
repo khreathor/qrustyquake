@@ -486,7 +486,7 @@ void R_EdgeDrawing()
 	R_RenderWorld();
 	if(r_dspeeds.value) db_time1 = rw_time2 = Sys_DoubleTime();
 	if(r_wateralphapass || r_pass || !((s32)r_twopass.value&1)) R_DrawBEntitiesOnList();
-	if(r_dspeeds.value) se_time2 = db_time2 = Sys_DoubleTime();
+	if(r_dspeeds.value) se_time1 = db_time2 = Sys_DoubleTime();
 	R_ScanEdges();
 }
 
@@ -494,6 +494,8 @@ void R_RenderView() // r_refdef must be set before the first call
 { // CyanBun96: three-pass rendering. consider *not* doing that, or doing it less sloppily
 	u8 warpbuffer[WARP_WIDTH * WARP_HEIGHT];
 	r_warpbuffer = warpbuffer;
+	if(r_timegraph.value || r_speeds.value || r_dspeeds.value)
+		r_time1 = Sys_DoubleTime();
 	R_SetupFrame();
 	R_MarkLeaves(); // done here so we know if we're in water
 	if(!cl_entities[0].model || !cl.worldmodel)
@@ -505,19 +507,23 @@ void R_RenderView() // r_refdef must be set before the first call
 		r_pass = 1;
 		R_EdgeDrawing();
 	}
+	if(r_dspeeds.value) de_time1 = se_time2 = Sys_DoubleTime();
 	R_DrawEntitiesOnList();
 	if(r_foundtranswater && (r_twopass.value + r_entalpha.value)){
 		r_wateralphapass = 1;
 		R_EdgeDrawing ();
 	}
+	if(r_dspeeds.value) dv_time1 = de_time2 = Sys_DoubleTime();
 	R_DrawViewModel();
+	if(r_dspeeds.value) dp_time1 = dv_time2 = Sys_DoubleTime();
 	R_DrawParticles();
-	if(r_dowarp)
-		D_WarpScreen();
+	if(r_dspeeds.value) dp_time2 = Sys_DoubleTime();
+	if(r_dowarp) D_WarpScreen();
         if(!r_dowarp && fog_density < 1) // broken underwater, fixme?
                 R_DrawFog();
 	V_SetContentsColor(r_viewleaf->contents);
-	if(r_reportsurfout.value && r_outofsurfaces) // TODO r_dspeds and such
+	if(r_dspeeds.value) R_PrintDSpeeds();
+	if(r_reportsurfout.value && r_outofsurfaces)
 		Con_Printf("s16 %d surfaces\n", r_outofsurfaces);
 	if(r_reportedgeout.value && r_outofedges)
 		Con_Printf("s16 roughly %d edges\n", r_outofedges * 2 / 3);

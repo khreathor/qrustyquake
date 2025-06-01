@@ -462,8 +462,8 @@ EX f32 r_aliastransition, r_resfudge;
 EX s32 r_outofsurfaces;
 EX s32 r_outofedges;
 EX mvertex_t *r_pcurrentvertbase;
-EX f32 dp_time1, dp_time2, db_time1, db_time2, rw_time1, rw_time2;
-EX f32 se_time1, se_time2, de_time1, de_time2, dv_time1, dv_time2;
+EX f64 dp_time1, dp_time2, db_time1, db_time2, rw_time1, rw_time2, r_time1;
+EX f64 se_time1, se_time2, de_time1, de_time2, dv_time1, dv_time2;
 EX s32 r_maxsurfsseen, r_maxedgesseen;
 EX bool r_dowarpold, r_viewchanged;
 EX mleaf_t *r_viewleaf, *r_oldviewleaf;
@@ -504,6 +504,7 @@ u8 rgbtoi_lab(u8 r, u8 g, u8 b);
 u8 rgbtoi(u8 r, u8 g, u8 b);
 void R_BuildLitLUT();
 f32 R_WaterAlphaForTextureType(textype_t type);
+void R_PrintDSpeeds();
 EX client_state_t cl;                                                // client.h
 dlight_t *CL_AllocDlight(s32 key);
 void CL_DecayLights();

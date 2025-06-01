@@ -6,7 +6,6 @@ static f32 map_wateralpha;
 static f32 map_lavaalpha;
 static f32 map_telealpha;
 static f32 map_slimealpha;
-static f32 r_time1;
 static s32 r_frustum_indexes[4 * 6];
 
 void R_ParseWorldspawn()
@@ -170,16 +169,15 @@ void R_PrintTimes()
 void R_PrintDSpeeds()
 {
 	f32 r_time2 = Sys_DoubleTime();
-	f32 dp_time = (dp_time2 - dp_time1) * 1000;
-	f32 rw_time = (rw_time2 - rw_time1) * 1000;
-	f32 db_time = (db_time2 - db_time1) * 1000;
-	f32 se_time = (se_time2 - se_time1) * 1000;
-	f32 de_time = (de_time2 - de_time1) * 1000;
-	f32 dv_time = (dv_time2 - dv_time1) * 1000;
-	f32 ms = (r_time2 - r_time1) * 1000;
-	Con_Printf("%3i %4.1fp %3iw %4.1fb %3is %4.1fe %4.1fv\n",
-		   (s32)ms, dp_time, (s32)rw_time, db_time, (s32)se_time,
-		   de_time, dv_time);
+	f32 dp = (dp_time2 - dp_time1) * 1000000;
+	f32 rw = (rw_time2 - rw_time1) * 1000000;
+	f32 db = (db_time2 - db_time1) * 1000000;
+	f32 se = (se_time2 - se_time1) * 1000000;
+	f32 de = (de_time2 - de_time1) * 1000000;
+	f32 dv = (dv_time2 - dv_time1) * 1000000;
+	f32 us = (r_time2 - r_time1) * 1000000;
+	Con_Printf("%.0f %.0f %.0f %.0f %.0f %.0f %.0f\n",
+			us, dp, rw, db, se, de, dv);
 }
 
 void R_PrintAliasStats()
