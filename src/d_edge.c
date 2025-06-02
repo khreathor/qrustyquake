@@ -97,8 +97,6 @@ void D_DrawSurfaces()
 		if (!s->spans) continue;
 		msurface_t *pface = s->data;
 		if (pface == 0) continue;
-		if (!(pface->flags&SURF_DRAWCUTOUT) && r_pass == 1 && 
-			s->entity->model == cl.worldmodel) continue;
 		// CyanBun96: some entities are assigned an invalid address like
 		// 35, which leads to segfaults on any further checks while
 		// still passing s->entity != NULL check. Must be a symptom of
@@ -121,6 +119,8 @@ void D_DrawSurfaces()
 			Con_DPrintf("Invalid surface width/size %d %d\n",wd,sz);
 			continue;
 		}
+		if (!(pface->flags&SURF_DRAWCUTOUT) && r_pass == 1 && 
+			s->entity->model == cl.worldmodel && s->entity->alpha != 0) continue;
 		r_drawnpolycount++;
 		if (is_ent && s->entity->alpha && r_entalpha.value == 1)
 			winquake_surface_liquid_alpha = (f32)s->entity->alpha / 255;
