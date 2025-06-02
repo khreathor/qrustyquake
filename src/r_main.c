@@ -485,41 +485,63 @@ void R_EdgeDrawingMultiPass1()
 	r_foundtranswater =  r_wateralphapass = 0;
 	r_pass = 0;
 	R_BeginEdgeFrame();
+	if(r_dspeeds.value) d_times[1] = Sys_DoubleTime();
 	R_RenderWorld();
+	if(r_dspeeds.value) d_times[2] = Sys_DoubleTime();
 	R_ScanEdges();
+	if(r_dspeeds.value) d_times[3] = Sys_DoubleTime();
 }
 
 void R_EdgeDrawingMultiPass2()
 {
 	r_pass = 1;
 	R_BeginEdgeFrame();
+	if(r_dspeeds.value) d_times[4] = Sys_DoubleTime();
 	R_RenderWorld();
+	if(r_dspeeds.value) d_times[5] = Sys_DoubleTime();
 	R_DrawBEntitiesOnList();
+	if(r_dspeeds.value) d_times[6] = Sys_DoubleTime();
 	R_ScanEdges();
 }
 
 void R_EdgeDrawingMultiPass3()
 {
-	if(!r_foundtranswater || !r_entalpha.value) return;
+	if(!r_foundtranswater || !r_entalpha.value){
+		if(r_dspeeds.value)
+			d_times[9]=d_times[10]=d_times[11]=Sys_DoubleTime();
+		return;
+	}
 	r_wateralphapass = 1;
 	R_BeginEdgeFrame();
+	if(r_dspeeds.value) d_times[9] = Sys_DoubleTime();
 	R_RenderWorld();
+	if(r_dspeeds.value) d_times[10] = Sys_DoubleTime();
 	R_DrawBEntitiesOnList();
+	if(r_dspeeds.value) d_times[11] = Sys_DoubleTime();
 	R_ScanEdges();
 }
 
 void R_RenderViewMultiPass()
 {
+	if(r_timegraph.value || r_speeds.value || r_dspeeds.value)
+		d_times[0] = Sys_DoubleTime();
 	R_SetupFrame();
 	R_MarkLeaves(); // done here so we know if we're in water
 	R_EdgeDrawingMultiPass1();
 	R_EdgeDrawingMultiPass2();
+	if(r_dspeeds.value) d_times[7] = Sys_DoubleTime();
 	R_DrawEntitiesOnList();
+	if(r_dspeeds.value) d_times[8] = Sys_DoubleTime();
 	R_EdgeDrawingMultiPass3();
+	if(r_dspeeds.value) d_times[12] = Sys_DoubleTime();
 	R_DrawViewModel();
+	if(r_dspeeds.value) d_times[13] = Sys_DoubleTime();
 	R_DrawParticles();
+	if(r_dspeeds.value) d_times[14] = Sys_DoubleTime();
 	if(r_dowarp) D_WarpScreen();
-        if(!r_dowarp && fog_density < 1) R_DrawFog();
+	if(r_dspeeds.value) d_times[15] = Sys_DoubleTime();
+        if(!r_dowarp && fog_density < 1) R_DrawFog();//broken underwater, fixme?
+	if(r_dspeeds.value) d_times[16] = Sys_DoubleTime();
 	V_SetContentsColor(r_viewleaf->contents);
 }
 
@@ -527,31 +549,32 @@ void R_EdgeDrawingSinglePass()
 {
 	r_foundtranswater =  r_wateralphapass = r_pass = 0;
 	R_BeginEdgeFrame();
-	if(r_dspeeds.value) rw_time1 = Sys_DoubleTime();
+	if(r_dspeeds.value) d_times[1] = Sys_DoubleTime();
 	R_RenderWorld();
-	if(r_dspeeds.value) db_time1 = rw_time2 = Sys_DoubleTime();
+	if(r_dspeeds.value) d_times[2] = Sys_DoubleTime();
 	R_DrawBEntitiesOnList();
-	if(r_dspeeds.value) se_time1 = db_time2 = Sys_DoubleTime();
+	if(r_dspeeds.value) d_times[3] = Sys_DoubleTime();
 	R_ScanEdges();
 }
 
 void R_RenderViewSinglePass()
 {
 	if(r_timegraph.value || r_speeds.value || r_dspeeds.value)
-		r_time1 = Sys_DoubleTime();
+		d_times[0] = Sys_DoubleTime();
 	R_SetupFrame();
 	R_MarkLeaves(); // done here so we know if we're in water
 	R_EdgeDrawingSinglePass();
-	if(r_dspeeds.value) de_time1 = se_time2 = Sys_DoubleTime();
+	if(r_dspeeds.value) d_times[4] = Sys_DoubleTime();
 	R_DrawEntitiesOnList();
-	if(r_dspeeds.value) dv_time1 = de_time2 = Sys_DoubleTime();
+	if(r_dspeeds.value) d_times[5] = Sys_DoubleTime();
 	R_DrawViewModel();
-	if(r_dspeeds.value) dp_time1 = dv_time2 = Sys_DoubleTime();
+	if(r_dspeeds.value) d_times[6] = Sys_DoubleTime();
 	R_DrawParticles();
-	if(r_dspeeds.value) dp_time2 = Sys_DoubleTime();
+	if(r_dspeeds.value) d_times[7] = Sys_DoubleTime();
 	if(r_dowarp) D_WarpScreen();
-        if(!r_dowarp && fog_density < 1) // broken underwater, fixme?
-                R_DrawFog();
+	if(r_dspeeds.value) d_times[8] = Sys_DoubleTime();
+        if(!r_dowarp && fog_density < 1) R_DrawFog();//broken underwater, fixme?
+	if(r_dspeeds.value) d_times[9] = Sys_DoubleTime();
 	V_SetContentsColor(r_viewleaf->contents);
 }
 

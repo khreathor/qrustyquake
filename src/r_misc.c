@@ -137,7 +137,7 @@ void R_TimeGraph()
 	static s32 timex;
 	static u8 r_timings[MAX_TIMINGS];
 	f32 r_time2 = Sys_DoubleTime();
-	s32 a = (r_time2 - r_time1) / 0.01;
+	s32 a = (r_time2 - d_times[0]) / 0.01;
 	r_timings[timex] = a;
 	a = timex;
 	s32 x;
@@ -161,7 +161,7 @@ void R_TimeGraph()
 void R_PrintTimes()
 {
 	f32 r_time2 = Sys_DoubleTime();
-	f32 ms = 1000 * (r_time2 - r_time1);
+	f32 ms = 1000 * (r_time2 - d_times[0]);
 	Con_Printf("%5.1f ms %3i/%3i/%3i poly %3i surf\n",
 		   ms, c_faceclip, r_polycount, r_drawnpolycount, c_surf);
 	c_surf = 0;
@@ -169,16 +169,18 @@ void R_PrintTimes()
 
 void R_PrintDSpeeds()
 {
-	f32 r_time2 = Sys_DoubleTime();
-	f32 dp = (dp_time2 - dp_time1) * 1000000;
-	f32 rw = (rw_time2 - rw_time1) * 1000000;
-	f32 db = (db_time2 - db_time1) * 1000000;
-	f32 se = (se_time2 - se_time1) * 1000000;
-	f32 de = (de_time2 - de_time1) * 1000000;
-	f32 dv = (dv_time2 - dv_time1) * 1000000;
-	f32 us = (r_time2 - r_time1) * 1000000;
-	Con_Printf("%.0f %.0f %.0f %.0f %.0f %.0f %.0f\n",
-			us, dp, rw, db, se, de, dv);
+	f64 t[16] = {0};
+	f64 r_time2 = Sys_DoubleTime();
+	for(s32 i = 0; i < ((s32)r_twopass.value&1?16:9); i++)
+		t[i] = (d_times[i+1] - d_times[i]) * 1000000;
+	f64 tot = (r_time2 - d_times[0]) * 1000000;
+	if((s32)r_twopass.value&1){
+		Con_Printf("%.0f %.0f %.0f %.0f %.0f %.0f %.0f %.0f %.0f\n",
+			tot, t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7]);
+		Con_Printf("%.0f %.0f %.0f %.0f %.0f %.0f %.0f %.0f\n",
+			t[8], t[9], t[10], t[11], t[12], t[13], t[14], t[15]);
+	}else Con_Printf("%.0f %.0f %.0f %.0f %.0f %.0f %.0f %.0f %0.f\n",
+		tot, t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8]);
 }
 
 void R_PrintAliasStats()

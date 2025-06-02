@@ -57,8 +57,7 @@ mleaf_t *r_viewleaf, *r_oldviewleaf;
 texture_t *r_notexture_mip;
 f32 r_aliastransition, r_resfudge;
 s32 d_lightstylevalue[256]; // 8.8 fraction of base light value
-f64 dp_time1, dp_time2, db_time1, db_time2, rw_time1, rw_time2, r_time1;
-f64 se_time1, se_time2, de_time1, de_time2, dv_time1, dv_time2;
+f64 d_times[32];
 s32 colored_aliaslight;
 f32 d_sdivzstepu, d_tdivzstepu, d_zistepu;                         // d_vars.c
 f32 d_sdivzstepv, d_tdivzstepv, d_zistepv;
