@@ -96,6 +96,7 @@ void D_DrawSurfaces()
 	for (surf_t *s = &surfaces[1]; s < surface_p; s++) {
 		if (!s->spans) continue;
 		msurface_t *pface = s->data;
+		if (s->flags == SURF_DRAWBACKGROUND) goto drawbg; // skip checks
 		if (pface == 0) continue;
 		// CyanBun96: some entities are assigned an invalid address like
 		// 35, which leads to segfaults on any further checks while
@@ -103,7 +104,7 @@ void D_DrawSurfaces()
 		// some bigger issue that I can't be bothered to diagnose ATM.
 		u64 is_ent = (u64)(unsigned long long)s->entity & 0xffff000;
 		// CyanBun96: a 0 in either of those causes an error. FIXME
-		if (!pface || !pface->extents[0] || !pface->extents[1]) {
+		if ((!pface || !pface->extents[0] || !pface->extents[1])) {
 			if (pface)
 				Con_DPrintf("Broken surface extents %hd %hd\n",
 					pface->extents[0], pface->extents[1]);
@@ -114,8 +115,7 @@ void D_DrawSurfaces()
 		// CyanBun96: reject broken surfaces earlier to avoid crashes
 		s32 wd = pface->extents[0] >> (MIPLEVELS-1);
 		s32 sz = wd * pface->extents[1] >> (MIPLEVELS-1);
-		if (((wd < 0 || wd > 256) || (sz <= 0 || sz > 0x10000)) &&
-			!SURF_WINQUAKE_DRAWTRANSLUCENT) {
+		if (((wd < 0 || wd > 256) || (sz <= 0 || sz > 0x10000))) {
 			Con_DPrintf("Invalid surface width/size %d %d\n",wd,sz);
 			continue;
 		}
@@ -142,9 +142,15 @@ void D_DrawSurfaces()
 		d_zistepv = s->d_zistepv;
 		d_ziorigin = s->d_ziorigin;
 		lmonly = 0;
+		if (s->insubmodel) {
+			currententity = s->entity;
+			vec3_t local_modelorg;
+			VectorSubtract(r_origin, currententity->origin, local_modelorg);
+			TransformVector(local_modelorg, transformed_modelorg);
+			R_RotateBmodel();
+		}
 		if (s->flags & SURF_DRAWSKY) {
-			if (!r_skymade)
-				R_MakeSky();
+			if (!r_skymade) R_MakeSky();
 			D_DrawSkyScans8(s->spans);
 			D_DrawZSpans(s->spans);
 		} else if (s->flags & SURF_DRAWSKYBOX) {
@@ -165,17 +171,15 @@ void D_DrawSurfaces()
 			d_zistepv = 0;
 			d_ziorigin = -0.9;
 			D_DrawZSpans (s->spans);
-		} else if (s->flags & SURF_DRAWBACKGROUND) { // FIXME
+		} else if (s->flags & SURF_DRAWBACKGROUND) {
+drawbg:
 			// set up a gradient for the background surface that places it
 			// effectively at infinity distance from the viewpoint
-			if (skybox_name[0] || r_wateralphapass)
-				continue;
+			if (skybox_name[0] || r_wateralphapass) continue;
 			d_zistepu = 0;
 			d_zistepv = 0;
 			d_ziorigin = -0.9;
-			if (!r_pass || (s32)r_twopass.value&1)
-				D_DrawSolidSurface(s, (s32)r_clearcolor.value & 0xFF);
-			else D_DrawSolidSurface(s, 0xFF);
+			D_DrawSolidSurface(s, (s32)r_clearcolor.value & 0xFF);
 			D_DrawZSpans(s->spans);
 		} else if (s->flags & SURF_DRAWTURB && (!s->entity->model->haslitwater
 				|| !r_litwater.value)) {
@@ -184,19 +188,6 @@ void D_DrawSurfaces()
 				((u8 *) pface->texinfo->texture +
 				pface->texinfo->texture->offsets[0]);
 			cachewidth = 64;
-			if (s->insubmodel) {
-				// FIXME: we don't want to do all this for every polygon!
-				// TODO: store once at start of frame
-				currententity = s->entity; //FIXME: make this passed in to
-				vec3_t local_modelorg;
-				VectorSubtract(r_origin,
-					       currententity->origin,
-					       local_modelorg);
-				TransformVector(local_modelorg,
-						transformed_modelorg);
-				R_RotateBmodel(); // FIXME: don't mess with the frustum,
-				// make entity passed in
-			}
 			D_CalcGradients(pface);
 			f32 opacity = 1;
 			if (s->entity && s->entity->alpha && r_entalpha.value == 1)
@@ -208,76 +199,22 @@ void D_DrawSurfaces()
 			Turbulent8(s->spans, opacity);
 			if (!r_wateralphapass) // Manoel Kasimier - translucent water
 				D_DrawZSpans(s->spans);
-			if (s->insubmodel) {
-				// restore the old drawing state
-				// FIXME: we don't want to do this every time!
-				// TODO: speed up
-				currententity = &cl_entities[0];
-				VectorCopy(world_transformed_modelorg,
-					   transformed_modelorg);
-				VectorCopy(base_vpn, vpn);
-				VectorCopy(base_vup, vup);
-				VectorCopy(base_vright, vright);
-				VectorCopy(base_modelorg, modelorg);
-				R_TransformFrustum();
-			}
 		} else if (is_ent && s->entity->alpha && r_entalpha.value == 1) {
-			if (s->insubmodel) {
-				// FIXME: we don't want to do all this for every polygon!
-				// TODO: store once at start of frame
-				currententity = s->entity; //FIXME: make this passed in to
-				vec3_t local_modelorg;
-				VectorSubtract(r_origin, currententity
-					->origin, local_modelorg);
-				TransformVector(local_modelorg,
-						transformed_modelorg);
-				R_RotateBmodel(); // FIXME: don't mess with the frustum, make entity passed in
-			}
 			miplevel = pface->flags & SURF_DRAWCUTOUT ? 0 :
-				D_MipLevelForScale(s->nearzi *
-					scale_for_mip *
-					pface->texinfo->mipadjust);
+				D_MipLevelForScale(s->nearzi * scale_for_mip * pface->texinfo->mipadjust);
 			// FIXME: make this passed in to D_CacheSurface
-			surfcache_t *pcurrentcache =
-				D_CacheSurface(pface, miplevel);
+			surfcache_t *pcurrentcache = D_CacheSurface(pface, miplevel);
 			cacheblock = (u8 *) pcurrentcache->data;
 			cachewidth = pcurrentcache->width;
 			D_CalcGradients(pface);
 			f32 opacity = 1 - (f32)s->entity->alpha / 255;
 			D_DrawTransSpans8(s->spans, opacity);
-			if (s->insubmodel) {
-				// restore the old drawing state
-				// FIXME: we don't want to do this every time!
-				// TODO: speed up
-				currententity = &cl_entities[0];
-				VectorCopy(world_transformed_modelorg,
-					   transformed_modelorg);
-				VectorCopy(base_vpn, vpn);
-				VectorCopy(base_vup, vup);
-				VectorCopy(base_vright, vright);
-				VectorCopy(base_modelorg, modelorg);
-				R_TransformFrustum();
-			}
 		} else if (s->flags & SURF_DRAWTURB && s->entity->model->haslitwater && r_litwater.value) {
-			if (s->insubmodel) {
-				// FIXME: we don't want to do all this for every polygon!
-				// TODO: store once at start of frame
-				currententity = s->entity; //FIXME: make this passed in to
-				vec3_t local_modelorg;
-				VectorSubtract(r_origin, currententity
-					->origin, local_modelorg);
-				TransformVector(local_modelorg,
-						transformed_modelorg);
-				R_RotateBmodel(); // FIXME: don't mess with the frustum, make entity passed in
-			}
 			miplevel = pface->flags & SURF_DRAWCUTOUT ? 0 :
-				D_MipLevelForScale(s->nearzi *
-					scale_for_mip *
-					pface->texinfo->mipadjust);
+				D_MipLevelForScale(s->nearzi * scale_for_mip * pface->texinfo->mipadjust);
 			// FIXME: make this passed in to D_CacheSurface
 			lmonly = 1; // this is how we know it's lit water that we're drawing
-			surfcache_t *pcurrentcache =
-				D_CacheSurface(pface, miplevel);
+			surfcache_t *pcurrentcache = D_CacheSurface(pface, miplevel);
 			cacheblock = (u8 *) pcurrentcache->data;
 			cachewidth = pcurrentcache->width;
 			D_CalcGradients(pface);
@@ -289,49 +226,18 @@ void D_DrawSurfaces()
 			cachewidth = 64;
 			D_CalcGradients(pface);
 			f32 opacity = 1 - (f32)s->entity->alpha / 255;
-			if (s->flags & SURF_DRAWLAVA)
-				opacity = 1 - r_lavaalpha.value;
-			else if (s->flags & SURF_DRAWSLIME)
-				opacity = 1 - r_slimealpha.value;
-			else if (s->flags & SURF_DRAWWATER)
-				opacity = 1 - r_wateralpha.value;
-			else if (s->flags & SURF_DRAWTELE)
-				opacity = 1 - r_telealpha.value;
+			if (s->flags & SURF_DRAWLAVA) opacity = 1 - r_lavaalpha.value;
+			else if (s->flags & SURF_DRAWSLIME) opacity = 1 - r_slimealpha.value;
+			else if (s->flags & SURF_DRAWWATER) opacity = 1 - r_wateralpha.value;
+			else if (s->flags & SURF_DRAWTELE) opacity = 1 - r_telealpha.value;
 			Turbulent8(s->spans, opacity);
 			if (!r_wateralphapass) // Manoel Kasimier - translucent water
 				D_DrawZSpans(s->spans);
-			if (s->insubmodel) {
-				// restore the old drawing state
-				// FIXME: we don't want to do this every time!
-				// TODO: speed up
-				currententity = &cl_entities[0];
-				VectorCopy(world_transformed_modelorg,
-					   transformed_modelorg);
-				VectorCopy(base_vpn, vpn);
-				VectorCopy(base_vup, vup);
-				VectorCopy(base_vright, vright);
-				VectorCopy(base_modelorg, modelorg);
-				R_TransformFrustum();
-			}
 		} else {
-			if (s->insubmodel) {
-				// FIXME: we don't want to do all this for every polygon!
-				// TODO: store once at start of frame
-				currententity = s->entity; //FIXME: make this passed in to
-				vec3_t local_modelorg;
-				VectorSubtract(r_origin, currententity
-					->origin, local_modelorg);
-				TransformVector(local_modelorg,
-						transformed_modelorg);
-				R_RotateBmodel(); // FIXME: don't mess with the frustum, make entity passed in
-			}
 			miplevel = pface->flags & SURF_DRAWCUTOUT ? 0 :
-				D_MipLevelForScale(s->nearzi *
-					scale_for_mip *
-					pface->texinfo->mipadjust);
+				D_MipLevelForScale(s->nearzi * scale_for_mip * pface->texinfo->mipadjust);
 			// FIXME: make this passed in to D_CacheSurface
-			surfcache_t *pcurrentcache =
-				D_CacheSurface(pface, miplevel);
+			surfcache_t *pcurrentcache = D_CacheSurface(pface, miplevel);
 			cacheblock = (u8 *) pcurrentcache->data;
 			cachewidth = pcurrentcache->width;
 			D_CalcGradients(pface);
@@ -339,19 +245,15 @@ void D_DrawSurfaces()
 			if ((pface->flags&SURF_DRAWCUTOUT) && r_pass == 1)
 				D_DrawZSpansTrans(s->spans);
 			else D_DrawZSpans(s->spans);
-			if (s->insubmodel) {
-				// restore the old drawing state
-				// FIXME: we don't want to do this every time!
-				// TODO: speed up
-				currententity = &cl_entities[0];
-				VectorCopy(world_transformed_modelorg,
-					   transformed_modelorg);
-				VectorCopy(base_vpn, vpn);
-				VectorCopy(base_vup, vup);
-				VectorCopy(base_vright, vright);
-				VectorCopy(base_modelorg, modelorg);
-				R_TransformFrustum();
-			}
+		}
+		if (s->insubmodel) {
+			currententity = &cl_entities[0];
+			VectorCopy(world_transformed_modelorg, transformed_modelorg);
+			VectorCopy(base_vpn, vpn);
+			VectorCopy(base_vup, vup);
+			VectorCopy(base_vright, vright);
+			VectorCopy(base_modelorg, modelorg);
+			R_TransformFrustum();
 		}
 	}
 }
