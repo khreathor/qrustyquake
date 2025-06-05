@@ -75,16 +75,16 @@ void R_SetSlimealpha_f(cvar_t *var)
 	map_slimealpha = var->value;
 }
 
-f32 R_WaterAlphaForTextureType(textype_t type)
+f32 R_LiquidAlphaForFlags(s32 flags)
 {
-	if (type == TEXTYPE_LAVA)
+	if (flags & SURF_DRAWLAVA)
 		return map_lavaalpha > 0 ? map_lavaalpha : map_fallbackalpha;
-	else if (type == TEXTYPE_TELE)
-		return map_telealpha > 0 ? map_telealpha : map_fallbackalpha;
-	else if (type == TEXTYPE_SLIME)
+	else if (flags & SURF_DRAWSLIME)
 		return map_slimealpha > 0 ? map_slimealpha : map_fallbackalpha;
+	else if (flags & SURF_DRAWTELE)
+		return map_telealpha > 0 ? map_telealpha : map_fallbackalpha;
 	else
-		return map_wateralpha;
+		return map_wateralpha > 0 ? map_wateralpha : map_fallbackalpha;
 }
 
 void R_CheckVariables()

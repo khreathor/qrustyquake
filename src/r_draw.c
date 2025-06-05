@@ -210,18 +210,13 @@ void R_RenderFace(msurface_t *fa, s32 clipflags)
 	// Code taken from the ToChriS engine - Author: Vic
 	// sky surfaces encountered in the world will cause the
 	// environment box surfaces to be emited
-	if ((fa->flags & SURF_DRAWSKY) && skybox_name[0])
-	{
+	if ((fa->flags & SURF_DRAWSKY) && skybox_name[0]) {
 		R_EmitSkyBox();
 		return;
 	}
 	// Manoel Kasimier - skyboxes - end
-	if (fa->flags & SURF_WINQUAKE_DRAWTRANSLUCENT)
-	{
-		if (fa->flags & SURF_DRAWLAVA) winquake_surface_liquid_alpha = R_WaterAlphaForTextureType(TEXTYPE_LAVA);
-		else if (fa->flags & SURF_DRAWSLIME) winquake_surface_liquid_alpha = R_WaterAlphaForTextureType(TEXTYPE_SLIME);
-		else if (fa->flags & SURF_DRAWWATER) winquake_surface_liquid_alpha = R_WaterAlphaForTextureType(TEXTYPE_WATER);
-		else if (fa->flags & SURF_DRAWTELE) winquake_surface_liquid_alpha = R_WaterAlphaForTextureType(TEXTYPE_TELE);
+	if (fa->flags & SURF_WINQUAKE_DRAWTRANSLUCENT) {
+		winquake_surface_liquid_alpha = R_LiquidAlphaForFlags(fa->flags);
 	} else if (cur_ent_alpha < 1 && r_entalpha.value == 1)
 		winquake_surface_liquid_alpha = cur_ent_alpha;
 	else winquake_surface_liquid_alpha = 1;

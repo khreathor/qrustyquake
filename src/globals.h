@@ -504,7 +504,7 @@ void R_MarkLights(dlight_t *light, s32 bit, mnode_t *node);
 u8 rgbtoi_lab(u8 r, u8 g, u8 b);
 u8 rgbtoi(u8 r, u8 g, u8 b);
 void R_BuildLitLUT();
-f32 R_WaterAlphaForTextureType(textype_t type);
+f32 R_LiquidAlphaForFlags(s32 flags);
 void R_PrintDSpeeds();
 EX client_state_t cl;                                                // client.h
 dlight_t *CL_AllocDlight(s32 key);

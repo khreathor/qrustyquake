@@ -126,17 +126,9 @@ void D_DrawSurfaces()
 		if (is_ent && s->entity->alpha && r_entalpha.value == 1)
 			winquake_surface_liquid_alpha = (f32)s->entity->alpha / 255;
 		// Baker: Need to determine what kind of liquid we are
-		else if (s->flags & SURF_WINQUAKE_DRAWTRANSLUCENT) {
-			if (s->flags & SURF_DRAWLAVA)
-				winquake_surface_liquid_alpha = R_WaterAlphaForTextureType(TEXTYPE_LAVA);
-			else if (s->flags & SURF_DRAWSLIME)
-				winquake_surface_liquid_alpha = R_WaterAlphaForTextureType(TEXTYPE_SLIME);
-			else if (s->flags & SURF_DRAWWATER)
-				winquake_surface_liquid_alpha = R_WaterAlphaForTextureType(TEXTYPE_WATER);
-			else if (s->flags & SURF_DRAWTELE)
-				winquake_surface_liquid_alpha = R_WaterAlphaForTextureType(TEXTYPE_TELE);
-		} else
-			winquake_surface_liquid_alpha = 1;
+		else if (s->flags & SURF_WINQUAKE_DRAWTRANSLUCENT)
+			winquake_surface_liquid_alpha = R_LiquidAlphaForFlags(s->flags);
+		else winquake_surface_liquid_alpha = 1;
 		if (r_wateralphapass && winquake_surface_liquid_alpha == 1 && r_entalpha.value == 1)
 			continue; // Manoel Kasimier - translucent water
 		d_zistepu = s->d_zistepu;
@@ -195,10 +187,8 @@ drawbg:
 			f32 opacity = 1;
 			if (s->entity && s->entity->alpha && r_entalpha.value == 1)
 				opacity -= (f32)s->entity->alpha/255;
-			else if (s->flags & SURF_DRAWLAVA) opacity -= R_WaterAlphaForTextureType(TEXTYPE_LAVA);
-			else if (s->flags & SURF_DRAWSLIME) opacity -= R_WaterAlphaForTextureType(TEXTYPE_SLIME);
-			else if (s->flags & SURF_DRAWWATER) opacity -= R_WaterAlphaForTextureType(TEXTYPE_WATER);
-			else if (s->flags & SURF_DRAWTELE) opacity -= R_WaterAlphaForTextureType(TEXTYPE_TELE);
+			else if (s->flags & SURF_WINQUAKE_DRAWTRANSLUCENT)
+				opacity -= R_LiquidAlphaForFlags(s->flags);
 			Turbulent8(s->spans, opacity);
 			if (!r_wateralphapass) // Manoel Kasimier - translucent water
 				D_DrawZSpans(s->spans);
