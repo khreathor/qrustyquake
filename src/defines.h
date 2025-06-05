@@ -661,7 +661,7 @@
 #define MINEDGES NUMSTACKEDGES
 #define NUMSTACKSURFACES 32768 // CyanBun96: expanding limits
 #define MINSURFACES NUMSTACKSURFACES
-#define MAXSPANS 16384 // CyanBun96: expanding limits
+#define MAXSPANS 32768 // CyanBun96: expanding limits
 #define ALIAS_LEFT_CLIP 0x0001 // flags in finalvert_t.flags
 #define ALIAS_TOP_CLIP 0x0002
 #define ALIAS_RIGHT_CLIP 0x0004
