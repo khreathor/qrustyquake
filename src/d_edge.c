@@ -74,6 +74,18 @@ void D_CalcGradients(msurface_t *pface)
 	bbextentt = ((pface->extents[1] << 16) >> miplevel) - 1;
 }
 
+void D_DrawSurfacesFlat()
+{
+	for (surf_t *s = &surfaces[1]; s < surface_p; s++) {
+		if (!s->spans) continue;
+		d_zistepu = s->d_zistepu;
+		d_zistepv = s->d_zistepv;
+		d_ziorigin = s->d_ziorigin;
+		D_DrawSolidSurface(s, (uintptr_t) s->data & 0xFF);
+		D_DrawZSpans(s->spans);
+	}
+}
+
 void D_DrawSurfaces()
 { // CyanBun96: TODO make this less huge, maybe split into several functions
 	currententity = &cl_entities[0];
@@ -81,18 +93,6 @@ void D_DrawSurfaces()
 	vec3_t world_transformed_modelorg;
 	VectorCopy(transformed_modelorg, world_transformed_modelorg);
 	// TODO: could preset a lot of this at mode set time
-	if (r_drawflat.value) {
-		for (surf_t *s = &surfaces[1]; s < surface_p; s++) {
-			if (!s->spans)
-				continue;
-			d_zistepu = s->d_zistepu;
-			d_zistepv = s->d_zistepv;
-			d_ziorigin = s->d_ziorigin;
-			D_DrawSolidSurface(s, (uintptr_t) s->data & 0xFF);
-			D_DrawZSpans(s->spans);
-		}
-		return;
-	}
 	for (surf_t *s = &surfaces[1]; s < surface_p; s++) {
 		if (!s->spans) continue;
 		msurface_t *pface = s->data;

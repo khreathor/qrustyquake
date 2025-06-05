@@ -485,6 +485,7 @@ void R_AliasDrawModel(alight_t *plighting);
 void R_BeginEdgeFrame();
 void R_ScanEdges();
 void D_DrawSurfaces();
+void D_DrawSurfacesFlat();
 void R_RotateBmodel();
 bool R_AliasCheckBBox();
 void R_DrawParticles();

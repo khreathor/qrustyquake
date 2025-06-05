@@ -401,7 +401,8 @@ void R_ScanEdges()
 		// flush the span list if we can't be sure we have enough spans
 		// left for the next scan
 		if (span_p >= max_span_p) {
-			D_DrawSurfaces();
+			if (r_drawflat.value) D_DrawSurfacesFlat();
+			else D_DrawSurfaces();
 			// clear the surface span pointers
 			for (surf_t *s = &surfaces[1]; s < surface_p; s++)
 				s->spans = NULL;
@@ -420,5 +421,6 @@ void R_ScanEdges()
 	if (newedges[iv])
 		R_InsertNewEdges(newedges[iv], edge_head.next);
 	(*pdrawfunc) ();
-	D_DrawSurfaces(); // draw whatever's left in the span list
+	if (r_drawflat.value) D_DrawSurfacesFlat();
+	else D_DrawSurfaces();
 }
