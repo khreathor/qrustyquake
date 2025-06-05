@@ -115,7 +115,8 @@ void D_DrawSurfaces()
 		// CyanBun96: reject broken surfaces earlier to avoid crashes
 		s32 wd = pface->extents[0] >> (MIPLEVELS-1);
 		s32 sz = wd * pface->extents[1] >> (MIPLEVELS-1);
-		if (((wd < 0 || wd > 256) || (sz <= 0 || sz > 0x10000))) {
+		if (((wd < 0 || wd > 256) || (sz <= 0 || sz > 0x10000)) &&
+				!(pface->flags&SURF_DRAWTURB)) {
 			Con_DPrintf("Invalid surface width/size %d %d\n",wd,sz);
 			continue;
 		}
@@ -142,6 +143,10 @@ void D_DrawSurfaces()
 		d_zistepv = s->d_zistepv;
 		d_ziorigin = s->d_ziorigin;
 		lmonly = 0;
+		if(s->flags&(SURF_DRAWTURB|SURF_DRAWCUTOUT|SURF_DRAWBACKGROUND))
+			miplevel = 0;
+		else miplevel = D_MipLevelForScale(s->nearzi * scale_for_mip
+				* pface->texinfo->mipadjust);
 		if (s->insubmodel) {
 			currententity = s->entity;
 			vec3_t local_modelorg;
@@ -156,7 +161,6 @@ void D_DrawSurfaces()
 		} else if (s->flags & SURF_DRAWSKYBOX) {
 			// Manoel Kasimier - hi-res skyboxes - edited
 			extern u8 r_skypixels[6][SKYBOX_MAX_SIZE*SKYBOX_MAX_SIZE];
-			miplevel = 0;
 			cacheblock = (u8 *)(r_skypixels[pface->texinfo->texture->offsets[0]]);
 			// Manoel Kasimier - hi-res skyboxes - edited
 			cachewidth = pface->texinfo->texture->width;
@@ -183,7 +187,6 @@ drawbg:
 			D_DrawZSpans(s->spans);
 		} else if (s->flags & SURF_DRAWTURB && (!s->entity->model->haslitwater
 				|| !r_litwater.value)) {
-			miplevel = 0;
 			cacheblock = (u8 *)
 				((u8 *) pface->texinfo->texture +
 				pface->texinfo->texture->offsets[0]);
@@ -200,8 +203,6 @@ drawbg:
 			if (!r_wateralphapass) // Manoel Kasimier - translucent water
 				D_DrawZSpans(s->spans);
 		} else if (is_ent && s->entity->alpha && r_entalpha.value == 1) {
-			miplevel = pface->flags & SURF_DRAWCUTOUT ? 0 :
-				D_MipLevelForScale(s->nearzi * scale_for_mip * pface->texinfo->mipadjust);
 			// FIXME: make this passed in to D_CacheSurface
 			surfcache_t *pcurrentcache = D_CacheSurface(pface, miplevel);
 			cacheblock = (u8 *) pcurrentcache->data;
@@ -210,8 +211,9 @@ drawbg:
 			f32 opacity = 1 - (f32)s->entity->alpha / 255;
 			D_DrawTransSpans8(s->spans, opacity);
 		} else if (s->flags & SURF_DRAWTURB && s->entity->model->haslitwater && r_litwater.value) {
-			miplevel = pface->flags & SURF_DRAWCUTOUT ? 0 :
-				D_MipLevelForScale(s->nearzi * scale_for_mip * pface->texinfo->mipadjust);
+			// FIXME this is horrible.
+			miplevel = D_MipLevelForScale(s->nearzi * scale_for_mip
+					* pface->texinfo->mipadjust);
 			// FIXME: make this passed in to D_CacheSurface
 			lmonly = 1; // this is how we know it's lit water that we're drawing
 			surfcache_t *pcurrentcache = D_CacheSurface(pface, miplevel);
@@ -234,8 +236,6 @@ drawbg:
 			if (!r_wateralphapass) // Manoel Kasimier - translucent water
 				D_DrawZSpans(s->spans);
 		} else {
-			miplevel = pface->flags & SURF_DRAWCUTOUT ? 0 :
-				D_MipLevelForScale(s->nearzi * scale_for_mip * pface->texinfo->mipadjust);
 			// FIXME: make this passed in to D_CacheSurface
 			surfcache_t *pcurrentcache = D_CacheSurface(pface, miplevel);
 			cacheblock = (u8 *) pcurrentcache->data;
