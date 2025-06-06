@@ -368,8 +368,18 @@ void D_DrawSpans(espan_t *pspan, s32 type, f32 opacity)
 				do {
 					u8 pix = *(pbase + (s >> 16) +
 						(t >> 16) * cachewidth);
+					*pdest = pix;
+					pdest++;
+					s += sstep;
+					t += tstep;
+				} while (--spancount > 0);
+			}
+			if (type == SPAN_CUTOUT) {
+				do {
+					u8 pix = *(pbase + (s >> 16) +
+						(t >> 16) * cachewidth);
 					cutoutbuf[pdest-d_viewbuffer] = 0;
-					if (pix != 0xff || !((s32)r_twopass.value&1)) {
+					if (pix != 0xff) {
 						*pdest = pix;
 						cutoutbuf[pdest-d_viewbuffer] = 1;
 					}
@@ -385,8 +395,7 @@ void D_DrawSpans(espan_t *pspan, s32 type, f32 opacity)
 						(t >> 16) * cachewidth);
 					if (fog_density > 0)
 						pix = color_mix_lut[pix][fog_pal_index][foglut];
-					if (pix != 0xff || !((s32)r_twopass.value&1))
-						*pdest = pix;
+					*pdest = pix;
 					pdest++;
 					s += sstep;
 					t += tstep;
@@ -399,8 +408,7 @@ void D_DrawSpans(espan_t *pspan, s32 type, f32 opacity)
 						build_color_mix_lut(0);
 					do {
 						if (*pz <= (izi >> 16)) {
-							u8 pix = *(pbase + (s >> 16) +
-								(t >> 16) * cachewidth);
+							u8 pix = *(pbase + (s >> 16) + (t >> 16) * cachewidth);
 							if (pix != 0xff) {
 								pix = color_mix_lut[pix][*pdest][foglut];
 								*pdest = pix;
@@ -412,12 +420,10 @@ void D_DrawSpans(espan_t *pspan, s32 type, f32 opacity)
 						s += sstep;
 						t += tstep;
 					} while (--spancount > 0);
-				}
-				else {
+				} else {
 					do {
 						if (*pz <= (izi >> 16) && D_Dither(pdest, 1-opacity)) {
-							u8 pix = *(pbase + (s >> 16) +
-								(t >> 16) * cachewidth);
+							u8 pix = *(pbase + (s >> 16) + (t >> 16) * cachewidth);
 							*pdest = pix;
 						}
 						pdest++;

@@ -983,4 +983,5 @@
 #define SPAN_NORMAL 1
 #define SPAN_SKYBOX 2
 #define SPAN_TRANS 4
+#define SPAN_CUTOUT 8
 #endif

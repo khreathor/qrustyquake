@@ -172,10 +172,13 @@ static void D_DrawNormalSurf(surf_t *s, msurface_t *pface)
 	cacheblock = (u8 *) pcurrentcache->data;
 	cachewidth = pcurrentcache->width;
 	D_CalcGradients(pface);
-	D_DrawSpans(s->spans, SPAN_NORMAL, 0);
-	if ((pface->flags&SURF_DRAWCUTOUT) && r_pass == 1)
+	if ((pface->flags&SURF_DRAWCUTOUT) && r_pass == 1) {
+		D_DrawSpans(s->spans, SPAN_CUTOUT, 0);
 		D_DrawZSpansTrans(s->spans);
-	else D_DrawZSpans(s->spans);
+	} else {
+		D_DrawSpans(s->spans, SPAN_NORMAL, 0);
+		D_DrawZSpans(s->spans);
+	}
 }
 
 void D_DrawSurfaces()
