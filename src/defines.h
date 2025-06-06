@@ -362,7 +362,7 @@
 #define MAX_COLUMN_SIZE 5
 #define MODE_AREA_HEIGHT (MAX_COLUMN_SIZE + 6)
 
-#define RANDARR_SIZE 19937 // prime to reduce unintended patterns     // d_fog.h
+#define RANDARR_SIZE 65536                                            // d_fog.h
 
 #define FOG_LUT_LEVELS 32                                            // rgbtoi.h
 #define LIT_LUT_RES 64

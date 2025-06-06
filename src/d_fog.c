@@ -11,6 +11,7 @@ static u32 lfsr = 0x1337; // non-zero seed
 static float fog_factor_lut[FOG_FACTOR_LUT_SIZE];
 static f32 old_r_fogscale = -1234;
 static f32 old_fog_density = -1234;
+static f32 old_noisebias = -1234;
 
 void Fog_SetPalIndex(cvar_t */*cvar*/)
 {
@@ -105,10 +106,13 @@ void Fog_ParseWorldspawn () // from Quakespasm
 
 u32 lfsr_random() {lfsr^=lfsr>>7; lfsr^=lfsr<<9; lfsr^=lfsr>>13; return lfsr;}
 
-void R_InitFog()
+void R_InitFog(f32 noisebias)
 {
-	for(s32 i = 0; i < RANDARR_SIZE; ++i) // fog bias array
+	for(s32 i = 0; i < RANDARR_SIZE; ++i) { // fog bias array
 		randarr[i] = (lfsr_random() & 0xFFFF) / 65535.0f; // == [0,1]
+		randarr[i] *= noisebias;
+	}
+	old_noisebias = noisebias;
 	if(!fog_lut_built) build_color_mix_lut(0);
 	Fog_SetPalIndex(0);
 	fog_initialized = 1;
@@ -139,25 +143,25 @@ static inline f32 compute_fog_lut(s32 z) {
 
 void R_DrawFog(){
 	if(!fog_density || r_nofog.value) return;
-	if(!fog_initialized)R_InitFog();
+	f32 noisebias = 10 * r_fognoise.value;
+	if(!fog_initialized || old_noisebias!=noisebias)R_InitFog(noisebias);
 	if(old_r_fogscale!=r_fogscale.value||old_fog_density!=fog_density)
 		R_InitFogLUT();
 	sb_updates = 0; // draw sbar over fog
 	s32 j = 0;
 	u8 *pdest = screen->pixels;
 	s32 area = scr_vrect.width * scr_vrect.height;
-	f32 noisebias = 10 * r_fognoise.value;
 	switch((s32)r_fogstyle.value){
 	case 0: // noisy
 		for(s32 i = 0; i < area; ++i){
-			s32 bias = randarr[(area-j++)%RANDARR_SIZE]*noisebias;
+			s32 bias = randarr[(area-j++)%RANDARR_SIZE];
 			f32 ffactor = compute_fog_lut(d_pzbuffer[i]+bias)*r_fogfactor.value;
 			if((lfsr_random() & 0xFFFF) / 65535.0f < ffactor)
 				pdest[i] = fog_pal_index;
 		} break;
 	case 2: // dither + noise
 		for(s32 i = 0; i < area; ++i){
-			s32 bias = randarr[(area-j++)%RANDARR_SIZE]*noisebias;
+			s32 bias = randarr[(area-j++)%RANDARR_SIZE];
 			f32 ffactor = compute_fog_lut(d_pzbuffer[i]+bias)*r_fogfactor.value;
 			ffactor -= bias*0.05;
 			if((lfsr_random() & 0xFFFF) / 65535.0f < ffactor)
@@ -165,13 +169,13 @@ void R_DrawFog(){
 		} break;
 	case 1: // dither
 		for(s32 i = 0; i < area; ++i){
-			s32 bias = randarr[(area-j++)%RANDARR_SIZE]*noisebias;
+			s32 bias = randarr[(area-j++)%RANDARR_SIZE];
 			f32 ffactor = compute_fog_lut(d_pzbuffer[i]+bias)*r_fogfactor.value;
 			if(D_Dither(&pdest[i], ffactor)) pdest[i]=fog_pal_index;
 		} break;
 	default: case 3: // mix
 		for(s32 i = 0; i < area; ++i){
-			s32 bias = randarr[(area-j++)%RANDARR_SIZE]*noisebias;
+			s32 bias = randarr[(area-j++)%RANDARR_SIZE];
 			f32 ffactor = compute_fog_lut(d_pzbuffer[i]+bias)*r_fogfactor.value;
 			u8 pix = pdest[i];
 			s32 lut_idx = (s32)(ffactor * FOG_LUT_LEVELS);
