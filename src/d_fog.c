@@ -145,12 +145,14 @@ void R_DrawFog(){
 	sb_updates = 0; // draw sbar over fog
 	s32 style = r_fogstyle.value;
 	s32 j = 0;
-	u8 *pdest = screen->pixels;	
-	for(s32 y = scr_vrect.y; y < scr_vrect.y + scr_vrect.height; ++y){
-	for(s32 x = scr_vrect.x; x < scr_vrect.x + scr_vrect.width; ++x){
+	u8 *pdest = screen->pixels;
+	u64 area = scr_vrect.width*scr_vrect.height;
+	s32 width = scr_vrect.x + scr_vrect.width;
+	s32 height = scr_vrect.y + scr_vrect.height;
+	for(s32 y = scr_vrect.y; y < height; ++y){
+	for(s32 x = scr_vrect.x; x < width; ++x){
 		s32 i = x + y * vid.width;
-		s32 bias = randarr[(scr_vrect.width*scr_vrect.height - j)
-			% RANDARR_SIZE] * 10 * r_fognoise.value;
+		s32 bias = randarr[(area-j)%RANDARR_SIZE]*10*r_fognoise.value;
 		++j;
 		f32 ffactor = compute_fog_lut(d_pzbuffer[i] + bias) * r_fogfactor.value;
 		if(ffactor >= 1) continue; 
