@@ -135,7 +135,7 @@ void D_DrawSurfaces()
 		d_zistepv = s->d_zistepv;
 		d_ziorigin = s->d_ziorigin;
 		lmonly = 0;
-		if(s->flags&(SURF_DRAWTURB|SURF_DRAWCUTOUT|SURF_DRAWBACKGROUND))
+		if(s->flags&(SURF_DRAWTURB|SURF_DRAWCUTOUT|SURF_DRAWBACKGROUND|SURF_DRAWSKYBOX))
 			miplevel = 0;
 		else miplevel = D_MipLevelForScale(s->nearzi * scale_for_mip
 				* pface->texinfo->mipadjust);
