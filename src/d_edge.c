@@ -102,7 +102,8 @@ static void D_DrawSkybox(surf_t *s, msurface_t *pface)
 	d_zistepv = s->d_zistepv;
 	d_ziorigin = s->d_ziorigin;
 	D_CalcGradients (pface);
-	D_DrawSkyboxScans8(s->spans);
+	if(fog_density > 0 && !fog_lut_built) build_color_mix_lut(0);
+	D_DrawSpans(s->spans, SPAN_SKYBOX, 0);
 	d_zistepu = 0; // set up gradient for background surf that places it
 	d_zistepv = 0; // effectively at infinity distance from the viewpoint
 	d_ziorigin = -0.9;
@@ -139,7 +140,7 @@ static void D_DrawTransSurf(surf_t *s, msurface_t *pface)
 	cachewidth = pcurrentcache->width;
 	D_CalcGradients(pface);
 	f32 opacity = 1 - (f32)s->entity->alpha / 255;
-	D_DrawTransSpans8(s->spans, opacity);
+	D_DrawSpans(s->spans, SPAN_TRANS, opacity);
 }
 
 static void D_DrawLitWater(surf_t *s, msurface_t *pface)
@@ -151,7 +152,7 @@ static void D_DrawLitWater(surf_t *s, msurface_t *pface)
 	cacheblock = (u8 *) pcurrentcache->data;
 	cachewidth = pcurrentcache->width;
 	D_CalcGradients(pface);
-	D_DrawSpans8(s->spans); // draw the lightmap to a separate buffer
+	D_DrawSpans(s->spans, SPAN_NORMAL, 0); // draw the lightmap to a separate buffer
 	miplevel = 0;
 	cacheblock = (u8 *) pface->texinfo->texture + pface->texinfo->texture->offsets[0];
 	cachewidth = 64;
@@ -171,7 +172,7 @@ static void D_DrawNormalSurf(surf_t *s, msurface_t *pface)
 	cacheblock = (u8 *) pcurrentcache->data;
 	cachewidth = pcurrentcache->width;
 	D_CalcGradients(pface);
-	D_DrawSpans8(s->spans);
+	D_DrawSpans(s->spans, SPAN_NORMAL, 0);
 	if ((pface->flags&SURF_DRAWCUTOUT) && r_pass == 1)
 		D_DrawZSpansTrans(s->spans);
 	else D_DrawZSpans(s->spans);
@@ -183,7 +184,6 @@ void D_DrawSurfaces()
 	TransformVector(modelorg, transformed_modelorg);
 	vec3_t world_transformed_modelorg;
 	VectorCopy(transformed_modelorg, world_transformed_modelorg);
-	//debug stuf pls ignore s32 drawnsurfs = 0;
 	// TODO: could preset a lot of this at mode set time
 	for (surf_t *s = &surfaces[1]; s < surface_p; s++) {
 		if (!s->spans) continue;
@@ -238,7 +238,6 @@ skipchecks:
 			TransformVector(local_modelorg, transformed_modelorg);
 			R_RotateBmodel();
 		}
-		//debug stuf pls ignore drawnsurfs++;
 		if (s->flags & SURF_DRAWSKY) {
 			D_DrawSky(s);
 		} else if (s->flags & SURF_DRAWSKYBOX) {
@@ -265,5 +264,4 @@ skipchecks:
 			R_TransformFrustum();
 		}
 	}
-	//debug stuf pls ignore Con_DPrintf("Pass %d drawn %d\n", r_pass+r_wateralphapass, drawnsurfs);
 }

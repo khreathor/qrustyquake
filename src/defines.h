@@ -979,4 +979,8 @@
 #define SND_FILTERQUALITY_DEFAULT "1"                               // snd_dma.c
 #define	sound_nominal_clip_dist	1000.0
 #define	MAX_SFX		1024
+
+#define SPAN_NORMAL 1
+#define SPAN_SKYBOX 2
+#define SPAN_TRANS 4
 #endif

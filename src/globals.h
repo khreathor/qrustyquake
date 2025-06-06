@@ -299,13 +299,11 @@ EX u32 d_zwidth;
 EX u8 *d_viewbuffer;
 EX f32 winquake_surface_liquid_alpha;
 EX u8 fog_pal_index;
-void D_DrawSpans8(espan_t *pspans);
-void D_DrawTransSpans8(espan_t *pspans, f32 opacity);
+void D_DrawSpans(espan_t *pspans, s32 type, f32 opacity);
 void D_DrawZSpans(espan_t *pspans);
 void D_DrawZSpansTrans(espan_t *pspans);
 void Turbulent8(espan_t *pspan, f32 opacity);
 void D_DrawSkyScans8(espan_t *pspan);
-void D_DrawSkyboxScans8(espan_t *pspans);
 surfcache_t *D_CacheSurface(msurface_t *surface, s32 miplevel);
 s32 D_Dither(u8 *pos, f32 opacity);
 EX s32 DEFAULTnet_hostport;                                             // net.h

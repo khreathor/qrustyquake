@@ -269,111 +269,7 @@ void Turbulent8(espan_t *pspan, f32 opacity)
 	} while ((pspan = pspan->pnext) != NULL);
 }
 
-void D_DrawSkyboxScans8(espan_t *pspan)
-{ // CyanBun96: this is exactly the same as DrawSpans8 except for the fog mixing part. consolidate. FIXME
-	if(fog_density > 0 && !fog_lut_built) // for r_skyfog
-		build_color_mix_lut(0);
-	u8 *pbase = (u8 *)cacheblock;
-	f32 sdivz8stepu = d_sdivzstepu * 8;
-	f32 tdivz8stepu = d_tdivzstepu * 8;
-	f32 zi8stepu = d_zistepu * 8;
-	do {
-		u8 *pdest = (u8 *)((u8 *) d_viewbuffer +
-				      (screenwidth * pspan->v) + pspan->u);
-		s32 count = pspan->count;
-		f32 du = (f32)pspan->u; // calculate the initial s/z, t/z,
-		f32 dv = (f32)pspan->v; // 1/z, s, and t and clamp
-		f32 sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
-		f32 tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
-		f32 zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
-		f32 z = (f32)0x10000 / zi; // prescale to 16.16 fixed-point
-		s32 s = (s32)(sdivz * z) + sadjust;
-		if (s > bbextents)
-			s = bbextents;
-		else if (s < 0)
-			s = 0;
-		s32 t = (s32)(tdivz * z) + tadjust;
-		if (t > bbextentt)
-			t = bbextentt;
-		else if (t < 0)
-			t = 0;
-		do {
-			// calculate s and t at the far end of the span
-			s32 snext, tnext;
-			s32 sstep = 0; // keep compiler happy
-			s32 tstep = 0; // ditto
-			s32 spancount = count;
-			if (count >= 8)
-				spancount = 8;
-			count -= spancount;
-			if (count) {
-				// calculate s/z, t/z, zi->fixed s and t at far end of span,
-				// calculate s and t steps across span by shifting
-				sdivz += sdivz8stepu;
-				tdivz += tdivz8stepu;
-				zi += zi8stepu;
-				z = (f32)0x10000 / zi; // prescale to 16.16 fixed-point
-				snext = (s32)(sdivz * z) + sadjust;
-				if (snext > bbextents)
-					snext = bbextents;
-				else if (snext < 8)
-					snext = 8; // prevent round-off error on <0 steps from
-				// from causing overstepping & running off the
-				// edge of the texture
-				tnext = (s32)(tdivz * z) + tadjust;
-				if (tnext > bbextentt)
-					tnext = bbextentt;
-				else if (tnext < 8)
-					tnext = 8; // guard against round-off error on <0 steps
-				sstep = (snext - s) >> 3;
-				tstep = (tnext - t) >> 3;
-			} else {
-				// calculate s/z, t/z, zi->fixed s and t at last pixel in span (so
-				// can't step off polygon), clamp, calculate s and t steps across
-				// span by division, biasing steps low so we don't run off the
-				// texture
-				f32 spancountminus1 = (f32)(spancount - 1);
-				sdivz += d_sdivzstepu * spancountminus1;
-				tdivz += d_tdivzstepu * spancountminus1;
-				zi += d_zistepu * spancountminus1;
-				z = (f32)0x10000 / zi; // prescale to 16.16 fixed-point
-				snext = (s32)(sdivz * z) + sadjust;
-				if (snext > bbextents)
-					snext = bbextents;
-				else if (snext < 8)
-					snext = 8; // prevent round-off error on <0 steps from
-				// from causing overstepping & running off the
-				// edge of the texture
-				tnext = (s32)(tdivz * z) + tadjust;
-				if (tnext > bbextentt)
-					tnext = bbextentt;
-				else if (tnext < 8)
-					tnext = 8; // guard against round-off error on <0 steps
-				if (spancount > 1) {
-					sstep = (snext - s) / (spancount - 1);
-					tstep = (tnext - t) / (spancount - 1);
-				}
-			}
-
-			s32 foglut = r_skyfog.value*FOG_LUT_LEVELS;
-			do {
-				u8 pix = *(pbase + (s >> 16) +
-					(t >> 16) * cachewidth);
-				if (fog_density > 0)
-					pix = color_mix_lut[pix][fog_pal_index][foglut];
-				if (pix != 0xff || !((s32)r_twopass.value&1))
-					*pdest = pix;
-				pdest++;
-				s += sstep;
-				t += tstep;
-			} while (--spancount > 0);
-			s = snext;
-			t = tnext;
-		} while (count > 0);
-	} while ((pspan = pspan->pnext) != NULL);
-}
-
-void D_DrawSpans8(espan_t *pspan)
+void D_DrawSpans(espan_t *pspan, s32 type, f32 opacity)
 {
 	u8 *pbase = (u8 *)cacheblock;
 	f32 sdivz8stepu = d_sdivzstepu * 8;
@@ -397,6 +293,10 @@ void D_DrawSpans8(espan_t *pspan)
 		f32 tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
 		f32 zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
 		f32 z = (f32)0x10000 / zi; // prescale to 16.16 fixed-point
+		if (type == SPAN_TRANS) {
+			pz = d_pzbuffer + (d_zwidth * pspan->v) + pspan->u;
+			izi = (s32)(zi * 0x8000 * 0x10000);
+		}
 		s32 s = (s32)(sdivz * z) + sadjust;
 		if (s > bbextents)
 			s = bbextents;
@@ -464,144 +364,69 @@ void D_DrawSpans8(espan_t *pspan)
 					tstep = (tnext - t) / (spancount - 1);
 				}
 			}
-
-			do {
-				u8 pix = *(pbase + (s >> 16) +
-					(t >> 16) * cachewidth);
-				cutoutbuf[pdest-d_viewbuffer] = 0;
-				if (pix != 0xff || !((s32)r_twopass.value&1)) {
-					*pdest = pix;
-					cutoutbuf[pdest-d_viewbuffer] = 1;
-				}
-				pdest++;
-				s += sstep;
-				t += tstep;
-			} while (--spancount > 0);
-			s = snext;
-			t = tnext;
-		} while (count > 0);
-	} while ((pspan = pspan->pnext) != NULL);
-}
-
-void D_DrawTransSpans8(espan_t *pspan, f32 opacity)
-{ // CyanBun96: this is literally D_DrawSpans8 with a few extra lines. FIXME
-	u8 *pbase = (u8 *)cacheblock;
-	f32 sdivz8stepu = d_sdivzstepu * 8;
-	f32 tdivz8stepu = d_tdivzstepu * 8;
-	f32 zi8stepu = d_zistepu * 8;
-	izistep = (s32)(d_zistepu * 0x8000 * 0x10000);
-	do {
-		u8 *pdest = (u8 *)((u8 *) d_viewbuffer +
-				      (screenwidth * pspan->v) + pspan->u);
-		pz = d_pzbuffer + (d_zwidth * pspan->v) + pspan->u;
-		s32 count = pspan->count;
-		f32 du = (f32)pspan->u; // calculate the initial s/z, t/z,
-		f32 dv = (f32)pspan->v; // 1/z, s, and t and clamp
-		f32 sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
-		f32 tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
-		f32 zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
-		f32 z = (f32)0x10000 / zi; // prescale to 16.16 fixed-point
-		izi = (s32)(zi * 0x8000 * 0x10000);
-		s32 s = (s32)(sdivz * z) + sadjust;
-		if (s > bbextents)
-			s = bbextents;
-		else if (s < 0)
-			s = 0;
-		s32 t = (s32)(tdivz * z) + tadjust;
-		if (t > bbextentt)
-			t = bbextentt;
-		else if (t < 0)
-			t = 0;
-		do {
-			// calculate s and t at the far end of the span
-			s32 snext, tnext;
-			s32 sstep = 0; // keep compiler happy
-			s32 tstep = 0; // ditto
-			s32 spancount = count;
-			if (count >= 8)
-				spancount = 8;
-			count -= spancount;
-			if (count) {
-				// calculate s/z, t/z, zi->fixed s and t at far end of span,
-				// calculate s and t steps across span by shifting
-				sdivz += sdivz8stepu;
-				tdivz += tdivz8stepu;
-				zi += zi8stepu;
-				z = (f32)0x10000 / zi; // prescale to 16.16 fixed-point
-				snext = (s32)(sdivz * z) + sadjust;
-				if (snext > bbextents)
-					snext = bbextents;
-				else if (snext < 8)
-					snext = 8; // prevent round-off error on <0 steps from
-				// from causing overstepping & running off the
-				// edge of the texture
-				tnext = (s32)(tdivz * z) + tadjust;
-				if (tnext > bbextentt)
-					tnext = bbextentt;
-				else if (tnext < 8)
-					tnext = 8; // guard against round-off error on <0 steps
-				sstep = (snext - s) >> 3;
-				tstep = (tnext - t) >> 3;
-			} else {
-				// calculate s/z, t/z, zi->fixed s and t at last pixel in span (so
-				// can't step off polygon), clamp, calculate s and t steps across
-				// span by division, biasing steps low so we don't run off the
-				// texture
-				f32 spancountminus1 = (f32)(spancount - 1);
-				sdivz += d_sdivzstepu * spancountminus1;
-				tdivz += d_tdivzstepu * spancountminus1;
-				zi += d_zistepu * spancountminus1;
-				z = (f32)0x10000 / zi; // prescale to 16.16 fixed-point
-				snext = (s32)(sdivz * z) + sadjust;
-				if (snext > bbextents)
-					snext = bbextents;
-				else if (snext < 8)
-					snext = 8; // prevent round-off error on <0 steps from
-				// from causing overstepping & running off the
-				// edge of the texture
-				tnext = (s32)(tdivz * z) + tadjust;
-				if (tnext > bbextentt)
-					tnext = bbextentt;
-				else if (tnext < 8)
-					tnext = 8; // guard against round-off error on <0 steps
-				if (spancount > 1) {
-					sstep = (snext - s) / (spancount - 1);
-					tstep = (tnext - t) / (spancount - 1);
-				}
-			}
-			s32 foglut = opacity*FOG_LUT_LEVELS;
-			if (r_alphastyle.value == 0) {
-				if (!fog_lut_built)
-					build_color_mix_lut(0);
+			if (type == SPAN_NORMAL) {
 				do {
-					if (*pz <= (izi >> 16)) {
-						u8 pix = *(pbase + (s >> 16) +
-							(t >> 16) * cachewidth);
-						if (pix != 0xff) {
-							pix = color_mix_lut[pix][*pdest][foglut];
+					u8 pix = *(pbase + (s >> 16) +
+						(t >> 16) * cachewidth);
+					cutoutbuf[pdest-d_viewbuffer] = 0;
+					if (pix != 0xff || !((s32)r_twopass.value&1)) {
+						*pdest = pix;
+						cutoutbuf[pdest-d_viewbuffer] = 1;
+					}
+					pdest++;
+					s += sstep;
+					t += tstep;
+				} while (--spancount > 0);
+			}
+			else if (type == SPAN_SKYBOX) {
+				s32 foglut = r_skyfog.value*FOG_LUT_LEVELS;
+				do {
+					u8 pix = *(pbase + (s >> 16) +
+						(t >> 16) * cachewidth);
+					if (fog_density > 0)
+						pix = color_mix_lut[pix][fog_pal_index][foglut];
+					if (pix != 0xff || !((s32)r_twopass.value&1))
+						*pdest = pix;
+					pdest++;
+					s += sstep;
+					t += tstep;
+				} while (--spancount > 0);
+			}
+			else if (type == SPAN_TRANS) {
+				s32 foglut = opacity*FOG_LUT_LEVELS;
+				if (r_alphastyle.value == 0) {
+					if (!fog_lut_built)
+						build_color_mix_lut(0);
+					do {
+						if (*pz <= (izi >> 16)) {
+							u8 pix = *(pbase + (s >> 16) +
+								(t >> 16) * cachewidth);
+							if (pix != 0xff) {
+								pix = color_mix_lut[pix][*pdest][foglut];
+								*pdest = pix;
+							}
+						}
+						pdest++;
+						izi += izistep;
+						pz++;
+						s += sstep;
+						t += tstep;
+					} while (--spancount > 0);
+				}
+				else {
+					do {
+						if (*pz <= (izi >> 16) && D_Dither(pdest, 1-opacity)) {
+							u8 pix = *(pbase + (s >> 16) +
+								(t >> 16) * cachewidth);
 							*pdest = pix;
 						}
-					}
-					pdest++;
-					izi += izistep;
-					pz++;
-					s += sstep;
-					t += tstep;
-				} while (--spancount > 0);
-			}
-			else {
-				do {
-					if (*pz <= (izi >> 16) && D_Dither(pdest, 1-opacity)) {
-						u8 pix = *(pbase + (s >> 16) +
-							(t >> 16) * cachewidth);
-						*pdest = pix;
-					}
-					pdest++;
-					izi += izistep;
-					pz++;
-					s += sstep;
-					t += tstep;
-				} while (--spancount > 0);
+						pdest++;
+						izi += izistep;
+						pz++;
+						s += sstep;
+						t += tstep;
+					} while (--spancount > 0);
+				}
 			}
 			s = snext;
 			t = tnext;
