@@ -143,35 +143,39 @@ void R_DrawFog(){
 	if(old_r_fogscale!=r_fogscale.value||old_fog_density!=fog_density)
 		R_InitFogLUT();
 	sb_updates = 0; // draw sbar over fog
-	s32 style = r_fogstyle.value;
 	s32 j = 0;
 	u8 *pdest = screen->pixels;
-	u64 area = scr_vrect.width*scr_vrect.height;
-	s32 width = scr_vrect.x + scr_vrect.width;
-	s32 height = scr_vrect.y + scr_vrect.height;
-	for(s32 y = scr_vrect.y; y < height; ++y){
-	for(s32 x = scr_vrect.x; x < width; ++x){
-		s32 i = x + y * vid.width;
-		s32 bias = randarr[(area-j)%RANDARR_SIZE]*10*r_fognoise.value;
-		++j;
-		f32 ffactor = compute_fog_lut(d_pzbuffer[i] + bias) * r_fogfactor.value;
-		if(ffactor >= 1) continue; 
-		switch(style){
-		case 0: // noisy
+	s32 area = scr_vrect.width * scr_vrect.height;
+	f32 noisebias = 10 * r_fognoise.value;
+	switch((s32)r_fogstyle.value){
+	case 0: // noisy
+		for(s32 i = 0; i < area; ++i){
+			s32 bias = randarr[(area-j++)%RANDARR_SIZE]*noisebias;
+			f32 ffactor = compute_fog_lut(d_pzbuffer[i]+bias)*r_fogfactor.value;
 			if((lfsr_random() & 0xFFFF) / 65535.0f < ffactor)
 				pdest[i] = fog_pal_index;
-			break;
-		case 2: // dither + noise
+		} break;
+	case 2: // dither + noise
+		for(s32 i = 0; i < area; ++i){
+			s32 bias = randarr[(area-j++)%RANDARR_SIZE]*noisebias;
+			f32 ffactor = compute_fog_lut(d_pzbuffer[i]+bias)*r_fogfactor.value;
 			ffactor -= bias*0.05;
-			// fallthrough
-		case 1: // dither
+			if((lfsr_random() & 0xFFFF) / 65535.0f < ffactor)
+				pdest[i] = fog_pal_index;
+		} break;
+	case 1: // dither
+		for(s32 i = 0; i < area; ++i){
+			s32 bias = randarr[(area-j++)%RANDARR_SIZE]*noisebias;
+			f32 ffactor = compute_fog_lut(d_pzbuffer[i]+bias)*r_fogfactor.value;
 			if(D_Dither(&pdest[i], ffactor)) pdest[i]=fog_pal_index;
-			break;
-		default:
-		case 3: // mix
+		} break;
+	default: case 3: // mix
+		for(s32 i = 0; i < area; ++i){
+			s32 bias = randarr[(area-j++)%RANDARR_SIZE]*noisebias;
+			f32 ffactor = compute_fog_lut(d_pzbuffer[i]+bias)*r_fogfactor.value;
 			u8 pix = pdest[i];
 			s32 lut_idx = (s32)(ffactor * FOG_LUT_LEVELS);
 			pdest[i] = color_mix_lut[pix][fog_pal_index][lut_idx];
-			break;
-	}}}
+		} break;
+	}
 }
