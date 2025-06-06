@@ -153,7 +153,7 @@ static void D_DrawLitWater(surf_t *s, msurface_t *pface)
 	D_CalcGradients(pface);
 	D_DrawSpans8(s->spans); // draw the lightmap to a separate buffer
 	miplevel = 0;
-	cacheblock = (u8 *) ((u8 *) pface->texinfo->texture + pface->texinfo->texture->offsets[0]);
+	cacheblock = (u8 *) pface->texinfo->texture + pface->texinfo->texture->offsets[0];
 	cachewidth = 64;
 	D_CalcGradients(pface);
 	f32 opacity = 1 - (f32)s->entity->alpha / 255;
@@ -183,24 +183,24 @@ void D_DrawSurfaces()
 	TransformVector(modelorg, transformed_modelorg);
 	vec3_t world_transformed_modelorg;
 	VectorCopy(transformed_modelorg, world_transformed_modelorg);
+	//debug stuf pls ignore s32 drawnsurfs = 0;
 	// TODO: could preset a lot of this at mode set time
 	for (surf_t *s = &surfaces[1]; s < surface_p; s++) {
 		if (!s->spans) continue;
 		msurface_t *pface = s->data;
-		if (s->flags == SURF_DRAWBACKGROUND) goto drawbg; // skip checks
-		if (pface == 0) continue;
 		// CyanBun96: some entities are assigned an invalid address like
 		// 35, which leads to segfaults on any further checks while
 		// still passing s->entity != NULL check. Must be a symptom of
 		// some bigger issue that I can't be bothered to diagnose ATM.
 		u64 is_ent = (u64)(unsigned long long)s->entity & 0xffff000;
+		if (s->flags == SURF_DRAWBACKGROUND) goto skipchecks;
+		if (r_pass == 1 && r_wateralphapass == 0 && !(s->flags&SURF_DRAWCUTOUT)) continue;
+		if (pface == 0) continue;
 		// CyanBun96: a 0 in either of those causes an error. FIXME
 		if ((!pface || !pface->extents[0] || !pface->extents[1])) {
-			if (pface)
-				Con_DPrintf("Broken surface extents %hd %hd\n",
+			if(pface)Con_DPrintf("Broken surface extents %hd %hd\n",
 					pface->extents[0], pface->extents[1]);
-			else
-				Con_DPrintf("Broken surface\n");
+			else Con_DPrintf("Broken surface\n");
 			continue;
 		}
 		// CyanBun96: reject broken surfaces earlier to avoid crashes
@@ -222,6 +222,7 @@ void D_DrawSurfaces()
 		else winquake_surface_liquid_alpha = 1;
 		if (r_wateralphapass && winquake_surface_liquid_alpha == 1 && r_entalpha.value == 1)
 			continue; // Manoel Kasimier - translucent water
+skipchecks:
 		d_zistepu = s->d_zistepu;
 		d_zistepv = s->d_zistepv;
 		d_ziorigin = s->d_ziorigin;
@@ -237,12 +238,12 @@ void D_DrawSurfaces()
 			TransformVector(local_modelorg, transformed_modelorg);
 			R_RotateBmodel();
 		}
+		//debug stuf pls ignore drawnsurfs++;
 		if (s->flags & SURF_DRAWSKY) {
 			D_DrawSky(s);
 		} else if (s->flags & SURF_DRAWSKYBOX) {
 			D_DrawSkybox(s, pface);
 		} else if (s->flags & SURF_DRAWBACKGROUND) {
-drawbg:
 			if (skybox_name[0] || r_wateralphapass) continue;
 			D_DrawBackground(s);
 		} else if (s->flags & SURF_DRAWTURB && (!s->entity->model->haslitwater || !r_litwater.value)) {
@@ -264,4 +265,5 @@ drawbg:
 			R_TransformFrustum();
 		}
 	}
+	//debug stuf pls ignore Con_DPrintf("Pass %d drawn %d\n", r_pass+r_wateralphapass, drawnsurfs);
 }
