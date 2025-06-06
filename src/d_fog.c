@@ -145,9 +145,9 @@ void R_DrawFog(){
 	sb_updates = 0; // draw sbar over fog
 	s32 style = r_fogstyle.value;
 	s32 j = 0;
+	u8 *pdest = screen->pixels;	
 	for(s32 y = scr_vrect.y; y < scr_vrect.y + scr_vrect.height; ++y){
 	for(s32 x = scr_vrect.x; x < scr_vrect.x + scr_vrect.width; ++x){
-		u8 *pdest = screen->pixels;	
 		s32 i = x + y * vid.width;
 		s32 bias = randarr[(scr_vrect.width*scr_vrect.height - j)
 			% RANDARR_SIZE] * 10 * r_fognoise.value;
@@ -167,8 +167,9 @@ void R_DrawFog(){
 			break;
 		default:
 		case 3: // mix
-			((u8*)(pdest))[i] = color_mix_lut[((u8 *)(pdest))[i]]
-				[fog_pal_index][(s32)(ffactor*FOG_LUT_LEVELS)];
+			u8 pix = pdest[i];
+			s32 lut_idx = (s32)(ffactor * FOG_LUT_LEVELS);
+			pdest[i] = color_mix_lut[pix][fog_pal_index][lut_idx];
 			break;
 	}}}
 }
