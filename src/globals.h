@@ -262,7 +262,6 @@ EX s32 d_lightstylevalue[256];
 EX s32 r_skymade;
 EX s8 skybox_name[1024];
 EX surf_t *surfaces, *surface_p, *surf_max;
-void TransformVector(vec3_t in, vec3_t out);
 void R_MakeSky();
 void Sky_LoadSkyBox(const s8 *name);
 void R_EmitSkyBox();

@@ -23,6 +23,14 @@ SIL vec_t VectorLength(const vec3_t v)
 SIL s32 GreatestCommonDivisor(s32 a, s32 b)
 	{while (b != 0) { s32 t = b; b = a % b; a = t; } return a;}
 
+SIL void TransformVector(vec3_t in, vec3_t out)
+{
+	out[0] = DotProduct(in, vright);
+	out[1] = DotProduct(in, vup);
+	out[2] = DotProduct(in, vpn);
+}
+
+
 SIL f32 VectorNormalize(vec3_t v)
 {
 	f32 length = VectorLength(v);
