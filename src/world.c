@@ -262,7 +262,7 @@ s32 SV_HullPointContents(hull_t *hull, s32 num, vec3_t p)
 		mclipnode_t *node = hull->clipnodes + num;
 		mplane_t *plane = hull->planes + node->planenum;
 		if(plane->type < 3) d = p[plane->type] - plane->dist;
-		else d=DoublePrecisionDotProduct(plane->normal, p)-plane->dist;
+		else d=DotProductF64(plane->normal, p)-plane->dist;
 		if(d < 0) num = node->children[1];
 		else num = node->children[0];
 	}
@@ -300,9 +300,9 @@ bool SV_RecursiveHullCheck(hull_t *hull, s32 num, f32 p1f, f32 p2f,
 	mclipnode_t *node = hull->clipnodes + num; // find the point distances
 	mplane_t *plane = hull->planes + node->planenum;
 	f32 t1 = plane->type < 3 ? p1[plane->type] - plane->dist :
-		DoublePrecisionDotProduct(plane->normal, p1)-plane->dist;
+		DotProductF64(plane->normal, p1)-plane->dist;
 	f32 t2 = plane->type < 3 ? p2[plane->type] - plane->dist :
-		DoublePrecisionDotProduct(plane->normal, p2)-plane->dist;
+		DotProductF64(plane->normal, p2)-plane->dist;
 	if(t1 >= 0 && t2 >= 0) return SV_RecursiveHullCheck(
 			hull, node->children[0], p1f, p2f, p1, p2, trace);
 	if(t1 < 0 && t2 < 0) return SV_RecursiveHullCheck(

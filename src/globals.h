@@ -761,6 +761,8 @@ void PF_changeyaw();                                                // pr_cmds.c
 // CyanBun96: compile with -flto to force the compiler to optimize this
 static inline f32 DotProduct(const f32 *restrict a, const f32 *restrict b)
 {f32 sum = 0.0f; for (s32 i = 0; i < 3; ++i) sum += a[i] * b[i]; return sum;}
+static inline f64 DotProductF64(const f32 *restrict a, const f32 *restrict b)
+{f64 sum = 0.0f; for (s32 i = 0; i < 3; ++i) sum += a[i] * b[i]; return sum;}
 static inline f32 DotProductU8(const u8 *restrict a, const f32 *restrict b)
 {f32 sum = 0.0f; for (s32 i = 0; i < 3; ++i) sum += a[i] * b[i]; return sum;}
 #undef EX
