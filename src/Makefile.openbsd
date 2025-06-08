@@ -23,7 +23,7 @@ OBJS = $(SRCS:.c=.o)
 BUILD_TYPE ?= release
 
 DEBUG_FLAGS = -g -O0
-RELEASE_FLAGS = -O3
+RELEASE_FLAGS = -O3 -flto
 
 CFLAGS += $(RELEASE_FLAGS)
 

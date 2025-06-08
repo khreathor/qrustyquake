@@ -18,7 +18,6 @@
 
 #define M_PI_DIV_180 (M_PI / 180.0) //johnfitz                      // mathlib.h
 #define Q_rint(x) ((x) > 0 ? (s32)((x) + 0.5) : (s32)((x) - 0.5)) // johnfitz -- from joequake
-#define DotProduct(x,y) (x[0]*y[0]+x[1]*y[1]+x[2]*y[2])
 #define DoublePrecisionDotProduct(x,y) ((f64)(x)[0]*(y)[0]+(f64)(x)[1]*(y)[1]+(f64)(x)[2]*(y)[2])
 #define LERP(a, b, t) ((a) + ((b)-(a))*(t))
 #define IS_NAN(x) isnan(x)

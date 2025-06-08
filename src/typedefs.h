@@ -337,8 +337,8 @@ typedef struct dtriangle_s {
 	s32 facesfront;
 	s32 vertindex[3];
 } dtriangle_t;
-typedef struct { // This mirrors trivert_t in trilib.h, is present so Quake
-	u8 v[3]; // knows how to load this data
+typedef struct {
+	u8 v[3];
 	u8 lightnormalindex;
 } trivertx_t;
 typedef struct {

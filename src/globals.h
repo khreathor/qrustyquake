@@ -757,5 +757,11 @@ EX u32 sb_updates; // if >= vid.numpages, no update needed             // sbar.c
 u8 *Image_LoadImage(const s8 *name, s32 *width, s32 *height);         // image.c
 bool nameInList(const s8 *list, const s8 *name);                      // model.c
 void PF_changeyaw();                                                // pr_cmds.c
+
+// CyanBun96: compile with -flto to force the compiler to optimize this
+static inline f32 DotProduct(const f32 *restrict a, const f32 *restrict b)
+{f32 sum = 0.0f; for (s32 i = 0; i < 3; ++i) sum += a[i] * b[i]; return sum;}
+static inline f32 DotProductU8(const u8 *restrict a, const f32 *restrict b)
+{f32 sum = 0.0f; for (s32 i = 0; i < 3; ++i) sum += a[i] * b[i]; return sum;}
 #undef EX
 #endif

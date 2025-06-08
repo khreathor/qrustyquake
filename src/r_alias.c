@@ -232,9 +232,9 @@ void R_AliasSetUpTransform(s32 trivial_accept)
 void R_AliasTransformFinalVert(finalvert_t *fv, auxvert_t *av,
 		trivertx_t *pverts, stvert_t *pstverts)
 {
-	av->fv[0]=DotProduct(pverts->v,aliastransform[0])+aliastransform[0][3];
-	av->fv[1]=DotProduct(pverts->v,aliastransform[1])+aliastransform[1][3];
-	av->fv[2]=DotProduct(pverts->v,aliastransform[2])+aliastransform[2][3];
+	av->fv[0]=DotProductU8(pverts->v,aliastransform[0])+aliastransform[0][3];
+	av->fv[1]=DotProductU8(pverts->v,aliastransform[1])+aliastransform[1][3];
+	av->fv[2]=DotProductU8(pverts->v,aliastransform[2])+aliastransform[2][3];
 	fv->v[2] = pstverts->s;
 	fv->v[3] = pstverts->t;
 	fv->flags = pstverts->onseam;
@@ -257,15 +257,15 @@ void R_AliasTransformAndProjectFinalVerts(finalvert_t *fv, stvert_t *pstverts)
 	trivertx_t *pverts = r_apverts;
 	for (s32 i = 0; i < r_anumverts; i++, fv++, pverts++, pstverts++) {
 		// transform and project
-		f32 zi = 1.0 / (DotProduct(pverts->v, aliastransform[2]) + 
+		f32 zi = 1.0 / (DotProductU8(pverts->v, aliastransform[2]) + 
 				aliastransform[2][3]);
 		// x, y, and z are scaled down by 1/2**31 in the transform, so
 		// 1/z is scaled up by 1/2**31, and the scaling cancels out for
 		// x and y in the projection
 		fv->v[5] = zi;
-		fv->v[0] = ((DotProduct(pverts->v, aliastransform[0])
+		fv->v[0] = ((DotProductU8(pverts->v, aliastransform[0])
 				+ aliastransform[0][3]) * zi) + aliasxcenter;
-		fv->v[1] = ((DotProduct(pverts->v, aliastransform[1])
+		fv->v[1] = ((DotProductU8(pverts->v, aliastransform[1])
 				+ aliastransform[1][3]) * zi) + aliasycenter;
 		fv->v[2] = pstverts->s;
 		fv->v[3] = pstverts->t;
