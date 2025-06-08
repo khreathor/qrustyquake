@@ -243,24 +243,6 @@ void D_SetupFrame();
 void D_WarpScreen();
 void R_DrawSurface();
 void D_PolysetUpdateTables();
-EX vec3_t vec3_origin;                                              // mathlib.h
-void VectorMA(vec3_t veca, f32 scale, vec3_t vecb, vec3_t vecc);
-vec_t Length(vec3_t v);
-void CrossProduct(vec3_t v1, vec3_t v2, vec3_t cross);
-f32 VectorNormalize(vec3_t v);
-void VectorInverse(vec3_t v);
-void VectorScale(vec3_t in, vec_t scale, vec3_t out);
-void R_ConcatRotations(f32 in1[3][3], f32 in2[3][3], f32 out[3][3]);
-void R_ConcatTransforms(f32 in1[3][4], f32 in2[3][4], f32 out[3][4]);
-void FloorDivMod(f64 numer, f64 denom, s32 *quotient, s32 *rem);
-s32 GreatestCommonDivisor(s32 i1, s32 i2);
-void AngleVectors(vec3_t angles, vec3_t forward, vec3_t right, vec3_t up);
-f32 anglemod(f32 a);
-vec_t VectorLength(vec3_t v);
-void VectorSubtract(const vec3_t a, const vec3_t b, vec3_t c);
-void VectorAdd(const vec3_t a, const vec3_t b, vec3_t c);
-void VectorCopy(const vec3_t a, vec3_t b);
-s32 BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, mplane_t *p);
 EX s32 cachewidth;                                                 // r_shared.h
 EX u8 *cacheblock;
 EX f32 pixelAspect;
@@ -747,6 +729,7 @@ void R_ParseWorldspawn();
 void R_InitSkyBox();                                                  // r_sky.c
 void Sky_NewMap();
 void Sky_Init();
+EX vec3_t vec3_origin;                                              // mathlib.c
 EX f32 cur_ent_alpha;                                              // d_polyse.c
 EX sspan_t spans[MAXHEIGHT + 1];                                   // d_sprite.c
 EX vec3_t lightcolor;                                               // r_light.c
@@ -757,13 +740,5 @@ EX u32 sb_updates; // if >= vid.numpages, no update needed             // sbar.c
 u8 *Image_LoadImage(const s8 *name, s32 *width, s32 *height);         // image.c
 bool nameInList(const s8 *list, const s8 *name);                      // model.c
 void PF_changeyaw();                                                // pr_cmds.c
-
-// CyanBun96: compile with -flto to force the compiler to optimize this
-static inline f32 DotProduct(const f32 *restrict a, const f32 *restrict b)
-{f32 sum = 0.0f; for (s32 i = 0; i < 3; ++i) sum += a[i] * b[i]; return sum;}
-static inline f64 DotProductF64(const f32 *restrict a, const f32 *restrict b)
-{f64 sum = 0.0f; for (s32 i = 0; i < 3; ++i) sum += a[i] * b[i]; return sum;}
-static inline f32 DotProductU8(const u8 *restrict a, const f32 *restrict b)
-{f32 sum = 0.0f; for (s32 i = 0; i < 3; ++i) sum += a[i] * b[i]; return sum;}
 #undef EX
 #endif

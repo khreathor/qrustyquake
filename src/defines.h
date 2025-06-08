@@ -20,23 +20,6 @@
 #define Q_rint(x) ((x) > 0 ? (s32)((x) + 0.5) : (s32)((x) - 0.5)) // johnfitz -- from joequake
 #define LERP(a, b, t) ((a) + ((b)-(a))*(t))
 #define IS_NAN(x) isnan(x)
-// johnfitz -- courtesy of lordhavoc
-#define VectorNormalizeFast(_v)                                           \
-{                                                                         \
-        f32 _y, _number;                                                \
-        _number = DotProduct(_v, _v);                                     \
-        if (_number != 0.0)                                               \
-        {                                                                 \
-                *((s32 *)&_y) = 0x5f3759df - ((* (s32 *) &_number) >> 1); \
-                _y = _y * (1.5f - (_number * 0.5f * _y * _y));            \
-                VectorScale(_v, _y, _v);                                  \
-        }                                                                 \
-}
-#define BOX_ON_PLANE_SIDE(emins, emaxs, p)                          \
-        (((p)->type < 3) ? (                                        \
-                ((p)->dist <= (emins)[(p)->type]) ? 1               \
-                      : (((p)->dist >= (emaxs)[(p)->type]) ? 2 : 3) \
-        ) : BoxOnPlaneSide((emins), (emaxs), (p)))
 
 #define NUM_TYPE_SIZES 8                                              // progs.h
 #define	MAX_ENT_LEAFS	32

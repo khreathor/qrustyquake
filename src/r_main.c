@@ -281,7 +281,7 @@ void R_DrawEntitiesOnList()
 							       origin, dist);
 						f32 add =
 							cl_dlights[lnum].radius
-							- Length(dist);
+							- VectorLength(dist);
 						if (add > 0)
 							lighting.ambientlight +=
 								add;
@@ -331,8 +331,8 @@ void R_DrawViewModel()
 			continue;
 		vec3_t dist;
 		VectorSubtract(currententity->origin, dl->origin, dist);
-		f32 add = dl->radius - Length(dist);
-		if(add > 150 && Length(dist) < 50) // hack in the muzzleflash
+		f32 add = dl->radius - VectorLength(dist);
+		if(add > 150 && VectorLength(dist) < 50) // hack in the muzzleflash
 			colored_aliaslight = 0; // FIXME and do it properly
 		if(add > 0)
 			r_viewlighting.ambientlight += add;

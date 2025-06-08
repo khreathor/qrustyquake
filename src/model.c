@@ -466,8 +466,8 @@ static void Mod_LoadTexinfo(lump_t *l)
 		for(s32 k = 0; k < 2; k++)
 			for(s32 j = 0; j < 4; j++)
 				out->vecs[k][j] = LittleFloat(in->vecs[k][j]);
-		f32 len1 = Length(out->vecs[0]);
-		f32 len2 = Length(out->vecs[1]);
+		f32 len1 = VectorLength(out->vecs[0]);
+		f32 len2 = VectorLength(out->vecs[1]);
 		len1 = (len1 + len2) / 2;
 		if(len1 < 0.32)      out->mipadjust = 4;
 		else if(len1 < 0.49) out->mipadjust = 3;

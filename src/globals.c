@@ -193,6 +193,7 @@ f32 skytime;
 u8 *r_skysource;
 s32 r_skymade;
 s8 skybox_name[1024]; // name of current skybox, or "" if no skybox
+vec3_t vec3_origin = {0,0,0};                                       // mathlib.h
 sspan_t spans[MAXHEIGHT + 1];                                      // d_sprite.c
 s32 r_dlightframecount;                                             // r_light.c
 vec3_t r_pright, r_pup, r_ppn;                                       // r_part.c

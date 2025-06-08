@@ -65,7 +65,7 @@ void R_SplitEntityOnNode(mnode_t *node)
 		return;
 	}
 	mplane_t *splitplane = node->plane; // NODE_MIXED
-	s32 sides = BOX_ON_PLANE_SIDE(r_emins, r_emaxs, splitplane);
+	s32 sides = BoxOnPlaneSide(r_emins, r_emaxs, splitplane);
 	if (sides == 3) {
 		// split on this plane
 		// if this is the first splitter of this bmodel, remember it
@@ -88,7 +88,7 @@ void R_SplitEntityOnNode2(mnode_t *node)
 		return; // leaf, so it's  visible and not BSP clipped
 	}
 	mplane_t *splitplane = node->plane;
-	s32 sides = BOX_ON_PLANE_SIDE(r_emins, r_emaxs, splitplane);
+	s32 sides = BoxOnPlaneSide(r_emins, r_emaxs, splitplane);
 	if (sides == 3) {
 		r_pefragtopnode = node; // remember first splitter
 		return;
