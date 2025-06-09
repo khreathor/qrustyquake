@@ -691,6 +691,7 @@ EX bool r_cache_thrash;                                              // d_surf.c
 EX surfcache_t *sc_rover;
 EX s32 lmonly;
 EX s32 drawlayer;                                                      // draw.c
+EX edge_t *last_pcheck[MAXHEIGHT];
 EX quakeparms_t host_parms;                                            // host.c
 EX bool host_initialized;
 EX bool isDedicated;

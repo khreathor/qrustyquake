@@ -156,6 +156,7 @@ clipplane_t view_clipplanes[4];
 s32 sintable[SIN_BUFFER_SIZE];
 s32 intsintable[SIN_BUFFER_SIZE];
 f32 winquake_surface_liquid_alpha;
+edge_t *last_pcheck[MAXHEIGHT]; // indexed by scanline v
 edge_t *r_edges, *edge_p, *edge_max;                                 // r_edge.c
 surf_t *surfaces, *surface_p, *surf_max;
 edge_t *newedges[MAXHEIGHT];

@@ -53,6 +53,7 @@ void R_BeginEdgeFrame()
 				r_refdef.vrect.y) * sizeof(*newedges));
 	memset(removeedges + r_refdef.vrect.y, 0, (r_refdef.vrectbottom - 
 				r_refdef.vrect.y) * sizeof(*removeedges));
+	memset(last_pcheck, 0, sizeof(edge_t*)*scr_vrect.height);
 }
 
 // Adds the edges in the linked list edgestoadd, adding them to the edges in the
