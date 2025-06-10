@@ -408,7 +408,7 @@ void R_ScanEdges()
 				else if (r_pass + r_wateralphapass == 1) D_DrawSurfacesPass2();
 				else if (r_pass + r_wateralphapass == 2) D_DrawSurfacesPass3();
 			}
-			else D_DrawSurfaces();
+			else D_DrawSurfacesPass1();
 			// clear the surface span pointers
 			for (surf_t *s = &surfaces[1]; s < surface_p; s++)
 				s->spans = NULL;
@@ -433,5 +433,5 @@ void R_ScanEdges()
 		else if (r_pass + r_wateralphapass == 1) D_DrawSurfacesPass2();
 		else if (r_pass + r_wateralphapass == 2) D_DrawSurfacesPass3();
 	}
-	else D_DrawSurfaces();
+	else D_DrawSurfacesPass1();
 }

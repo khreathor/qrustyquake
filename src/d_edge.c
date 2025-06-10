@@ -160,6 +160,7 @@ static void D_DrawLitWater(surf_t *s, msurface_t *pface)
 	else if (s->flags & SURF_DRAWTELE) opacity = 1 - r_telealpha.value;
 	Turbulent8(s->spans, opacity);
 	if (!r_wateralphapass) D_DrawZSpans(s->spans);
+	lmonly = 0;
 }
 
 static void D_DrawCutoutSurf(surf_t *s, msurface_t *pface)
@@ -202,79 +203,6 @@ static void D_SwitchSubModelOff()
 	R_TransformFrustum();
 }
 
-void D_DrawSurfaces()
-{
-	currententity = &cl_entities[0];
-	TransformVector(modelorg, transformed_modelorg);
-	VectorCopy(transformed_modelorg, world_transformed_modelorg);
-	// TODO: could preset a lot of this at mode set time
-	for (surf_t *s = &surfaces[1]; s < surface_p; s++) {
-		if (!s->spans) continue;
-		msurface_t *pface = s->data;
-		// CyanBun96: some entities are assigned an invalid address like
-		// 35, which leads to segfaults on any further checks while
-		// still passing s->entity != NULL check. Must be a symptom of
-		// some bigger issue that I can't be bothered to diagnose ATM.
-		u64 is_ent = (u64)(unsigned long long)s->entity & 0xffff000;
-		if (s->flags != SURF_DRAWBACKGROUND) {
-			if (r_pass == 1 && r_wateralphapass == 0 && !(s->flags&SURF_DRAWCUTOUT)) continue;
-			if (pface == 0) continue;
-			// CyanBun96: a 0 in either of those causes an error. FIXME
-			if ((!pface || !pface->extents[0] || !pface->extents[1])) {
-				if(pface)Con_DPrintf("Broken surface extents %hd %hd\n",
-						pface->extents[0], pface->extents[1]);
-				else Con_DPrintf("Broken surface\n");
-				continue;
-			}
-			// CyanBun96: reject broken surfaces earlier to avoid crashes
-			s32 wd = pface->extents[0] >> (MIPLEVELS-1);
-			s32 sz = wd * pface->extents[1] >> (MIPLEVELS-1);
-			if (((wd < 0 || wd > 256) || (sz <= 0 || sz > 0x10000)) &&
-					!(pface->flags&SURF_DRAWTURB)) {
-				Con_DPrintf("Invalid surface width/size %d %d\n",wd,sz);
-				continue;
-			}
-			if (!(pface->flags&SURF_DRAWCUTOUT) && r_pass == 1 && 
-				s->entity->model == cl.worldmodel && s->entity->alpha != 0) continue;
-			r_drawnpolycount++;
-			if (is_ent && s->entity->alpha && r_entalpha.value == 1)
-				winquake_surface_liquid_alpha = (f32)s->entity->alpha / 255;
-			// Baker: Need to determine what kind of liquid we are
-			else if (s->flags & SURF_WINQUAKE_DRAWTRANSLUCENT)
-				winquake_surface_liquid_alpha = R_LiquidAlphaForFlags(s->flags);
-			else winquake_surface_liquid_alpha = 1;
-			if (r_wateralphapass && winquake_surface_liquid_alpha == 1 && r_entalpha.value == 1)
-				continue; // Manoel Kasimier - translucent water
-		}
-		d_zistepu = s->d_zistepu;
-		d_zistepv = s->d_zistepv;
-		d_ziorigin = s->d_ziorigin;
-		lmonly = 0;
-		if(s->flags&(SURF_DRAWTURB|SURF_DRAWCUTOUT|SURF_DRAWBACKGROUND|SURF_DRAWSKYBOX))
-			miplevel = 0;
-		else miplevel = D_MipLevelForScale(s->nearzi * scale_for_mip
-				* pface->texinfo->mipadjust);
-		if (s->insubmodel) D_SwitchSubModelOn(s);
-		if (s->flags & SURF_DRAWSKY) {
-			D_DrawSky(s);
-		} else if (s->flags & SURF_DRAWSKYBOX) {
-			D_DrawSkybox(s, pface);
-		} else if (s->flags & SURF_DRAWBACKGROUND) {
-			if (skybox_name[0] || r_wateralphapass) continue;
-			D_DrawBackground(s);
-		} else if (s->flags & SURF_DRAWTURB && (!s->entity->model->haslitwater || !r_litwater.value)) {
-			D_DrawUnlitWater(s, pface);
-		} else if (is_ent && s->entity->alpha && r_entalpha.value == 1) {
-			D_DrawTransSurf(s, pface);
-		} else if (s->flags & SURF_DRAWTURB && s->entity->model->haslitwater && r_litwater.value) {
-			D_DrawLitWater(s, pface);
-		} else if ((pface->flags&SURF_DRAWCUTOUT) && r_pass == 1) {
-			D_DrawCutoutSurf(s, pface);
-		} else D_DrawNormalSurf(s, pface);
-		if (s->insubmodel) D_SwitchSubModelOff();
-	}
-}
-
 void D_DrawSurfacesPass1()
 {
 	currententity = &cl_entities[0];
@@ -286,7 +214,6 @@ void D_DrawSurfacesPass1()
 		d_zistepu = s->d_zistepu;
 		d_zistepv = s->d_zistepv;
 		d_ziorigin = s->d_ziorigin;
-		lmonly = 0;
 		if(s->flags&(SURF_DRAWTURB|SURF_DRAWBACKGROUND|SURF_DRAWSKYBOX))
 			miplevel = 0;
 		else miplevel = D_MipLevelForScale(s->nearzi * scale_for_mip
@@ -319,7 +246,6 @@ void D_DrawSurfacesPass2()
 		d_zistepv = s->d_zistepv;
 		d_ziorigin = s->d_ziorigin;
 		if(!(s->flags&SURF_DRAWCUTOUT)) continue;
-		lmonly = 0;
 		miplevel = 0;
 		if (s->insubmodel) D_SwitchSubModelOn(s);
 		D_DrawCutoutSurf(s, pface);
@@ -353,7 +279,6 @@ void D_DrawSurfacesPass3()
 		d_zistepu = s->d_zistepu;
 		d_zistepv = s->d_zistepv;
 		d_ziorigin = s->d_ziorigin;
-		lmonly = 0;
 		miplevel = 0;
 		if (s->insubmodel) D_SwitchSubModelOn(s);
 		if (s->flags & SURF_DRAWTURB && (!s->entity->model->haslitwater || !r_litwater.value)) {
