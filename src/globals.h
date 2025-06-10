@@ -242,6 +242,9 @@ void D_ViewChanged();
 void D_SetupFrame();
 void D_WarpScreen();
 void R_DrawSurface();
+void D_DrawSurfacesPass1();
+void D_DrawSurfacesPass2();
+void D_DrawSurfacesPass3();
 void D_PolysetUpdateTables();
 EX s32 cachewidth;                                                 // r_shared.h
 EX u8 *cacheblock;

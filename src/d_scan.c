@@ -293,7 +293,7 @@ void D_DrawSpans(espan_t *pspan, s32 type, f32 opacity)
 		f32 tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
 		f32 zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
 		f32 z = (f32)0x10000 / zi; // prescale to 16.16 fixed-point
-		if (type == SPAN_TRANS) {
+		if (type == SPAN_TRANS) { // FIXME? appears kinda broken
 			pz = d_pzbuffer + (d_zwidth * pspan->v) + pspan->u;
 			izi = (s32)(zi * 0x8000 * 0x10000);
 		}

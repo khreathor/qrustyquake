@@ -403,6 +403,11 @@ void R_ScanEdges()
 		// left for the next scan
 		if (span_p >= max_span_p) {
 			if (r_drawflat.value) D_DrawSurfacesFlat();
+			else if((s32)r_twopass.value&1) {
+				if (r_pass + r_wateralphapass == 0) D_DrawSurfacesPass1();
+				else if (r_pass + r_wateralphapass == 1) D_DrawSurfacesPass2();
+				else if (r_pass + r_wateralphapass == 2) D_DrawSurfacesPass3();
+			}
 			else D_DrawSurfaces();
 			// clear the surface span pointers
 			for (surf_t *s = &surfaces[1]; s < surface_p; s++)
@@ -423,5 +428,10 @@ void R_ScanEdges()
 		R_InsertNewEdges(newedges[iv], edge_head.next);
 	(*pdrawfunc) ();
 	if (r_drawflat.value) D_DrawSurfacesFlat();
+	else if((s32)r_twopass.value&1) {
+		if (r_pass + r_wateralphapass == 0) D_DrawSurfacesPass1();
+		else if (r_pass + r_wateralphapass == 1) D_DrawSurfacesPass2();
+		else if (r_pass + r_wateralphapass == 2) D_DrawSurfacesPass3();
+	}
 	else D_DrawSurfaces();
 }
