@@ -416,4 +416,5 @@ void R_SetSkyFrame ()
         s32 s2 = iskyspeed2 / g;
         f32 temp = SKYSIZE * s1 * s2;
         skytime = cl.time - ((s32)(cl.time / temp) * temp);
+	r_skymade = 0;
 }
