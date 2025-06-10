@@ -153,11 +153,11 @@ static void D_DrawLitWater(surf_t *s, msurface_t *pface)
 	cacheblock = (u8 *) pface->texinfo->texture + pface->texinfo->texture->offsets[0];
 	cachewidth = 64;
 	D_CalcGradients(pface);
-	f32 opacity = 1 - (f32)s->entity->alpha / 255;
-	if (s->flags & SURF_DRAWLAVA) opacity = 1 - r_lavaalpha.value;
-	else if (s->flags & SURF_DRAWSLIME) opacity = 1 - r_slimealpha.value;
-	else if (s->flags & SURF_DRAWWATER) opacity = 1 - r_wateralpha.value;
-	else if (s->flags & SURF_DRAWTELE) opacity = 1 - r_telealpha.value;
+	f32 opacity = 1;
+	if (s->entity && s->entity->alpha && r_entalpha.value == 1)
+		opacity -= (f32)s->entity->alpha/255;
+	else if (s->flags & SURF_WINQUAKE_DRAWTRANSLUCENT)
+		opacity -= R_LiquidAlphaForFlags(s->flags);
 	Turbulent8(s->spans, opacity);
 	if (!r_wateralphapass) D_DrawZSpans(s->spans);
 	lmonly = 0;
@@ -226,7 +226,8 @@ void D_DrawSurfacesPass1()
 		} else if (s->flags & SURF_DRAWBACKGROUND) {
 			if (skybox_name[0] || r_wateralphapass) continue;
 			D_DrawBackground(s);
-		} else if (s->flags & SURF_DRAWTURB && (!s->entity->model->haslitwater || !r_litwater.value)) {
+		} else if (s->flags & SURF_DRAWTURB && (!s->entity->model->haslitwater
+					|| !r_litwater.value || !((s32)r_twopass.value&1))) {
 			D_DrawUnlitWater(s, pface);
 		} else D_DrawNormalSurf(s, pface);
 		if (s->insubmodel) D_SwitchSubModelOff();
@@ -238,7 +239,6 @@ void D_DrawSurfacesPass2()
 	currententity = &cl_entities[0];
 	TransformVector(modelorg, transformed_modelorg);
 	VectorCopy(transformed_modelorg, world_transformed_modelorg);
-	// TODO: could preset a lot of this at mode set time
 	for (surf_t *s = &surfaces[1]; s < surface_p; s++) {
 		if (!s->spans) continue;
 		msurface_t *pface = s->data;
@@ -258,24 +258,12 @@ void D_DrawSurfacesPass3()
 	currententity = &cl_entities[0];
 	TransformVector(modelorg, transformed_modelorg);
 	VectorCopy(transformed_modelorg, world_transformed_modelorg);
-	// TODO: could preset a lot of this at mode set time
 	for (surf_t *s = &surfaces[1]; s < surface_p; s++) {
 		if (!s->spans) continue;
 		msurface_t *pface = s->data;
 		u64 is_ent = (u64)(unsigned long long)s->entity & 0xffff000; // FIXME
 		if(!(s->flags&SURF_DRAWTURB) && !is_ent) continue;
 		if (pface == 0) continue;
-		if (!(pface->flags&SURF_DRAWCUTOUT) && r_pass == 1 && 
-			s->entity->model == cl.worldmodel && s->entity->alpha != 0) continue;
-		r_drawnpolycount++;
-		if (is_ent && s->entity->alpha && r_entalpha.value == 1)
-			winquake_surface_liquid_alpha = (f32)s->entity->alpha / 255;
-		// Baker: Need to determine what kind of liquid we are
-		else if (s->flags & SURF_WINQUAKE_DRAWTRANSLUCENT)
-			winquake_surface_liquid_alpha = R_LiquidAlphaForFlags(s->flags);
-		else winquake_surface_liquid_alpha = 1;
-		if (r_wateralphapass && winquake_surface_liquid_alpha == 1 && r_entalpha.value == 1)
-			continue; // Manoel Kasimier - translucent water
 		d_zistepu = s->d_zistepu;
 		d_zistepv = s->d_zistepv;
 		d_ziorigin = s->d_ziorigin;

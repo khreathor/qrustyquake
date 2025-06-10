@@ -231,6 +231,7 @@ void R_RenderFace(msurface_t *fa, s32 clipflags)
 	// Manoel Kasimier - skyboxes - end
 	if ((s32)r_twopass.value&1 && fa->flags&SURF_WINQUAKE_DRAWTRANSLUCENT) {
 		winquake_surface_liquid_alpha=R_LiquidAlphaForFlags(fa->flags);
+		if (r_litwater.value) winquake_surface_liquid_alpha = 0.5; // FIXME properly
 	} else if (cur_ent_alpha < 1 && r_entalpha.value == 1)
 		winquake_surface_liquid_alpha = cur_ent_alpha;
 	else winquake_surface_liquid_alpha = 1;
@@ -243,7 +244,7 @@ void R_RenderFace(msurface_t *fa, s32 clipflags)
         if (!r_wateralphapass && winquake_surface_liquid_alpha < 1) {
                 r_foundtranswater = 1;
                 return;
-        }	
+        }
 	if ((surface_p) >= surf_max) { // skip out if no more surfs
 		r_outofsurfaces++;
 		return;
