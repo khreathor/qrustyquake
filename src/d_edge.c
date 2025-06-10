@@ -3,20 +3,16 @@
 
 static s32 miplevel;
 static vec3_t transformed_modelorg;
+static vec3_t world_transformed_modelorg;
 
 s32 D_MipLevelForScale(f32 scale)
 {
 	s32 lmiplevel;
-	if (scale >= d_scalemip[0])
-		lmiplevel = 0;
-	else if (scale >= d_scalemip[1])
-		lmiplevel = 1;
-	else if (scale >= d_scalemip[2])
-		lmiplevel = 2;
-	else
-		lmiplevel = 3;
-	if (lmiplevel < d_minmip)
-		lmiplevel = d_minmip;
+	if (scale >= d_scalemip[0]) lmiplevel = 0;
+	else if (scale >= d_scalemip[1]) lmiplevel = 1;
+	else if (scale >= d_scalemip[2]) lmiplevel = 2;
+	else lmiplevel = 3;
+	if (lmiplevel < d_minmip) lmiplevel = d_minmip;
 	return lmiplevel;
 }
 
@@ -181,11 +177,30 @@ static void D_DrawNormalSurf(surf_t *s, msurface_t *pface)
 	}
 }
 
+static void D_SwitchSubModelOn(surf_t *s)
+{
+	currententity = s->entity;
+	vec3_t local_modelorg;
+	VectorSubtract(r_origin, currententity->origin, local_modelorg);
+	TransformVector(local_modelorg, transformed_modelorg);
+	R_RotateBmodel();
+}
+
+static void D_SwitchSubModelOff()
+{
+	currententity = &cl_entities[0];
+	VectorCopy(world_transformed_modelorg, transformed_modelorg);
+	VectorCopy(base_vpn, vpn);
+	VectorCopy(base_vup, vup);
+	VectorCopy(base_vright, vright);
+	VectorCopy(base_modelorg, modelorg);
+	R_TransformFrustum();
+}
+
 void D_DrawSurfaces()
 { // CyanBun96: TODO make this less huge, maybe split into several functions
 	currententity = &cl_entities[0];
 	TransformVector(modelorg, transformed_modelorg);
-	vec3_t world_transformed_modelorg;
 	VectorCopy(transformed_modelorg, world_transformed_modelorg);
 	// TODO: could preset a lot of this at mode set time
 	for (surf_t *s = &surfaces[1]; s < surface_p; s++) {
@@ -234,13 +249,7 @@ skipchecks:
 			miplevel = 0;
 		else miplevel = D_MipLevelForScale(s->nearzi * scale_for_mip
 				* pface->texinfo->mipadjust);
-		if (s->insubmodel) {
-			currententity = s->entity;
-			vec3_t local_modelorg;
-			VectorSubtract(r_origin, currententity->origin, local_modelorg);
-			TransformVector(local_modelorg, transformed_modelorg);
-			R_RotateBmodel();
-		}
+		if (s->insubmodel) D_SwitchSubModelOn(s);
 		if (s->flags & SURF_DRAWSKY) {
 			D_DrawSky(s);
 		} else if (s->flags & SURF_DRAWSKYBOX) {
@@ -254,17 +263,7 @@ skipchecks:
 			D_DrawTransSurf(s, pface);
 		} else if (s->flags & SURF_DRAWTURB && s->entity->model->haslitwater && r_litwater.value) {
 			D_DrawLitWater(s, pface);
-		} else {
-			D_DrawNormalSurf(s, pface);
-		}
-		if (s->insubmodel) {
-			currententity = &cl_entities[0];
-			VectorCopy(world_transformed_modelorg, transformed_modelorg);
-			VectorCopy(base_vpn, vpn);
-			VectorCopy(base_vup, vup);
-			VectorCopy(base_vright, vright);
-			VectorCopy(base_modelorg, modelorg);
-			R_TransformFrustum();
-		}
+		} else D_DrawNormalSurf(s, pface);
+		if (s->insubmodel) D_SwitchSubModelOff();
 	}
 }
