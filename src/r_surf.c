@@ -210,24 +210,41 @@ void R_DrawSurfaceBlock(s32 miplvl)
 	for (s32 v = 0; v < r_numvblocks; v++) {
 		// FIXME: make these locals?
 		// FIXME: use delta rather than both right and left, like ASM?
-		lightleft = r_lightptr[0];
+		lightleft = r_lightptr[0]; // Red
 		lightright = r_lightptr[1];
 		r_lightptr += r_lightwidth;
 		lightleftstep = (r_lightptr[0] - lightleft) >> (4-miplvl);
 		lightrightstep = (r_lightptr[1] - lightright) >> (4-miplvl);
+		lightleft_g = r_lightptr_g[0]; // Green
+		lightright_g = r_lightptr_g[1];
+		r_lightptr_g += r_lightwidth;
+		lightleftstep_g = (r_lightptr_g[0] - lightleft_g) >> (4-miplvl);
+		lightrightstep_g = (r_lightptr_g[1] - lightright_g) >> (4-miplvl);
+		lightleft_b = r_lightptr_b[0]; // Blue
+		lightright_b = r_lightptr_b[1];
+		r_lightptr_b += r_lightwidth;
+		lightleftstep_b = (r_lightptr_b[0] - lightleft_b) >> (4-miplvl);
+		lightrightstep_b = (r_lightptr_b[1] - lightright_b) >> (4-miplvl);
 		for (s32 i = 0; i < 1 << (4-miplvl); i++) {
-			s32 lighttemp = lightleft - lightright;
+			s32 lighttemp = lightleft - lightright; // Red
 			s32 lightstep = lighttemp >> (4-miplvl);
 			s32 light = lightright;
+			s32 light_g = lightright_g;
+			s32 light_b = lightright_b;
 			for (s32 b = (1 << (4-miplvl)) - 1; b >= 0; b--) {
 				u8 pix = psource[b];
+				s32 lightavg = ((light&0xFF00) + (light_g&0xFF00) + (light_b&0xFF00))/3;
 				prowdest[b] = ((u8 *)vid.colormap)
-				    [(light & 0xFF00) + pix];
+				    [(lightavg & 0xFF00) + pix];
 				light += lightstep;
 			}
 			psource += sourcetstep;
 			lightright += lightrightstep;
 			lightleft += lightleftstep;
+			lightright_g += lightrightstep_g;
+			lightleft_g += lightleftstep_g;
+			lightright_b += lightrightstep_b;
+			lightleft_b += lightleftstep_b;
 			prowdest += surfrowbytes;
 		}
 		if (psource >= r_sourcemax)
