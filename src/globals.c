@@ -26,6 +26,7 @@ u8 vid_curpal[256 * 3];
 viddef_t vid; // global video state
 u8 r_foundtranswater, r_wateralphapass;                              // r_main.c
 s32 r_pass; // CyanBun96: 1 - cutout textures 0 - everything else
+u8 r_foundcutouts, r_foundsubmodelcutouts;
 void *colormap;
 s32 r_outofsurfaces;
 s32 r_outofedges;

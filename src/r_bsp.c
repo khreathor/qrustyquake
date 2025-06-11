@@ -184,8 +184,10 @@ void R_DrawSolidClippedSubmodelPolygons(model_t *pmodel)
 	mvertex_t bverts[MAX_BMODEL_VERTS];
 	bedge_t bedges[MAX_BMODEL_EDGES], *pbedge;
 	msurface_t *psurf = &pmodel->surfaces[pmodel->firstmodelsurface];
-	if (psurf->flags&SURF_DRAWCUTOUT&&!r_pass&&(s32)r_twopass.value&1)
+	if (psurf->flags&SURF_DRAWCUTOUT&&!r_pass&&(s32)r_twopass.value&1) {
+		r_foundsubmodelcutouts = 1;
 		return;
+	}
 	if ((psurf->flags&SURF_DRAWSKY) && 
 	    (psurf->texinfo->texture->width/psurf->texinfo->texture->height!=2))
 		return; // avoid drawing broken skies
@@ -233,8 +235,10 @@ void R_DrawSolidClippedSubmodelPolygons(model_t *pmodel)
 void R_DrawSubmodelPolygons(model_t *pmodel, s32 clipflags)
 {
 	msurface_t *psurf = &pmodel->surfaces[pmodel->firstmodelsurface];
-	if (psurf->flags&SURF_DRAWCUTOUT&&!r_pass&&(s32)r_twopass.value&1)
+	if (psurf->flags&SURF_DRAWCUTOUT&&!r_pass&&(s32)r_twopass.value&1) {
+		r_foundsubmodelcutouts = 1;
 		return;
+	}
 	s32 numsurfaces = pmodel->nummodelsurfaces;
 	for (s32 i = 0; i < numsurfaces; i++, psurf++) {
 		// find which side of the node we are on
@@ -314,6 +318,7 @@ void R_RecursiveWorldNode(mnode_t *node, s32 clipflags)
 			msurface_t *surf = cl.worldmodel->surfaces + node->firstsurface;
 			if (dot < -BACKFACE_EPSILON) {
 				do {
+					if (surf->flags&SURF_DRAWCUTOUT) r_foundcutouts = 1;
 					if ((surf->flags & SURF_PLANEBACK) && (surf->visframe == r_framecount)
 						&& !(surf->flags&SURF_DRAWCUTOUT&&!r_pass&&(s32)r_twopass.value&1)) {
 						R_RenderFace(surf, clipflags);
@@ -322,6 +327,7 @@ void R_RecursiveWorldNode(mnode_t *node, s32 clipflags)
 				} while (--c);
 			} else if (dot > BACKFACE_EPSILON) {
 				do {
+					if (surf->flags&SURF_DRAWCUTOUT) r_foundcutouts = 1;
 					if (!(surf->flags & SURF_PLANEBACK) && (surf->visframe == r_framecount)
 						&& !(surf->flags&SURF_DRAWCUTOUT&&!r_pass&&(s32)r_twopass.value&1)
 						&& strncmp(surf->texinfo->texture->name, "bal_pureblack", 13)) {
