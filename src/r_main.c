@@ -548,7 +548,7 @@ void R_RenderViewMultiPass()
 	if(r_dspeeds.value) d_times[15] = Sys_DoubleTime();
 	if(r_dowarp) D_WarpScreen();
 	if(r_dspeeds.value) d_times[16] = Sys_DoubleTime();
-        if(!r_dowarp && fog_density < 1) R_DrawFog();//broken underwater, fixme?
+        if(fog_density < 1) R_DrawFog();
 	if(r_dspeeds.value) d_times[17] = Sys_DoubleTime();
 	V_SetContentsColor(r_viewleaf->contents);
 }
@@ -581,7 +581,7 @@ void R_RenderViewSinglePass()
 	if(r_dspeeds.value) d_times[7] = Sys_DoubleTime();
 	if(r_dowarp) D_WarpScreen();
 	if(r_dspeeds.value) d_times[8] = Sys_DoubleTime();
-        if(!r_dowarp && fog_density < 1) R_DrawFog();//broken underwater, fixme?
+        if(fog_density < 1) R_DrawFog();
 	if(r_dspeeds.value) d_times[9] = Sys_DoubleTime();
 	V_SetContentsColor(r_viewleaf->contents);
 }
