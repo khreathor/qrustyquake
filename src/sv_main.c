@@ -798,6 +798,7 @@ void SV_SpawnServer(const s8 *server)
 	static s8 dummy[8] = { 0,0,0,0,0,0,0,0 };
 	if(hostname.string[0] == 0) Cvar_Set("hostname", "UNNAMED");
 	scr_centertime_off = 0;
+	lit_loaded = 0;
 	Con_DPrintf("SpawnServer: %s\n",server);
 	svs.changelevel_issued = 0; // now safe to issue another
 	// tell all connected clients that we are going to a new level

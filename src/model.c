@@ -328,6 +328,7 @@ static void Mod_LoadLighting(lump_t *l)
 			s32 i = LittleLong(((s32 *)data)[1]);
 			if(i == 1){
 				if(8+l->filelen*3 == com_filesize){
+					lit_loaded = 1;
 					printf("%s loaded\n", litfilename);
 					loadmodel->lightdata = data + 8;
 					return;

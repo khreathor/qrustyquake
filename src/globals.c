@@ -195,12 +195,13 @@ f32 skytime;
 u8 *r_skysource;
 s32 r_skymade;
 s8 skybox_name[1024]; // name of current skybox, or "" if no skybox
+drawsurf_t r_drawsurf;                                               // r_surf.c
+u8 lit_loaded = 0;
 vec3_t vec3_origin = {0,0,0};                                       // mathlib.h
 sspan_t spans[MAXHEIGHT + 1];                                      // d_sprite.c
 s32 r_dlightframecount;                                             // r_light.c
 vec3_t r_pright, r_pup, r_ppn;                                       // r_part.c
 spritedesc_t r_spritedesc;                                         // r_sprite.c
-drawsurf_t r_drawsurf;                                               // r_surf.c
 cmd_source_t cmd_source;                                                // cmd.c
 f32 scale_for_mip;                                                   // d_edge.c
 f32 cur_ent_alpha = 1;                                             // d_polyse.c

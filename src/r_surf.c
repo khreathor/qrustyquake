@@ -24,6 +24,7 @@ static u32 blocklights_g[18 * 18];
 static u32 blocklights_b[18 * 18];
 
 void R_DrawSurfaceBlock(s32 miplvl);
+void R_DrawSurfaceBlockRGBMono(s32 miplvl);
 void R_DrawSurfaceBlockRGB(s32 miplvl);
 
 void R_AddDynamicLights()
@@ -194,7 +195,8 @@ void R_DrawSurface()
 		r_lightptr_b = blocklights_b + u;
 		prowdestbase = pcolumndest;
 		pbasesource = basetptr + soffset;
-		if (!r_rgblighting.value) R_DrawSurfaceBlock(r_drawsurf.surfmip);
+		if (!lit_loaded) R_DrawSurfaceBlock(r_drawsurf.surfmip);
+		else if (!r_rgblighting.value) R_DrawSurfaceBlockRGBMono(r_drawsurf.surfmip);
 		else R_DrawSurfaceBlockRGB(r_drawsurf.surfmip);
 		soffset = soffset + blocksize;
 		if (soffset >= smax)
@@ -204,6 +206,38 @@ void R_DrawSurface()
 }
 
 void R_DrawSurfaceBlock(s32 miplvl)
+{
+	u8 *psource = pbasesource;
+	u8 *prowdest = prowdestbase;
+	for (s32 v = 0; v < r_numvblocks; v++) {
+		// FIXME: make these locals?
+		// FIXME: use delta rather than both right and left, like ASM?
+		lightleft = r_lightptr[0];
+		lightright = r_lightptr[1];
+		r_lightptr += r_lightwidth;
+		lightleftstep = (r_lightptr[0] - lightleft) >> (4-miplvl);
+		lightrightstep = (r_lightptr[1] - lightright) >> (4-miplvl);
+		for (s32 i = 0; i < 1 << (4-miplvl); i++) {
+			s32 lighttemp = lightleft - lightright;
+			s32 lightstep = lighttemp >> (4-miplvl);
+			s32 light = lightright;
+			for (s32 b = (1 << (4-miplvl)) - 1; b >= 0; b--) {
+				u8 pix = psource[b];
+				prowdest[b] = ((u8 *)vid.colormap)
+				    [(light & 0xFF00) + pix];
+				light += lightstep;
+			}
+			psource += sourcetstep;
+			lightright += lightrightstep;
+			lightleft += lightleftstep;
+			prowdest += surfrowbytes;
+		}
+		if (psource >= r_sourcemax)
+			psource -= r_stepback;
+	}
+}
+
+void R_DrawSurfaceBlockRGBMono(s32 miplvl)
 {
 	u8 *psource = pbasesource;
 	u8 *prowdest = prowdestbase;

@@ -733,6 +733,7 @@ void R_ParseWorldspawn();
 void R_InitSkyBox();                                                  // r_sky.c
 void Sky_NewMap();
 void Sky_Init();
+EX u8 lit_loaded;                                                     //r_surf.c
 EX vec3_t vec3_origin;                                              // mathlib.c
 EX f32 cur_ent_alpha;                                              // d_polyse.c
 EX sspan_t spans[MAXHEIGHT + 1];                                   // d_sprite.c
