@@ -324,7 +324,7 @@ void R_DrawViewModel()
 		j = 24; // allways give some light on the gun
 	r_viewlighting.ambientlight = j;
 	r_viewlighting.shadelight = j;
-	colored_aliaslight = 1;
+	colored_aliaslight = r_rgblighting.value && lit_loaded ? 1 : 0;
 	for(s32 lnum = 0; lnum < MAX_DLIGHTS; lnum++){ // add dynamic lights
 		dlight_t *dl = &cl_dlights[lnum];
 		if(!dl->radius || dl->die < cl.time)
