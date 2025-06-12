@@ -294,7 +294,7 @@ void D_DrawSpans(espan_t *pspan, s32 type, f32 opacity)
 		f32 tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
 		f32 zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
 		f32 z = (f32)0x10000 / zi; // prescale to 16.16 fixed-point
-		if (type == SPAN_TRANS) {
+		if (type == SPAN_TRANS || type == SPAN_CUTOUT) {
 			pz = d_pzbuffer + (d_zwidth * pspan->v) + pspan->u;
 			izi = (s32)(zi * 0x8000 * 0x10000);
 		}
@@ -377,14 +377,18 @@ void D_DrawSpans(espan_t *pspan, s32 type, f32 opacity)
 			}
 			if (type == SPAN_CUTOUT) {
 				do {
-					u8 pix = *(pbase + (s >> 16) +
-						(t >> 16) * cachewidth);
-					cutoutbuf[pdest-d_viewbuffer] = 0;
-					if (pix != 0xff) {
-						*pdest = pix;
-						cutoutbuf[pdest-d_viewbuffer] = 1;
+					if (*pz <= (izi >> 16)) {
+						u8 pix = *(pbase + (s >> 16) +
+							(t >> 16) * cachewidth);
+						cutoutbuf[pdest-d_viewbuffer] = 0;
+						if (pix != 0xff) {
+							*pdest = pix;
+							cutoutbuf[pdest-d_viewbuffer] = 1;
+						}
 					}
 					pdest++;
+					izi += izistep;
+					pz++;
 					s += sstep;
 					t += tstep;
 				} while (--spancount > 0);
@@ -483,7 +487,8 @@ void D_DrawZSpansTrans(espan_t *pspan)
 		f64 zi = d_ziorigin + dv * d_zistepv + du * d_zistepu;
 		s32 izi = (s32)(zi * 0x8000 * 0x10000);
 		if ((intptr_t) pdest & 0x02) {
-			if(cutoutbuf[(pdest-d_pzbuffer)] == 1)
+			if(cutoutbuf[(pdest-d_pzbuffer)] == 1 &&
+				*pdest < (s16)(izi >> 16))
 				*pdest++ = (s16)(izi >> 16);
 			izi += izistep;
 			count--;
@@ -495,13 +500,15 @@ void D_DrawZSpansTrans(espan_t *pspan)
 				izi += izistep;
 				ltemp |= izi & 0xFFFF0000;
 				izi += izistep;
-				if(cutoutbuf[(pdest-d_pzbuffer)] == 1)
+				if(cutoutbuf[(pdest-d_pzbuffer)] == 1 &&
+					*pdest < (s16)ltemp)
 					*(s32 *)pdest = ltemp;
 				pdest += 2;
 			} while (--doublecount > 0);
 		}
 		if (count & 1) {
-			if(cutoutbuf[(pdest-d_pzbuffer)] == 1)
+			if(cutoutbuf[(pdest-d_pzbuffer)] == 1 &&
+				*pdest < (s16)(izi >> 16))
 				*pdest = (s16)(izi >> 16);
 		}
 	} while ((pspan = pspan->pnext) != NULL);
