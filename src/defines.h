@@ -616,8 +616,8 @@
 #define DATAGRAM_MTU 1400 // johnfitz -- actual limit for unreliable messages to nonlocal clients
 #define DIST_EPSILON (0.03125) // 1/32 epsilon to keep floating point happy (moved from world.c)
 
-#define WARP_WIDTH 320                                              // d_iface.h
-#define WARP_HEIGHT 200
+#define WARP_WIDTH MAXWIDTH                                         // d_iface.h
+#define WARP_HEIGHT MAXHEIGHT
 #define MAX_LBM_HEIGHT 480
 #define PARTICLE_Z_CLIP 8.0
 #define DR_SOLID 0 // transparency types for D_DrawRect()
