@@ -281,7 +281,7 @@ void D_DrawSurfacesPass3()
 			D_DrawTransSurf(s, pface);
 		} else if (s->flags & SURF_DRAWTURB && s->entity->model->haslitwater && r_litwater.value) {
 			D_DrawLitWater(s, pface);
-		} else continue;
+		}
 		if (s->insubmodel) D_SwitchSubModelOff();
 	}
 }
