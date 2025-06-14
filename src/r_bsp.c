@@ -184,16 +184,16 @@ void R_DrawSolidClippedSubmodelPolygons(model_t *pmodel)
 	mvertex_t bverts[MAX_BMODEL_VERTS];
 	bedge_t bedges[MAX_BMODEL_EDGES], *pbedge;
 	msurface_t *psurf = &pmodel->surfaces[pmodel->firstmodelsurface];
-	if (psurf->flags&SURF_DRAWCUTOUT&&!r_pass&&(s32)r_twopass.value&1) {
-		r_foundsubmodelcutouts = 1;
-		return;
-	}
 	if ((psurf->flags&SURF_DRAWSKY) && 
 	    (psurf->texinfo->texture->width/psurf->texinfo->texture->height!=2))
 		return; // avoid drawing broken skies
 	s32 numsurfaces = pmodel->nummodelsurfaces;
 	medge_t *pedges = pmodel->edges;
 	for (s32 i = 0; i < numsurfaces; i++, psurf++) {
+		if(psurf->flags&SURF_DRAWCUTOUT&&!r_pass&&(s32)r_twopass.value&1){
+			r_foundsubmodelcutouts = 1;
+			return;
+		}
 		mplane_t *pplane = psurf->plane; // find which side of the node we are on
 		vec_t dot = DotProduct(modelorg, pplane->normal) - pplane->dist;
 		// draw the polygon
