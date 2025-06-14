@@ -22,11 +22,13 @@ void D_DrawParticle(particle_t *pparticle)
 	s16 *pz = d_pzbuffer + (d_zwidth * v) + u;
 	u8 *pdest = d_viewbuffer + d_scantable[v] + u;
 	s32 izi = (s32)(zi * 0x8000);
-	s32 pix = izi >> d_pix_shift;
-	if (pix < d_pix_min)
-		pix = d_pix_min;
-	else if (pix > d_pix_max)
-		pix = d_pix_max;
+	s32 pix;
+	if (r_particlescale.value) pix = r_particlescale.value;
+	else {
+		pix = izi >> d_pix_shift;
+		if (pix < d_pix_min) pix = d_pix_min;
+		else if (pix > d_pix_max) pix = d_pix_max;
+	}
 	switch (pix) {
 	case 1:
 		for (s32 count = 1 << d_y_aspect_shift; count;
