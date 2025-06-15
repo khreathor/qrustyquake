@@ -235,12 +235,12 @@ void R_DrawSolidClippedSubmodelPolygons(model_t *pmodel)
 void R_DrawSubmodelPolygons(model_t *pmodel, s32 clipflags)
 {
 	msurface_t *psurf = &pmodel->surfaces[pmodel->firstmodelsurface];
-	if (psurf->flags&SURF_DRAWCUTOUT&&!r_pass&&(s32)r_twopass.value&1) {
-		r_foundsubmodelcutouts = 1;
-		return;
-	}
 	s32 numsurfaces = pmodel->nummodelsurfaces;
 	for (s32 i = 0; i < numsurfaces; i++, psurf++) {
+		if (psurf->flags&SURF_DRAWCUTOUT&&!r_pass&&(s32)r_twopass.value&1) {
+			r_foundsubmodelcutouts = 1;
+			return;
+		}
 		// find which side of the node we are on
 		mplane_t *pplane = psurf->plane;
 		vec_t dot = DotProduct(modelorg, pplane->normal) - pplane->dist;
