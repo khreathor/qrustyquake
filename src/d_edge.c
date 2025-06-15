@@ -211,6 +211,11 @@ void D_DrawSurfacesPass1()
 	for (surf_t *s = &surfaces[1]; s < surface_p; s++) {
 		if (!s->spans) continue;
 		msurface_t *pface = s->data;
+		if (s->flags & SURF_DRAWBACKGROUND) {
+			if (skybox_name[0]) continue;
+			D_DrawBackground(s);
+			continue;
+		}
 		if (!pface || !pface->extents[0] || !pface->extents[1]) {
 			if(pface)Con_DPrintf("Broken surface extents %hd %hd\n",
 					pface->extents[0], pface->extents[1]);
@@ -229,9 +234,6 @@ void D_DrawSurfacesPass1()
 			D_DrawSky(s);
 		} else if (s->flags & SURF_DRAWSKYBOX) {
 			D_DrawSkybox(s, pface);
-		} else if (s->flags & SURF_DRAWBACKGROUND) {
-			if (skybox_name[0] || r_wateralphapass) continue;
-			D_DrawBackground(s);
 		} else if (s->flags & SURF_DRAWTURB && (!s->entity->model->haslitwater
 					|| !r_litwater.value || !((s32)r_twopass.value&1))) {
 			D_DrawUnlitWater(s, pface);
