@@ -243,11 +243,13 @@ void Sbar_SoloScoreboard()
 
 void Sbar_CalcPos()
 {
+	s32 arcade_offs_x = scr_hudstyle.value == 4 ? 160*SCL : 0;
+	s32 arcade_offs_y = scr_hudstyle.value == 4 ? 24*SCL : 0;
 	for (s32 i = 0; i < 8; i++) // items classic
-		iposx[i] = WW / 2 + 32*SCL + i*16*SCL;
+		iposx[i] = WW / 2 + 32*SCL + i*16*SCL + arcade_offs_x;
 	for (s32 i = 8; i < 12; i++)
-		iposx[i] = WW / 2 + 64*SCL + i*8*SCL;
-	iposy = HH - 40*SCL;
+		iposx[i] = WW / 2 + 64*SCL + i*8*SCL + arcade_offs_x;
+	iposy = HH - 40*SCL + arcade_offs_y;
 	switch ((s32)(hipnotic&&scr_hudstyle.value==3?2:scr_hudstyle.value)) {
 	default: // ammo counters
 	case 0: // classic
@@ -275,26 +277,39 @@ void Sbar_CalcPos()
 			npos[i][1] = HH - 78*SCL + i * 9*SCL;
 		}
 		break;
-	}
-	for (s32 i = 0; !scr_hudstyle.value && i < 9; i++) { // weapons classic
-		wpos[i][0] = WW / 2 - 160*SCL + i*24*SCL;	
-		wpos[i][1] = HH - 40*SCL;
-		if (i == 9) {
-			wpos[7][0] += 8*SCL;
-			wpos[8][0] += 8*SCL;
+	case 4: // arcade
+		for (s32 i = 0; i < 4; i++) {
+			npos[i][0] = WW / 2 + 8*SCL + i*48*SCL;
+			npos[i][1] = HH - 24*SCL;
 		}
+		break;
 	}
-	for (s32 i = 0; scr_hudstyle.value && i < 9; i++) { // weapons modern
-		wpos[i][0] = WW - 18*SCL;	
-		wpos[i][1] = HH- 16*SCL*(6+i) + hipnotic*24*SCL;
+	switch ((s32)scr_hudstyle.value) { // weapons
+	case 0: // classic
+	case 4: // arcade
+		for (s32 i = 0; i < 9; i++) {
+			wpos[i][0] = WW / 2 - 160*SCL + i*24*SCL +arcade_offs_x;
+			wpos[i][1] = HH - 40*SCL + arcade_offs_y;
+			if (i == 9) {
+				wpos[7][0] += 8*SCL + arcade_offs_x;
+				wpos[8][0] += 8*SCL + arcade_offs_y;
+			}
+		}
+		break;
+	default: // modern
+		for (s32 i = 0; i < 9; i++) {
+			wpos[i][0] = WW - 18*SCL;	
+			wpos[i][1] = HH- 16*SCL*(6+i) + hipnotic*24*SCL;
+		}
+		break;
 	}
 	switch ((s32)scr_hudstyle.value + 0x10*hipnotic) { // keys
 	default:
 	case 0:
 	case 3:
 		for (s32 i = 0; i < 2; i++) { // classic, qw
-			kpos[i][0] = WW / 2 + 32*SCL + i*16*SCL;
-			kpos[i][1] = HH - 40*SCL;
+			kpos[i][0] = WW / 2 + 32*SCL + i*16*SCL + arcade_offs_x;
+			kpos[i][1] = HH - 40*SCL + arcade_offs_y;
 		}
 		break;
 	case 1:
@@ -381,7 +396,7 @@ void Sbar_DrawInventoryBg()
 	case 0: // classic
 		x = WW / 2 - 160*SCL;
 		y = HH - 48*SCL;
-		Draw_TransPicScaled(x, y, pic, SCL);
+		Draw_PicScaled(x, y, pic, SCL);
 		break;
 	case 1: // bottom center, 4x1
 		x = WW / 2 - 96*SCL;
@@ -400,6 +415,11 @@ void Sbar_DrawInventoryBg()
 		for (s32 i = 0; i < 4; i++)
 			Draw_PicScaledPartial(x - 48*SCL*i, y + 9*SCL*i,
 					i*48, 0, (i+1)*48, 8, pic, SCL);
+		break;
+	case 4: // arcade
+		x = WW / 2;
+		y = HH - 24*SCL;
+		Draw_PicScaledPartial(x, y, 0, 0, 320, 24, pic, SCL);
 		break;
 	}
 }
@@ -425,6 +445,7 @@ void Sbar_DrawWeapons()
 			active = 1;
 		}
 		active = scr_hudstyle.value ? active * 6 * SCL : 0;
+		if (scr_hudstyle.value == 4) active = 0; // arcade
 		Draw_TransPicScaled(wpos[i][0] - active, wpos[i][1], pic, SCL);
 		if (flashon > 1)
 			sb_updates = 0; // force update to remove flash
@@ -486,16 +507,22 @@ void Sbar_DrawFace()
 {
 	s32 x = WW / 2 - 24*SCL; // classic, qw
 	s32 y = HH - 24*SCL;
-	if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
+	if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) { // modern
 		x = 32*SCL;
 		y = HH - 32*SCL;
+	} else if (scr_hudstyle.value == 4) { // arcade
+		x = WW / 2 - 184*SCL;
+		y = HH - 24*SCL;
 	}
 	Sbar_DrawNum(x, y, cl.stats[STAT_HEALTH], 3, cl.stats[STAT_HEALTH]<=25);
 	x = WW / 2 - 48*SCL; // classic, qw
 	y = HH - 24*SCL;
-	if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
+	if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) { // modern
 		x = 8*SCL;
 		y = HH - 32*SCL;
+	} else if (scr_hudstyle.value == 4) { // arcade
+		x = WW / 2 - 208*SCL;
+		y = HH - 24*SCL;
 	}
 	if (rogue && cl.maxclients!=1 && teamplay.value>3 && teamplay.value<7
 			&& (!scr_hudstyle.value || scr_hudstyle.value == 3)) {
@@ -538,9 +565,12 @@ void Sbar_DrawArmor()
 {
 	s32 x = WW / 2 - 160*SCL; // classic, qw
 	s32 y = HH - 24*SCL;
-	if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
+	if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) { // modern
 		x = 8 * SCL;
 		y = HH - 56 * SCL;
+	} else if (scr_hudstyle.value == 4) { // arcade
+		x = WW / 2 - 320*SCL;
+		y = HH - 24*SCL;
 	}
 	if (cl.items & IT_INVULNERABILITY) { // armor
 		Sbar_DrawNum(24*SCL + x, y, 666, 3, 1);
@@ -574,9 +604,12 @@ void Sbar_DrawAmmo()
 {
 	s32 x = WW / 2 + 64*SCL; // classic, qw
 	s32 y = HH - 24*SCL;
-	if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
+	if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) { // modern
 		x = WW - 32*SCL;
 		y = HH - 32*SCL;
+	} else if (scr_hudstyle.value == 4) { // arcade
+		x = WW / 2 - 96*SCL;
+		y = HH - 24*SCL;
 	}
 	if (rogue) { // ammo icon
 		if (cl.items & RIT_SHELLS)
@@ -605,9 +638,12 @@ void Sbar_DrawAmmo()
 	}
 	x = WW / 2 + 88*SCL; // classic, qw
 	y = HH - 24*SCL;
-	if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) {
+	if (scr_hudstyle.value == 1 || scr_hudstyle.value == 2) { // modern
 		x = WW - 108*SCL;
 		y = HH - 32*SCL;
+	} else if (scr_hudstyle.value == 4) { // arcade
+		x = WW / 2 - 74*SCL;
+		y = HH - 24*SCL;
 	}
 	Sbar_DrawNum(x, y, cl.stats[STAT_AMMO], 3, cl.stats[STAT_AMMO] <= 10);
 }
@@ -693,6 +729,17 @@ void Sbar_FinaleOverlay()
 	Draw_TransPicScaled(WW/2 - pic->width/2*SCL, 16*SCL, pic, SCL);
 }
 
+void Sbar_DrawBg()
+{ // only for the armor/health/ammo half
+	if (scr_hudstyle.value == 0) { // classic
+		Draw_TransPicScaled(WW/2 - 160*(SCL), HH-24*SCL, sb_sbar, SCL);
+	} else if (scr_hudstyle.value == 4) { // arcade
+		s32 x = WW / 2 - 320*SCL;
+		s32 y = HH - 24*SCL;
+		Draw_PicScaledPartial(x, y, 0, 0, 320, 24, sb_sbar, SCL);
+	}
+}
+
 void Sbar_Draw()
 {
 	if (scr_con_current == HH || !(scr_hudstyle.value || sb_lines)
@@ -701,8 +748,8 @@ void Sbar_Draw()
 		return;
 	if (sb_lines && WW/SCL > 320)
 		Draw_TileClear(0, HH - sb_lines/SCL, WW, sb_lines/SCL);
-	if (!scr_hudstyle.value)
-		Draw_TransPicScaled(WW/2 - 160*(SCL), HH-24*SCL, sb_sbar, SCL);
+	if (scr_hudstyle.value == 0 || scr_hudstyle.value == 4)
+		Sbar_DrawBg();
 	if (cl.gametype==GAME_DEATHMATCH&&(sb_showscores||scr_sidescore.value))
 		Sbar_DeathmatchOverlay();
 	if (sb_showscores || cl.stats[STAT_HEALTH] <= 0) {
