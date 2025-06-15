@@ -68,6 +68,8 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
    - 2021 rerelease support, place QuakeEX.kpf in the base folder for working localization
 
+- Custom palette support (put the files at gfx/custompalette.lmp and gfx/palette.lmp)
+
 - Software imitations of modern rendering features
 
    - Colored lighting, .lit file support
@@ -114,8 +116,6 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
    - The long-term goal for this port keeping it as well-maintained as a 1996 game can be.
 
-   - The whole "modernized" rendering system is a mess, akin to layers of makeup on a rotting corpse. I hope someone will rewrite it someday, or I'll have to do it myself.
-
 - Other modern features (optional)
 
    - More modern console
@@ -125,6 +125,16 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
    - Independent world and UI scaling
 
    - External music support
+
+   - More HUD styles
+
+   - More palette options
+
+- Probably not
+
+   - Multithreading (would require a total rewrite with multithreading as the foundation for everything to get any performance benefits after threading overhead)
+
+   - Advanced mapping/speedrunning/development features that are not directly related to gameplay (I'm not a mapper, speedrunner or developer)
 
 - (definitely not) CD Audio
 
@@ -148,17 +158,15 @@ x86_64 unless specified otherwise.
 
 VM is VirtualBox unless specified otherwise.
 
-- Arch Linux [HW] v0.5.0
+- Arch Linux [HW] v0.5.1
 
    - The main platform that this port is developed on. The most likely one to work
 
    - Tweaked and built on kernel 6.12.10-arch1-1 with TCC by erysdren
 
-   - Other Linuxes not tested yet, but should be the same with the gcc/make toolchain
-
    - TODO other compilers, Alpine
 
-- Debian 11 [VM] v0.5.0
+- Debian 11 [VM] v0.5.1
 
    - The oldest tested distro
 
@@ -180,11 +188,11 @@ VM is VirtualBox unless specified otherwise.
 
    - Not tested on real hardware yet, TODO
 
-- Android [HW, Termux, AARCH64] v0.5.0
+- Android [HW, Termux, AARCH64, clang] v0.5.0
 
    - Ran through X11 with touch controls. *unpleasant*
 
-- Windows [VM, HW] v0.5.0
+- Windows [VM, HW] v0.5.1
 
    - Tested with w10 on hardware and w11 on a VM
 
