@@ -1330,8 +1330,10 @@ void M_New_Draw()
 		M_Print(xoffset + 204, 72, "Modern 1");
 	else if (scr_hudstyle.value == 2)
 		M_Print(xoffset + 204, 72, "Modern 2");
-	else
+	else if (scr_hudstyle.value == 3)
 		M_Print(xoffset + 204, 72, "QW");
+	else
+		M_Print(xoffset + 204, 72, "Arcade");
 	M_Print(xoffset, 80, "          Translucency");
 	if (r_twopass.value == 0)
 		M_Print(xoffset + 204, 80, "Off (smart)");
@@ -1418,7 +1420,7 @@ void M_New_Key(s32 k)
 				      sensitivityyscale.value - 0.1);
 		else if (new_cursor == 5) {
 			if (scr_hudstyle.value == 0)
-				Cvar_SetValue("hudstyle", 3);
+				Cvar_SetValue("hudstyle", 4);
 			else
 				Cvar_SetValue("hudstyle", scr_hudstyle.value-1);
 		} else if (new_cursor == 6) {
@@ -1478,7 +1480,7 @@ void M_New_Key(s32 k)
 			Cvar_SetValue("sensitivityyscale",
 				      sensitivityyscale.value + 0.1);
 		else if (new_cursor == 5) {
-			if (scr_hudstyle.value == 3)
+			if (scr_hudstyle.value == 4)
 				Cvar_SetValue("hudstyle", 0);
 			else
 				Cvar_SetValue("hudstyle", scr_hudstyle.value+1);
