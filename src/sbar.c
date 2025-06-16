@@ -343,6 +343,12 @@ void Sbar_CalcPos()
 			kpos[i][1] = HH - 68*SCL;
 		}
 		break;
+	case 0x14:
+		for (s32 i = 0; i < 2; i++) { // arcade
+			kpos[i][0] = WW / 2 - 112*SCL;
+			kpos[i][1] = HH - 21*SCL + i*8*SCL;
+		}
+		break;
 	}
 }
 
@@ -427,8 +433,7 @@ void Sbar_DrawInventoryBg()
 static inline s32 Sbar_Flash(f32 time, s32 active)
 {
 	s32 flash = (s32)(time * 10);
-	return flash >= 10 ? active : (flash % 5) + 2;
-}
+	return flash >= 10 ? active : (flash % 5) + 2; }
 
 void Sbar_DrawWeapons()
 {
@@ -458,6 +463,7 @@ void Sbar_DrawWeapons()
 		s32 flashon = Sbar_Flash(cl.time-cl.item_gettime[hipweapons[i]],
 			active);
 		active = scr_hudstyle.value ? active * 6 * SCL : 0;
+		if (scr_hudstyle.value == 4) active = 0; // arcade
 		s32 x = wpos[4][0] - active;
 		s32 y = wpos[4][1];
 		qpic_t *pic = NULL;
