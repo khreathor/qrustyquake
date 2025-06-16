@@ -279,7 +279,7 @@ void Sbar_CalcPos()
 		break;
 	case 4: // arcade
 		for (s32 i = 0; i < 4; i++) {
-			npos[i][0] = WW / 2 + 8*SCL + i*48*SCL;
+			npos[i][0] = WW / 2 + 10*SCL + i*48*SCL;
 			npos[i][1] = HH - 24*SCL;
 		}
 		break;
@@ -642,7 +642,7 @@ void Sbar_DrawAmmo()
 		x = WW - 108*SCL;
 		y = HH - 32*SCL;
 	} else if (scr_hudstyle.value == 4) { // arcade
-		x = WW / 2 - 74*SCL;
+		x = WW / 2 - 72*SCL;
 		y = HH - 24*SCL;
 	}
 	Sbar_DrawNum(x, y, cl.stats[STAT_AMMO], 3, cl.stats[STAT_AMMO] <= 10);
