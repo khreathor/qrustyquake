@@ -746,6 +746,8 @@ void Sbar_Draw()
 		|| (sb_updates >= vid.numpages && !scr_hudstyle.value)
 		|| cl.intermission)
 		return;
+	s32 skip_arcade = (scr_hudstyle.value == 4 && WW/SCL < 640);
+	if (skip_arcade) scr_hudstyle.value = 0;
 	if (sb_lines && WW/SCL > 320)
 		Draw_TileClear(0, HH - sb_lines/SCL, WW, sb_lines/SCL);
 	if (scr_hudstyle.value == 0 || scr_hudstyle.value == 4)
@@ -765,6 +767,7 @@ void Sbar_Draw()
 		Sbar_DrawInventory();
 	if (sb_lines/SCL > 24 && cl.maxclients != 1)
 		Sbar_DrawFrags();
+	if (skip_arcade) scr_hudstyle.value = 4;
 }
 
 #undef SCL
