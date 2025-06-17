@@ -4,7 +4,83 @@
 #define SCL uiscale // readability macros
 #define WW vid.width
 #define HH vid.height
-
+#define TT 0xff // transparent // pixel art macros
+#define SS 0x45 // shade
+#define BB 0x49 // base
+#define LL 0x4d // lit
+static qpic_t shield_r = { 8, 8, {
+        TT,SS,SS,SS,SS,SS, 0,TT,
+        SS,BB,BB,LL,BB,BB,SS, 0,
+        SS,BB,LL,BB,BB,BB,SS, 0,
+        SS,BB,LL,BB,BB,BB,SS, 0,
+        SS,BB,BB,BB,BB,BB,SS, 0,
+        TT,SS,BB,BB,BB,SS, 0,TT,
+        TT,TT,SS,BB,SS, 0,TT,TT,
+        TT,TT,TT,SS, 0,TT,TT,TT,
+}};
+#undef SS
+#undef BB
+#undef LL
+#define SS 0xca // shade
+#define BB 0xc6 // base
+#define LL 0xc2 // lit
+static qpic_t shield_y = { 8, 8, {
+        TT,SS,SS,SS,SS,SS, 0,TT,
+        SS,BB,BB,LL,BB,BB,SS, 0,
+        SS,BB,LL,BB,BB,BB,SS, 0,
+        SS,BB,LL,BB,BB,BB,SS, 0,
+        SS,BB,BB,BB,BB,BB,SS, 0,
+        TT,SS,BB,BB,BB,SS, 0,TT,
+        TT,TT,SS,BB,SS, 0,TT,TT,
+        TT,TT,TT,SS, 0,TT,TT,TT,
+}};
+#undef SS
+#undef BB
+#undef LL
+#define SS 0xba // shade
+#define BB 0xb6 // base
+#define LL 0xb2 // lit
+static qpic_t shield_g = { 8, 8, {
+        TT,SS,SS,SS,SS,SS, 0,TT,
+        SS,BB,BB,LL,BB,BB,SS, 0,
+        SS,BB,LL,BB,BB,BB,SS, 0,
+        SS,BB,LL,BB,BB,BB,SS, 0,
+        SS,BB,BB,BB,BB,BB,SS, 0,
+        TT,SS,BB,BB,BB,SS, 0,TT,
+        TT,TT,SS,BB,SS, 0,TT,TT,
+        TT,TT,TT,SS, 0,TT,TT,TT,
+}};
+#undef SS
+#undef BB
+#undef LL
+#define C1 0xf8
+#define C2 0x4f
+#define C3 0x4d
+#define C4 0x4b
+#define C5 0x4a
+#define C6 0x48
+#define C7 0x46
+static qpic_t pent8x8 = { 8, 8, {
+        C3,C5,TT,TT,TT,TT,C5,C3,
+        C5,C2,C2,C7,C7,C2,C2,C5,
+        C7,C5,C2,C1,C1,C2,C5,C7,
+        TT,C3,C1,C6,C6,C1,C3,TT,
+        C3,C2,C1,C4,C4,C1,C3,C4,
+        C7,C7,C5,C2,C2,C5,C7,C7,
+        TT,TT,C7,C2,C3,C7,TT,TT,
+        TT,TT,TT,C5,C6,TT,TT,TT,
+}};
+#undef C1
+#undef C2
+#undef C3
+#undef C4
+#undef C5
+#undef C6
+#undef C7
+#undef TT
+#undef SS
+#undef BB
+#undef LL
 static qpic_t *sb_nums[2][11];
 static qpic_t *sb_colon, *sb_slash;
 static qpic_t *sb_ibar;
@@ -748,9 +824,9 @@ void Sbar_DrawBg()
 
 static inline s32 int_offs(s32 i)
 {
-	if (i >= 100) return 12;
-	if (i >= 10) return 16;
-	return 20;
+	if (i >= 100) return 0;
+	if (i >= 10) return 4;
+	return 8;
 }
 
 void Sbar_Min(s32 color)
@@ -764,13 +840,18 @@ void Sbar_Min(s32 color)
 		sb_updates = 0;
 		return;
 	}
-	s32 x = WW/2 - int_offs(cl.stats[STAT_HEALTH])*SCL;
+	s32 x = WW/2 - 12*SCL - int_offs(cl.stats[STAT_HEALTH])*SCL;
 	const s32 y = HH - 12*SCL;
 	Sbar_DrawNumSmall(x, y, cl.stats[STAT_HEALTH], color);
-	x = WW/2 - int_offs(cl.stats[STAT_HEALTH])*SCL - 32*SCL;
 	s32 armor = cl.items & IT_INVULNERABILITY ? 666 : cl.stats[STAT_ARMOR];
+	x = WW/2 - 44*SCL - int_offs(armor)*SCL;
 	Sbar_DrawNumSmall(x, y, armor, color);
-	x = WW/2 - int_offs(cl.stats[STAT_AMMO])*SCL + 32*SCL;
+	x = WW/2 - 52*SCL + int_offs(armor)*SCL;
+	if (cl.items&IT_INVULNERABILITY)Draw_TransPicScaled(x,y+2,&pent8x8,SCL);
+	else if (cl.items&IT_ARMOR3)Draw_TransPicScaled(x, y+1, &shield_r, SCL);
+	else if (cl.items&IT_ARMOR2)Draw_TransPicScaled(x, y+1, &shield_y, SCL);
+	else if (cl.items&IT_ARMOR1)Draw_TransPicScaled(x, y+1, &shield_g, SCL);
+	x = WW/2 - int_offs(cl.stats[STAT_AMMO])*SCL + 20*SCL;
 	Sbar_DrawNumSmall(x, y, cl.stats[STAT_AMMO], color);
 }
 

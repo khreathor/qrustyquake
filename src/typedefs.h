@@ -901,7 +901,7 @@ typedef enum hudstyle_t {                                            // screen.h
 
 typedef struct {                                                        // wad.h
 	s32 width, height;
-	u8 data[4]; // variably sized
+	u8 data[]; // variably sized
 } qpic_t;
 typedef struct {
 	s8 identification[4]; // should be WAD2 or 2DAW
