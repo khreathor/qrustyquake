@@ -509,7 +509,7 @@ void Sbar_DrawInventory()
 	}
 }
 
-void Sbar_DrawFace()
+void Sbar_DrawFace() // ...and HP
 {
 	s32 x = WW / 2 - 24*SCL; // classic, qw
 	s32 y = HH - 24*SCL;
@@ -746,12 +746,32 @@ void Sbar_DrawBg()
 	}
 }
 
+static inline s32 int_offs(s32 i)
+{
+	if (i >= 100) return 12;
+	if (i >= 10) return 16;
+	return 20;
+}
+
+void Sbar_Min()
+{
+	s32 x = WW/2 - int_offs(cl.stats[STAT_HEALTH])*SCL;
+	const s32 y = HH - 12*SCL;
+	Sbar_DrawNumSmall(x, y, cl.stats[STAT_HEALTH], 1);
+	x = WW/2 - int_offs(cl.stats[STAT_HEALTH])*SCL - 32*SCL;
+	s32 armor = cl.items & IT_INVULNERABILITY ? 666 : cl.stats[STAT_ARMOR];
+	Sbar_DrawNumSmall(x, y, armor, 1);
+	x = WW/2 - int_offs(cl.stats[STAT_AMMO])*SCL + 32*SCL;
+	Sbar_DrawNumSmall(x, y, cl.stats[STAT_AMMO], 1);
+}
+
 void Sbar_Draw()
 {
 	if (scr_con_current == HH || !(scr_hudstyle.value || sb_lines)
 		|| (sb_updates >= vid.numpages && !scr_hudstyle.value)
 		|| cl.intermission)
 		return;
+	if (scr_hudstyle.value == 5) { Sbar_Min(); return; }
 	s32 skip_arcade = (scr_hudstyle.value == 4 && WW/SCL < 640);
 	if (skip_arcade) scr_hudstyle.value = 0;
 	if (sb_lines && WW/SCL > 320)
@@ -764,9 +784,9 @@ void Sbar_Draw()
 		Draw_TransPicScaled(WW/2-160*SCL, HH-24*SCL, sb_scorebar, SCL);
 		Sbar_SoloScoreboard();
 		sb_updates = 0;
-	} else {
+	} else { // bottom three, the big numbers
 		Sbar_DrawArmor();
-		Sbar_DrawFace();
+		Sbar_DrawFace(); // ...and HP
 		Sbar_DrawAmmo();
 	}
 	if (sb_lines/SCL > 24 || scr_hudstyle.value)
