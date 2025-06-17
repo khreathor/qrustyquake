@@ -755,6 +755,15 @@ static inline s32 int_offs(s32 i)
 
 void Sbar_Min()
 {
+	if (cl.gametype==GAME_DEATHMATCH&&(sb_showscores||scr_sidescore.value)){
+		Sbar_DeathmatchOverlay();
+	}
+	if (sb_showscores || cl.stats[STAT_HEALTH] <= 0) {
+		Draw_TransPicScaled(WW/2-160*SCL, HH-24*SCL, sb_scorebar, SCL);
+		Sbar_SoloScoreboard();
+		sb_updates = 0;
+		return;
+	}
 	s32 x = WW/2 - int_offs(cl.stats[STAT_HEALTH])*SCL;
 	const s32 y = HH - 12*SCL;
 	Sbar_DrawNumSmall(x, y, cl.stats[STAT_HEALTH], 1);
