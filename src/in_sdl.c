@@ -139,8 +139,9 @@ void IN_Shutdown() { mouse_avail = 0; }
 void IN_Move(usercmd_t *cmd)
 {
 	if (!mouse_avail) return;
-	if (!(SDLWindowFlags & (SDL_WINDOW_FULLSCREEN
-		| SDL_WINDOW_FULLSCREEN_DESKTOP)) && !_windowed_mouse.value) {
+	if ((!(SDLWindowFlags & (SDL_WINDOW_FULLSCREEN
+		| SDL_WINDOW_FULLSCREEN_DESKTOP)) && !_windowed_mouse.value)
+			|| key_dest != key_game) {
 		SDL_SetRelativeMouseMode(SDL_FALSE);
 		return;
 	}
