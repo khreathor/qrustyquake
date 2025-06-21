@@ -390,6 +390,7 @@ void Sbar_CalcPos()
 	iposy = HH - 40*SCL + arcade_offs_y;
 	switch ((s32)(hipnotic&&scr_hudstyle.value==3?2:scr_hudstyle.value)) {
 	default: // ammo counters
+	case 7: // classic (no bg)
 	case 0: // classic
 		for (s32 i = 0; i < 4; i++) {
 			npos[i][0] = WW / 2 - 150*SCL + i*48*SCL;
@@ -423,6 +424,7 @@ void Sbar_CalcPos()
 		break;
 	}
 	switch ((s32)scr_hudstyle.value) { // weapons
+	case 7: // classic (no bg)
 	case 0: // classic
 	case 4: // arcade
 		for (s32 i = 0; i < 9; i++) {
@@ -443,6 +445,7 @@ void Sbar_CalcPos()
 	}
 	switch ((s32)scr_hudstyle.value + 0x10*hipnotic) { // keys
 	default:
+	case 7: // classic (no bg)
 	case 0:
 	case 3:
 		for (s32 i = 0; i < 2; i++) { // classic, qw
@@ -967,8 +970,10 @@ void Sbar_Draw()
 		drawlayer = 0;
 		return;
 	}
-	s32 skip_arcade = (scr_hudstyle.value == 4 && WW/SCL < 640);
-	if (skip_arcade) scr_hudstyle.value = 0;
+	s32 force_vanilla = (scr_hudstyle.value == 4 && WW/SCL < 640)
+		|| scr_hudstyle.value == 7;
+	s32 oldhudstyle = scr_hudstyle.value;
+	if (force_vanilla) scr_hudstyle.value = 0;
 	if (sb_lines && WW/SCL > 320)
 		Draw_TileClear(0, HH - sb_lines/SCL, WW, sb_lines/SCL);
 	if (scr_hudstyle.value == 0 || scr_hudstyle.value == 4)
@@ -984,11 +989,11 @@ void Sbar_Draw()
 		Sbar_DrawFace(); // ...and HP
 		Sbar_DrawAmmo();
 	}
-	if (sb_lines/SCL > 24 || scr_hudstyle.value)
+	if (sb_lines/SCL > 24 || oldhudstyle)
 		Sbar_DrawInventory();
 	if (sb_lines/SCL > 24 && cl.maxclients != 1)
 		Sbar_DrawFrags();
-	if (skip_arcade) scr_hudstyle.value = 4;
+	if (force_vanilla) scr_hudstyle.value = oldhudstyle;
 	drawlayer = 0;
 }
 
