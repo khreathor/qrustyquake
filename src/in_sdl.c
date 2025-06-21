@@ -9,6 +9,7 @@ void Sys_SendKeyEvents()
 {
 	SDL_Event event;
 	s32 sym, state, mod; // keep here for OpenBSD compiler
+	s32 winW, winH;
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
 		case SDL_KEYDOWN:
@@ -109,9 +110,10 @@ void Sys_SendKeyEvents()
 			case SDL_WINDOWEVENT_RESIZED:
 			case SDL_WINDOWEVENT_SIZE_CHANGED:
 				SDLWindowFlags = SDL_GetWindowFlags(window);
-				windowSurface = SDL_GetWindowSurface(window);
-				Cvar_SetValue("realwidth", windowSurface->w);
-				Cvar_SetValue("realheight", windowSurface->h);
+				SDL_GetWindowSizeInPixels(window, &winW, &winH);
+				Sys_Printf("Resized Window: %d x %d\n", winW, winH);
+				Cvar_SetValue("realwidth", winW);
+				Cvar_SetValue("realheight", winH);
 				VID_CalcScreenDimensions(0);
 				break;
 			}

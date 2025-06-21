@@ -79,6 +79,8 @@ void VID_Init(u8 */*palette*/)
 	s32 winmode;
 	s32 defmode = -1;
 	s8 caption[50];
+	s32 winW, winH;
+
 	Cvar_RegisterVariable(&_windowed_mouse);
 	Cvar_RegisterVariable(&_vid_default_mode_win);
 	Cvar_RegisterVariable(&vid_mode);
@@ -179,15 +181,16 @@ void VID_Init(u8 */*palette*/)
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 	renderer = SDL_CreateRenderer(window, -1, 0);
 	if(!force_old_render){
-		argbbuffer = SDL_CreateRGBSurfaceWithFormatFrom(NULL, vid.width,
-			vid.height, 0, 0, SDL_PIXELFORMAT_ARGB8888);
+		SDL_GetWindowSizeInPixels(window, &winW, &winH);
+		Sys_Printf("Size in Pixels: %d x %d\n", winW, winH);
+		argbbuffer = SDL_CreateRGBSurfaceWithFormatFrom(NULL, winW,
+			winH, 0, 0, SDL_PIXELFORMAT_ARGB8888);
 		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
 			SDL_TEXTUREACCESS_STREAMING, vid.width, vid.height);
 	} else {
 		scaleBuffer = SDL_CreateRGBSurfaceWithFormat(0, vid.width,
 			vid.height, 8, SDL_GetWindowPixelFormat (window));
 	}
-	windowSurface = SDL_GetWindowSurface(window);
 	sprintf(caption, "QrustyQuake - Version %4.2f", VERSION);
 	SDL_SetWindowTitle(window, (const s8 *)&caption);
 	SDLWindowFlags = SDL_GetWindowFlags(window);
@@ -233,8 +236,7 @@ void VID_CalcScreenDimensions(cvar_t */*cvar*/)
 	// Get window dimensions
 	s32 winW, winH;
 	if(realwidth.value == 0 || realheight.value == 0){
-		winW = windowSurface->w;
-		winH = windowSurface->h;
+		SDL_GetWindowSizeInPixels(window, &winW, &winH);
 	}
 	else {
 		winW = realwidth.value;

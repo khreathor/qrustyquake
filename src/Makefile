@@ -1,3 +1,4 @@
+OS := $(shell uname)
 CC = gcc
 CFLAGS = -c -Wall -Wextra
 LDFLAGS = -lm -lSDL2
@@ -17,6 +18,7 @@ SRCS = chase.c cl_demo.c cl_input.c cl_main.c cl_parse.c \
 	snd_sdl.c sv_main.c sv_move.c sv_phys.c sv_user.c \
 	sys_sdl.c vid_sdl.c view.c wad.c world.c \
 	zone.c rgbtoi.c miniz.c vgatext.c image.c
+BREW := $(shell command -v brew)
 
 OBJS = $(SRCS:.c=.o)
 
@@ -24,16 +26,25 @@ BUILD_TYPE ?= release
 
 # technically for Haiku we should strip -lm since it is not needed there, but
 # they have a dummy library in its place so... shrug?
-ifeq ($(shell uname), Haiku)
-LDFLAGS+=-lnetwork
+ifeq ($(OS), Haiku)
+    LDFLAGS+=-lnetwork
+endif
+
+# macOS setup
+ifeq ($(OS), Darwin)
+    ifdef BREW
+        CFLAGS += -I$(shell brew --prefix)/include
+        LDFLAGS += -L$(shell brew --prefix)/lib
+        SDL2_FOUND := $(shell brew list sdl2 2>/dev/null)
+    endif
 endif
 
 ifeq ($(CC),tcc)
 CFLAGS += -DSDL_DISABLE_IMMINTRIN_H
 endif
 
-DEBUG_FLAGS = -g -O0 -DDEBUG
-RELEASE_FLAGS = -O3 -flto
+DEBUG_FLAGS = -g -O0 -DDEBUG -std=c23
+RELEASE_FLAGS = -O3 -flto -std=c23
 
 ifeq ($(BUILD_TYPE), debug)
 	CFLAGS += $(DEBUG_FLAGS)
@@ -44,15 +55,38 @@ endif
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
+	@echo "Something..."
 	$(CC) $(OBJS) $(LDFLAGS) -o $(TARGET)
 
 %.o: %.c
+	@echo "O and C..."
 	$(CC) $(CFLAGS) $< -o $@
 
-debug:
+sysconfig:
+	@echo "Checking for system specific configuration..."
+    ifeq ($(OS), Darwin)
+		@echo "MacOS detected..."
+		@printf "Checking for Homebrew: "
+        ifndef BREW
+			@echo "\033[31mNot found...\033[0m"
+        else
+			@echo "\033[32mFound!\033[0m"
+			@printf "Checking for SDL2: "
+            ifndef SDL2_FOUND
+				@echo "\033[33mInstalling...\033[0m"
+				@brew install sdl2;
+				@echo "Installed (I hope...)"
+            else
+				@echo "\033[32mFound\033[0m"
+            endif
+        endif
+    endif
+
+
+debug: sysconfig
 	$(MAKE) BUILD_TYPE=debug
 
-release:
+release: sysconfig
 	$(MAKE) BUILD_TYPE=release
 
 clean:
