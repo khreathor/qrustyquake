@@ -961,8 +961,10 @@ void Sbar_Draw()
 		|| (sb_updates >= vid.numpages && !scr_hudstyle.value)
 		|| cl.intermission)
 		return;
+	drawlayer = 2;
 	if (scr_hudstyle.value == 5 || scr_hudstyle.value == 6) {
 		Sbar_Min(scr_hudstyle.value == 5);
+		drawlayer = 0;
 		return;
 	}
 	s32 skip_arcade = (scr_hudstyle.value == 4 && WW/SCL < 640);
@@ -987,6 +989,7 @@ void Sbar_Draw()
 	if (sb_lines/SCL > 24 && cl.maxclients != 1)
 		Sbar_DrawFrags();
 	if (skip_arcade) scr_hudstyle.value = 4;
+	drawlayer = 0;
 }
 
 #undef SCL
