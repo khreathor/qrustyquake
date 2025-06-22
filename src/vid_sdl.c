@@ -162,6 +162,9 @@ void VID_Init(u8 */*palette*/)
 	if(COM_CheckParm("-borderless"))
 		flags |= SDL_WINDOW_BORDERLESS;
 	force_old_render = COM_CheckParm("-forceoldrender");
+#ifdef _WIN32
+	force_old_render = 1; // layers don't work on windeez, FIXME
+#endif
 	vimmode = COM_CheckParm("-vimmode");
 	if(vid.width > 1280 || vid.height > 1024)
 		Sys_Printf("vanilla maximum resolution is 1280x1024\n");
