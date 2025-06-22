@@ -5,6 +5,7 @@ static SDL_Surface *argbbuffer;
 static SDL_Texture *texture;
 static SDL_Rect blitRect;
 static SDL_Rect destRect;
+static SDL_Rect scRect;
 static SDL_Surface *scaleBuffer;
 static u32 force_old_render;
 static s32 VID_highhunkmark;
@@ -174,10 +175,15 @@ void VID_Init(u8 */*palette*/)
 				  realwidth.value, realheight.value, flags);
 	screen = SDL_CreateRGBSurfaceWithFormat(0, vid.width, vid.height,
 		8, SDL_PIXELFORMAT_INDEX8);
-	screen1 = SDL_CreateRGBSurfaceWithFormat(0, vid.width, vid.height,
+	screentop = SDL_CreateRGBSurfaceWithFormat(0, vid.width, vid.height,
 		8, SDL_PIXELFORMAT_INDEX8);
-	VID_SetPalette(host_basepal, screen1);
-	SDL_SetColorKey(screen1, 1, 255);
+	screenui = SDL_CreateRGBSurfaceWithFormat(0, vid.width, vid.height,
+		8, SDL_PIXELFORMAT_INDEX8);
+	scrbuffs[0] = screen; scrbuffs[1] = screentop; scrbuffs[2] = screenui;
+	VID_SetPalette(host_basepal, screentop);
+	SDL_SetColorKey(screentop, 1, 255);
+	VID_SetPalette(host_basepal, screenui);
+	SDL_SetColorKey(screenui, 1, 255);
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 	renderer = SDL_CreateRenderer(window, -1, 0);
 	if(!force_old_render){
@@ -273,20 +279,25 @@ void VID_CalcScreenDimensions(cvar_t */*cvar*/)
 
 void VID_Update()
 {
+	scRect.w = vid.width * (scr_uixscale.value>0 ? scr_uixscale.value : 1);
+	scRect.h = vid.height * (scr_uiyscale.value>0 ? scr_uiyscale.value : 1);
+	scRect.x = (vid.width - scRect.w) / 2;
+	scRect.y = (vid.height - scRect.h) / 2;
 	// Machines without a proper GPU will try to simulate one with software,
 	// adding a lot of overhead. In my tests software rendering accomplished
 	// the same result with almost a 200% performance increase.
 	if(force_old_render){ // pure software rendering
 		SDL_UpperBlit(screen, NULL, scaleBuffer, NULL);
-		SDL_UpperBlit(screen1, NULL, scaleBuffer, NULL);
-		SDL_UpperBlitScaled(scaleBuffer, &blitRect, windowSurface,
-				    &destRect);
+		SDL_UpperBlitScaled(screenui, &blitRect, scaleBuffer, &scRect);
+		SDL_UpperBlit(screentop, NULL, scaleBuffer, NULL);
+		SDL_UpperBlitScaled(scaleBuffer, &blitRect, windowSurface, &destRect);
 		SDL_UpdateWindowSurface(window);
 	} else { // hardware-accelerated rendering
 		SDL_LockTexture(texture, &blitRect, &argbbuffer->pixels,
 				&argbbuffer->pitch);
 		SDL_LowerBlit(screen, &blitRect, argbbuffer, &blitRect);
-		SDL_LowerBlit(screen1, &blitRect, argbbuffer, &blitRect);
+		SDL_LowerBlitScaled(screenui, &blitRect, argbbuffer, &scRect);
+		SDL_LowerBlit(screentop, &blitRect, argbbuffer, &blitRect);
 		SDL_UnlockTexture(texture);
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, texture, NULL, &destRect);
@@ -307,7 +318,8 @@ void VID_Update()
 		Cvar_SetValue("vid_mode", (f32)vid_modenum);
 		vid_realmode = vid_modenum;
 	}
-	memset(screen1->pixels, 255, vid.width*vid.height);
+	memset(screentop->pixels, 255, vid.width*vid.height);
+	memset(screenui->pixels, 255, vid.width*vid.height);
 }
 
 s8 *VID_GetModeDescription(s32 mode)
@@ -363,11 +375,15 @@ void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 *palette)
 	}
 	// CyanBun96: why do surfaces get freed but textures get destroyed :(
 	SDL_FreeSurface(screen);
-	SDL_FreeSurface(screen1);
+	SDL_FreeSurface(screentop);
+	SDL_FreeSurface(screenui);
 	screen = SDL_CreateRGBSurfaceWithFormat(0, vid.width, vid.height, 8,
 		SDL_PIXELFORMAT_INDEX8);
-	screen1 = SDL_CreateRGBSurfaceWithFormat(0, vid.width, vid.height, 8,
+	screentop = SDL_CreateRGBSurfaceWithFormat(0, vid.width, vid.height, 8,
 		SDL_PIXELFORMAT_INDEX8);
+	screenui = SDL_CreateRGBSurfaceWithFormat(0, vid.width, vid.height, 8,
+		SDL_PIXELFORMAT_INDEX8);
+	scrbuffs[0] = screen; scrbuffs[1] = screentop; scrbuffs[2] = screenui;
 	if(!force_old_render){
 		SDL_FreeSurface(argbbuffer);
 		argbbuffer = SDL_CreateRGBSurfaceWithFormatFrom(NULL, vid.width,
@@ -385,8 +401,10 @@ void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 *palette)
 	VID_AllocBuffers();
 	vid.recalc_refdef = 1;
 	VID_SetPalette(palette, screen);
-	VID_SetPalette(host_basepal, screen1);
-	SDL_SetColorKey(screen1, 1, 255);
+	VID_SetPalette(host_basepal, screentop);
+	SDL_SetColorKey(screentop, 1, 255);
+	VID_SetPalette(host_basepal, screenui);
+	SDL_SetColorKey(screenui, 1, 255);
 	if(!custw || !custh){
 		if(modenum <= 2){
 			SDL_SetWindowFullscreen(window, 0);

@@ -265,8 +265,10 @@ s8 m_return_reason[32];
 
 void M_DrawCharacter(s32 cx, s32 line, s32 num)
 { // Draws one solid graphics character
+	drawlayer = 2;
 	Draw_CharacterScaled(cx * uiscale + ((vid.width - 320 * uiscale) >> 1),
 			     line * uiscale, num, uiscale);
+	drawlayer = 0;
 }
 
 void M_DrawCursor(s32 x, s32 y)
@@ -299,8 +301,10 @@ void M_PrintWhite(s32 cx, s32 cy, s8 *str)
 
 void M_DrawTransPic(s32 x, s32 y, qpic_t *pic)
 {
+	drawlayer = 2;
 	Draw_TransPicScaled(x * uiscale + ((vid.width - 320 * uiscale) >> 1),
 			    y * uiscale, pic, uiscale);
+	drawlayer = 0;
 }
 
 void M_BuildTranslationTable(s32 top, s32 bottom)
@@ -1336,8 +1340,10 @@ void M_New_Draw()
 		M_Print(xoffset + 204, 72, "Arcade");
 	else if (scr_hudstyle.value == 5)
 		M_Print(xoffset + 204, 72, "Minimalist 1");
-	else
+	else if (scr_hudstyle.value == 6)
 		M_Print(xoffset + 204, 72, "Minimalist 2");
+	else
+		M_Print(xoffset + 204, 72, "Classic w/o BG");
 	M_Print(xoffset, 80, "          Translucency");
 	if (r_twopass.value == 0)
 		M_Print(xoffset + 204, 80, "Off (smart)");
@@ -1424,7 +1430,7 @@ void M_New_Key(s32 k)
 				      sensitivityyscale.value - 0.1);
 		else if (new_cursor == 5) {
 			if (scr_hudstyle.value == 0)
-				Cvar_SetValue("hudstyle", 6);
+				Cvar_SetValue("hudstyle", 7);
 			else
 				Cvar_SetValue("hudstyle", scr_hudstyle.value-1);
 		} else if (new_cursor == 6) {
@@ -1484,7 +1490,7 @@ void M_New_Key(s32 k)
 			Cvar_SetValue("sensitivityyscale",
 				      sensitivityyscale.value + 0.1);
 		else if (new_cursor == 5) {
-			if (scr_hudstyle.value == 6)
+			if (scr_hudstyle.value == 7)
 				Cvar_SetValue("hudstyle", 0);
 			else
 				Cvar_SetValue("hudstyle", scr_hudstyle.value+1);

@@ -19,8 +19,8 @@ EX u32 oldmodes[NUM_OLDMODES*2];                                    // vid_sdl.c
 EX s8 modelist[NUM_OLDMODES][8];
 EX SDL_Window *window;
 EX SDL_Surface *windowSurface;
-EX SDL_Surface *screen;
-EX SDL_Surface *screen1;
+EX SDL_Surface *screen, *screentop, *screenui;
+EX SDL_Surface *scrbuffs[3];
 EX u32 SDLWindowFlags;
 EX u32 uiscale;
 EX u32 vimmode;

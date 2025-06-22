@@ -78,6 +78,8 @@ void R_Init()
 	Cvar_RegisterVariable(&vid_cwidth);
 	Cvar_RegisterVariable(&vid_cheight);
 	Cvar_RegisterVariable(&vid_cwmode);
+	Cvar_RegisterVariable(&scr_uixscale);
+	Cvar_RegisterVariable(&scr_uiyscale);
 	Cvar_SetCallback(&r_labmixpal, build_color_mix_lut);
 	Cvar_SetCallback(&r_fogbrightness, Fog_SetPalIndex);
 	Cvar_SetCallback(&r_wateralpha, R_SetWateralpha_f);
