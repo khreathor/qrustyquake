@@ -30,6 +30,9 @@ void R_InitTextures()
 	}
 }
 
+void R_ViewChangedCallback(cvar_t*/*null*/)
+{ R_ViewChanged(&r_refdef.vrect, sb_lines, pixelAspect); }
+
 void R_Init()
 {
 	R_InitTurb();
@@ -80,12 +83,14 @@ void R_Init()
 	Cvar_RegisterVariable(&vid_cwmode);
 	Cvar_RegisterVariable(&scr_uixscale);
 	Cvar_RegisterVariable(&scr_uiyscale);
+	Cvar_RegisterVariable(&yaspectscale);
 	Cvar_SetCallback(&r_labmixpal, build_color_mix_lut);
 	Cvar_SetCallback(&r_fogbrightness, Fog_SetPalIndex);
 	Cvar_SetCallback(&r_wateralpha, R_SetWateralpha_f);
 	Cvar_SetCallback(&r_lavaalpha, R_SetLavaalpha_f);
 	Cvar_SetCallback(&r_telealpha, R_SetTelealpha_f);
 	Cvar_SetCallback(&r_slimealpha, R_SetSlimealpha_f);
+	Cvar_SetCallback(&yaspectscale, R_ViewChangedCallback);
 	view_clipplanes[0].leftedge = 1;
 	view_clipplanes[1].rightedge = 1;
 	view_clipplanes[1].leftedge = view_clipplanes[2].leftedge =
@@ -144,6 +149,7 @@ void R_SetVrect(vrect_t *pvrectin, vrect_t *pvrect, s32 lineadj)
 void R_ViewChanged(vrect_t *pvrect, s32 lineadj, f32 aspect)
 { // Called every time the vid structure or r_refdef changes.
  // Guaranteed to be called before the first refresh
+	aspect *= yaspectscale.value;
 	r_viewchanged = 1;
 	R_SetVrect(pvrect, &r_refdef.vrect, lineadj);
 	r_refdef.horizontalFieldOfView = 2.0 * tan(r_refdef.fov_x / 360 * M_PI);
