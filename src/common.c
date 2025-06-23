@@ -1264,6 +1264,74 @@ static void COM_AddGameDirectory(const s8 *base, const s8 *dir)
 	}
 }
 
+void SetWorldPal(s8 *path, s8 *cmappath)
+{
+	u8 worldpalbuf[768];
+	s8 ppath[MAX_OSPATH] = "gfx/";
+	q_strlcat(ppath, path, MAX_OSPATH);
+	q_strlcat(ppath, ".lmp", MAX_OSPATH);
+	FILE *f;
+	COM_FOpenFile(ppath, &f, NULL);
+	if(!f){Con_Printf("Couldn't load %s\n", ppath); return;}
+	if(fread(worldpalbuf, 768, 1, f) != 1)
+		{Con_Printf("Failed reading %s\n", ppath); fclose(f); return;}
+	fclose(f);
+	u8 worldcmapbuf[256*64];
+	s8 cmpath[MAX_OSPATH] = "gfx/";
+	q_strlcat(cmpath, cmappath, MAX_OSPATH);
+	q_strlcat(cmpath, ".lmp", MAX_OSPATH);
+	COM_FOpenFile(cmpath, &f, NULL);
+	if(!f){Con_Printf("Couldn't load %s\n", cmpath); return;}
+	if(fread(worldcmapbuf, 256*64, 1, f) != 1)
+		{Con_Printf("Failed reading %s\n", cmpath); fclose(f); return;}
+	fclose(f);
+	Con_Printf("Setting %s %s\n", ppath, cmpath);
+	memcpy(worldpal, worldpalbuf, 768);
+	q_strlcpy(worldpalname, path, MAX_OSPATH);
+	VID_SetPalette(worldpal, screen);
+	memcpy(host_colormap, worldcmapbuf, 64*256);
+	q_strlcpy(worldcmapname, cmappath, MAX_OSPATH);
+}
+
+void SetUiPal(s8 *path)
+{
+	u8 uipalbuf[768];
+	s8 ppath[MAX_OSPATH] = "gfx/";
+	q_strlcat(ppath, path, MAX_OSPATH);
+	q_strlcat(ppath, ".lmp", MAX_OSPATH);
+	FILE *f;
+	COM_FOpenFile(ppath, &f, NULL);
+	if(!f){Con_Printf("Couldn't load %s\n", ppath); return;}
+	if(fread(uipalbuf, 768, 1, f) != 1)
+		{Con_Printf("Failed reading %s\n", ppath); fclose(f); return;}
+	fclose(f);
+	Con_Printf("Setting %s\n", ppath);
+	memcpy(uipal, uipalbuf, 768);
+	q_strlcpy(uipalname, path, MAX_OSPATH);
+	VID_SetPalette(uipal, screenui);
+}
+
+static void COM_WorldPal_f()
+{
+	if(Cmd_Argc() <= 2){
+		Con_Printf("Usage: worldpal [palette] [colormap]\n");
+		if (worldpalname[0] && worldcmapname[0])
+		    Con_Printf("Current: %s %s\n", worldpalname, worldcmapname);
+		return;
+	}
+	SetWorldPal(Cmd_Argv(1), Cmd_Argv(2));
+}
+
+static void COM_UiPal_f()
+{
+	if(Cmd_Argc() <= 1){
+		Con_Printf("Usage: uipal [palette]\n");
+		if (uipalname[0]) Con_Printf("Current: %s\n", uipalname);
+		return;
+	}
+	SetUiPal(Cmd_Argv(1));
+}
+
 static void COM_Game_f()
 {
 	if(Cmd_Argc() <= 1){
@@ -1382,6 +1450,8 @@ void COM_InitFilesystem()
 	Cvar_RegisterVariable(&cmdline);
 	Cmd_AddCommand("path", COM_Path_f);
 	Cmd_AddCommand("game", COM_Game_f);
+	Cmd_AddCommand("worldpal", COM_WorldPal_f);
+	Cmd_AddCommand("uipal", COM_UiPal_f);
 	s32 i = COM_CheckParm("-basedir");
 	if(i && i < com_argc-1)
 		q_strlcpy(com_basedir, com_argv[i + 1], sizeof(com_basedir));
