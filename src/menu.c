@@ -957,7 +957,7 @@ void M_Menu_Options_f()
 	m_state = m_options;
 	m_entersound = 1;
 	drawmousemenu = !(SDLWindowFlags & (SDL_WINDOW_FULLSCREEN
-					    | SDL_WINDOW_FULLSCREEN_DESKTOP));
+					    /*| SDL_WINDOW_FULLSCREEN_DESKTOP*/));
 	if (options_cursor == 13
 	    && drawmousemenu && !_windowed_mouse.value && !newoptions.value) {
 		options_cursor = 0;
@@ -1095,7 +1095,7 @@ void M_Options_Draw()
 void M_Options_Key(s32 k)
 {
 	drawmousemenu = !(SDLWindowFlags & (SDL_WINDOW_FULLSCREEN
-					    | SDL_WINDOW_FULLSCREEN_DESKTOP));
+					    /*| SDL_WINDOW_FULLSCREEN_DESKTOP*/));
 	switch (k) {
 	case K_ESCAPE:
 		M_Menu_Main_f();

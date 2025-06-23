@@ -1622,12 +1622,14 @@ unsigned COM_HashBlock(const void *data, size_t size)
 
 size_t mz_zip_file_read_func(void *opaque, mz_uint64 ofs, void *buf, size_t n)
 {
+/*
 	if(SDL_RWseek((SDL_RWops*)opaque, (Sint64)ofs, RW_SEEK_SET)<0) return 0;
-	return SDL_RWread((SDL_RWops*)opaque, buf, 1, n);
+	return SDL_RWread((SDL_RWops*)opaque, buf, 1, n);*/
 }
 
 bool LOC_LoadFile (const s8 *file)
 {
+	/*
 	s8 path[1024];
 	s32 i,lineno,warnings;
 	s8 *cursor;
@@ -1802,6 +1804,7 @@ Con_Printf("LOC_LoadFile: unrecognized escape sequence \\%c on line %d\n",
 	Con_SafePrintf ("Loaded %d strings from '%s'\n",
 			localization.numentries, path);
 	return 1;
+	*/
 }
 
 void LOC_Init() { LOC_LoadFile("localization/loc_english.txt"); }

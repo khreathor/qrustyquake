@@ -9,6 +9,35 @@ static SDL_Rect scRect;
 static SDL_Surface *scaleBuffer;
 static u32 force_old_render;
 static s32 VID_highhunkmark;
+static u8 screenpixels[MAXWIDTH*MAXHEIGHT];
+static u8 toppixels[MAXWIDTH*MAXHEIGHT];
+static u8 uipixels[MAXWIDTH*MAXHEIGHT];
+static u8 argbpixels[MAXWIDTH*MAXHEIGHT];
+static SDL_PixelFormat window_format;
+
+// SDL3 compat stuff
+SDL_Surface *SDL_CreateRGBSurface(Uint32 flags, int width, int height, int depth, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
+{
+	return SDL_CreateSurface(width, height,
+			SDL_GetPixelFormatForMasks(depth, Rmask, Gmask, Bmask, Amask));
+}
+
+SDL_Surface *SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height, int depth, Uint32 format)
+{
+	return SDL_CreateSurface(width, height, format);
+}
+
+SDL_Surface *SDL_CreateRGBSurfaceFrom(void *pixels, int width, int height, int depth, int pitch, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
+{
+	return SDL_CreateSurfaceFrom(width, height,
+			SDL_GetPixelFormatForMasks(depth, Rmask, Gmask, Bmask, Amask),
+			pixels, pitch);
+}
+
+SDL_Surface *SDL_CreateRGBSurfaceWithFormatFrom(void *pixels, int width, int height, int depth, int pitch, Uint32 format)
+{
+	return SDL_CreateSurfaceFrom(width, height, format, pixels, pitch);
+}
 
 void VID_CalcScreenDimensions(cvar_t *cvar);
 void VID_AllocBuffers();
@@ -51,7 +80,7 @@ s32 VID_GetConfigCvar(const s8 *cvname)
 s32 VID_DetermineMode()
 {
 	s32 win = !(SDLWindowFlags & (SDL_WINDOW_FULLSCREEN
-				      | SDL_WINDOW_FULLSCREEN_DESKTOP));
+				      /*| SDL_WINDOW_FULLSCREEN_DESKTOP*/));
 	for(s32 i = 0; i < NUM_OLDMODES; ++i){
 		if(i > 2 ? !win : win && vid.width == oldmodes[i * 2]
 		    && vid.height == oldmodes[i * 2 + 1])
@@ -60,6 +89,9 @@ s32 VID_DetermineMode()
 	return -1;
 }
 
+SDL_Palette *sdlworldpal;
+SDL_Palette *sdltoppal;
+SDL_Palette *sdluipal;
 void VID_SetPalette(u8 *palette, SDL_Surface *dest)
 {
 	SDL_Color colors[256];
@@ -70,7 +102,11 @@ void VID_SetPalette(u8 *palette, SDL_Surface *dest)
 		colors[i].g = *palette++;
 		colors[i].b = *palette++;
 	}
-	SDL_SetPaletteColors(dest->format->palette, colors, 0, 256);
+	SDL_Palette *pal = sdlworldpal;
+	if(dest == screentop) pal = sdltoppal;
+	else if(dest == screenui) pal = sdluipal;
+	SDL_SetPaletteColors(pal, colors, 0, 256);
+	SDL_SetSurfacePalette(dest, pal);
 }
 
 void VID_Init(u8 */*palette*/)
@@ -145,18 +181,18 @@ void VID_Init(u8 */*palette*/)
 	flags = SDL_WINDOW_RESIZABLE;
 	// Set the highdpi flag - this makes a big difference on Macs with
 	// retina displays, especially when using small window sizes.
-	flags |= SDL_WINDOW_ALLOW_HIGHDPI;
+	//flags |= SDL_WINDOW_ALLOW_HIGHDPI;
 	// CyanBun96: what most modern games call "Fullscreen borderless
 	// can be achieved by passing -fullscreen_desktop and -borderless
 	// -fullscreen will try to change the display resolution
 	if(COM_CheckParm("-fullscreen") || confwmode == 1)
 		flags |= SDL_WINDOW_FULLSCREEN;
-	else if(COM_CheckParm("-fullscreen_desktop") || confwmode == 2)
-		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+	//else if(COM_CheckParm("-fullscreen_desktop") || confwmode == 2)
+	//	flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 	else if(COM_CheckParm("-window") || confwmode == 0)
 		flags &= ~SDL_WINDOW_FULLSCREEN;
-	else if(winmode == 0)
-		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+	//else if(winmode == 0)
+	//	flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 	else if(winmode == 1)
 		flags &= ~SDL_WINDOW_FULLSCREEN;
 	if(COM_CheckParm("-borderless"))
@@ -168,27 +204,36 @@ void VID_Init(u8 */*palette*/)
 	aspectr.value = 1.333333;
 	realwidth.value = vid.width;
 	realheight.value = (s32)(vid.width / aspectr.value + 0.5);
-	window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_UNDEFINED,
-				  SDL_WINDOWPOS_UNDEFINED,
-				  realwidth.value, realheight.value, flags);
-	screen = SDL_CreateRGBSurfaceWithFormat(0, vid.width, vid.height,
-		8, SDL_PIXELFORMAT_INDEX8);
-	screentop = SDL_CreateRGBSurfaceWithFormat(0, vid.width, vid.height,
-		8, SDL_PIXELFORMAT_INDEX8);
-	screenui = SDL_CreateRGBSurfaceWithFormat(0, vid.width, vid.height,
-		8, SDL_PIXELFORMAT_INDEX8);
+	window = SDL_CreateWindow("QrustyQuake",realwidth.value,realheight.value,SDL_WINDOW_RESIZABLE);
+	SDL_SetWindowMinimumSize(window, 320, 200);
+	screen = SDL_CreateSurfaceFrom(vid.width, vid.height, SDL_PIXELFORMAT_INDEX8, NULL, vid.width);
+		sdlworldpal = SDL_CreateSurfacePalette(screen);
+	screenui = SDL_CreateSurfaceFrom(vid.width, vid.height, SDL_PIXELFORMAT_INDEX8, NULL, vid.width);
+		sdlworldpal = SDL_CreateSurfacePalette(screen);
+	screentop = SDL_CreateSurfaceFrom(vid.width, vid.height, SDL_PIXELFORMAT_INDEX8, NULL, vid.width);
+		sdlworldpal = SDL_CreateSurfacePalette(screen);
+	screen->pixels = screenpixels;
+	screenui->pixels = uipixels;
+	screentop->pixels = toppixels;
+	screen->pitch = vid.width;
+	screenui->pitch = vid.width;
+	screentop->pitch = vid.width;
+	vid.buffer = screenpixels;
 	scrbuffs[0] = screen; scrbuffs[1] = screentop; scrbuffs[2] = screenui;
 	VID_SetPalette(host_basepal, screentop);
-	SDL_SetColorKey(screentop, 1, 255);
+	SDL_SetSurfaceColorKey(screentop, 1, 255);
 	VID_SetPalette(host_basepal, screenui);
-	SDL_SetColorKey(screenui, 1, 255);
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
-	renderer = SDL_CreateRenderer(window, -1, 0);
+	SDL_SetSurfaceColorKey(screenui, 1, 255);
+	//SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
+	renderer = SDL_CreateRenderer(window, NULL);
+	window_format = SDL_GetWindowPixelFormat(window);
 	if(!force_old_render){
-		argbbuffer = SDL_CreateRGBSurfaceWithFormatFrom(NULL, vid.width,
-			vid.height, 0, 0, SDL_PIXELFORMAT_ARGB8888);
-		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
-			SDL_TEXTUREACCESS_STREAMING, vid.width, vid.height);
+		argbbuffer = SDL_CreateSurfaceFrom(vid.width, vid.height, window_format, NULL, vid.width*SDL_BYTESPERPIXEL(window_format));
+		argbbuffer->pixels = argbpixels;
+		argbbuffer->pitch = vid.width;
+		texture = SDL_CreateTexture(renderer, window_format, SDL_TEXTUREACCESS_STREAMING, vid.width, vid.height);
+		if(!texture){printf("%s\n", SDL_GetError());__asm__("int3");}
+		//SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
 	} else {
 		scaleBuffer = SDL_CreateRGBSurfaceWithFormat(0, vid.width,
 			vid.height, 8, SDL_GetWindowPixelFormat (window));
@@ -200,9 +245,8 @@ void VID_Init(u8 */*palette*/)
 	vid.aspect = ((f32)vid.height / (f32)vid.width) * (320.0 / 240.0);
 	vid.numpages = 1;
 	vid.colormap = host_colormap;
-	vid.buffer = screen->pixels;
 	VID_AllocBuffers(); // allocate z buffer, surface cache and the fbuffer
-	SDL_ShowCursor(0); // initialize the mouse
+	//SDL_ShowCursor(0); // initialize the mouse
 	if(defmode >= 0)
 		vid_modenum = defmode;
 	else
@@ -277,6 +321,7 @@ void VID_CalcScreenDimensions(cvar_t */*cvar*/)
 
 void VID_Update()
 {
+	const SDL_FRect destRectF = {destRect.x, destRect.y, destRect.w, destRect.h};
 	scRect.w = vid.width * (scr_uixscale.value>0 ? scr_uixscale.value : 1);
 	scRect.h = vid.height * (scr_uiyscale.value>0 ? scr_uiyscale.value : 1);
 	scRect.x = (vid.width - scRect.w) / 2;
@@ -285,28 +330,26 @@ void VID_Update()
 	// adding a lot of overhead. In my tests software rendering accomplished
 	// the same result with almost a 200% performance increase.
 	if(force_old_render){ // pure software rendering
-		SDL_UpperBlit(screen, NULL, scaleBuffer, NULL);
-#ifdef _WIN32 // scaled layers don't work on windeez, FIXME
-		SDL_UpperBlit(screenui, &blitRect, scaleBuffer, &blitRect);
-#else
-		SDL_UpperBlitScaled(screenui, &blitRect, scaleBuffer, &scRect);
-#endif
-		SDL_UpperBlit(screentop, NULL, scaleBuffer, NULL);
-		SDL_UpperBlitScaled(scaleBuffer, &blitRect, windowSurface, &destRect);
+		SDL_BlitSurface(screen, NULL, scaleBuffer, NULL);
+		//SDL_BlitSurfaceScaled(screenui, &blitRect, scaleBuffer, &scRect, SDL_SCALEMODE_NEAREST);
+		//SDL_BlitSurface(screentop, NULL, scaleBuffer, NULL);
+		SDL_BlitSurfaceScaled(scaleBuffer, &blitRect, windowSurface, &destRect, SDL_SCALEMODE_NEAREST);
 		SDL_UpdateWindowSurface(window);
 	} else { // hardware-accelerated rendering
-		SDL_LockTexture(texture, &blitRect, &argbbuffer->pixels,
-				&argbbuffer->pitch);
-		SDL_LowerBlit(screen, &blitRect, argbbuffer, &blitRect);
-#ifdef _WIN32 // scaled layers don't work on windeez, FIXME
-		SDL_LowerBlit(screenui, &blitRect, argbbuffer, &blitRect);
-#else
-		SDL_LowerBlitScaled(screenui, &blitRect, argbbuffer, &scRect);
-#endif
-		SDL_LowerBlit(screentop, &blitRect, argbbuffer, &blitRect);
-		SDL_UnlockTexture(texture);
+		screen->pixels = screenpixels;
+		screenui->pixels = uipixels;
+		screentop->pixels = toppixels;
+		screen->pitch = vid.width;
+		screenui->pitch = vid.width;
+		screentop->pitch = vid.width;
+		if (SDL_LockTexture(texture, NULL, &argbbuffer->pixels, &argbbuffer->pitch)){
+			SDL_BlitSurface(screen, &blitRect, argbbuffer, &blitRect);
+			//SDL_BlitSurfaceScaled(screenui, NULL, argbbuffer, &scRect, SDL_SCALEMODE_NEAREST);
+			//SDL_BlitSurface(screentop, NULL, argbbuffer, NULL);
+			SDL_UnlockTexture(texture);
+		} else { printf("Couldn't lock texture %s\n", SDL_GetError()); }
 		SDL_RenderClear(renderer);
-		SDL_RenderCopy(renderer, texture, NULL, &destRect);
+		SDL_RenderTexture(renderer, texture, NULL, NULL);
 		SDL_RenderPresent(renderer);
 	}
 	if(uiscale != scr_uiscale.value // TODO make this a callback function
@@ -324,7 +367,7 @@ void VID_Update()
 		Cvar_SetValue("vid_mode", (f32)vid_modenum);
 		vid_realmode = vid_modenum;
 	}
-	memset(screentop->pixels, 255, vid.width*vid.height);
+	//memset(screentop->pixels, 255, vid.width*vid.height);
 	memset(screenui->pixels, 255, vid.width*vid.height);
 }
 
@@ -379,38 +422,42 @@ void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 */*palette*
 		vid.height = oldmodes[modenum * 2 + 1];
 		vid_modenum = modenum;
 	}
-	// CyanBun96: why do surfaces get freed but textures get destroyed :(
-	SDL_FreeSurface(screen);
-	SDL_FreeSurface(screentop);
-	SDL_FreeSurface(screenui);
-	screen = SDL_CreateRGBSurfaceWithFormat(0, vid.width, vid.height, 8,
-		SDL_PIXELFORMAT_INDEX8);
-	screentop = SDL_CreateRGBSurfaceWithFormat(0, vid.width, vid.height, 8,
-		SDL_PIXELFORMAT_INDEX8);
-	screenui = SDL_CreateRGBSurfaceWithFormat(0, vid.width, vid.height, 8,
-		SDL_PIXELFORMAT_INDEX8);
+	SDL_DestroySurface(screen);
+	SDL_DestroySurface(screentop);
+	SDL_DestroySurface(screenui);
+	screen = SDL_CreateSurfaceFrom(vid.width, vid.height, SDL_PIXELFORMAT_INDEX8, NULL, vid.width);
+		sdlworldpal = SDL_CreateSurfacePalette(screen);
+	screenui = SDL_CreateSurfaceFrom(vid.width, vid.height, SDL_PIXELFORMAT_INDEX8, NULL, vid.width);
+		sdlworldpal = SDL_CreateSurfacePalette(screen);
+	screentop = SDL_CreateSurfaceFrom(vid.width, vid.height, SDL_PIXELFORMAT_INDEX8, NULL, vid.width);
+		sdlworldpal = SDL_CreateSurfacePalette(screen);
 	scrbuffs[0] = screen; scrbuffs[1] = screentop; scrbuffs[2] = screenui;
 	if(!force_old_render){
-		SDL_FreeSurface(argbbuffer);
+		SDL_DestroySurface(argbbuffer);
 		argbbuffer = SDL_CreateRGBSurfaceWithFormatFrom(NULL, vid.width,
-			vid.height, 0, 0, SDL_PIXELFORMAT_ARGB8888);
+			vid.height, 0, 0, window_format);
 		SDL_DestroyTexture(texture);
-		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
-			SDL_TEXTUREACCESS_STREAMING, vid.width, vid.height);
+		texture = SDL_CreateTexture(renderer, window_format, SDL_TEXTUREACCESS_STREAMING, vid.width, vid.height);
 	} else {
-		SDL_FreeSurface(scaleBuffer);
+		SDL_DestroySurface(scaleBuffer);
 		scaleBuffer = SDL_CreateRGBSurfaceWithFormat(0, vid.width,
 			vid.height, 8, SDL_GetWindowPixelFormat (window));
 	}
 	vid.aspect = ((f32)vid.height / (f32)vid.width) * (320.0 / 240.0);
+	screen->pixels = screenpixels;
+	screenui->pixels = uipixels;
+	screentop->pixels = toppixels;
+	screen->pitch = vid.width;
+	screenui->pitch = vid.width;
+	screentop->pitch = vid.width;
 	vid.buffer = screen->pixels;
 	VID_AllocBuffers();
 	vid.recalc_refdef = 1;
 	VID_SetPalette(worldpalname[0]?worldpal:host_basepal, screen);
 	VID_SetPalette(uipalname[0]?uipal:host_basepal, screenui);
-	SDL_SetColorKey(screenui, 1, 255);
+	SDL_SetSurfaceColorKey(screenui, 1, 255);
 	VID_SetPalette(host_basepal, screentop);
-	SDL_SetColorKey(screentop, 1, 255);
+	SDL_SetSurfaceColorKey(screentop, 1, 255);
 	if(!custw || !custh){
 		if(modenum <= 2){
 			SDL_SetWindowFullscreen(window, 0);
@@ -420,7 +467,7 @@ void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 */*palette*
 				SDL_WINDOWPOS_UNDEFINED);
 		} else {
 			SDL_SetWindowFullscreen(window,
-				SDL_WINDOW_FULLSCREEN_DESKTOP);
+				SDL_WINDOW_FULLSCREEN/*_DESKTOP*/);
 		}
 	} else {
 		if(custwinm == 0){
@@ -433,7 +480,7 @@ void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 */*palette*
 			SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
 		} else {
 			SDL_SetWindowFullscreen(window,
-				SDL_WINDOW_FULLSCREEN_DESKTOP);
+				SDL_WINDOW_FULLSCREEN/*_DESKTOP*/);
 		}
 	}
 	realwidth.value = 0;

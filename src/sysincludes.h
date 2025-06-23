@@ -32,14 +32,14 @@
 #include <sys/wait.h>
 #include <sys/time.h>
 #include <sys/mman.h>
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 #else
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #ifndef _WINCROSS
 #include <SDL.h>
 #else
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 #endif
 #include <direct.h>
 #include <io.h>

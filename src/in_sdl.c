@@ -3,10 +3,11 @@
 static bool mouse_avail;
 static f32 mouse_x;
 static f32 mouse_y;
-static s32 buttonremap[] = { K_MOUSE1, K_MOUSE3, K_MOUSE2, K_MOUSE4, K_MOUSE5 };
+//static s32 buttonremap[] = { K_MOUSE1, K_MOUSE3, K_MOUSE2, K_MOUSE4, K_MOUSE5 };
 
 void Sys_SendKeyEvents()
 {
+	/*
 	SDL_Event event;
 	s32 sym, state, mod; // keep here for OpenBSD compiler
 	while (SDL_PollEvent(&event)) {
@@ -125,6 +126,7 @@ void Sys_SendKeyEvents()
 			break;
 		}
 	}
+	*/
 }
 
 void IN_Init()
@@ -138,6 +140,7 @@ void IN_Shutdown() { mouse_avail = 0; }
 
 void IN_Move(usercmd_t *cmd)
 {
+	/*
 	if (!mouse_avail) return;
 	if ((!(SDLWindowFlags & (SDL_WINDOW_FULLSCREEN
 		| SDL_WINDOW_FULLSCREEN_DESKTOP)) && !_windowed_mouse.value)
@@ -167,4 +170,5 @@ void IN_Move(usercmd_t *cmd)
 			cmd->forwardmove -= m_forward.value * mouse_y;
 	}
 	mouse_x = mouse_y = 0.0;
+	*/
 }

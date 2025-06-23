@@ -30,6 +30,7 @@ static void render_cell(u8 *image, s32 pitch, Uint16 cell, s32 noblink)
 
 s32 vgatext_main(SDL_Window *window, Uint16 *screen)
 {
+	/*
 	u8 image0[400][640];
 	u8 image1[400][640];
 	u32 format;
@@ -94,4 +95,5 @@ done:
 	SDL_FreeSurface(windowsurf0);
 	SDL_FreeSurface(windowsurf1);
 	return 0;
+	*/
 }

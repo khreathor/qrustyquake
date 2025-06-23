@@ -10,6 +10,7 @@ static s32 buffersize;
 
 static void SDLCALL paint_audio(void */*unused*/, Uint8 *stream, s32 len)
 {
+	/*
 	if(!shm) { // shouldn't happen, but just in case
 		memset(stream, 0, len);
 		return;
@@ -33,10 +34,12 @@ static void SDLCALL paint_audio(void */*unused*/, Uint8 *stream, s32 len)
 	}
 	if(shm->samplepos >= buffersize)
 		shm->samplepos = 0;
+		*/
 }
 
 bool SNDDMA_Init(dma_t *dma)
 {
+	/*
 	s8 drivername[128];
 	if(SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
 		Con_Printf("Couldn't init SDL audio: %s\n", SDL_GetError());
@@ -97,10 +100,12 @@ bool SNDDMA_Init(dma_t *dma)
 	}
 	SDL_PauseAudio(0);
 	return 1;
+	*/
 }
 
 void SNDDMA_Shutdown()
 {
+	/*
 	if(shm) {
 		Con_Printf("Shutting down SDL sound\n");
 		SDL_CloseAudio();
@@ -109,11 +114,12 @@ void SNDDMA_Shutdown()
 		shm->buffer = NULL;
 		shm = NULL;
 	}
+	*/
 }
 
 s32 SNDDMA_GetDMAPos() { return shm->samplepos; }
-void SNDDMA_LockBuffer() { SDL_LockAudio(); }
-void SNDDMA_Submit() { SDL_UnlockAudio(); }
-void SNDDMA_BlockSound() { SDL_PauseAudio(1); }
-void SNDDMA_UnblockSound(){ SDL_PauseAudio(0); }
+void SNDDMA_LockBuffer() { /*SDL_LockAudio();*/ }
+void SNDDMA_Submit() { /*SDL_UnlockAudio();*/ }
+void SNDDMA_BlockSound() { /*SDL_PauseAudio(1);*/ }
+void SNDDMA_UnblockSound(){ /*SDL_PauseAudio(0);*/ }
 
