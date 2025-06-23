@@ -200,6 +200,7 @@ s8 skybox_name[1024]; // name of current skybox, or "" if no skybox
 drawsurf_t r_drawsurf;                                               // r_surf.c
 u8 lit_loaded = 0;
 u8 worldpal[768]; // custom world palette, set with "worldpal"       // common.c
+u8 worldcmap[64*256];
 u8 uipal[768];
 s8 worldpalname[MAX_OSPATH];
 s8 worldcmapname[MAX_OSPATH];

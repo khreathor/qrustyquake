@@ -15,6 +15,8 @@
 #define	FS_ENT_NONE		(0)
 #define	FS_ENT_FILE		(1 << 0)
 #define	FS_ENT_DIRECTORY	(1 << 1)
+#define CURWORLDPAL ((u8*)(worldpalname[0]?worldpal:host_basepal))
+#define CURWORLDCMAP ((u8*)(worldcmapname[0]?worldcmap:host_colormap))
 
 #define M_PI_DIV_180 (M_PI / 180.0) //johnfitz                      // mathlib.h
 #define Q_rint(x) ((x) > 0 ? (s32)((x) + 0.5) : (s32)((x) - 0.5)) // johnfitz -- from joequake

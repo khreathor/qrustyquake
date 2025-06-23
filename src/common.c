@@ -1285,12 +1285,14 @@ void SetWorldPal(s8 *path, s8 *cmappath)
 	if(fread(worldcmapbuf, 256*64, 1, f) != 1)
 		{Con_Printf("Failed reading %s\n", cmpath); fclose(f); return;}
 	fclose(f);
-	Con_Printf("Setting %s %s\n", ppath, cmpath);
+	Con_DPrintf("Setting %s %s\n", ppath, cmpath);
 	memcpy(worldpal, worldpalbuf, 768);
 	q_strlcpy(worldpalname, path, MAX_OSPATH);
 	VID_SetPalette(worldpal, screen);
-	memcpy(host_colormap, worldcmapbuf, 64*256);
+	memcpy(worldcmap, worldcmapbuf, 64*256);
 	q_strlcpy(worldcmapname, cmappath, MAX_OSPATH);
+	vid.colormap = worldcmap;
+	fog_lut_built = lit_lut_initialized = 0;
 }
 
 void SetUiPal(s8 *path)
@@ -1305,7 +1307,7 @@ void SetUiPal(s8 *path)
 	if(fread(uipalbuf, 768, 1, f) != 1)
 		{Con_Printf("Failed reading %s\n", ppath); fclose(f); return;}
 	fclose(f);
-	Con_Printf("Setting %s\n", ppath);
+	Con_DPrintf("Setting %s\n", ppath);
 	memcpy(uipal, uipalbuf, 768);
 	q_strlcpy(uipalname, path, MAX_OSPATH);
 	VID_SetPalette(uipal, screenui);

@@ -104,8 +104,37 @@ void R_Init()
 	Sky_Init();
 }
 
+void Pal_ParseWorldspawn ()
+{ // called at map load
+	s8 key[128], value[4096];
+	const s8 *data = COM_Parse(cl.worldmodel->entities);
+	if(!data || com_token[0] != '{') return; // error
+	while(1){
+		if(!data) return; // error
+		if(com_token[0] == '}') break; // end of worldspawn
+		if(com_token[0] == '_')q_strlcpy(key, com_token+1, sizeof(key));
+		else q_strlcpy(key, com_token, sizeof(key));
+		while(key[0] && key[strlen(key)-1] == ' ') // no trailing spaces
+			key[strlen(key)-1] = 0;
+		data = COM_ParseEx(data, CPE_ALLOWTRUNC);
+		if(!data) return; // error
+		q_strlcpy(value, com_token, sizeof(value));
+		if(!strcmp("palette", key)){
+			s8 pal[MAX_OSPATH];
+			s8 cmap[MAX_OSPATH];
+			sscanf(value, "%s", pal);
+			q_strlcpy(cmap, pal, MAX_OSPATH);
+			q_strlcat(cmap, "_colormap", MAX_OSPATH);
+			Con_DPrintf("Requested palettes %s %s\n", pal, cmap);
+			SetWorldPal(pal, cmap);
+		}
+	}
+	Fog_SetPalIndex(0);
+}
+
 void R_NewMap()
 {
+	Pal_ParseWorldspawn();
 	R_InitSkyBox(); // Manoel Kasimier - skyboxes 
 	// clear out efrags in case the level hasn't been reloaded
 	for(s32 i = 0; i < cl.worldmodel->numleafs; i++)

@@ -526,7 +526,7 @@ void Host_PreSpawn_f()
 
 static void Host_Spawn_f()
 {
-	VID_SetPalette(host_basepal, screen);
+	VID_SetPalette(CURWORLDPAL, screen);
 	if(cmd_source == src_command) {
 		Con_Printf("spawn is not valid from the console\n");
 		return;
