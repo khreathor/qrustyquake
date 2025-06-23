@@ -162,9 +162,6 @@ void VID_Init(u8 */*palette*/)
 	if(COM_CheckParm("-borderless"))
 		flags |= SDL_WINDOW_BORDERLESS;
 	force_old_render = COM_CheckParm("-forceoldrender");
-#ifdef _WIN32
-	force_old_render = 1; // layers don't work on windeez, FIXME
-#endif
 	vimmode = COM_CheckParm("-vimmode");
 	if(vid.width > 1280 || vid.height > 1024)
 		Sys_Printf("vanilla maximum resolution is 1280x1024\n");
@@ -289,7 +286,11 @@ void VID_Update()
 	// the same result with almost a 200% performance increase.
 	if(force_old_render){ // pure software rendering
 		SDL_UpperBlit(screen, NULL, scaleBuffer, NULL);
+#ifdef _WIN32 // scaled layers don't work on windeez, FIXME
+		SDL_UpperBlit(screenui, &blitRect, scaleBuffer, &blitRect);
+#else
 		SDL_UpperBlitScaled(screenui, &blitRect, scaleBuffer, &scRect);
+#endif
 		SDL_UpperBlit(screentop, NULL, scaleBuffer, NULL);
 		SDL_UpperBlitScaled(scaleBuffer, &blitRect, windowSurface, &destRect);
 		SDL_UpdateWindowSurface(window);
@@ -297,7 +298,11 @@ void VID_Update()
 		SDL_LockTexture(texture, &blitRect, &argbbuffer->pixels,
 				&argbbuffer->pitch);
 		SDL_LowerBlit(screen, &blitRect, argbbuffer, &blitRect);
+#ifdef _WIN32 // scaled layers don't work on windeez, FIXME
+		SDL_LowerBlit(screenui, &blitRect, argbbuffer, &blitRect);
+#else
 		SDL_LowerBlitScaled(screenui, &blitRect, argbbuffer, &scRect);
+#endif
 		SDL_LowerBlit(screentop, &blitRect, argbbuffer, &blitRect);
 		SDL_UnlockTexture(texture);
 		SDL_RenderClear(renderer);
