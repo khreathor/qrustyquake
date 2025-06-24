@@ -956,8 +956,7 @@ void M_Menu_Options_f()
 	key_dest = key_menu;
 	m_state = m_options;
 	m_entersound = 1;
-	drawmousemenu = !(SDLWindowFlags & (SDL_WINDOW_FULLSCREEN
-					    /*| SDL_WINDOW_FULLSCREEN_DESKTOP*/));
+	drawmousemenu = !(SDLWindowFlags & SDL_WINDOW_FULLSCREEN);
 	if (options_cursor == 13
 	    && drawmousemenu && !_windowed_mouse.value && !newoptions.value) {
 		options_cursor = 0;
@@ -1094,8 +1093,7 @@ void M_Options_Draw()
 
 void M_Options_Key(s32 k)
 {
-	drawmousemenu = !(SDLWindowFlags & (SDL_WINDOW_FULLSCREEN
-					    /*| SDL_WINDOW_FULLSCREEN_DESKTOP*/));
+	drawmousemenu = !(SDLWindowFlags & SDL_WINDOW_FULLSCREEN);
 	switch (k) {
 	case K_ESCAPE:
 		M_Menu_Main_f();
@@ -1375,7 +1373,7 @@ void M_New_Draw()
 	else if (newwinmode == 1)
 		M_Print(xoffset + 204, 112, "Fullscreen");
 	else
-		M_Print(xoffset + 204, 112, "Desktop");
+		M_Print(xoffset + 204, 112, "Borderless");
 	M_Print(xoffset, 124, "          Custom Width");
 	M_DrawTextBox(xoffset + 196, 116, 8, 1);
 	M_Print(xoffset + 204, 124, customwidthstr);

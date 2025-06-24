@@ -6,7 +6,6 @@ static SDL_Texture *texture;
 static SDL_Rect blitRect;
 static SDL_FRect destRect;
 static SDL_Rect scRect;
-static SDL_Surface *scaleBuffer;
 static s32 VID_highhunkmark;
 static u8 screenpixels[MAXWIDTH*MAXHEIGHT];
 static u8 toppixels[MAXWIDTH*MAXHEIGHT];
@@ -17,12 +16,6 @@ static SDL_PixelFormat window_format;
 static SDL_Palette *sdlworldpal;
 static SDL_Palette *sdltoppal;
 static SDL_Palette *sdluipal;
-
-// SDL3 compat stuff
-SDL_Surface *SDL_CreateRGBSurfaceWithFormatFrom(void *pixels, int width, int height, int depth, int pitch, Uint32 format)
-{
-	return SDL_CreateSurfaceFrom(width, height, format, pixels, pitch);
-}
 
 void VID_CalcScreenDimensions(cvar_t *cvar);
 void VID_AllocBuffers();
@@ -161,24 +154,16 @@ void VID_Init(u8 */*palette*/)
 	}
 	// In windowed mode, the window can be resized at runtime
 	flags = SDL_WINDOW_RESIZABLE;
-	// Set the highdpi flag - this makes a big difference on Macs with
-	// retina displays, especially when using small window sizes.
-	//flags |= SDL_WINDOW_ALLOW_HIGHDPI;
-	// CyanBun96: what most modern games call "Fullscreen borderless
-	// can be achieved by passing -fullscreen_desktop and -borderless
-	// -fullscreen will try to change the display resolution
 	if(COM_CheckParm("-fullscreen") || confwmode == 1)
 		flags |= SDL_WINDOW_FULLSCREEN;
-	//else if(COM_CheckParm("-fullscreen_desktop") || confwmode == 2)
-	//	flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+	else if(COM_CheckParm("-borderless") || confwmode == 2)
+		flags |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_FULLSCREEN;
 	else if(COM_CheckParm("-window") || confwmode == 0)
 		flags &= ~SDL_WINDOW_FULLSCREEN;
-	//else if(winmode == 0)
-	//	flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+	else if(winmode == 0)
+		flags |= SDL_WINDOW_BORDERLESS;
 	else if(winmode == 1)
 		flags &= ~SDL_WINDOW_FULLSCREEN;
-	if(COM_CheckParm("-borderless"))
-		flags |= SDL_WINDOW_BORDERLESS;
 	vimmode = COM_CheckParm("-vimmode");
 	if(vid.width > 1280 || vid.height > 1024)
 		Sys_Printf("vanilla maximum resolution is 1280x1024\n");
@@ -426,7 +411,7 @@ void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 */*palette*
 				SDL_WINDOWPOS_UNDEFINED);
 		} else {
 			SDL_SetWindowFullscreen(window,
-				SDL_WINDOW_FULLSCREEN/*_DESKTOP*/);
+				SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS);
 		}
 	} else {
 		if(custwinm == 0){
@@ -439,7 +424,7 @@ void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 */*palette*
 			SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
 		} else {
 			SDL_SetWindowFullscreen(window,
-				SDL_WINDOW_FULLSCREEN/*_DESKTOP*/);
+				SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS);
 		}
 	}
 	realwidth.value = 0;
