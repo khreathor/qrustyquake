@@ -13,6 +13,9 @@ static u8 toppixels[MAXWIDTH*MAXHEIGHT];
 static u8 uipixels[MAXWIDTH*MAXHEIGHT];
 static u8 argbpixels[MAXWIDTH*MAXHEIGHT];
 static SDL_PixelFormat window_format;
+static SDL_Palette *sdlworldpal;
+static SDL_Palette *sdltoppal;
+static SDL_Palette *sdluipal;
 
 // SDL3 compat stuff
 SDL_Surface *SDL_CreateRGBSurface(Uint32 flags, int width, int height, int depth, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
@@ -88,9 +91,6 @@ s32 VID_DetermineMode()
 	return -1;
 }
 
-SDL_Palette *sdlworldpal;
-SDL_Palette *sdltoppal;
-SDL_Palette *sdluipal;
 void VID_SetPalette(u8 *palette, SDL_Surface *dest)
 {
 	SDL_Color colors[256];
@@ -410,9 +410,9 @@ void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 */*palette*
 	screen = SDL_CreateSurfaceFrom(vid.width, vid.height, SDL_PIXELFORMAT_INDEX8, NULL, vid.width);
 		sdlworldpal = SDL_CreateSurfacePalette(screen);
 	screenui = SDL_CreateSurfaceFrom(vid.width, vid.height, SDL_PIXELFORMAT_INDEX8, NULL, vid.width);
-		sdlworldpal = SDL_CreateSurfacePalette(screen);
+		sdluipal = SDL_CreateSurfacePalette(screenui);
 	screentop = SDL_CreateSurfaceFrom(vid.width, vid.height, SDL_PIXELFORMAT_INDEX8, NULL, vid.width);
-		sdlworldpal = SDL_CreateSurfacePalette(screen);
+		sdltoppal = SDL_CreateSurfacePalette(screentop);
 	scrbuffs[0] = screen; scrbuffs[1] = screentop; scrbuffs[2] = screenui;
 	SDL_DestroySurface(argbbuffer);
 	argbbuffer = SDL_CreateRGBSurfaceWithFormatFrom(NULL, vid.width,
