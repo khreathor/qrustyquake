@@ -392,7 +392,7 @@ void Draw_FadeScreen()
 {
 	for (u32 y = 0; y < vid.height / uiscale; y++)
 		for (u32 i = 0; i < uiscale; i++) {
-			u8 *pbuf = (u8*)(scrbuffs[2]->pixels+vid.width*y
+			u8 *pbuf = (u8*)(scrbuffs[0]->pixels+vid.width*y
 				* uiscale + vid.width * i);
 			u32 t = (y & 1) << 1;
 			for (u32 x = 0; x < vid.width / uiscale; x++)

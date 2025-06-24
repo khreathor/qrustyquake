@@ -735,6 +735,13 @@ void R_InitSkyBox();                                                  // r_sky.c
 void Sky_NewMap();
 void Sky_Init();
 EX u8 lit_loaded;                                                     //r_surf.c
+EX u8 worldpal[768];                                                 // common.c
+EX u8 worldcmap[64*256];
+EX u8 uipal[768];
+EX s8 worldpalname[MAX_OSPATH];
+EX s8 worldcmapname[MAX_OSPATH];
+EX s8 uipalname[MAX_OSPATH];
+EX void SetWorldPal(s8 *path, s8 *cmappath);
 EX vec3_t vec3_origin;                                              // mathlib.c
 EX f32 cur_ent_alpha;                                              // d_polyse.c
 EX sspan_t spans[MAXHEIGHT + 1];                                   // d_sprite.c

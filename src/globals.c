@@ -63,7 +63,7 @@ f32 r_aliastransition, r_resfudge;
 s32 d_lightstylevalue[256]; // 8.8 fraction of base light value
 f64 d_times[32];
 s32 colored_aliaslight;
-f32 d_sdivzstepu, d_tdivzstepu, d_zistepu;                         // d_vars.c
+f32 d_sdivzstepu, d_tdivzstepu, d_zistepu;                           // d_vars.c
 f32 d_sdivzstepv, d_tdivzstepv, d_zistepv;
 f32 d_sdivzorigin, d_tdivzorigin, d_ziorigin;
 s32 sadjust, tadjust, bbextents, bbextentt;
@@ -200,6 +200,12 @@ s32 r_skymade;
 s8 skybox_name[1024]; // name of current skybox, or "" if no skybox
 drawsurf_t r_drawsurf;                                               // r_surf.c
 u8 lit_loaded = 0;
+u8 worldpal[768]; // custom world palette, set with "worldpal"       // common.c
+u8 worldcmap[64*256];
+u8 uipal[768];
+s8 worldpalname[MAX_OSPATH];
+s8 worldcmapname[MAX_OSPATH];
+s8 uipalname[MAX_OSPATH];
 vec3_t vec3_origin = {0,0,0};                                       // mathlib.h
 sspan_t spans[MAXHEIGHT + 1];                                      // d_sprite.c
 s32 r_dlightframecount;                                             // r_light.c

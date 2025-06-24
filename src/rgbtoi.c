@@ -31,9 +31,9 @@ void init_color_conv()
 			powf((v + 0.055f) / 1.055f, 2.4f) : (v / 12.92f);
 	}
 	for(s32 i = 0, p = 0; i < 256; ++i, p += 3){
-		f32 lr = gamma_lut[host_basepal[p + 0]];
-		f32 lg = gamma_lut[host_basepal[p + 1]];
-		f32 lb = gamma_lut[host_basepal[p + 2]];
+		f32 lr = gamma_lut[CURWORLDPAL[p + 0]];
+		f32 lg = gamma_lut[CURWORLDPAL[p + 1]];
+		f32 lb = gamma_lut[CURWORLDPAL[p + 2]];
 		lab_palette[i] = rgb_lin_to_lab(lr, lg, lb);
 	}
 }
@@ -62,7 +62,7 @@ u8 rgbtoi(u8 r, u8 g, u8 b)
 {
 	u8 besti = 0;
 	s32 bestdist = 0x7fffffff;
-	u8 *p = host_basepal;
+	u8 *p = CURWORLDPAL;
 	for(s32 i = 0; i < 256; ++i, p += 3){
 		s32 dr = r - p[0]; // squared euclidean distance
 		s32 dg = g - p[1];
@@ -82,12 +82,12 @@ void build_color_mix_lut(cvar_t */*cvar*/)
 	u8 (*convfunc)(u8,u8,u8) = r_labmixpal.value == 1 ? rgbtoi_lab : rgbtoi;
 	for(s32 c1 = 0; c1 < 256; c1++){
 	for(s32 c2 = 0; c2 < 256; c2++){
-		u8 r1 = host_basepal[c1*3+0];
-		u8 g1 = host_basepal[c1*3+1];
-		u8 b1 = host_basepal[c1*3+2];
-		u8 r2 = host_basepal[c2*3+0];
-		u8 g2 = host_basepal[c2*3+1];
-		u8 b2 = host_basepal[c2*3+2];
+		u8 r1 = CURWORLDPAL[c1*3+0];
+		u8 g1 = CURWORLDPAL[c1*3+1];
+		u8 b1 = CURWORLDPAL[c1*3+2];
+		u8 r2 = CURWORLDPAL[c2*3+0];
+		u8 g2 = CURWORLDPAL[c2*3+1];
+		u8 b2 = CURWORLDPAL[c2*3+2];
 		for(s32 level = 0; level < FOG_LUT_LEVELS; level++){
 			f32 factor = (f32)level / (FOG_LUT_LEVELS-1);
 			u8 r = (u8)(r1 + factor * (r2 - r1)); // lerp each color

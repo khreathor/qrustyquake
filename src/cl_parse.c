@@ -81,7 +81,7 @@ entity_t *CL_EntityNum(s32 num)
 		if(num >= MAX_EDICTS)
 			Host_Error("CL_EntityNum: %i is an invalid number",num);
 		while(cl.num_entities<=num) {
-			cl_entities[cl.num_entities].colormap = vid.colormap;
+			cl_entities[cl.num_entities].colormap = CURWORLDCMAP;
 			cl_entities[cl.num_entities].baseline.scale =
 				ENTSCALE_DEFAULT;
 			cl.num_entities++;
@@ -283,7 +283,7 @@ void CL_ParseUpdate(s32 bits) // If an entities model or origin changes from
 	if(modnum >= MAX_MODELS) Host_Error("CL_ParseModel: bad modnum");
 	ent->frame = bits & U_FRAME ? MSG_ReadByte() : ent->baseline.frame;
 	s32 i = bits & U_COLORMAP ? MSG_ReadByte() : ent->baseline.colormap;
-	if(!i) ent->colormap = vid.colormap;
+	if(!i) ent->colormap = CURWORLDCMAP;
 	else { if(i > cl.maxclients)
 			Sys_Error("i >= cl.maxclients");
 		ent->colormap = cl.scores[i-1].translations;
@@ -434,8 +434,8 @@ void CL_NewTranslation(s32 slot)
 	if(slot > cl.maxclients)
 		Sys_Error("CL_NewTranslation: slot > cl.maxclients");
 	u8 *dest = cl.scores[slot].translations;
-	u8 *source = vid.colormap;
-	memcpy(dest, vid.colormap, sizeof(cl.scores[slot].translations));
+	u8 *source = CURWORLDCMAP;
+	memcpy(dest, CURWORLDCMAP, sizeof(cl.scores[slot].translations));
 	s32 top = cl.scores[slot].colors & 0xf0;
 	s32 bottom =(cl.scores[slot].colors &15)<<4;
 	for(s32 i = 0; i < VID_GRADES; i++, dest += 256, source+=256) {
@@ -459,7 +459,7 @@ void CL_ParseStatic(s32 version) //johnfitz -- added a parameter
 	CL_ParseBaseline(ent, version); //johnfitz -- added second parameter
 	ent->model = cl.model_precache[ent->baseline.modelindex];
 	ent->frame = ent->baseline.frame;
-	ent->colormap = vid.colormap;
+	ent->colormap = CURWORLDCMAP;
 	ent->skinnum = ent->baseline.skin;
 	ent->effects = ent->baseline.effects;
 	ent->alpha = ent->baseline.alpha; //johnfitz -- alpha

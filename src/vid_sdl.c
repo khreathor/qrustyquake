@@ -164,6 +164,9 @@ void VID_Init(u8 */*palette*/)
 	if(COM_CheckParm("-borderless"))
 		flags |= SDL_WINDOW_BORDERLESS;
 	force_old_render = COM_CheckParm("-forceoldrender");
+#ifdef _WIN32
+	force_old_render = 1; // layers don't work on windeez, FIXME
+#endif
 	vimmode = COM_CheckParm("-vimmode");
 	if(vid.width > 1280 || vid.height > 1024)
 		Sys_Printf("vanilla maximum resolution is 1280x1024\n");
@@ -361,7 +364,7 @@ void VID_AllocBuffers()
 	D_InitCaches(cache, cachesize);
 }
 
-void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 *palette)
+void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 */*palette*/)
 {
 	Con_DPrintf("SetMode: %d %dx%d %d\n", modenum, custw, custh, custwinm);
 	if(modenum == vid_modenum && (!custw || !custh))
@@ -403,11 +406,11 @@ void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 *palette)
 	vid.buffer = screen->pixels;
 	VID_AllocBuffers();
 	vid.recalc_refdef = 1;
-	VID_SetPalette(palette, screen);
+	VID_SetPalette(worldpalname[0]?worldpal:host_basepal, screen);
+	VID_SetPalette(uipalname[0]?uipal:host_basepal, screenui);
+	SDL_SetColorKey(screenui, 1, 255);
 	VID_SetPalette(host_basepal, screentop);
 	SDL_SetColorKey(screentop, 1, 255);
-	VID_SetPalette(host_basepal, screenui);
-	SDL_SetColorKey(screenui, 1, 255);
 	if(!custw || !custh){
 		if(modenum <= 2){
 			SDL_SetWindowFullscreen(window, 0);

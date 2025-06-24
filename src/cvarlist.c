@@ -173,6 +173,7 @@ cvar_t r_novis=                                           {"r_novis","0", 1,ZR};
 cvar_t r_particlescale=                           {"r_particlescale","0", 1,ZR};
 cvar_t scr_uixscale=                                 {"scr_uixscale","1", 1,ZR};
 cvar_t scr_uiyscale=                                 {"scr_uiyscale","1", 1,ZR};
+cvar_t yaspectscale=                                 {"yaspectscale","1", 1,ZR};
 cvar_t registered=                               {"registered","1",CVAR_ROM,ZR};
 cvar_t cmdline=                                      {"cmdline","",CVAR_ROM,ZR};
 cvar_t vid_mode=                                 {"vid_mode", "0", CVAR_ROM,ZR};

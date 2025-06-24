@@ -223,8 +223,7 @@ void R_DrawSurfaceBlock(s32 miplvl)
 			s32 light = lightright;
 			for (s32 b = (1 << (4-miplvl)) - 1; b >= 0; b--) {
 				u8 pix = psource[b];
-				prowdest[b] = ((u8 *)vid.colormap)
-				    [(light & 0xFF00) + pix];
+				prowdest[b] = CURWORLDCMAP[(light&0xFF00)+pix];
 				light += lightstep;
 			}
 			psource += sourcetstep;
@@ -268,8 +267,7 @@ void R_DrawSurfaceBlockRGBMono(s32 miplvl)
 			for (s32 b = (1 << (4-miplvl)) - 1; b >= 0; b--) {
 				u8 pix = psource[b];
 				s32 lightavg = ((light&0xFF00) + (light_g&0xFF00) + (light_b&0xFF00))/3;
-				prowdest[b] = ((u8 *)vid.colormap)
-				    [(lightavg & 0xFF00) + pix];
+				prowdest[b] = CURWORLDCMAP[(lightavg & 0xFF00) + pix];
 				light += lightstep;
 			}
 			psource += sourcetstep;
@@ -321,12 +319,12 @@ void R_DrawSurfaceBlockRGB(s32 miplvl)
 			s32 light_b = lightright_b;
 			for (s32 b = (1 << (4-miplvl)) - 1; !lmonly && b >= 0; b--) {
 				u8 tex = psource[b];
-				u8 ir = ((u8*)vid.colormap)[(light   & 0xFF00) + tex];
-				u8 ig = ((u8*)vid.colormap)[(light_g & 0xFF00) + tex];
-				u8 ib = ((u8*)vid.colormap)[(light_b & 0xFF00) + tex];
-				u8 r_ = host_basepal[ir * 3 + 0];
-				u8 g_ = host_basepal[ig * 3 + 1];
-				u8 b_ = host_basepal[ib * 3 + 2];
+				u8 ir = CURWORLDCMAP[(light   & 0xFF00) + tex];
+				u8 ig = CURWORLDCMAP[(light_g & 0xFF00) + tex];
+				u8 ib = CURWORLDCMAP[(light_b & 0xFF00) + tex];
+				u8 r_ = CURWORLDPAL[ir * 3 + 0];
+				u8 g_ = CURWORLDPAL[ig * 3 + 1];
+				u8 b_ = CURWORLDPAL[ib * 3 + 2];
 				prowdest[b] = lit_lut[ QUANT(r_)
 					+ QUANT(g_)*LIT_LUT_RES
 					+ QUANT(b_)*LIT_LUT_RES*LIT_LUT_RES ];
@@ -335,12 +333,12 @@ void R_DrawSurfaceBlockRGB(s32 miplvl)
 				light_b += lightstep_b;
 			}
 			for (s32 b = (1 << (4-miplvl)) - 1; lmonly && b >= 0; b--) {
-				u8 ir = ((u8*)vid.colormap)[(light   & 0xFF00)+15];
-				u8 ig = ((u8*)vid.colormap)[(light_g & 0xFF00)+15];
-				u8 ib = ((u8*)vid.colormap)[(light_b & 0xFF00)+15];
-				u8 r_ = host_basepal[ir * 3 + 0];
-				u8 g_ = host_basepal[ig * 3 + 1];
-				u8 b_ = host_basepal[ib * 3 + 2];
+				u8 ir = CURWORLDCMAP[(light   & 0xFF00)+15];
+				u8 ig = CURWORLDCMAP[(light_g & 0xFF00)+15];
+				u8 ib = CURWORLDCMAP[(light_b & 0xFF00)+15];
+				u8 r_ = CURWORLDPAL[ir * 3 + 0];
+				u8 g_ = CURWORLDPAL[ig * 3 + 1];
+				u8 b_ = CURWORLDPAL[ib * 3 + 2];
 				prowdest[b] = lit_lut[ QUANT(r_)
 					+ QUANT(g_)*LIT_LUT_RES
 					+ QUANT(b_)*LIT_LUT_RES*LIT_LUT_RES ];

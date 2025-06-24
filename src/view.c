@@ -248,7 +248,7 @@ void V_UpdatePalette()
 	if(!new && !force)
 		return;
 	u8 pal[768];
-	u8 *basepal = host_basepal;
+	u8 *basepal = CURWORLDPAL;
 	u8 *newpal = pal;
 	for(s32 i = 0; i < 256; i++){
 		s32 r = basepal[0];
@@ -413,7 +413,7 @@ void V_CalcRefdef()
 	else if(scr_viewsize.value == 80) view->origin[2] += 0.5;
 	view->model = cl.model_precache[cl.stats[STAT_WEAPON]];
 	view->frame = cl.stats[STAT_WEAPONFRAME];
-	view->colormap = vid.colormap;
+	view->colormap = CURWORLDCMAP;
 	// set up the refresh position
 	VectorAdd(r_refdef.viewangles, cl.punchangle, r_refdef.viewangles);
 	// smooth out stair step ups

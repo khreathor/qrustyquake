@@ -449,7 +449,7 @@ void Host_Init()
 	Con_Printf("%4.1f megabyte heap\n", host_parms.memsize / (1024*1024.0));
 	R_InitTextures(); // needed even for dedicated servers
 	if(cls.state != ca_dedicated){
-		FILE *f; // Ironwail pasta. TODO - the rest if relevant
+		FILE *f; // Custom palettes
 		COM_FOpenFile("gfx/custompalette.lmp", &f, NULL);
 		if(!f) COM_FOpenFile("gfx/palette.lmp", &f, NULL);
 		if(!f) Sys_Error("Couldn't load gfx/palette.lmp");
@@ -463,7 +463,7 @@ void Host_Init()
 		host_colormap = (u8 *) Hunk_AllocName(256 * 64, "colormap");
 		if(fread(host_colormap, 256 * 64, 1, f) != 1)
 			Sys_Error("TexMgr_LoadPalette: colormap read error");
-		fclose(f); // Ironwail pasta end
+		fclose(f);
 		IN_Init();
 		VID_Init(host_basepal);
 		Draw_Init();
