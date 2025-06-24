@@ -28,6 +28,8 @@ static void SDLCALL paint_audio(void */*unused*/, Uint8 *stream, s32 len)
 	if(len2 <= 0) {
 		shm->samplepos += (len1 / (shm->samplebits / 8));
 	} else { // wraparound?
+		if(!stream || !len1 || !len2 || !shm->buffer)
+		{memset(stream,0,len);return;} // fix for WINE
 		memcpy(stream + len1, shm->buffer, len2);
 		shm->samplepos = (len2 / (shm->samplebits / 8));
 	}
