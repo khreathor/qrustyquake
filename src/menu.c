@@ -2340,7 +2340,7 @@ void M_Draw()
 		if (scr_con_current) {
 			Draw_ConsoleBackground(vid.height);
 		} else
-			Draw_FadeScreen();
+			fadescreen = 1;
 		scr_fullupdate = 0;
 	} else {
 		m_recursiveDraw = 0;

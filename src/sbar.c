@@ -964,7 +964,7 @@ void Sbar_Draw()
 		|| (sb_updates >= vid.numpages && !scr_hudstyle.value)
 		|| cl.intermission)
 		return;
-	drawlayer = key_dest == key_game ? 2 : 0;
+	drawlayer = 3;
 	if (scr_hudstyle.value == 5 || scr_hudstyle.value == 6) {
 		Sbar_Min(scr_hudstyle.value == 5);
 		drawlayer = 0;

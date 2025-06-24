@@ -11,6 +11,7 @@ static s32 VID_highhunkmark;
 static u8 screenpixels[MAXWIDTH*MAXHEIGHT];
 static u8 toppixels[MAXWIDTH*MAXHEIGHT];
 static u8 uipixels[MAXWIDTH*MAXHEIGHT];
+static u8 sbarpixels[MAXWIDTH*MAXHEIGHT];
 static u8 argbpixels[MAXWIDTH*MAXHEIGHT];
 static SDL_PixelFormat window_format;
 static SDL_Palette *sdlworldpal;
@@ -188,24 +189,28 @@ void VID_Init(u8 */*palette*/)
 	SDL_SetWindowMinimumSize(window, 320, 200);
 	screen = SDL_CreateSurfaceFrom(vid.width, vid.height, SDL_PIXELFORMAT_INDEX8, NULL, vid.width);
 		sdlworldpal = SDL_CreateSurfacePalette(screen);
+	screensbar = SDL_CreateSurfaceFrom(vid.width, vid.height, SDL_PIXELFORMAT_INDEX8, NULL, vid.width);
 	screenui = SDL_CreateSurfaceFrom(vid.width, vid.height, SDL_PIXELFORMAT_INDEX8, NULL, vid.width);
 		sdluipal = SDL_CreateSurfacePalette(screenui);
 	screentop = SDL_CreateSurfaceFrom(vid.width, vid.height, SDL_PIXELFORMAT_INDEX8, NULL, vid.width);
 		sdltoppal = SDL_CreateSurfacePalette(screentop);
 	screen->pixels = screenpixels;
 	screenui->pixels = uipixels;
+	screensbar->pixels = sbarpixels;
 	screentop->pixels = toppixels;
 	screen->pitch = vid.width;
 	screenui->pitch = vid.width;
+	screensbar->pitch = vid.width;
 	screentop->pitch = vid.width;
 	vid.buffer = screenpixels;
-	scrbuffs[0] = screen; scrbuffs[1] = screentop; scrbuffs[2] = screenui;
+	scrbuffs[0] = screen; scrbuffs[1] = screentop; scrbuffs[2] = screenui; scrbuffs[3] = screensbar;
 	VID_SetPalette(host_basepal, screen);
 	VID_SetPalette(host_basepal, screentop);
 	SDL_SetSurfaceColorKey(screentop, 1, 255);
 	VID_SetPalette(host_basepal, screenui);
 	SDL_SetSurfaceColorKey(screenui, 1, 255);
-	//SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
+	VID_SetPalette(host_basepal, screensbar);
+	SDL_SetSurfaceColorKey(screensbar, 1, 255);
 	renderer = SDL_CreateRenderer(window, NULL);
 	window_format = SDL_GetWindowPixelFormat(window);
 	argbbuffer = SDL_CreateSurfaceFrom(vid.width, vid.height, window_format, 0, 0);
@@ -222,15 +227,10 @@ void VID_Init(u8 */*palette*/)
 	vid.numpages = 1;
 	vid.colormap = host_colormap;
 	VID_AllocBuffers(); // allocate z buffer, surface cache and the fbuffer
-	SDL_HideCursor(); // initialize the mouse
-	if(defmode >= 0)
-		vid_modenum = defmode;
-	else
-		vid_modenum = VID_DetermineMode();
-	if(vid_modenum < 0)
-		Con_Printf("WARNING: non-standard video mode\n");
-	else
-		Con_Printf("Detected video mode %d\n", vid_modenum);
+	if(defmode >= 0) vid_modenum = defmode;
+	else vid_modenum = VID_DetermineMode();
+	if(vid_modenum < 0) Con_Printf("WARNING: non-standard video mode\n");
+	else Con_Printf("Detected video mode %d\n", vid_modenum);
 	realwidth.value = 0;
 	VID_CalcScreenDimensions(0);
 }
@@ -298,13 +298,9 @@ void VID_Update()
 	scRect.h = vid.height * (scr_uiyscale.value>0 ? scr_uiyscale.value : 1);
 	scRect.x = (vid.width - scRect.w) / 2;
 	scRect.y = (vid.height - scRect.h) / 2;
-	screen->pixels = screenpixels;
-	screenui->pixels = uipixels;
-	screentop->pixels = toppixels;
-	screen->pitch = vid.width;
-	screenui->pitch = vid.width;
-	screentop->pitch = vid.width;
 	if (SDL_LockTexture(texture, 0, &argbbuffer->pixels, &argbbuffer->pitch)){
+		SDL_BlitSurfaceScaled(screensbar, &blitRect, screen, &scRect, SDL_SCALEMODE_NEAREST);
+		if(fadescreen == 1) Draw_FadeScreen();
 		SDL_BlitSurface(screen, 0, argbbuffer, 0);
 		SDL_BlitSurfaceScaled(screenui, &blitRect, argbbuffer, &scRect, SDL_SCALEMODE_NEAREST);
 		SDL_BlitSurface(screentop, &blitRect, argbbuffer, &blitRect);
@@ -329,6 +325,7 @@ void VID_Update()
 		vid_realmode = vid_modenum;
 	}
 	memset(screentop->pixels, 255, vid.width*vid.height);
+	memset(screensbar->pixels, 255, vid.width*vid.height);
 	memset(screenui->pixels, 255, vid.width*vid.height);
 }
 
@@ -386,13 +383,15 @@ void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 */*palette*
 	SDL_DestroySurface(screen);
 	SDL_DestroySurface(screentop);
 	SDL_DestroySurface(screenui);
+	SDL_DestroySurface(screensbar);
 	screen = SDL_CreateSurfaceFrom(vid.width, vid.height, SDL_PIXELFORMAT_INDEX8, NULL, vid.width);
 		sdlworldpal = SDL_CreateSurfacePalette(screen);
+	screensbar = SDL_CreateSurfaceFrom(vid.width, vid.height, SDL_PIXELFORMAT_INDEX8, NULL, vid.width);
 	screenui = SDL_CreateSurfaceFrom(vid.width, vid.height, SDL_PIXELFORMAT_INDEX8, NULL, vid.width);
 		sdluipal = SDL_CreateSurfacePalette(screenui);
 	screentop = SDL_CreateSurfaceFrom(vid.width, vid.height, SDL_PIXELFORMAT_INDEX8, NULL, vid.width);
 		sdltoppal = SDL_CreateSurfacePalette(screentop);
-	scrbuffs[0] = screen; scrbuffs[1] = screentop; scrbuffs[2] = screenui;
+	scrbuffs[0] = screen; scrbuffs[1] = screentop; scrbuffs[2] = screenui; scrbuffs[3] = screensbar;
 	SDL_DestroySurface(argbbuffer);
 	argbbuffer = SDL_CreateSurfaceFrom(vid.width, vid.height, window_format, 0, 0);
 	argbbuffer->pixels = argbpixels;
@@ -402,9 +401,11 @@ void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 */*palette*
 	vid.aspect = ((f32)vid.height / (f32)vid.width) * (320.0 / 240.0);
 	screen->pixels = screenpixels;
 	screenui->pixels = uipixels;
+	screensbar->pixels = sbarpixels;
 	screentop->pixels = toppixels;
 	screen->pitch = vid.width;
 	screenui->pitch = vid.width;
+	screensbar->pitch = vid.width;
 	screentop->pitch = vid.width;
 	vid.buffer = screen->pixels;
 	VID_AllocBuffers();
@@ -412,6 +413,8 @@ void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 */*palette*
 	VID_SetPalette(worldpalname[0]?worldpal:host_basepal, screen);
 	VID_SetPalette(uipalname[0]?uipal:host_basepal, screenui);
 	SDL_SetSurfaceColorKey(screenui, 1, 255);
+	VID_SetPalette(uipalname[0]?uipal:host_basepal, screensbar);
+	SDL_SetSurfaceColorKey(screensbar, 1, 255);
 	VID_SetPalette(host_basepal, screentop);
 	SDL_SetSurfaceColorKey(screentop, 1, 255);
 	if(!custw || !custh){

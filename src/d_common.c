@@ -390,6 +390,7 @@ void Draw_Fill(s32 x, s32 y, s32 w, s32 h, s32 c)
 
 void Draw_FadeScreen()
 {
+	fadescreen = 0;
 	for (u32 y = 0; y < vid.height / uiscale; y++)
 		for (u32 i = 0; i < uiscale; i++) {
 			u8 *pbuf = (u8*)(scrbuffs[0]->pixels+vid.width*y

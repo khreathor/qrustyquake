@@ -93,7 +93,7 @@ void Sys_SendKeyEvents()
 				break;
 			}
 			button = buttonremap[event.button.button - 1];
-			Key_Event(button, event.key.down);
+			Key_Event(button, event.type==SDL_EVENT_MOUSE_BUTTON_DOWN);
 			break;
 		case SDL_EVENT_MOUSE_WHEEL:
 			if (event.wheel.y > 0) {
@@ -140,8 +140,10 @@ void IN_Move(usercmd_t *cmd)
 			&& !_windowed_mouse.value)
 				|| key_dest != key_game) {
 		SDL_SetWindowRelativeMouseMode(window, 0);
+		SDL_ShowCursor();
 		return;
 	}
+	SDL_HideCursor();
 	SDL_SetWindowRelativeMouseMode(window, 1);
 	mouse_x *= sensitivity.value;
 	mouse_y *= sensitivity.value * sensitivityyscale.value;
