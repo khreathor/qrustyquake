@@ -8,7 +8,7 @@ static s32 buttonremap[] = { K_MOUSE1, K_MOUSE3, K_MOUSE2, K_MOUSE4, K_MOUSE5 };
 void Sys_SendKeyEvents()
 {
 	SDL_Event event;
-	s32 button;
+	s32 button, winW, winH;
 	s32 sym, state, mod; // keep here for OpenBSD compiler
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
@@ -107,9 +107,9 @@ void Sys_SendKeyEvents()
 			break;
 		case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
 			SDLWindowFlags = SDL_GetWindowFlags(window);
-			windowSurface = SDL_GetWindowSurface(window);
-			Cvar_SetValue("realwidth", windowSurface->w);
-			Cvar_SetValue("realheight", windowSurface->h);
+			SDL_GetWindowSize(window, &winW, &winH);
+			Cvar_SetValue("realwidth", winW);
+			Cvar_SetValue("realheight", winH);
 			VID_CalcScreenDimensions(0);
 			break;
 		case SDL_EVENT_QUIT:

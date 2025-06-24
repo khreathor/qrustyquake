@@ -4,7 +4,7 @@ static SDL_Renderer *renderer;
 static SDL_Surface *argbbuffer;
 static SDL_Texture *texture;
 static SDL_Rect blitRect;
-static SDL_Rect destRect;
+static SDL_FRect destRect;
 static SDL_Rect scRect;
 static SDL_Surface *scaleBuffer;
 static s32 VID_highhunkmark;
@@ -18,24 +18,6 @@ static SDL_Palette *sdltoppal;
 static SDL_Palette *sdluipal;
 
 // SDL3 compat stuff
-SDL_Surface *SDL_CreateRGBSurface(Uint32 flags, int width, int height, int depth, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
-{
-	return SDL_CreateSurface(width, height,
-			SDL_GetPixelFormatForMasks(depth, Rmask, Gmask, Bmask, Amask));
-}
-
-SDL_Surface *SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height, int depth, Uint32 format)
-{
-	return SDL_CreateSurface(width, height, format);
-}
-
-SDL_Surface *SDL_CreateRGBSurfaceFrom(void *pixels, int width, int height, int depth, int pitch, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
-{
-	return SDL_CreateSurfaceFrom(width, height,
-			SDL_GetPixelFormatForMasks(depth, Rmask, Gmask, Bmask, Amask),
-			pixels, pitch);
-}
-
 SDL_Surface *SDL_CreateRGBSurfaceWithFormatFrom(void *pixels, int width, int height, int depth, int pitch, Uint32 format)
 {
 	return SDL_CreateSurfaceFrom(width, height, format, pixels, pitch);
@@ -226,12 +208,12 @@ void VID_Init(u8 */*palette*/)
 	//SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 	renderer = SDL_CreateRenderer(window, NULL);
 	window_format = SDL_GetWindowPixelFormat(window);
-	argbbuffer = SDL_CreateSurfaceFrom(vid.width, vid.height, window_format, NULL, vid.width*SDL_BYTESPERPIXEL(window_format));
+	argbbuffer = SDL_CreateSurfaceFrom(vid.width, vid.height, window_format, 0, 0);
 	argbbuffer->pixels = argbpixels;
 	argbbuffer->pitch = vid.width;
 	texture = SDL_CreateTexture(renderer, window_format, SDL_TEXTUREACCESS_STREAMING, vid.width, vid.height);
-	if(!texture){printf("%s\n", SDL_GetError());__asm__("int3");}
-	//SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
+	if(!texture){printf("%s\n", SDL_GetError());}
+	SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
 	windowSurface = SDL_GetWindowSurface(window);
 	sprintf(caption, "QrustyQuake - Version %4.2f", VERSION);
 	SDL_SetWindowTitle(window, (const s8 *)&caption);
@@ -276,10 +258,8 @@ void VID_CalcScreenDimensions(cvar_t */*cvar*/)
 	// Get window dimensions
 	s32 winW, winH;
 	if(realwidth.value == 0 || realheight.value == 0){
-		winW = windowSurface->w;
-		winH = windowSurface->h;
-	}
-	else {
+		SDL_GetWindowSize(window, &winW, &winH);
+	} else {
 		winW = realwidth.value;
 		winH = realheight.value;
 	}
@@ -314,7 +294,6 @@ void VID_CalcScreenDimensions(cvar_t */*cvar*/)
 
 void VID_Update()
 {
-	const SDL_FRect destRectF = {destRect.x, destRect.y, destRect.w, destRect.h};
 	scRect.w = vid.width * (scr_uixscale.value>0 ? scr_uixscale.value : 1);
 	scRect.h = vid.height * (scr_uiyscale.value>0 ? scr_uiyscale.value : 1);
 	scRect.x = (vid.width - scRect.w) / 2;
@@ -325,14 +304,14 @@ void VID_Update()
 	screen->pitch = vid.width;
 	screenui->pitch = vid.width;
 	screentop->pitch = vid.width;
-	if (SDL_LockTexture(texture, NULL, &argbbuffer->pixels, &argbbuffer->pitch)){
-		SDL_BlitSurface(screen, &blitRect, argbbuffer, &blitRect);
+	if (SDL_LockTexture(texture, 0, &argbbuffer->pixels, &argbbuffer->pitch)){
+		SDL_BlitSurface(screen, 0, argbbuffer, 0);
 		SDL_BlitSurfaceScaled(screenui, &blitRect, argbbuffer, &scRect, SDL_SCALEMODE_NEAREST);
 		SDL_BlitSurface(screentop, &blitRect, argbbuffer, &blitRect);
 		SDL_UnlockTexture(texture);
 	} else { printf("Couldn't lock texture %s\n", SDL_GetError()); }
 	SDL_RenderClear(renderer);
-	SDL_RenderTexture(renderer, texture, NULL, NULL);
+	SDL_RenderTexture(renderer, texture, NULL, &destRect);
 	SDL_RenderPresent(renderer);
 	if(uiscale != scr_uiscale.value // TODO make this a callback function
 	    && vid.width / 320 >= scr_uiscale.value && scr_uiscale.value > 0){
@@ -415,8 +394,9 @@ void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 */*palette*
 		sdltoppal = SDL_CreateSurfacePalette(screentop);
 	scrbuffs[0] = screen; scrbuffs[1] = screentop; scrbuffs[2] = screenui;
 	SDL_DestroySurface(argbbuffer);
-	argbbuffer = SDL_CreateRGBSurfaceWithFormatFrom(NULL, vid.width,
-		vid.height, 0, 0, window_format);
+	argbbuffer = SDL_CreateSurfaceFrom(vid.width, vid.height, window_format, 0, 0);
+	argbbuffer->pixels = argbpixels;
+	argbbuffer->pitch = vid.width;
 	SDL_DestroyTexture(texture);
 	texture = SDL_CreateTexture(renderer, window_format, SDL_TEXTUREACCESS_STREAMING, vid.width, vid.height);
 	vid.aspect = ((f32)vid.height / (f32)vid.width) * (320.0 / 240.0);
