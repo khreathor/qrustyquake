@@ -7,7 +7,6 @@ static SDL_Rect blitRect;
 static SDL_Rect destRect;
 static SDL_Rect scRect;
 static SDL_Surface *scaleBuffer;
-static u32 force_old_render;
 static s32 VID_highhunkmark;
 static u8 screenpixels[MAXWIDTH*MAXHEIGHT];
 static u8 toppixels[MAXWIDTH*MAXHEIGHT];
@@ -197,7 +196,6 @@ void VID_Init(u8 */*palette*/)
 		flags &= ~SDL_WINDOW_FULLSCREEN;
 	if(COM_CheckParm("-borderless"))
 		flags |= SDL_WINDOW_BORDERLESS;
-	force_old_render = COM_CheckParm("-forceoldrender");
 	vimmode = COM_CheckParm("-vimmode");
 	if(vid.width > 1280 || vid.height > 1024)
 		Sys_Printf("vanilla maximum resolution is 1280x1024\n");
@@ -209,9 +207,9 @@ void VID_Init(u8 */*palette*/)
 	screen = SDL_CreateSurfaceFrom(vid.width, vid.height, SDL_PIXELFORMAT_INDEX8, NULL, vid.width);
 		sdlworldpal = SDL_CreateSurfacePalette(screen);
 	screenui = SDL_CreateSurfaceFrom(vid.width, vid.height, SDL_PIXELFORMAT_INDEX8, NULL, vid.width);
-		sdlworldpal = SDL_CreateSurfacePalette(screen);
+		sdluipal = SDL_CreateSurfacePalette(screenui);
 	screentop = SDL_CreateSurfaceFrom(vid.width, vid.height, SDL_PIXELFORMAT_INDEX8, NULL, vid.width);
-		sdlworldpal = SDL_CreateSurfacePalette(screen);
+		sdltoppal = SDL_CreateSurfacePalette(screentop);
 	screen->pixels = screenpixels;
 	screenui->pixels = uipixels;
 	screentop->pixels = toppixels;
@@ -220,6 +218,7 @@ void VID_Init(u8 */*palette*/)
 	screentop->pitch = vid.width;
 	vid.buffer = screenpixels;
 	scrbuffs[0] = screen; scrbuffs[1] = screentop; scrbuffs[2] = screenui;
+	VID_SetPalette(host_basepal, screen);
 	VID_SetPalette(host_basepal, screentop);
 	SDL_SetSurfaceColorKey(screentop, 1, 255);
 	VID_SetPalette(host_basepal, screenui);
@@ -227,17 +226,12 @@ void VID_Init(u8 */*palette*/)
 	//SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
 	renderer = SDL_CreateRenderer(window, NULL);
 	window_format = SDL_GetWindowPixelFormat(window);
-	if(!force_old_render){
-		argbbuffer = SDL_CreateSurfaceFrom(vid.width, vid.height, window_format, NULL, vid.width*SDL_BYTESPERPIXEL(window_format));
-		argbbuffer->pixels = argbpixels;
-		argbbuffer->pitch = vid.width;
-		texture = SDL_CreateTexture(renderer, window_format, SDL_TEXTUREACCESS_STREAMING, vid.width, vid.height);
-		if(!texture){printf("%s\n", SDL_GetError());__asm__("int3");}
-		//SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
-	} else {
-		scaleBuffer = SDL_CreateRGBSurfaceWithFormat(0, vid.width,
-			vid.height, 8, SDL_GetWindowPixelFormat (window));
-	}
+	argbbuffer = SDL_CreateSurfaceFrom(vid.width, vid.height, window_format, NULL, vid.width*SDL_BYTESPERPIXEL(window_format));
+	argbbuffer->pixels = argbpixels;
+	argbbuffer->pitch = vid.width;
+	texture = SDL_CreateTexture(renderer, window_format, SDL_TEXTUREACCESS_STREAMING, vid.width, vid.height);
+	if(!texture){printf("%s\n", SDL_GetError());__asm__("int3");}
+	//SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
 	windowSurface = SDL_GetWindowSurface(window);
 	sprintf(caption, "QrustyQuake - Version %4.2f", VERSION);
 	SDL_SetWindowTitle(window, (const s8 *)&caption);
@@ -263,8 +257,7 @@ void VID_Shutdown()
 {
 	if(screen != NULL)
 		SDL_UnlockSurface(screen);
-	if(!force_old_render)
-		SDL_UnlockTexture(texture);
+	SDL_UnlockTexture(texture);
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
@@ -326,32 +319,21 @@ void VID_Update()
 	scRect.h = vid.height * (scr_uiyscale.value>0 ? scr_uiyscale.value : 1);
 	scRect.x = (vid.width - scRect.w) / 2;
 	scRect.y = (vid.height - scRect.h) / 2;
-	// Machines without a proper GPU will try to simulate one with software,
-	// adding a lot of overhead. In my tests software rendering accomplished
-	// the same result with almost a 200% performance increase.
-	if(force_old_render){ // pure software rendering
-		SDL_BlitSurface(screen, NULL, scaleBuffer, NULL);
-		//SDL_BlitSurfaceScaled(screenui, &blitRect, scaleBuffer, &scRect, SDL_SCALEMODE_NEAREST);
-		//SDL_BlitSurface(screentop, NULL, scaleBuffer, NULL);
-		SDL_BlitSurfaceScaled(scaleBuffer, &blitRect, windowSurface, &destRect, SDL_SCALEMODE_NEAREST);
-		SDL_UpdateWindowSurface(window);
-	} else { // hardware-accelerated rendering
-		screen->pixels = screenpixels;
-		screenui->pixels = uipixels;
-		screentop->pixels = toppixels;
-		screen->pitch = vid.width;
-		screenui->pitch = vid.width;
-		screentop->pitch = vid.width;
-		if (SDL_LockTexture(texture, NULL, &argbbuffer->pixels, &argbbuffer->pitch)){
-			SDL_BlitSurface(screen, &blitRect, argbbuffer, &blitRect);
-			//SDL_BlitSurfaceScaled(screenui, NULL, argbbuffer, &scRect, SDL_SCALEMODE_NEAREST);
-			//SDL_BlitSurface(screentop, NULL, argbbuffer, NULL);
-			SDL_UnlockTexture(texture);
-		} else { printf("Couldn't lock texture %s\n", SDL_GetError()); }
-		SDL_RenderClear(renderer);
-		SDL_RenderTexture(renderer, texture, NULL, NULL);
-		SDL_RenderPresent(renderer);
-	}
+	screen->pixels = screenpixels;
+	screenui->pixels = uipixels;
+	screentop->pixels = toppixels;
+	screen->pitch = vid.width;
+	screenui->pitch = vid.width;
+	screentop->pitch = vid.width;
+	if (SDL_LockTexture(texture, NULL, &argbbuffer->pixels, &argbbuffer->pitch)){
+		SDL_BlitSurface(screen, &blitRect, argbbuffer, &blitRect);
+		SDL_BlitSurfaceScaled(screenui, &blitRect, argbbuffer, &scRect, SDL_SCALEMODE_NEAREST);
+		SDL_BlitSurface(screentop, &blitRect, argbbuffer, &blitRect);
+		SDL_UnlockTexture(texture);
+	} else { printf("Couldn't lock texture %s\n", SDL_GetError()); }
+	SDL_RenderClear(renderer);
+	SDL_RenderTexture(renderer, texture, NULL, NULL);
+	SDL_RenderPresent(renderer);
 	if(uiscale != scr_uiscale.value // TODO make this a callback function
 	    && vid.width / 320 >= scr_uiscale.value && scr_uiscale.value > 0){
 		uiscale = scr_uiscale.value;
@@ -367,7 +349,7 @@ void VID_Update()
 		Cvar_SetValue("vid_mode", (f32)vid_modenum);
 		vid_realmode = vid_modenum;
 	}
-	//memset(screentop->pixels, 255, vid.width*vid.height);
+	memset(screentop->pixels, 255, vid.width*vid.height);
 	memset(screenui->pixels, 255, vid.width*vid.height);
 }
 
@@ -432,17 +414,11 @@ void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 */*palette*
 	screentop = SDL_CreateSurfaceFrom(vid.width, vid.height, SDL_PIXELFORMAT_INDEX8, NULL, vid.width);
 		sdlworldpal = SDL_CreateSurfacePalette(screen);
 	scrbuffs[0] = screen; scrbuffs[1] = screentop; scrbuffs[2] = screenui;
-	if(!force_old_render){
-		SDL_DestroySurface(argbbuffer);
-		argbbuffer = SDL_CreateRGBSurfaceWithFormatFrom(NULL, vid.width,
-			vid.height, 0, 0, window_format);
-		SDL_DestroyTexture(texture);
-		texture = SDL_CreateTexture(renderer, window_format, SDL_TEXTUREACCESS_STREAMING, vid.width, vid.height);
-	} else {
-		SDL_DestroySurface(scaleBuffer);
-		scaleBuffer = SDL_CreateRGBSurfaceWithFormat(0, vid.width,
-			vid.height, 8, SDL_GetWindowPixelFormat (window));
-	}
+	SDL_DestroySurface(argbbuffer);
+	argbbuffer = SDL_CreateRGBSurfaceWithFormatFrom(NULL, vid.width,
+		vid.height, 0, 0, window_format);
+	SDL_DestroyTexture(texture);
+	texture = SDL_CreateTexture(renderer, window_format, SDL_TEXTUREACCESS_STREAMING, vid.width, vid.height);
 	vid.aspect = ((f32)vid.height / (f32)vid.width) * (320.0 / 240.0);
 	screen->pixels = screenpixels;
 	screenui->pixels = uipixels;

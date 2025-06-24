@@ -105,17 +105,13 @@ void Sys_SendKeyEvents()
 				Key_Event(K_MWHEELDOWN, 0);
 			}
 			break;
-		/*case SDL_WINDOWEVENT:
-			switch (event.window.event) {
-			case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
-				SDLWindowFlags = SDL_GetWindowFlags(window);
-				windowSurface = SDL_GetWindowSurface(window);
-				Cvar_SetValue("realwidth", windowSurface->w);
-				Cvar_SetValue("realheight", windowSurface->h);
-				VID_CalcScreenDimensions(0);
-				break;
-			}
-			break;*/
+		case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+			SDLWindowFlags = SDL_GetWindowFlags(window);
+			windowSurface = SDL_GetWindowSurface(window);
+			Cvar_SetValue("realwidth", windowSurface->w);
+			Cvar_SetValue("realheight", windowSurface->h);
+			VID_CalcScreenDimensions(0);
+			break;
 		case SDL_EVENT_QUIT:
 			CL_Disconnect();
 			Host_ShutdownServer(0);
@@ -139,9 +135,10 @@ void IN_Shutdown() { mouse_avail = 0; }
 void IN_Move(usercmd_t *cmd)
 {
 	if (!mouse_avail) return;
-	if ((!(SDLWindowFlags & (SDL_WINDOW_FULLSCREEN
-		/*| SDL_WINDOW_FULLSCREEN_DESKTOP*/)) && !_windowed_mouse.value)
-			|| key_dest != key_game) {
+	if ((!(SDLWindowFlags & SDL_WINDOW_FULLSCREEN
+			|| SDL_GetWindowFullscreenMode(window))
+			&& !_windowed_mouse.value)
+				|| key_dest != key_game) {
 		SDL_SetWindowRelativeMouseMode(window, 0);
 		return;
 	}
