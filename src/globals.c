@@ -16,6 +16,7 @@ SDL_Surface *screen; // the main video buffer, custom palette
 SDL_Surface *screentop; // top layer, always default palette
 SDL_Surface *screenui; // UI elements, custom palette
 SDL_Surface *scrbuffs[3]; // contains the above three
+SDL_Surface *converted;
 s8 modelist[NUM_OLDMODES][8]; // "320x240" etc. for menus
 u32 SDLWindowFlags;
 u32 uiscale;

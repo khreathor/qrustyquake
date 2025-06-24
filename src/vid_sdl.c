@@ -296,7 +296,9 @@ void VID_Update()
 		SDL_LockTexture(texture, &blitRect, &argbbuffer->pixels,
 				&argbbuffer->pitch);
 		SDL_LowerBlit(screen, &blitRect, argbbuffer, &blitRect);
-		SDL_LowerBlitScaled(screenui, &blitRect, argbbuffer, &scRect);
+		// Temporary fix - performance gets a hit because of this operation
+		converted = SDL_ConvertSurfaceFormat(screenui, SDL_PIXELFORMAT_RGB888, 0);
+		SDL_LowerBlitScaled(converted, &blitRect, argbbuffer, &scRect);
 		SDL_LowerBlit(screentop, &blitRect, argbbuffer, &blitRect);
 		SDL_UnlockTexture(texture);
 		SDL_RenderClear(renderer);
@@ -377,6 +379,7 @@ void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 *palette)
 	SDL_FreeSurface(screen);
 	SDL_FreeSurface(screentop);
 	SDL_FreeSurface(screenui);
+	SDL_FreeSurface(converted);
 	screen = SDL_CreateRGBSurfaceWithFormat(0, vid.width, vid.height, 8,
 		SDL_PIXELFORMAT_INDEX8);
 	screentop = SDL_CreateRGBSurfaceWithFormat(0, vid.width, vid.height, 8,

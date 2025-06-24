@@ -20,6 +20,7 @@ EX s8 modelist[NUM_OLDMODES][8];
 EX SDL_Window *window;
 EX SDL_Surface *windowSurface;
 EX SDL_Surface *screen, *screentop, *screenui;
+EX SDL_Surface *converted;
 EX SDL_Surface *scrbuffs[3];
 EX u32 SDLWindowFlags;
 EX u32 uiscale;
