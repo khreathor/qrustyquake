@@ -246,7 +246,7 @@ void VID_Init(u8 */*palette*/)
 	vid.numpages = 1;
 	vid.colormap = host_colormap;
 	VID_AllocBuffers(); // allocate z buffer, surface cache and the fbuffer
-	//SDL_ShowCursor(0); // initialize the mouse
+	SDL_HideCursor(); // initialize the mouse
 	if(defmode >= 0)
 		vid_modenum = defmode;
 	else

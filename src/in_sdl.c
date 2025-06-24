@@ -3,20 +3,20 @@
 static bool mouse_avail;
 static f32 mouse_x;
 static f32 mouse_y;
-//static s32 buttonremap[] = { K_MOUSE1, K_MOUSE3, K_MOUSE2, K_MOUSE4, K_MOUSE5 };
+static s32 buttonremap[] = { K_MOUSE1, K_MOUSE3, K_MOUSE2, K_MOUSE4, K_MOUSE5 };
 
 void Sys_SendKeyEvents()
 {
-	/*
 	SDL_Event event;
+	s32 button;
 	s32 sym, state, mod; // keep here for OpenBSD compiler
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
-		case SDL_KEYDOWN:
-		case SDL_KEYUP:
-			sym = event.key.keysym.sym;
-			state = event.key.state;
-			mod = SDL_GetModState() & KMOD_NUM;
+		case SDL_EVENT_KEY_DOWN:
+		case SDL_EVENT_KEY_UP:
+			sym = event.key.key;
+			state = event.key.down;
+			mod = SDL_GetModState() & SDL_KMOD_NUM;
 			switch (sym) {
 			case SDLK_DELETE: sym = K_DEL; break;
 			case SDLK_BACKSPACE: sym = K_BACKSPACE; break;
@@ -34,10 +34,10 @@ void Sys_SendKeyEvents()
 			case SDLK_F12: sym = K_F12; break;
 			case SDLK_PAUSE: sym = K_PAUSE; break;
 			// CyanBun96: vim-like keybinds that work in menus
-			case SDLK_h: sym = vimmode ? K_LEFTARROW : 'h'; break;
-			case SDLK_j: sym = vimmode ? K_DOWNARROW : 'j'; break;
-			case SDLK_k: sym = vimmode ? K_UPARROW : 'k'; break;
-			case SDLK_l: sym = vimmode ? K_RIGHTARROW : 'l'; break;
+			case SDLK_H: sym = vimmode ? K_LEFTARROW : 'h'; break;
+			case SDLK_J: sym = vimmode ? K_DOWNARROW : 'j'; break;
+			case SDLK_K: sym = vimmode ? K_UPARROW : 'k'; break;
+			case SDLK_L: sym = vimmode ? K_RIGHTARROW : 'l'; break;
 			case SDLK_UP: sym = K_UPARROW; break;
 			case SDLK_DOWN: sym = K_DOWNARROW; break;
 			case SDLK_RIGHT: sym = K_RIGHTARROW; break;
@@ -80,22 +80,22 @@ void Sys_SendKeyEvents()
 		// Vanilla behavior: Use Mouse OFF disables mouse input entirely
 		// ON grabs the mouse, kinda like SetRelativeMouseMode(SDL_TRUE)
 		// Fullscreen grabs the mouse unconditionally
-		case SDL_MOUSEMOTION:
+		case SDL_EVENT_MOUSE_MOTION:
 			mouse_x += event.motion.xrel;
 			mouse_y += event.motion.yrel;
 			break;
-		case SDL_MOUSEBUTTONDOWN:
-		case SDL_MOUSEBUTTONUP:
+		case SDL_EVENT_MOUSE_BUTTON_DOWN:
+		case SDL_EVENT_MOUSE_BUTTON_UP:
 			if (event.button.button < 1 ||
 				event.button.button > Q_COUNTOF(buttonremap)) {
 				Con_Printf("Ignored input event for MOUSE%d\n",
 						event.button.button);
 				break;
 			}
-			Key_Event(buttonremap[event.button.button - 1],
-					event.button.state == SDL_PRESSED);
+			button = buttonremap[event.button.button - 1];
+			Key_Event(button, event.key.down);
 			break;
-		case SDL_MOUSEWHEEL:
+		case SDL_EVENT_MOUSE_WHEEL:
 			if (event.wheel.y > 0) {
 				Key_Event(K_MWHEELUP, 1);
 				Key_Event(K_MWHEELUP, 0);
@@ -105,10 +105,9 @@ void Sys_SendKeyEvents()
 				Key_Event(K_MWHEELDOWN, 0);
 			}
 			break;
-		case SDL_WINDOWEVENT:
+		/*case SDL_WINDOWEVENT:
 			switch (event.window.event) {
-			case SDL_WINDOWEVENT_RESIZED:
-			case SDL_WINDOWEVENT_SIZE_CHANGED:
+			case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
 				SDLWindowFlags = SDL_GetWindowFlags(window);
 				windowSurface = SDL_GetWindowSurface(window);
 				Cvar_SetValue("realwidth", windowSurface->w);
@@ -116,8 +115,8 @@ void Sys_SendKeyEvents()
 				VID_CalcScreenDimensions(0);
 				break;
 			}
-			break;
-		case SDL_QUIT:
+			break;*/
+		case SDL_EVENT_QUIT:
 			CL_Disconnect();
 			Host_ShutdownServer(0);
 			Sys_Quit();
@@ -126,7 +125,6 @@ void Sys_SendKeyEvents()
 			break;
 		}
 	}
-	*/
 }
 
 void IN_Init()
@@ -140,15 +138,14 @@ void IN_Shutdown() { mouse_avail = 0; }
 
 void IN_Move(usercmd_t *cmd)
 {
-	/*
 	if (!mouse_avail) return;
 	if ((!(SDLWindowFlags & (SDL_WINDOW_FULLSCREEN
-		| SDL_WINDOW_FULLSCREEN_DESKTOP)) && !_windowed_mouse.value)
+		/*| SDL_WINDOW_FULLSCREEN_DESKTOP*/)) && !_windowed_mouse.value)
 			|| key_dest != key_game) {
-		SDL_SetRelativeMouseMode(SDL_FALSE);
+		SDL_SetWindowRelativeMouseMode(window, 0);
 		return;
 	}
-	SDL_SetRelativeMouseMode(SDL_TRUE);
+	SDL_SetWindowRelativeMouseMode(window, 1);
 	mouse_x *= sensitivity.value;
 	mouse_y *= sensitivity.value * sensitivityyscale.value;
 	if ((in_strafe.state & 1) || (lookstrafe.value && (in_mlook.state & 1)))
@@ -170,5 +167,4 @@ void IN_Move(usercmd_t *cmd)
 			cmd->forwardmove -= m_forward.value * mouse_y;
 	}
 	mouse_x = mouse_y = 0.0;
-	*/
 }
