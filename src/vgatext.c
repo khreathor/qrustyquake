@@ -81,6 +81,8 @@ int vgatext_main(SDL_Window *window, Uint16 *screen)
 			render_cell(imgpos1, 640, cell, true);
 		}
 	}
+	uint8_t *imgpos1 = &image1[24 * 16][0];
+	render_cell(imgpos1, 640, 0x40dc, true); // CyanBun96: blinking cursor
 	for (int y = 0; y < 400; y++) // create rgb image0
 		SDL_memcpy(&((Uint8 *)surface8->pixels)[y * surface8->pitch], &image0[y][0], 640);
 	SDL_BlitSurface(surface8, &rect, windowsurface0, &rect);
