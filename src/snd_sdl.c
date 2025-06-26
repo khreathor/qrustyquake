@@ -37,7 +37,7 @@ static void SDLCALL paint_audio(void */*unused*/, Uint8 *stream, s32 len)
 		shm->samplepos = 0;
 }
 
-void SDLCALL paint_audio_new(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount)
+void SDLCALL paint_audio_new(void *userdata, SDL_AudioStream *stream, s32 additional_amount, s32 /*total_amount*/)
 {
 	if (additional_amount > 0) {
 		Uint8 *data = SDL_stack_alloc(Uint8, additional_amount);
