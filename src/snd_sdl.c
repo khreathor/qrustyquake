@@ -52,11 +52,11 @@ void SDLCALL paint_audio_new(void *userdata, SDL_AudioStream *stream, int additi
 bool SNDDMA_Init(dma_t *dma)
 {
 	s8 drivername[128];
-	if(SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
+	if(!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
 		Con_Printf("Couldn't init SDL audio: %s\n", SDL_GetError());
 		return 0;
 	}
-	const SDL_AudioSpec desired = { SDL_AUDIO_U8, 2, 11025 };
+	const SDL_AudioSpec desired = { SDL_AUDIO_U8, 2, 11025 }; // TODO configurable sample rates
 	s32 samples = 256;
 	SDL_AudioStream *stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &desired, paint_audio_new, 0);
 	SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream));

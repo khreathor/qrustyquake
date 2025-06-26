@@ -173,7 +173,7 @@ void Sys_mkdir(const s8 *path) { _mkdir(path); }
 
 int main(int c, char **v)
 {
-	if(SDL_Init(SDL_INIT_VIDEO) < 0)
+	if(!SDL_Init(SDL_INIT_VIDEO))
 		Sys_Error("SDL_Init failed: %s", SDL_GetError());
 	host_parms.argc = c;
 	host_parms.argv = (s8**)v;
