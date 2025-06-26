@@ -383,6 +383,7 @@ void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 */*palette*
 	argbbuffer->pitch = vid.width;
 	SDL_DestroyTexture(texture);
 	texture = SDL_CreateTexture(renderer, window_format, SDL_TEXTUREACCESS_STREAMING, vid.width, vid.height);
+	SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
 	vid.aspect = ((f32)vid.height / (f32)vid.width) * (320.0 / 240.0);
 	screen->pixels = screenpixels;
 	screenui->pixels = uipixels;
