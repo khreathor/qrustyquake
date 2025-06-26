@@ -461,7 +461,9 @@ void SCR_UpdateScreen() // This is called every frame,
 	if (scr_drawdialog) {
 		Sbar_Draw();
 		fadescreen = 1;
+		drawlayer = 1;
 		SCR_DrawNotifyString();
+		drawlayer = 0;
 	} else if (scr_drawloading) {
 		SCR_DrawLoading();
 		Sbar_Draw();
