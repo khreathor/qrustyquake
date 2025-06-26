@@ -48,20 +48,17 @@ s32 VID_GetConfigCvar(const s8 *cvname)
 		}
 	}
 	fclose(file);
-	if(ret != -1)
-		printf("%s: %d\n", cvname, ret);
-	else
-		printf("%s not found in id1/config.cfg\n", cvname);
+	if(ret != -1) printf("%s: %d\n", cvname, ret);
+	else printf("%s not found in id1/config.cfg\n", cvname);
 	return ret;
 }
 
 s32 VID_DetermineMode()
 {
-	s32 win = !(SDLWindowFlags & (SDL_WINDOW_FULLSCREEN
-				      /*| SDL_WINDOW_FULLSCREEN_DESKTOP*/));
+	s32 win = !(SDLWindowFlags & SDL_WINDOW_FULLSCREEN);
 	for(s32 i = 0; i < NUM_OLDMODES; ++i){
 		if(i > 2 ? !win : win && vid.width == oldmodes[i * 2]
-		    && vid.height == oldmodes[i * 2 + 1])
+				&& vid.height == oldmodes[i * 2 + 1])
 			return i;
 	}
 	return -1;
@@ -84,10 +81,40 @@ void VID_SetPalette(u8 *palette, SDL_Surface *dest)
 	SDL_SetSurfacePalette(dest, pal);
 }
 
+void VID_SetWindowed()
+{
+	SDL_SetWindowFullscreen(window, 0);
+	SDL_SetWindowSize(window, vid.width, vid.height);
+	SDL_SetWindowPosition(window, SDL_WINDOWPOS_UNDEFINED,
+			SDL_WINDOWPOS_UNDEFINED);
+}
+
+void VID_SetFullscreen(s32 w, s32 h)
+{
+	s32 moden = -1;
+	SDL_DisplayMode *mode = 0;
+	SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(1, &moden);
+	for(s32 i = 0; i < moden; ++i) {
+		if(modes[i]->w == w && modes[i]->h == h){
+			mode = modes[i];
+			break;
+		}}
+	if(!mode)Con_Printf("Couldn't find an exclusive fullscreen mode with specified dimensions, using borderless fullscreen\n");
+	else Con_Printf("Setting exclusive fullscreen mode\n");
+	SDL_SetWindowFullscreenMode(window, 0);
+	SDL_SetWindowFullscreen(window, 1);
+	SDL_free(modes);
+}
+
+void VID_SetBorderless()
+{
+	SDL_SetWindowFullscreenMode(window, 0);
+	SDL_SetWindowFullscreen(window, 1);
+}
+
 void VID_Init(u8 */*palette*/)
 {
 	s32 pnum;
-	s32 flags;
 	s32 winmode;
 	s32 defmode = -1;
 	s8 caption[50];
@@ -152,18 +179,6 @@ void VID_Init(u8 */*palette*/)
 		if(!vid.height)
 			Sys_Error("VID: Bad window height\n");
 	}
-	// In windowed mode, the window can be resized at runtime
-	flags = SDL_WINDOW_RESIZABLE;
-	if(COM_CheckParm("-fullscreen") || confwmode == 1)
-		flags |= SDL_WINDOW_FULLSCREEN;
-	else if(COM_CheckParm("-borderless") || confwmode == 2)
-		flags |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_FULLSCREEN;
-	else if(COM_CheckParm("-window") || confwmode == 0)
-		flags &= ~SDL_WINDOW_FULLSCREEN;
-	else if(winmode == 0)
-		flags |= SDL_WINDOW_BORDERLESS;
-	else if(winmode == 1)
-		flags &= ~SDL_WINDOW_FULLSCREEN;
 	vimmode = COM_CheckParm("-vimmode");
 	if(vid.width > 1280 || vid.height > 1024)
 		Sys_Printf("vanilla maximum resolution is 1280x1024\n");
@@ -207,7 +222,6 @@ void VID_Init(u8 */*palette*/)
 	windowSurface = SDL_GetWindowSurface(window);
 	sprintf(caption, "QrustyQuake - Version %4.2f", VERSION);
 	SDL_SetWindowTitle(window, (const s8 *)&caption);
-	SDLWindowFlags = SDL_GetWindowFlags(window);
 	vid.aspect = ((f32)vid.height / (f32)vid.width) * (320.0 / 240.0);
 	vid.numpages = 1;
 	vid.colormap = host_colormap;
@@ -216,6 +230,12 @@ void VID_Init(u8 */*palette*/)
 	else vid_modenum = VID_DetermineMode();
 	if(vid_modenum < 0) Con_Printf("WARNING: non-standard video mode\n");
 	else Con_Printf("Detected video mode %d\n", vid_modenum);
+	if(COM_CheckParm("-fullscreen") || confwmode == 1) VID_SetFullscreen(vid.width, vid.height);
+	else if(COM_CheckParm("-borderless") || confwmode == 2) VID_SetBorderless();
+	else if(COM_CheckParm("-window") || confwmode == 0) VID_SetWindowed();
+	else if(winmode == 0) VID_SetBorderless();
+	else if(winmode == 1) VID_SetWindowed();
+	SDLWindowFlags = SDL_GetWindowFlags(window);
 	realwidth.value = 0;
 	VID_CalcScreenDimensions(0);
 }
@@ -234,13 +254,10 @@ void VID_CalcScreenDimensions(cvar_t */*cvar*/)
 	if(uiscale * 200 > vid.height)
 		uiscale = 1; // For weird resolutions like 800x200
 	Cvar_SetValue("scr_uiscale", uiscale);
-	// Scaling code, courtesy of ChatGPT
-	// Original, pre-scale screen size
 	blitRect.x = 0;
 	blitRect.y = 0;
 	blitRect.w = vid.width;
 	blitRect.h = vid.height;
-	// Get window dimensions
 	s32 winW, winH;
 	if(realwidth.value == 0 || realheight.value == 0){
 		SDL_GetWindowSize(window, &winW, &winH);
@@ -248,7 +265,6 @@ void VID_CalcScreenDimensions(cvar_t */*cvar*/)
 		winW = realwidth.value;
 		winH = realheight.value;
 	}
-	// Get scaleBuffer dimensions
 	s32 bufW = vid.width;
 	s32 bufH = vid.height;
 	f32 bufAspect;
@@ -258,7 +274,6 @@ void VID_CalcScreenDimensions(cvar_t */*cvar*/)
 	else
 		bufAspect = aspectr.value;
 	Cvar_SetValue("aspectr", bufAspect);
-	// Calculate scaled dimensions
 	s32 destW, destH;
 	if((f32)winW / winH > bufAspect){
 		// Window is wider than buffer, black bars on sides
@@ -269,8 +284,7 @@ void VID_CalcScreenDimensions(cvar_t */*cvar*/)
 		destW = winW;
 		destH = (s32)(winW / bufAspect + 0.5);
 	}
-	// Center the destination rectangle
-	destRect.x = (winW - destW) / 2;
+	destRect.x = (winW - destW) / 2; // Center the destination rectangle
 	destRect.y = (winH - destH) / 2;
 	destRect.w = destW;
 	destRect.h = destH;
@@ -404,29 +418,12 @@ void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 */*palette*
 	VID_SetPalette(host_basepal, screentop);
 	SDL_SetSurfaceColorKey(screentop, 1, 255);
 	if(!custw || !custh){
-		if(modenum <= 2){
-			SDL_SetWindowFullscreen(window, 0);
-			SDL_SetWindowSize(window,
-				realwidth.value, realheight.value);
-			SDL_SetWindowPosition(window, SDL_WINDOWPOS_UNDEFINED,
-				SDL_WINDOWPOS_UNDEFINED);
-		} else {
-			SDL_SetWindowFullscreen(window,
-				SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS);
-		}
+		if(modenum <= 2) VID_SetWindowed();
+		else VID_SetBorderless();
 	} else {
-		if(custwinm == 0){
-			SDL_SetWindowFullscreen(window, 0);
-			SDL_SetWindowSize(window,
-					realwidth.value, realheight.value);
-			SDL_SetWindowPosition(window, SDL_WINDOWPOS_UNDEFINED,
-				SDL_WINDOWPOS_UNDEFINED);
-		} else if(custwinm== 1){
-			SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
-		} else {
-			SDL_SetWindowFullscreen(window,
-				SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS);
-		}
+		if(custwinm == 0) VID_SetWindowed();
+		else if(custwinm== 1) VID_SetFullscreen(custw, custh);
+		else VID_SetBorderless();
 	}
 	realwidth.value = 0;
 	VID_CalcScreenDimensions(0);

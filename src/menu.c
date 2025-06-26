@@ -1341,7 +1341,7 @@ void M_New_Draw()
 	else if (scr_hudstyle.value == 6)
 		M_Print(xoffset + 204, 72, "Minimalist 2");
 	else
-		M_Print(xoffset + 204, 72, "Classic w/o BG");
+		M_Print(xoffset + 204, 72, "Classic no BG");
 	M_Print(xoffset, 80, "          Translucency");
 	if (r_twopass.value == 0)
 		M_Print(xoffset + 204, 80, "Off (smart)");
