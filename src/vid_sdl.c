@@ -101,7 +101,7 @@ void VID_SetFullscreen(s32 w, s32 h)
 		}}
 	if(!mode)Con_Printf("Couldn't find an exclusive fullscreen mode with specified dimensions, using borderless fullscreen\n");
 	else Con_Printf("Setting exclusive fullscreen mode\n");
-	SDL_SetWindowFullscreenMode(window, 0);
+	SDL_SetWindowFullscreenMode(window, mode);
 	SDL_SetWindowFullscreen(window, 1);
 	SDL_free(modes);
 }
