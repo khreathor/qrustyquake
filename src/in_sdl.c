@@ -9,7 +9,6 @@ static s32 jaxis_move_x = 0;
 static s32 jaxis_move_y = 0;
 static s32 jaxis_look_x = 0;
 static s32 jaxis_look_y = 0;
-static s32 deadzone = 8; // square at the moment, TODO circular
 
 void Sys_SendKeyEvents()
 {
@@ -143,8 +142,10 @@ void Sys_SendKeyEvents()
 			case 1: jaxis_move_y = event.jaxis.value; break;
 			case 3: jaxis_look_x = event.jaxis.value; break;
 			case 4: jaxis_look_y = event.jaxis.value; break;
-			case 2: Key_Event(K_AUX31, event.jaxis.value>0); break;
-			case 5: Key_Event(K_AUX32, event.jaxis.value>0); break;
+			case 2: Key_Event(K_AUX31, 
+				event.jaxis.value>jtriggerthresh.value); break;
+			case 5: Key_Event(K_AUX32, 
+				event.jaxis.value>jtriggerthresh.value); break;
 			}
 			break;
 		default:
@@ -175,26 +176,26 @@ void IN_Move(usercmd_t *cmd)
 	if (!mouse_avail) return;
 	s32 jlook_x = jaxis_look_x;
 	s32 jlook_y = jaxis_look_y;
-	if      (jlook_x > 0 && jlook_x <  deadzone) jlook_x = 0;
-	else if (jlook_x < 0 && jlook_x > -deadzone) jlook_x = 0;
-	if      (jlook_y > 0 && jlook_y <  deadzone) jlook_y = 0;
-	else if (jlook_y < 0 && jlook_y > -deadzone) jlook_y = 0;
-	if      (jlook_x > 0) jlook_x -= deadzone;
-	else if (jlook_x < 0) jlook_x += deadzone;
-	if      (jlook_y > 0) jlook_y -= deadzone;
-	else if (jlook_y < 0) jlook_y += deadzone;
+	if      (jlook_x > 0 && jlook_x <  jdeadzone.value) jlook_x = 0;
+	else if (jlook_x < 0 && jlook_x > -jdeadzone.value) jlook_x = 0;
+	if      (jlook_y > 0 && jlook_y <  jdeadzone.value) jlook_y = 0;
+	else if (jlook_y < 0 && jlook_y > -jdeadzone.value) jlook_y = 0;
+	if      (jlook_x > 0) jlook_x -= jdeadzone.value;
+	else if (jlook_x < 0) jlook_x += jdeadzone.value;
+	if      (jlook_y > 0) jlook_y -= jdeadzone.value;
+	else if (jlook_y < 0) jlook_y += jdeadzone.value;
 	mouse_x += jlook_x*0.0005*jlooksens.value;
 	mouse_y += jlook_y*0.0005*jlooksens.value;
 	s32 jmove_x = jaxis_move_x;
 	s32 jmove_y = jaxis_move_y;
-	if      (jmove_x > 0 && jmove_x <  deadzone) jmove_x = 0;
-	else if (jmove_x < 0 && jmove_x > -deadzone) jmove_x = 0;
-	if      (jmove_y > 0 && jmove_y <  deadzone) jmove_y = 0;
-	else if (jmove_y < 0 && jmove_y > -deadzone) jmove_y = 0;
-	if      (jmove_x > 0) jmove_x -= deadzone;
-	else if (jmove_x < 0) jmove_x += deadzone;
-	if      (jmove_y > 0) jmove_y -= deadzone;
-	else if (jmove_y < 0) jmove_y += deadzone;
+	if      (jmove_x > 0 && jmove_x <  jdeadzone.value) jmove_x = 0;
+	else if (jmove_x < 0 && jmove_x > -jdeadzone.value) jmove_x = 0;
+	if      (jmove_y > 0 && jmove_y <  jdeadzone.value) jmove_y = 0;
+	else if (jmove_y < 0 && jmove_y > -jdeadzone.value) jmove_y = 0;
+	if      (jmove_x > 0) jmove_x -= jdeadzone.value;
+	else if (jmove_x < 0) jmove_x += jdeadzone.value;
+	if      (jmove_y > 0) jmove_y -= jdeadzone.value;
+	else if (jmove_y < 0) jmove_y += jdeadzone.value;
 	cmd->sidemove += jmove_x*0.005*jmovesens.value;
 	cmd->forwardmove -= jmove_y*0.005*jmovesens.value;
 	if ((!(SDLWindowFlags & SDL_WINDOW_FULLSCREEN

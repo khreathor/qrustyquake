@@ -213,7 +213,7 @@ void Cvar_SetQuick(cvar_t *var, const s8 *value)
 	if(!var->default_string) var->default_string = Z_Strdup(var->string);
 	//johnfitz -- during initialization, update default too
 	else if(!host_initialized) {
-		Sys_Printf("changing default of %s: %s -> %s\n", var->name,
+		Sys_DPrintf("changing default of %s: %s -> %s\n", var->name,
 				var->default_string, var->string);
 		Z_Free((void *)var->default_string);
 		var->default_string = Z_Strdup(var->string);
