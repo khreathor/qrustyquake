@@ -383,6 +383,8 @@ void CL_Init()
 	Cvar_RegisterVariable(&lookspring);
 	Cvar_RegisterVariable(&lookstrafe);
 	Cvar_RegisterVariable(&sensitivity);
+	Cvar_RegisterVariable(&jlooksens);
+	Cvar_RegisterVariable(&jmovesens);
 	Cvar_RegisterVariable(&m_pitch);
 	Cvar_RegisterVariable(&m_yaw);
 	Cvar_RegisterVariable(&m_forward);

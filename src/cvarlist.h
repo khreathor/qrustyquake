@@ -30,4 +30,4 @@ cl_bobup, v_kicktime, v_kickroll, v_kickpitch, v_iyaw_cycle, v_iroll_cycle,
 v_ipitch_cycle, v_iyaw_level, v_iroll_level, v_ipitch_level, v_idlescale,
 crosshair, cl_crossx, cl_crossy, cl_crosschar, gl_cshiftpercent, v_centermove,
 v_centerspeed, v_gamma, net_messagetimeout, scr_uixscale, scr_uiyscale,
-yaspectscale;
+yaspectscale, jlooksens, jmovesens;

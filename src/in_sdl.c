@@ -4,6 +4,12 @@ static bool mouse_avail;
 static f32 mouse_x;
 static f32 mouse_y;
 static s32 buttonremap[] = { K_MOUSE1, K_MOUSE3, K_MOUSE2, K_MOUSE4, K_MOUSE5 };
+static SDL_Joystick *joystick = 0;
+static s32 jaxis_move_x = 0;
+static s32 jaxis_move_y = 0;
+static s32 jaxis_look_x = 0;
+static s32 jaxis_look_y = 0;
+static s32 deadzone = 8; // square at the moment, TODO circular
 
 void Sys_SendKeyEvents()
 {
@@ -71,12 +77,11 @@ void Sys_SendKeyEvents()
 			case SDLK_KP_ENTER: sym = SDLK_RETURN; break;
 			case SDLK_KP_EQUALS: sym = SDLK_EQUALS; break;
 			}
-		// If we're not directly handled and still above 255
-		// just force it to 0
-		if (sym > 255)
-			sym = 0;
-		Key_Event(sym, state);
-		break;
+			// If we're not directly handled and still above 255
+			// just force it to 0
+			if (sym > 255) sym = 0;
+			Key_Event(sym, state);
+			break;
 		// Vanilla behavior: Use Mouse OFF disables mouse input entirely
 		// ON grabs the mouse, kinda like SetRelativeMouseMode(SDL_TRUE)
 		// Fullscreen grabs the mouse unconditionally
@@ -117,6 +122,31 @@ void Sys_SendKeyEvents()
 			Host_ShutdownServer(0);
 			Sys_Quit();
 			break;
+		case SDL_EVENT_JOYSTICK_BUTTON_UP:
+		case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
+			if(event.jbutton.button == 6)
+				Key_Event(K_ENTER, event.jbutton.down);
+			else if(event.jbutton.button == 7)
+				Key_Event(K_ESCAPE, event.jbutton.down);
+			else Key_Event(K_JOY1+event.jbutton.button,
+					event.jbutton.down);
+			break;
+		case SDL_EVENT_JOYSTICK_HAT_MOTION:
+			Key_Event(K_UPARROW, event.jhat.value & 1);
+			Key_Event(K_RIGHTARROW, event.jhat.value & 2);
+			Key_Event(K_DOWNARROW, event.jhat.value & 4);
+			Key_Event(K_LEFTARROW, event.jhat.value & 8);
+			break;
+		case SDL_EVENT_JOYSTICK_AXIS_MOTION:
+			switch(event.jaxis.axis){
+			case 0: jaxis_move_x = event.jaxis.value; break;
+			case 1: jaxis_move_y = event.jaxis.value; break;
+			case 3: jaxis_look_x = event.jaxis.value; break;
+			case 4: jaxis_look_y = event.jaxis.value; break;
+			case 2: Key_Event(K_AUX31, event.jaxis.value>0); break;
+			case 5: Key_Event(K_AUX32, event.jaxis.value>0); break;
+			}
+			break;
 		default:
 			break;
 		}
@@ -128,6 +158,14 @@ void IN_Init()
 	if (COM_CheckParm("-nomouse")) return;
 	mouse_x = mouse_y = 0.0;
 	mouse_avail = 1;
+	SDL_Init(SDL_INIT_JOYSTICK);
+	s32 count = -1;
+	SDL_JoystickID *joys = SDL_GetJoysticks(&count);
+	if (count > 0) {
+		Con_Printf("Using joystick: %s\n", SDL_GetJoystickNameForID(joys[0]));
+		joystick = SDL_OpenJoystick(joys[0]);
+		SDL_SetJoystickEventsEnabled(1);
+	}
 }
 
 void IN_Shutdown() { mouse_avail = 0; }
@@ -135,6 +173,30 @@ void IN_Shutdown() { mouse_avail = 0; }
 void IN_Move(usercmd_t *cmd)
 {
 	if (!mouse_avail) return;
+	s32 jlook_x = jaxis_look_x;
+	s32 jlook_y = jaxis_look_y;
+	if      (jlook_x > 0 && jlook_x <  deadzone) jlook_x = 0;
+	else if (jlook_x < 0 && jlook_x > -deadzone) jlook_x = 0;
+	if      (jlook_y > 0 && jlook_y <  deadzone) jlook_y = 0;
+	else if (jlook_y < 0 && jlook_y > -deadzone) jlook_y = 0;
+	if      (jlook_x > 0) jlook_x -= deadzone;
+	else if (jlook_x < 0) jlook_x += deadzone;
+	if      (jlook_y > 0) jlook_y -= deadzone;
+	else if (jlook_y < 0) jlook_y += deadzone;
+	mouse_x += jlook_x*0.0005*jlooksens.value;
+	mouse_y += jlook_y*0.0005*jlooksens.value;
+	s32 jmove_x = jaxis_move_x;
+	s32 jmove_y = jaxis_move_y;
+	if      (jmove_x > 0 && jmove_x <  deadzone) jmove_x = 0;
+	else if (jmove_x < 0 && jmove_x > -deadzone) jmove_x = 0;
+	if      (jmove_y > 0 && jmove_y <  deadzone) jmove_y = 0;
+	else if (jmove_y < 0 && jmove_y > -deadzone) jmove_y = 0;
+	if      (jmove_x > 0) jmove_x -= deadzone;
+	else if (jmove_x < 0) jmove_x += deadzone;
+	if      (jmove_y > 0) jmove_y -= deadzone;
+	else if (jmove_y < 0) jmove_y += deadzone;
+	cmd->sidemove += jmove_x*0.005*jmovesens.value;
+	cmd->forwardmove -= jmove_y*0.005*jmovesens.value;
 	if ((!(SDLWindowFlags & SDL_WINDOW_FULLSCREEN
 			|| SDL_GetWindowFullscreenMode(window))
 			&& !_windowed_mouse.value)
