@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -c -Wall -Wextra
+CFLAGS = -c -Wall -Wextra -D_DEFAULT_SOURCE
 LDFLAGS = -lm -lSDL3
 TARGET = qrustyquake
 SRCS = chase.c cl_demo.c cl_input.c cl_main.c cl_parse.c \
