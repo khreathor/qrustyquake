@@ -81,6 +81,7 @@ cvar_t jtrigaxis1=                                    {"jtrigaxis1", "2", 1,ZR};
 cvar_t jtrigaxis2=                                    {"jtrigaxis2", "5", 1,ZR};
 cvar_t jenterbutton=                                {"jenterbutton", "6", 1,ZR};
 cvar_t jescapebutton=                              {"jescapebutton", "7", 1,ZR};
+cvar_t joysticknum=                                  {"joysticknum", "0", 1,ZR};
 cvar_t m_pitch=                                      {"m_pitch", "0.022", 1,ZR};
 cvar_t m_yaw=                                          {"m_yaw", "0.022", 1,ZR};
 cvar_t m_forward=                                      {"m_forward", "1", 1,ZR};

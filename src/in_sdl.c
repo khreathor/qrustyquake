@@ -10,25 +10,37 @@ static s32 jaxis_move_y = 0;
 static s32 jaxis_look_x = 0;
 static s32 jaxis_look_y = 0;
 
-void IN_InitJoystick()
-{ // Two or more joysticks currently unsupported.
+void IN_InitJoystick(cvar_t */*cvar*/)
+{
 	s32 count = -1;
 	SDL_JoystickID *joys = SDL_GetJoysticks(&count);
-	if (count > 0) {
-		Con_Printf("Using joystick: %s\n", SDL_GetJoystickNameForID(joys[0]));
-		joystick = SDL_OpenJoystick(joys[0]);
+	if (joysticknum.value > count - 1 || joysticknum.value < 0) {
+		Con_Printf("Invalid joysticknum value\n");
+		if (count > 0) {
+			Con_Printf("Detected joysticks:\n");
+			for (s32 i = 0; i < count; ++i)
+				Con_Printf("%d: %s\n", i,
+					SDL_GetJoystickNameForID(joys[i]));
+		}
+		else Con_Printf("No joysticks found\n");
+	} else if (count > 0) {
+		Con_Printf("Using joystick: %s\n",
+			SDL_GetJoystickNameForID(joys[(s32)joysticknum.value]));
+		if (joystick) { SDL_CloseJoystick(joystick); joystick = 0; }
+		joystick = SDL_OpenJoystick(joys[(s32)joysticknum.value]);
 		SDL_SetJoystickEventsEnabled(1);
 	} else Con_Printf("No joysticks found\n");
 }
 
 void IN_RemoveJoystick()
 {
-	joystick = 0;
+	if (joystick) { SDL_CloseJoystick(joystick); joystick = 0; }
 	jaxis_move_x = 0;
 	jaxis_move_y = 0;
 	jaxis_look_x = 0;
 	jaxis_look_y = 0;
 	Con_Printf("Joystick removed\n");
+	IN_InitJoystick(0);
 }
 
 void Sys_SendKeyEvents()
@@ -173,7 +185,7 @@ void Sys_SendKeyEvents()
 				Key_Event(K_AUX32, event.jaxis.value >
 						jtriggerthresh.value);
 			break;
-		case SDL_EVENT_JOYSTICK_ADDED: IN_InitJoystick(); break;
+		case SDL_EVENT_JOYSTICK_ADDED: IN_InitJoystick(0); break;
 		case SDL_EVENT_JOYSTICK_REMOVED: IN_RemoveJoystick(); break;
 		default:
 			break;
@@ -187,6 +199,7 @@ void IN_Init()
 	mouse_x = mouse_y = 0.0;
 	mouse_avail = 1;
 	SDL_Init(SDL_INIT_JOYSTICK);
+	IN_InitJoystick(0);
 }
 
 void IN_Shutdown() { mouse_avail = 0; }

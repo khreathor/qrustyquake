@@ -395,6 +395,8 @@ void CL_Init()
 	Cvar_RegisterVariable(&jtrigaxis2);
 	Cvar_RegisterVariable(&jenterbutton);
 	Cvar_RegisterVariable(&jescapebutton);
+	Cvar_RegisterVariable(&joysticknum);
+	Cvar_SetCallback(&joysticknum, IN_InitJoystick);
 	Cvar_RegisterVariable(&m_pitch);
 	Cvar_RegisterVariable(&m_yaw);
 	Cvar_RegisterVariable(&m_forward);

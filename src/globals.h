@@ -15,6 +15,7 @@ void Fog_ParseWorldspawn();
 void Fog_SetPalIndex(cvar_t *cvar);
 void Fog_Update(f32 d, f32 r, f32 g, f32 b);
 void R_DrawFog();
+void IN_InitJoystick(cvar_t *cvar);                                  // in_sdl.c
 EX u32 oldmodes[NUM_OLDMODES*2];                                    // vid_sdl.c
 EX s8 modelist[NUM_OLDMODES][8];
 EX SDL_Window *window;
