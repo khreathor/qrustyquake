@@ -123,9 +123,9 @@ void Sys_SendKeyEvents()
 			break;
 		case SDL_EVENT_JOYSTICK_BUTTON_UP:
 		case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
-			if(event.jbutton.button == 6)
+			if(event.jbutton.button == jenterbutton.value)
 				Key_Event(K_ENTER, event.jbutton.down);
-			else if(event.jbutton.button == 7)
+			else if(event.jbutton.button == jescapebutton.value)
 				Key_Event(K_ESCAPE, event.jbutton.down);
 			else Key_Event(K_JOY1+event.jbutton.button,
 					event.jbutton.down);
@@ -137,16 +137,20 @@ void Sys_SendKeyEvents()
 			Key_Event(K_LEFTARROW, event.jhat.value & 8);
 			break;
 		case SDL_EVENT_JOYSTICK_AXIS_MOTION:
-			switch(event.jaxis.axis){
-			case 0: jaxis_move_x = event.jaxis.value; break;
-			case 1: jaxis_move_y = event.jaxis.value; break;
-			case 3: jaxis_look_x = event.jaxis.value; break;
-			case 4: jaxis_look_y = event.jaxis.value; break;
-			case 2: Key_Event(K_AUX31, 
-				event.jaxis.value>jtriggerthresh.value); break;
-			case 5: Key_Event(K_AUX32, 
-				event.jaxis.value>jtriggerthresh.value); break;
-			}
+			if      (event.jaxis.axis == jmoveaxisx.value)
+				jaxis_move_x = event.jaxis.value;
+			else if (event.jaxis.axis == jmoveaxisy.value)
+				jaxis_move_y = event.jaxis.value;
+			else if (event.jaxis.axis == jlookaxisx.value)
+				jaxis_look_x = event.jaxis.value;
+			else if (event.jaxis.axis == jlookaxisy.value)
+				jaxis_look_y = event.jaxis.value;
+			else if (event.jaxis.axis == jtrigaxis1.value)
+				Key_Event(K_AUX31, event.jaxis.value >
+						jtriggerthresh.value);
+			else if (event.jaxis.axis == jtrigaxis2.value)
+				Key_Event(K_AUX32, event.jaxis.value >
+						jtriggerthresh.value);
 			break;
 		default:
 			break;

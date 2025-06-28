@@ -387,6 +387,14 @@ void CL_Init()
 	Cvar_RegisterVariable(&jmovesens);
 	Cvar_RegisterVariable(&jdeadzone);
 	Cvar_RegisterVariable(&jtriggerthresh);
+	Cvar_RegisterVariable(&jmoveaxisx);
+	Cvar_RegisterVariable(&jmoveaxisy);
+	Cvar_RegisterVariable(&jlookaxisx);
+	Cvar_RegisterVariable(&jlookaxisy);
+	Cvar_RegisterVariable(&jtrigaxis1);
+	Cvar_RegisterVariable(&jtrigaxis2);
+	Cvar_RegisterVariable(&jenterbutton);
+	Cvar_RegisterVariable(&jescapebutton);
 	Cvar_RegisterVariable(&m_pitch);
 	Cvar_RegisterVariable(&m_yaw);
 	Cvar_RegisterVariable(&m_forward);
