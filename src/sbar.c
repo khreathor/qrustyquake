@@ -989,7 +989,7 @@ void Sbar_Draw()
 		Sbar_DrawFace(); // ...and HP
 		Sbar_DrawAmmo();
 	}
-	if (sb_lines/SCL > 24 || oldhudstyle)
+	if ((sb_lines/SCL>24 || oldhudstyle) && !(oldhudstyle==4 && WW/SCL<640))
 		Sbar_DrawInventory();
 	if (sb_lines/SCL > 24 && cl.maxclients != 1)
 		Sbar_DrawFrags();
