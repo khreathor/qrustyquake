@@ -33,7 +33,7 @@ CFLAGS += -DSDL_DISABLE_IMMINTRIN_H
 endif
 
 DEBUG_FLAGS = -g -O0 -DDEBUG
-RELEASE_FLAGS = -O3 -flto
+RELEASE_FLAGS = -O3 -flto -g
 
 ifeq ($(BUILD_TYPE), debug)
 	CFLAGS += $(DEBUG_FLAGS)
