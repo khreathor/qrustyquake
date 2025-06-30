@@ -1438,6 +1438,17 @@ void M_Gamepad_Key(s32 k)
 	case K_ESCAPE:
 		M_Menu_New_f();
 		break;
+	case K_LEFTARROW:
+		S_LocalSound("misc/menu3.wav");
+		if (new_cursor == 0)
+			Cvar_SetValue("joysticknum", joysticknum.value - 1);
+		break;
+	case K_RIGHTARROW:
+	case K_ENTER:
+		S_LocalSound("misc/menu3.wav");
+		if (new_cursor == 0)
+			Cvar_SetValue("joysticknum", joysticknum.value + 1);
+		break;
 	}
 }
 
