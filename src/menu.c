@@ -1299,17 +1299,55 @@ void M_Gamepad_Draw()
 	s32 xoffs = 16;
 	qpic_t *p = Draw_CachePic("gfx/ttl_cstm.lmp");
 	M_DrawTransPic((320 - p->width) / 2, 4, p);
-	M_Print(xoffs, 32, "Device: ");
+	M_Print(xoffs, 32, "Device");
 	s32 count = -1;
 	SDL_JoystickID *joys = SDL_GetJoysticks(&count);
-	if (count <= 0) M_Print(xoffs + 72, 32, "None");
+	if (count <= 0) { M_Print(xoffs + 72, 32, "None"); return; }
 	else {
 		if (joysticknum.value > count - 1 || joysticknum.value < 0)
 			joysticknum.value = 0;
 		q_strlcpy(temp, SDL_GetJoystickNameForID(joys[(s32)joysticknum.value]), 28);
 		M_Print(xoffs + 72, 32, temp);
 	}
-	M_DrawCursor(xoffs + 64, 32);
+	M_Print(xoffs, 48,  "         Deadzone");
+	M_Print(xoffs, 56,  "       Move speed");
+	M_Print(xoffs, 64,  "       Look speed");
+	M_Print(xoffs, 72,  "Trigger threshold");
+	M_Print(xoffs, 80,  "      Move X axis");
+	M_Print(xoffs, 88,  "      Move Y axis");
+	M_Print(xoffs, 96,  "      Look X axis");
+	M_Print(xoffs, 104, "      Look Y axis");
+	M_Print(xoffs, 112, "   Trigger 1 axis");
+	M_Print(xoffs, 120, "   Trigger 2 axis");
+	M_Print(xoffs, 128, "     Enter button");
+	M_Print(xoffs, 136, "    Escape button");
+	xoffs = 176; 
+	sprintf(temp, "%d\n", (s32)jdeadzone.value);
+	M_Print(xoffs, 48, temp);
+	sprintf(temp, "%0.1f\n", jmovesens.value);
+	M_Print(xoffs, 56, temp);
+	sprintf(temp, "%0.1f\n", jlooksens.value);
+	M_Print(xoffs, 64, temp);
+	sprintf(temp, "%d\n", (s32)jtriggerthresh.value);
+	M_Print(xoffs, 72, temp);
+	sprintf(temp, "%d\n", (s32)jmoveaxisx.value);
+	M_Print(xoffs, 80, temp);
+	sprintf(temp, "%d\n", (s32)jmoveaxisy.value);
+	M_Print(xoffs, 88, temp);
+	sprintf(temp, "%d\n", (s32)jlookaxisx.value);
+	M_Print(xoffs, 96, temp);
+	sprintf(temp, "%d\n", (s32)jlookaxisy.value);
+	M_Print(xoffs, 104, temp);
+	sprintf(temp, "%d\n", (s32)jtrigaxis1.value);
+	M_Print(xoffs, 112, temp);
+	sprintf(temp, "%d\n", (s32)jtrigaxis2.value);
+	M_Print(xoffs, 120, temp);
+	sprintf(temp, "%d\n", (s32)jenterbutton.value);
+	M_Print(xoffs, 128, temp);
+	sprintf(temp, "%d\n", (s32)jescapebutton.value);
+	M_Print(xoffs, 136, temp);
+	if (!gamepad_cursor) M_DrawCursor(80, 32);
+	else M_DrawCursor(168, 40 + gamepad_cursor*8);
 }
 
 void M_Menu_New_f()
@@ -1440,14 +1478,28 @@ void M_Gamepad_Key(s32 k)
 		break;
 	case K_LEFTARROW:
 		S_LocalSound("misc/menu3.wav");
-		if (new_cursor == 0)
+		if (gamepad_cursor == 0)
 			Cvar_SetValue("joysticknum", joysticknum.value - 1);
 		break;
 	case K_RIGHTARROW:
 	case K_ENTER:
 		S_LocalSound("misc/menu3.wav");
-		if (new_cursor == 0)
+		if (gamepad_cursor == 0)
 			Cvar_SetValue("joysticknum", joysticknum.value + 1);
+		break;
+	case K_UPARROW:
+		S_LocalSound("misc/menu1.wav");
+		if (gamepad_cursor == 0)
+			gamepad_cursor = 12;
+		else
+			gamepad_cursor--;
+		break;
+	case K_DOWNARROW:
+		S_LocalSound("misc/menu1.wav");
+		if (gamepad_cursor == 12)
+			gamepad_cursor = 0;
+		else
+			gamepad_cursor++;
 		break;
 	}
 }
