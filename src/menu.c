@@ -25,6 +25,7 @@ static s32 options_cursor;
 static s32 keys_cursor;
 static s32 bind_grab;
 static s32 new_cursor;
+static s32 gamepad_cursor;
 static s8 customwidthstr[16];
 static s8 customheightstr[16];
 static s32 newwinmode;
@@ -199,8 +200,8 @@ s8 *quitMessage[] = {
 };
 
 enum { m_none, m_main, m_singleplayer, m_load, m_save, m_multiplayer, m_setup,
-	    m_net, m_options, m_video, m_keys, m_new, m_help, m_quit,
-	    m_lanconfig, m_gameoptions, m_search, m_slist } m_state;
+    m_net, m_options, m_video, m_keys, m_new, m_gamepad,  m_help, m_quit,
+    m_lanconfig, m_gameoptions, m_search, m_slist } m_state;
 
 void M_Menu_Main_f();
 void M_Menu_SinglePlayer_f();
@@ -956,8 +957,7 @@ void M_Menu_Options_f()
 	key_dest = key_menu;
 	m_state = m_options;
 	m_entersound = 1;
-	drawmousemenu = !(SDLWindowFlags & (SDL_WINDOW_FULLSCREEN
-					    | SDL_WINDOW_FULLSCREEN_DESKTOP));
+	drawmousemenu = !(SDLWindowFlags & SDL_WINDOW_FULLSCREEN);
 	if (options_cursor == 13
 	    && drawmousemenu && !_windowed_mouse.value && !newoptions.value) {
 		options_cursor = 0;
@@ -1094,8 +1094,7 @@ void M_Options_Draw()
 
 void M_Options_Key(s32 k)
 {
-	drawmousemenu = !(SDLWindowFlags & (SDL_WINDOW_FULLSCREEN
-					    | SDL_WINDOW_FULLSCREEN_DESKTOP));
+	drawmousemenu = !(SDLWindowFlags & SDL_WINDOW_FULLSCREEN);
 	switch (k) {
 	case K_ESCAPE:
 		M_Menu_Main_f();
@@ -1287,6 +1286,32 @@ void M_Keys_Key(s32 k)
 	}
 }
 
+void M_Menu_Gamepad_f()
+{
+	key_dest = key_menu;
+	m_state = m_gamepad;
+	m_entersound = 1;
+}
+
+void M_Gamepad_Draw()
+{
+	s8 temp[28];
+	s32 xoffs = 16;
+	qpic_t *p = Draw_CachePic("gfx/ttl_cstm.lmp");
+	M_DrawTransPic((320 - p->width) / 2, 4, p);
+	M_Print(xoffs, 32, "Device: ");
+	s32 count = -1;
+	SDL_JoystickID *joys = SDL_GetJoysticks(&count);
+	if (count <= 0) M_Print(xoffs + 72, 32, "None");
+	else {
+		if (joysticknum.value > count - 1 || joysticknum.value < 0)
+			joysticknum.value = 0;
+		q_strlcpy(temp, SDL_GetJoystickNameForID(joys[(s32)joysticknum.value]), 28);
+		M_Print(xoffs + 72, 32, temp);
+	}
+	M_DrawCursor(xoffs + 64, 32);
+}
+
 void M_Menu_New_f()
 {
 	key_dest = key_menu;
@@ -1343,7 +1368,7 @@ void M_New_Draw()
 	else if (scr_hudstyle.value == 6)
 		M_Print(xoffset + 204, 72, "Minimalist 2");
 	else
-		M_Print(xoffset + 204, 72, "Classic w/o BG");
+		M_Print(xoffset + 204, 72, "Classic no BG");
 	M_Print(xoffset, 80, "          Translucency");
 	if (r_twopass.value == 0)
 		M_Print(xoffset + 204, 80, "Off (smart)");
@@ -1375,7 +1400,7 @@ void M_New_Draw()
 	else if (newwinmode == 1)
 		M_Print(xoffset + 204, 112, "Fullscreen");
 	else
-		M_Print(xoffset + 204, 112, "Desktop");
+		M_Print(xoffset + 204, 112, "Borderless");
 	M_Print(xoffset, 124, "          Custom Width");
 	M_DrawTextBox(xoffset + 196, 116, 8, 1);
 	M_Print(xoffset + 204, 124, customwidthstr);
@@ -1405,6 +1430,15 @@ void M_New_Draw()
 		M_DrawCursor(xoffset + 192, 152);
 	else
 		M_DrawCursor(xoffset + 192, 32 + new_cursor * 8);
+}
+
+void M_Gamepad_Key(s32 k)
+{
+	switch (k) {
+	case K_ESCAPE:
+		M_Menu_New_f();
+		break;
+	}
 }
 
 void M_New_Key(s32 k)
@@ -2328,6 +2362,7 @@ void M_Init()
 	Cmd_AddCommand("menu_keys", M_Menu_Keys_f);
 	Cmd_AddCommand("menu_video", M_Menu_Video_f);
 	Cmd_AddCommand("menu_new", M_Menu_New_f);
+	Cmd_AddCommand("menu_gamepad", M_Menu_Gamepad_f);
 	Cmd_AddCommand("help", M_Menu_Help_f);
 	Cmd_AddCommand("menu_quit", M_Menu_Quit_f);
 }
@@ -2340,7 +2375,7 @@ void M_Draw()
 		if (scr_con_current) {
 			Draw_ConsoleBackground(vid.height);
 		} else
-			Draw_FadeScreen();
+			fadescreen = 1;
 		scr_fullupdate = 0;
 	} else {
 		m_recursiveDraw = 0;
@@ -2357,6 +2392,7 @@ void M_Draw()
 		case m_options: M_Options_Draw(); break;
 		case m_keys: M_Keys_Draw(); break;
 		case m_new: M_New_Draw(); break;
+		case m_gamepad: M_Gamepad_Draw(); break;
 		case m_video: M_Video_Draw(); break;
 		case m_help: M_Help_Draw(); break;
 		case m_quit: M_Quit_Draw(); break;
@@ -2386,6 +2422,7 @@ void M_Keydown(s32 key)
 		case m_keys: M_Keys_Key(key); return;
 		case m_video: M_Video_Key(key); return;
 		case m_new: M_New_Key(key); return;
+		case m_gamepad: M_Gamepad_Key(key); return;
 		case m_help: M_Help_Key(key); return;
 		case m_quit: M_Quit_Key(key); return;
 		case m_lanconfig: M_LanConfig_Key(key); return;

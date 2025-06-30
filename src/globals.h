@@ -15,13 +15,13 @@ void Fog_ParseWorldspawn();
 void Fog_SetPalIndex(cvar_t *cvar);
 void Fog_Update(f32 d, f32 r, f32 g, f32 b);
 void R_DrawFog();
+void IN_InitJoystick(cvar_t *cvar);                                  // in_sdl.c
 EX u32 oldmodes[NUM_OLDMODES*2];                                    // vid_sdl.c
 EX s8 modelist[NUM_OLDMODES][8];
 EX SDL_Window *window;
 EX SDL_Surface *windowSurface;
-EX SDL_Surface *screen, *screentop, *screenui;
-EX SDL_Surface *converted;
-EX SDL_Surface *scrbuffs[3];
+EX SDL_Surface *screen, *screentop, *screenui, *screensbar;
+EX SDL_Surface *scrbuffs[4];
 EX u32 SDLWindowFlags;
 EX u32 uiscale;
 EX u32 vimmode;
@@ -36,6 +36,7 @@ EX cvar_t _windowed_mouse;
 EX cvar_t scr_uiscale;
 EX cvar_t newoptions;
 EX cvar_t sensitivityyscale;
+EX s32 fadescreen;
 s8 *VID_GetModeDescription(s32 mode);
 void VID_SetPalette(u8 *palette, SDL_Surface *dest);
 void VID_Init(u8 *palette);

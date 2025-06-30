@@ -13,11 +13,12 @@ void Sys_Printf(const s8 *fmt, ...)
 
 void Sys_Quit()
 {
-	Host_Shutdown();
         Uint16 *screen; // erysdren (it/its)
         if(registered.value) screen = (Uint16 *)COM_LoadHunkFile("end2.bin", 0);
         else screen = (Uint16 *)COM_LoadHunkFile("end1.bin", 0);
+	SDL_SetWindowSize(window, 640, 400);
         if(screen) vgatext_main(window, screen);
+	Host_Shutdown();
 	exit(0);
 }
 
@@ -172,7 +173,7 @@ void Sys_mkdir(const s8 *path) { _mkdir(path); }
 
 int main(int c, char **v)
 {
-	if(SDL_Init(SDL_INIT_EVERYTHING) < 0)
+	if(!SDL_Init(SDL_INIT_VIDEO))
 		Sys_Error("SDL_Init failed: %s", SDL_GetError());
 	host_parms.argc = c;
 	host_parms.argv = (s8**)v;

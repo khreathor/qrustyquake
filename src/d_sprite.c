@@ -96,7 +96,11 @@ void D_SpriteDrawSpans(sspan_t *pspan)
 			do {
 				u8 btemp = *(pbase + (s >> 16) +
 						(t >> 16) * cachewidth);
-				if (btemp != 255 && *pz <= (izi >> 16)) {
+				if ((pz + ((vid.width * vid.height)*2)) <= pz)
+					Con_DPrintf("Sprite Zbuf render error\n");
+				else if (d_viewbuffer + (vid.width * vid.height) <= pdest)
+					Con_DPrintf("Sprite Viewbuf render error\n");
+				else if (btemp != 255 && *pz <= (izi >> 16)) {
 					*pz = izi >> 16;
 					*pdest = btemp;
 				}

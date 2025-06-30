@@ -1622,8 +1622,8 @@ unsigned COM_HashBlock(const void *data, size_t size)
 
 size_t mz_zip_file_read_func(void *opaque, mz_uint64 ofs, void *buf, size_t n)
 {
-	if(SDL_RWseek((SDL_RWops*)opaque, (Sint64)ofs, RW_SEEK_SET)<0) return 0;
-	return SDL_RWread((SDL_RWops*)opaque, buf, 1, n);
+	if(SDL_SeekIO((SDL_IOStream*)opaque, (Sint64)ofs, SDL_IO_SEEK_SET)<0) return 0;
+	return SDL_ReadIO((SDL_IOStream*)opaque, buf, n);
 }
 
 bool LOC_LoadFile (const s8 *file)
@@ -1631,12 +1631,11 @@ bool LOC_LoadFile (const s8 *file)
 	s8 path[1024];
 	s32 i,lineno,warnings;
 	s8 *cursor;
-	SDL_RWops *rw = NULL;
+	SDL_IOStream *rw = NULL;
 	Sint64 sz;
 	mz_zip_archive archive;
 	size_t size = 0;
-	// clear existing data
-	if (localization.text) {
+	if (localization.text) { // clear existing data
 		free(localization.text);
 		localization.text = NULL;
 	}
@@ -1645,12 +1644,12 @@ bool LOC_LoadFile (const s8 *file)
 	if (!file || !*file) return 0;
 	memset(&archive, 0, sizeof(archive));
 	q_snprintf(path, sizeof(path), "%s", file);
-	rw = SDL_RWFromFile(path, "rb");
+	rw = SDL_IOFromFile(path, "rb");
 	if (!rw) {
 		q_snprintf(path, sizeof(path), "%s/QuakeEX.kpf", com_basedir);
-		rw = SDL_RWFromFile(path, "rb");
+		rw = SDL_IOFromFile(path, "rb");
 		if (!rw) goto fail;
-		sz = SDL_RWsize(rw);
+		sz = SDL_GetIOSize(rw);
 		if (sz <= 0) goto fail;
 		archive.m_pRead = mz_zip_file_read_func;
 		archive.m_pIO_opaque = rw;
@@ -1659,22 +1658,22 @@ bool LOC_LoadFile (const s8 *file)
 		   mz_zip_reader_extract_file_to_heap(&archive, file, &size, 0);
 		if (!localization.text) goto fail;
 		mz_zip_reader_end(&archive);
-		SDL_RWclose(rw);
+		SDL_CloseIO(rw);
 		localization.text = (s8 *) realloc(localization.text, size+1);
 		localization.text[size] = 0;
 	}
 	else {
-		sz = SDL_RWsize(rw);
+		sz = SDL_GetIOSize(rw);
 		if (sz <= 0) goto fail;
 		localization.text = (s8 *) calloc(1, sz+1);
 		if (!localization.text) {
 fail:			mz_zip_reader_end(&archive);
-			if (rw) SDL_RWclose(rw);
+			if (rw) SDL_CloseIO(rw);
 			Con_Printf("Couldn't load '%s'\n", file);
 			return 0;
 		}
-		SDL_RWread(rw, localization.text, 1, sz);
-		SDL_RWclose(rw);
+		SDL_ReadIO(rw, localization.text, sz);
+		SDL_CloseIO(rw);
 	}
 	cursor = localization.text;
 	if((u8)(cursor[0])==0xEF&&(u8)(cursor[1])==0xBB&&(u8)(cursor[2])==0xBF)

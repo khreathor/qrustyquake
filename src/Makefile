@@ -1,7 +1,7 @@
 OS := $(shell uname)
 CC = gcc
-CFLAGS = -c -Wall -Wextra
-LDFLAGS = -lm -lSDL2
+CFLAGS = -c -Wall -Wextra -D_DEFAULT_SOURCE
+LDFLAGS = -lm -lSDL3
 TARGET = qrustyquake
 SRCS = chase.c cl_demo.c cl_input.c cl_main.c cl_parse.c \
 	cl_tent.c cmd.c common.c console.c crc.c \
@@ -44,7 +44,7 @@ CFLAGS += -DSDL_DISABLE_IMMINTRIN_H
 endif
 
 DEBUG_FLAGS = -g -O0 -DDEBUG -std=c23
-RELEASE_FLAGS = -O3 -flto -std=c23
+RELEASE_FLAGS = -O3 -flto -g -std=c23
 
 ifeq ($(BUILD_TYPE), debug)
 	CFLAGS += $(DEBUG_FLAGS)

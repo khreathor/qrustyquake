@@ -15,8 +15,8 @@ SDL_Surface *windowSurface;
 SDL_Surface *screen; // the main video buffer, custom palette
 SDL_Surface *screentop; // top layer, always default palette
 SDL_Surface *screenui; // UI elements, custom palette
-SDL_Surface *scrbuffs[3]; // contains the above three
-SDL_Surface *converted;
+SDL_Surface *screensbar; // HUD, custom palette
+SDL_Surface *scrbuffs[4]; // contains the above three
 s8 modelist[NUM_OLDMODES][8]; // "320x240" etc. for menus
 u32 SDLWindowFlags;
 u32 uiscale;
@@ -27,6 +27,7 @@ s32 vid_realmode;
 f64 vid_testendtime;
 u8 vid_curpal[256 * 3];
 viddef_t vid; // global video state
+s32 fadescreen;
 u8 r_foundtranswater, r_wateralphapass;                              // r_main.c
 s32 r_pass; // CyanBun96: 1 - cutout textures 0 - everything else
 u8 r_foundcutouts, r_foundsubmodelcutouts;

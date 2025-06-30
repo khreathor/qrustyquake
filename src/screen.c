@@ -460,8 +460,10 @@ void SCR_UpdateScreen() // This is called every frame,
 	V_RenderView(); // stay mapped in for linear writes all the time
 	if (scr_drawdialog) {
 		Sbar_Draw();
-		Draw_FadeScreen();
+		fadescreen = 1;
+		drawlayer = 1;
 		SCR_DrawNotifyString();
+		drawlayer = 0;
 	} else if (scr_drawloading) {
 		SCR_DrawLoading();
 		Sbar_Draw();

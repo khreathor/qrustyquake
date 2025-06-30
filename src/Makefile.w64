@@ -8,8 +8,8 @@ PATH+=/opt/cross_win64/bin
 
 CFLAGS_BASE = --static -c -D_USE_WINSOCK2 -lws2_32 -m64 -Wall -D_FILE_OFFSET_BITS=64 -D_WINCROSS
 LDFLAGS_BASE = -lm -m64 -mwindows -static-libgcc -lmingw32 -lws2_32
-SDL_CFLAGS ?= -I../win/SDL2/include -D_REENTRANT
-SDL_LIBS ?= -L../win/SDL2/lib -lSDL2main -lSDL2
+SDL_CFLAGS ?= -I../win/SDL3/include -D_REENTRANT
+SDL_LIBS ?= -L../win/SDL3/lib -lSDL3
 
 DEBUG_FLAGS = -g -O0
 RELEASE_FLAGS = -O3 -flto

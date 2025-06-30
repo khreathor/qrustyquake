@@ -964,7 +964,7 @@ void Sbar_Draw()
 		|| (sb_updates >= vid.numpages && !scr_hudstyle.value)
 		|| cl.intermission)
 		return;
-	drawlayer = key_dest == key_game ? 2 : 0;
+	drawlayer = 3;
 	if (scr_hudstyle.value == 5 || scr_hudstyle.value == 6) {
 		Sbar_Min(scr_hudstyle.value == 5);
 		drawlayer = 0;
@@ -989,7 +989,7 @@ void Sbar_Draw()
 		Sbar_DrawFace(); // ...and HP
 		Sbar_DrawAmmo();
 	}
-	if (sb_lines/SCL > 24 || oldhudstyle)
+	if ((sb_lines/SCL>24 || oldhudstyle) && !(oldhudstyle==4 && WW/SCL<640))
 		Sbar_DrawInventory();
 	if (sb_lines/SCL > 24 && cl.maxclients != 1)
 		Sbar_DrawFrags();
