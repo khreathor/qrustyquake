@@ -5,10 +5,6 @@ static f32 mouse_x;
 static f32 mouse_y;
 static s32 buttonremap[] = { K_MOUSE1, K_MOUSE3, K_MOUSE2, K_MOUSE4, K_MOUSE5 };
 static SDL_Joystick *joystick = 0;
-static s32 jaxis_move_x = 0;
-static s32 jaxis_move_y = 0;
-static s32 jaxis_look_x = 0;
-static s32 jaxis_look_y = 0;
 
 void IN_InitJoystick(SDL_UNUSED cvar_t *cvar)
 {

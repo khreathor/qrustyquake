@@ -74,6 +74,10 @@ u8 *d_viewbuffer;
 s16 *d_pzbuffer;
 u32 d_zwidth;
 kbutton_t in_mlook, in_strafe;                                     // cl_input.c
+s32 jaxis_move_x = 0;                                                // in_sdl.c
+s32 jaxis_move_y = 0;
+s32 jaxis_look_x = 0;
+s32 jaxis_look_y = 0;
 edict_t *sv_player;                                                 // sv_user.c
 f32 *angles;
 f32 *origin;
