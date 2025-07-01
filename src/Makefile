@@ -1,6 +1,7 @@
+PKGCONFIG ?= pkg-config
 CC = gcc
-CFLAGS = -c -Wall -Wextra -D_DEFAULT_SOURCE
-LDFLAGS = -lm -lSDL3
+CFLAGS = -c -Wall -Wextra -D_DEFAULT_SOURCE $(shell $(PKGCONFIG) --cflags sdl3)
+LDFLAGS = -lm $(shell $(PKGCONFIG) --libs sdl3)
 TARGET = qrustyquake
 SRCS = chase.c cl_demo.c cl_input.c cl_main.c cl_parse.c \
 	cl_tent.c cmd.c common.c console.c crc.c \
