@@ -112,7 +112,7 @@ void VID_SetBorderless()
 	SDL_SetWindowFullscreen(window, 1);
 }
 
-void VID_Init(u8 */*palette*/)
+void VID_Init(SDL_UNUSED u8 *palette)
 {
 	s32 pnum;
 	s32 winmode;
@@ -248,7 +248,7 @@ void VID_Shutdown()
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
-void VID_CalcScreenDimensions(cvar_t */*cvar*/)
+void VID_CalcScreenDimensions(SDL_UNUSED cvar_t *cvar)
 {
 	uiscale = (vid.width / 320);
 	if(uiscale * 200 > vid.height)
@@ -365,7 +365,7 @@ void VID_AllocBuffers()
 	D_InitCaches(cache, cachesize);
 }
 
-void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 */*palette*/)
+void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, SDL_UNUSED u8 *palette)
 {
 	Con_DPrintf("SetMode: %d %dx%d %d\n", modenum, custw, custh, custwinm);
 	if(modenum == vid_modenum && (!custw || !custh))

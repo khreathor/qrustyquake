@@ -453,7 +453,7 @@ void Cache_Init()
 }
 
 
-void Cache_Free(cache_user_t *c, bool /*freetextures*/)
+void Cache_Free(cache_user_t *c, SDL_UNUSED bool freetextures)
 { // Frees the memory and removes it from the LRU list
 	if(!c->data) Sys_Error("Cache_Free: not allocated");
 	cache_system_t *cs = ((cache_system_t *)c->data) - 1;

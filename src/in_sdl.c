@@ -10,7 +10,7 @@ static s32 jaxis_move_y = 0;
 static s32 jaxis_look_x = 0;
 static s32 jaxis_look_y = 0;
 
-void IN_InitJoystick(cvar_t */*cvar*/)
+void IN_InitJoystick(SDL_UNUSED cvar_t *cvar)
 {
 	s32 count = -1;
 	SDL_JoystickID *joys = SDL_GetJoysticks(&count);

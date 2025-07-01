@@ -40,9 +40,9 @@ static void S_SoundInfo_f()
 	Con_Printf("%p dma buffer\n", shm->buffer);
 }
 
-static void SND_Callback_sfxvolume(cvar_t */*var*/) { SND_InitScaletable(); }
+static void SND_Callback_sfxvolume(SDL_UNUSED cvar_t *cvar) { SND_InitScaletable(); }
 
-static void SND_Callback_snd_filterquality(cvar_t */*var*/)
+static void SND_Callback_snd_filterquality(SDL_UNUSED cvar_t *cvar)
 {
 	if(snd_filterquality.value < 1 || snd_filterquality.value > 5)
 	{

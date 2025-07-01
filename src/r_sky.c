@@ -172,10 +172,6 @@ s32 R_LoadSkybox (const s8 *name)
 		r_skytexinfo[i].texture->width = width;
 		r_skytexinfo[i].texture->height = height;
 		r_skytexinfo[i].texture->offsets[0] = i;
-		extern vec3_t box_vecs[6][2];
-		extern vec3_t box_bigvecs[6][2];
-		extern vec3_t box_bigbigvecs[6][2];
-		extern msurface_t *r_skyfaces;
 		switch (width) {
 			case 1024:      VectorCopy (box_bigbigvecs[i][0], r_skytexinfo[i].vecs[0]); break;
 			case 512:       VectorCopy (box_bigvecs[i][0], r_skytexinfo[i].vecs[0]); break;
