@@ -30,7 +30,7 @@ void R_InitTextures()
 	}
 }
 
-void R_ViewChangedCallback(cvar_t*/*null*/)
+void R_ViewChangedCallback(SDL_UNUSED cvar_t*cvar)
 { R_ViewChanged(&r_refdef.vrect, sb_lines, pixelAspect); }
 
 void R_Init()

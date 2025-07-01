@@ -1300,7 +1300,7 @@ visdone:
 }
 
 void *Mod_LoadAliasFrame(void *pin, s32 *pframeindex, s32 numv,
-	trivertx_t */*pbboxmin*/, trivertx_t */*pbboxmax*/, aliashdr_t *pheader,
+	SDL_UNUSED trivertx_t *pbboxmin, SDL_UNUSED trivertx_t *pbboxmax, aliashdr_t *pheader,
 	s8 *name, maliasframedesc_t *frame, s32 recursed) {
 	daliasframe_t *pdaliasframe = (daliasframe_t *) pin;
 	q_strlcpy(name, pdaliasframe->name, 16);
@@ -1327,7 +1327,7 @@ void *Mod_LoadAliasFrame(void *pin, s32 *pframeindex, s32 numv,
 }
 
 void *Mod_LoadAliasGroup(void *pin, s32 *pframeindex, s32 numv,
-		trivertx_t */*pbboxmin*/, trivertx_t */*pbboxmax*/,
+		SDL_UNUSED trivertx_t *pbboxmin, SDL_UNUSED trivertx_t *pbboxmax,
 		aliashdr_t *pheader, s8 *name, maliasframedesc_t *frame)
 {
 	daliasgroup_t *pingroup = (daliasgroup_t *) pin;

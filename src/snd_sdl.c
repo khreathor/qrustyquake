@@ -8,7 +8,7 @@
 
 static s32 buffersize;
 
-static void SDLCALL paint_audio(void */*unused*/, Uint8 *stream, s32 len)
+static void SDLCALL paint_audio(SDL_UNUSED void *unused, Uint8 *stream, s32 len)
 {
 	if(!shm) { // shouldn't happen, but just in case
 		memset(stream, 0, len);
@@ -37,7 +37,7 @@ static void SDLCALL paint_audio(void */*unused*/, Uint8 *stream, s32 len)
 		shm->samplepos = 0;
 }
 
-void SDLCALL paint_audio_new(void *userdata, SDL_AudioStream *stream, s32 additional_amount, s32 /*total_amount*/)
+void SDLCALL paint_audio_new(void *userdata, SDL_AudioStream *stream, s32 additional_amount, SDL_UNUSED s32 total_amount)
 {
 	if (additional_amount > 0) {
 		Uint8 *data = SDL_stack_alloc(Uint8, additional_amount);
