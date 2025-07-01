@@ -329,9 +329,11 @@ void M_BuildTranslationTable(s32 top, s32 bottom)
 
 void M_DrawTransPicTranslate(s32 x, s32 y, qpic_t *pic)
 {
+	drawlayer = 2;
 	Draw_TransPicTranslateScaled(x * uiscale +
 		((vid.width - 320 * uiscale) >> 1),
 		y * uiscale, pic, translationTable, uiscale);
+	drawlayer = 0;
 }
 
 void M_DrawTextBox(s32 x, s32 y, s32 width, s32 lines)
@@ -1358,10 +1360,12 @@ void M_Gamepad_Draw()
 	movey = (movey / (1<<16)) * 24;
 	lookx = (lookx / (1<<16)) * 24;
 	looky = (looky / (1<<16)) * 24;
-	if (!movex || movex == 24 || movex == -24)
+	if ((!movex && !movey) || movex >= 11.9 || movex <= -11.9 || 
+				movey >= 11.9 || movey <= -11.9)
 		M_PrintWhite(36+movex, 176+movey, "+");
 	else M_Print(36+movex, 176+movey, "+");
-	if (!lookx || lookx == 24 || lookx == -24)
+	if ((!lookx && !looky) || lookx >= 11.9 || lookx <= -11.9 || 
+				looky >= 11.9 || looky <= -11.9)
 		M_PrintWhite(84+lookx, 176+looky, "+");
 	else M_Print(84+lookx, 176+looky, "+");
 }
