@@ -174,12 +174,14 @@ void Sys_SendKeyEvents()
 				jaxis_look_x = event.jaxis.value;
 			else if (event.jaxis.axis == jlookaxisy.value)
 				jaxis_look_y = event.jaxis.value;
-			else if (event.jaxis.axis == jtrigaxis1.value)
+			else if (event.jaxis.axis == jtrigaxis1.value) {
 				Key_Event(K_AUX31, event.jaxis.value >
 						jtriggerthresh.value);
-			else if (event.jaxis.axis == jtrigaxis2.value)
+				jaxis_trig_1 = event.jaxis.value; }
+			else if (event.jaxis.axis == jtrigaxis2.value) {
 				Key_Event(K_AUX32, event.jaxis.value >
 						jtriggerthresh.value);
+				jaxis_trig_2 = event.jaxis.value; }
 			break;
 		case SDL_EVENT_JOYSTICK_ADDED: IN_InitJoystick(0); break;
 		case SDL_EVENT_JOYSTICK_REMOVED: IN_RemoveJoystick(); break;

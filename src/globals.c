@@ -78,6 +78,8 @@ s32 jaxis_move_x = 0;                                                // in_sdl.c
 s32 jaxis_move_y = 0;
 s32 jaxis_look_x = 0;
 s32 jaxis_look_y = 0;
+s32 jaxis_trig_1 = -32768;
+s32 jaxis_trig_2 = -32768;
 edict_t *sv_player;                                                 // sv_user.c
 f32 *angles;
 f32 *origin;

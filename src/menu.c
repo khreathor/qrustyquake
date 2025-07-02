@@ -1368,6 +1368,12 @@ void M_Gamepad_Draw()
 				looky >= 11.9 || looky <= -11.9)
 		M_PrintWhite(84+lookx, 176+looky, "+");
 	else M_Print(84+lookx, 176+looky, "+");
+	if (jaxis_trig_1 > jtriggerthresh.value)M_PrintWhite(120, 152, "Trig1");
+	else M_Print(120, 152, "Trig1");
+	if (jaxis_trig_2 > jtriggerthresh.value)M_PrintWhite(120, 160, "Trig2");
+	else M_Print(120, 160, "Trig2");
+	M_DrawSlider(176, 152, ((f32)(jaxis_trig_1+(1<<15))/(1<<16)));
+	M_DrawSlider(176, 160, ((f32)(jaxis_trig_2+(1<<15))/(1<<16)));
 }
 
 void M_Menu_New_f()
