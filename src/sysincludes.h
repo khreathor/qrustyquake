@@ -32,15 +32,12 @@
 #include <sys/wait.h>
 #include <sys/time.h>
 #include <sys/mman.h>
-#include <SDL3/SDL.h>
 #else
+#define WIN32_LEAN_AND_MEAN
+#define _USE_WINSOCK2
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#ifndef _WINCROSS
-#include <SDL.h>
-#else
-#include <SDL3/SDL.h>
-#endif
 #include <direct.h>
 #include <io.h>
 #endif
+#include <SDL3/SDL.h>

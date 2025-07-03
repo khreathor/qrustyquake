@@ -5,6 +5,9 @@ src/SDL3.dll
 src/id1
 src/tags
 
+cmake-build*/
+build*/
+
 # Prerequisites
 *.d
 
