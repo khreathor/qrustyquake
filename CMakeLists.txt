@@ -15,6 +15,10 @@ else()
 	list(FILTER QRUSTYQUAKE_SOURCES EXCLUDE REGEX "net_wins.c")
 endif()
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Haiku")
+	target_link_libraries(qrustyquake PRIVATE network)
+endif()
+
 target_sources(qrustyquake PRIVATE ${QRUSTYQUAKE_SOURCES})
 
 target_include_directories(qrustyquake PRIVATE "${PROJECT_SOURCE_DIR}/src/")
