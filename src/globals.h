@@ -22,6 +22,7 @@ EX s32 jaxis_look_x;
 EX s32 jaxis_look_y;
 EX s32 jaxis_trig_1;
 EX s32 jaxis_trig_2;
+EX SDL_Joystick *joystick;
 EX u32 oldmodes[NUM_OLDMODES*2];                                    // vid_sdl.c
 EX s8 modelist[NUM_OLDMODES][8];
 EX SDL_Window *window;

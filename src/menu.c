@@ -1374,6 +1374,16 @@ void M_Gamepad_Draw()
 	else M_Print(120, 160, "Trig2");
 	M_DrawSlider(176, 152, ((f32)(jaxis_trig_1+(1<<15))/(1<<16)));
 	M_DrawSlider(176, 160, ((f32)(jaxis_trig_2+(1<<15))/(1<<16)));
+	s32 total = SDL_GetNumJoystickButtons(joystick);
+	q_strlcpy(temp, "Held buttons:", 14);
+	for (s32 i = 0; i < total; i++) {
+		if (SDL_GetJoystickButton(joystick, i)) {
+			s8 btn[4];
+			snprintf(btn, 4, " %d", i);
+			q_strlcat(temp, btn, 28);
+		}
+	}
+	M_Print(120, 168, temp);
 }
 
 void M_Menu_New_f()

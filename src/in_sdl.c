@@ -4,7 +4,6 @@ static bool mouse_avail;
 static f32 mouse_x;
 static f32 mouse_y;
 static s32 buttonremap[] = { K_MOUSE1, K_MOUSE3, K_MOUSE2, K_MOUSE4, K_MOUSE5 };
-static SDL_Joystick *joystick = 0;
 
 void IN_InitJoystick(SDL_UNUSED cvar_t *cvar)
 {
