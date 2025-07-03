@@ -2,7 +2,7 @@
 
 Quake like you remember it.
 
-A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and easy portability.
+A modernized, SDL3-based WinQuake port aimed at faithfulness to the original and easy portability.
 
 # Features
 
