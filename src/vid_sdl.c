@@ -135,7 +135,12 @@ void VID_Init(SDL_UNUSED u8 *palette)
 	// Set up display mode (width and height)
 	vid.width = 320;
 	vid.height = 240;
+#ifdef __EMSCRIPTEN__
+	// erysdren: emscripten requires windowed mode
+	winmode = 1;
+#else
 	winmode = 0;
+#endif
 	if(!(COM_CheckParm("-width") || COM_CheckParm("-height")
 	   || COM_CheckParm("-window") || COM_CheckParm("-fullscreen")
 	   || COM_CheckParm("-winsize"))){
