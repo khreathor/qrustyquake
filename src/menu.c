@@ -1323,15 +1323,11 @@ void M_Gamepad_Draw()
 	M_Print(xoffs, 120, "   Trigger 2 axis");
 	M_Print(xoffs, 128, "     Enter button");
 	M_Print(xoffs, 136, "    Escape button");
-	xoffs = 176; 
-	sprintf(temp, "%d\n", (s32)jdeadzone.value);
-	M_Print(xoffs, 48, temp);
-	sprintf(temp, "%0.1f\n", jmovesens.value);
-	M_Print(xoffs, 56, temp);
-	sprintf(temp, "%0.1f\n", jlooksens.value);
-	M_Print(xoffs, 64, temp);
-	sprintf(temp, "%d\n", (s32)jtriggerthresh.value);
-	M_Print(xoffs, 72, temp);
+	xoffs = 184; 
+	M_DrawSlider(xoffs, 48, (jdeadzone.value/(1<<14)));
+	M_DrawSlider(xoffs, 56, ((jmovesens.value-0.5)/4.5));
+	M_DrawSlider(xoffs, 64, ((jlooksens.value-0.5)/4.5));
+	M_DrawSlider(xoffs, 72, ((jtriggerthresh.value+(1<<15))/(1<<16)));
 	sprintf(temp, "%d\n", (s32)jmoveaxisx.value);
 	M_Print(xoffs, 80, temp);
 	sprintf(temp, "%d\n", (s32)jmoveaxisy.value);
@@ -1508,6 +1504,8 @@ void M_New_Draw()
 
 void M_Gamepad_Key(s32 k)
 {
+	s32 axis = SDL_GetNumJoystickAxes(joystick) - 1;
+	s32 buts = SDL_GetNumJoystickButtons(joystick) - 1;
 	switch (k) {
 	case K_ESCAPE:
 		M_Menu_New_f();
@@ -1516,12 +1514,60 @@ void M_Gamepad_Key(s32 k)
 		S_LocalSound("misc/menu3.wav");
 		if (gamepad_cursor == 0)
 			Cvar_SetValue("joysticknum", joysticknum.value - 1);
+		else if (gamepad_cursor == 1) Cvar_SetValue("jdeadzone",
+			CLAMP(8, jdeadzone.value-(1<<14)/10, (1<<14)));
+		else if (gamepad_cursor == 2) Cvar_SetValue("jmovesens",
+			CLAMP(0.5, jmovesens.value-0.5, 5));
+		else if (gamepad_cursor == 3) Cvar_SetValue("jlooksens",
+			CLAMP(0.5, jlooksens.value-0.5, 5));
+		else if (gamepad_cursor == 4) Cvar_SetValue("jtriggerthresh",
+		    CLAMP(8-(1<<15),jtriggerthresh.value-(1<<16)/10,(1<<15)-8));
+		else if (gamepad_cursor == 5 && jmoveaxisx.value >= 0)
+			Cvar_SetValue("jmoveaxisx", jmoveaxisx.value - 1);
+		else if (gamepad_cursor == 6 && jmoveaxisx.value >= 0)
+			Cvar_SetValue("jmoveaxisy", jmoveaxisy.value - 1);
+		else if (gamepad_cursor == 7 && jlookaxisx.value >= 0)
+			Cvar_SetValue("jlookaxisx", jlookaxisx.value - 1);
+		else if (gamepad_cursor == 8 && jlookaxisy.value >= 0)
+			Cvar_SetValue("jlookaxisy", jlookaxisy.value - 1);
+		else if (gamepad_cursor == 9 && jtrigaxis1.value >= 0)
+			Cvar_SetValue("trigaxis1", jtrigaxis1.value - 1);
+		else if (gamepad_cursor == 10 && jtrigaxis2.value >= 0)
+			Cvar_SetValue("trigaxis2", jtrigaxis2.value - 1);
+		else if (gamepad_cursor == 11 && jenterbutton.value >= 0)
+			Cvar_SetValue("jenterbutton", jenterbutton.value - 1);
+		else if (gamepad_cursor == 12 && jescapebutton.value >= 0)
+			Cvar_SetValue("jescapebutton", jescapebutton.value - 1);
 		break;
 	case K_RIGHTARROW:
 	case K_ENTER:
 		S_LocalSound("misc/menu3.wav");
 		if (gamepad_cursor == 0)
 			Cvar_SetValue("joysticknum", joysticknum.value + 1);
+		else if (gamepad_cursor == 1) Cvar_SetValue("jdeadzone",
+			CLAMP(8, jdeadzone.value+(1<<14)/10, (1<<14)));
+		else if (gamepad_cursor == 2) Cvar_SetValue("jmovesens",
+			CLAMP(0.5, jmovesens.value+0.5, 5));
+		else if (gamepad_cursor == 3) Cvar_SetValue("jlooksens",
+			CLAMP(0.5, jlooksens.value+0.5, 5));
+		else if (gamepad_cursor == 4) Cvar_SetValue("jtriggerthresh",
+		    CLAMP(8-(1<<15),jtriggerthresh.value+(1<<16)/10,(1<<15)-8));
+		else if (gamepad_cursor == 5 && jmoveaxisx.value < axis)
+			Cvar_SetValue("jmoveaxisx", jmoveaxisx.value + 1);
+		else if (gamepad_cursor == 6 && jmoveaxisx.value < axis)
+			Cvar_SetValue("jmoveaxisy", jmoveaxisy.value + 1);
+		else if (gamepad_cursor == 7 && jlookaxisx.value < axis)
+			Cvar_SetValue("jlookaxisx", jlookaxisx.value + 1);
+		else if (gamepad_cursor == 8 && jlookaxisy.value < axis)
+			Cvar_SetValue("jlookaxisy", jlookaxisy.value + 1);
+		else if (gamepad_cursor == 9 && jtrigaxis1.value < axis)
+			Cvar_SetValue("trigaxis1", jtrigaxis1.value + 1);
+		else if (gamepad_cursor == 10 && jtrigaxis2.value < axis)
+			Cvar_SetValue("trigaxis2", jtrigaxis2.value + 1);
+		else if (gamepad_cursor == 11 && jenterbutton.value < buts)
+			Cvar_SetValue("jenterbutton", jenterbutton.value + 1);
+		else if (gamepad_cursor == 12 && jescapebutton.value < buts)
+			Cvar_SetValue("jescapebutton", jescapebutton.value + 1);
 		break;
 	case K_UPARROW:
 		S_LocalSound("misc/menu1.wav");
