@@ -26,6 +26,7 @@ static s32 keys_cursor;
 static s32 bind_grab;
 static s32 new_cursor;
 static s32 gamepad_cursor;
+static s32 display_cursor;
 static s8 customwidthstr[16];
 static s8 customheightstr[16];
 static s32 newwinmode;
@@ -200,8 +201,8 @@ s8 *quitMessage[] = {
 };
 
 enum { m_none, m_main, m_singleplayer, m_load, m_save, m_multiplayer, m_setup,
-    m_net, m_options, m_video, m_keys, m_new, m_gamepad,  m_help, m_quit,
-    m_lanconfig, m_gameoptions, m_search, m_slist } m_state;
+    m_net, m_options, m_video, m_keys, m_new, m_gamepad, m_display,  m_help,
+    m_quit, m_lanconfig, m_gameoptions, m_search, m_slist } m_state;
 
 void M_Menu_Main_f();
 void M_Menu_SinglePlayer_f();
@@ -1382,6 +1383,65 @@ void M_Gamepad_Draw()
 	M_Print(120, 168, temp);
 }
 
+void M_Display_Key(s32 k)
+{
+	switch (k) {
+	case K_ESCAPE:
+		M_Menu_New_f();
+		break;
+	case K_LEFTARROW:
+		S_LocalSound("misc/menu3.wav");
+		break;
+	case K_RIGHTARROW:
+	case K_ENTER:
+		S_LocalSound("misc/menu3.wav");
+		break;
+	case K_UPARROW:
+		S_LocalSound("misc/menu1.wav");
+		if (display_cursor == 0)
+			display_cursor = 3;
+		else
+			display_cursor--;
+		break;
+	case K_DOWNARROW:
+		S_LocalSound("misc/menu1.wav");
+		if (display_cursor == 3)
+			display_cursor = 0;
+		else
+			display_cursor++;
+		break;
+	}
+}
+
+void M_Menu_Display_f()
+{
+	key_dest = key_menu;
+	m_state = m_display;
+	m_entersound = 1;
+}
+
+void M_Display_Draw()
+{
+	s8 temp[32];
+	s32 xoffset = 0;
+	M_DrawTransPic(16, 4, Draw_CachePic("gfx/qplaque.lmp"));
+	qpic_t *p = Draw_CachePic("gfx/p_option.lmp");
+	M_DrawTransPic((320 - p->width) / 2, 4, p);
+	M_Print(xoffset, 32, "              UI Scale");
+	M_Print(xoffset, 40, "         Lock UI Scale");
+	M_Print(xoffset, 48, "          Aspect Ratio");
+	M_Print(xoffset, 56, "           Window Mode");
+	if (newwinmode == 0)      M_Print(xoffset + 204, 56, "Windowed");
+	else if (newwinmode == 1) M_Print(xoffset + 204, 56, "Fullscreen");
+	else                      M_Print(xoffset + 204, 56, "Borderless");
+	sprintf(temp, "x%d\n", (s32)scr_uiscale.value);
+	M_Print(xoffset + 204, 32, temp);
+	M_Print(xoffset + 204, 40, (s32)/*scr_lockuiscale.value*/0?"yes\n":"no\n");
+	sprintf(temp, "%0.2f\n", aspectr.value);
+	M_Print(xoffset + 204, 48, temp);
+	M_DrawCursor(xoffset + 196, 32 + display_cursor*8);
+}
+
 void M_Menu_New_f()
 {
 	key_dest = key_menu;
@@ -2508,6 +2568,7 @@ void M_Init()
 	Cmd_AddCommand("menu_video", M_Menu_Video_f);
 	Cmd_AddCommand("menu_new", M_Menu_New_f);
 	Cmd_AddCommand("menu_gamepad", M_Menu_Gamepad_f);
+	Cmd_AddCommand("menu_display", M_Menu_Display_f);
 	Cmd_AddCommand("help", M_Menu_Help_f);
 	Cmd_AddCommand("menu_quit", M_Menu_Quit_f);
 }
@@ -2538,6 +2599,7 @@ void M_Draw()
 		case m_keys: M_Keys_Draw(); break;
 		case m_new: M_New_Draw(); break;
 		case m_gamepad: M_Gamepad_Draw(); break;
+		case m_display: M_Display_Draw(); break;
 		case m_video: M_Video_Draw(); break;
 		case m_help: M_Help_Draw(); break;
 		case m_quit: M_Quit_Draw(); break;
@@ -2568,6 +2630,7 @@ void M_Keydown(s32 key)
 		case m_video: M_Video_Key(key); return;
 		case m_new: M_New_Key(key); return;
 		case m_gamepad: M_Gamepad_Key(key); return;
+		case m_display: M_Display_Key(key); return;
 		case m_help: M_Help_Key(key); return;
 		case m_quit: M_Quit_Key(key); return;
 		case m_lanconfig: M_LanConfig_Key(key); return;
