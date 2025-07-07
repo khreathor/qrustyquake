@@ -1391,24 +1391,30 @@ void M_Display_Key(s32 k)
 		break;
 	case K_LEFTARROW:
 		S_LocalSound("misc/menu3.wav");
+		if (display_cursor == 6) {
+			if (newwinmode == 0) newwinmode = 2;
+			else newwinmode--;
+		}
 		break;
 	case K_RIGHTARROW:
 	case K_ENTER:
 		S_LocalSound("misc/menu3.wav");
+		if (display_cursor == 6) {
+			if (newwinmode == 2) newwinmode = 0;
+			else newwinmode++;
+		}
 		break;
 	case K_UPARROW:
 		S_LocalSound("misc/menu1.wav");
-		if (display_cursor == 0)
-			display_cursor = 3;
-		else
-			display_cursor--;
+		if (display_cursor == 0 && newwinmode == 1) display_cursor = 8;
+		else if(display_cursor==0 && newwinmode!=1) display_cursor = 9;
+		else display_cursor--;
 		break;
 	case K_DOWNARROW:
 		S_LocalSound("misc/menu1.wav");
-		if (display_cursor == 3)
-			display_cursor = 0;
-		else
-			display_cursor++;
+		if (display_cursor == 8 && newwinmode == 1) display_cursor = 0;
+		else if(display_cursor==9 && newwinmode!=1) display_cursor = 0;
+		else display_cursor++;
 		break;
 	}
 }
@@ -1430,16 +1436,67 @@ void M_Display_Draw()
 	M_Print(xoffset, 32, "              UI Scale");
 	M_Print(xoffset, 40, "         Lock UI Scale");
 	M_Print(xoffset, 48, "          Aspect Ratio");
-	M_Print(xoffset, 56, "           Window Mode");
-	if (newwinmode == 0)      M_Print(xoffset + 204, 56, "Windowed");
-	else if (newwinmode == 1) M_Print(xoffset + 204, 56, "Fullscreen");
-	else                      M_Print(xoffset + 204, 56, "Borderless");
+	M_Print(xoffset, 56, "             FPS Limit");
+	M_Print(xoffset, 64, "         Field Of View");
+	M_Print(xoffset, 72, "          Vertical FOV");
+	M_Print(xoffset, 80, "           Window Mode");
+	if (newwinmode == 0)      M_Print(xoffset + 204, 80, "Windowed");
+	else if (newwinmode == 1) M_Print(xoffset + 204, 80, "Fullscreen");
+	else                      M_Print(xoffset + 204, 80, "Borderless");
 	sprintf(temp, "x%d\n", (s32)scr_uiscale.value);
 	M_Print(xoffset + 204, 32, temp);
 	M_Print(xoffset + 204, 40, (s32)/*scr_lockuiscale.value*/0?"yes\n":"no\n");
 	sprintf(temp, "%0.2f\n", aspectr.value);
 	M_Print(xoffset + 204, 48, temp);
-	M_DrawCursor(xoffset + 196, 32 + display_cursor*8);
+	sprintf(temp, "%d\n", (s32)host_maxfps.value);
+	M_Print(xoffset + 204, 56, temp);
+	sprintf(temp, "%d\n", (s32)scr_fov.value);
+	M_Print(xoffset + 204, 64, temp);
+	sprintf(temp, "%0.2f\n", yaspectscale.value);
+	M_Print(xoffset + 204, 72, temp);
+	if (display_cursor == 3 && (s32)host_maxfps.value > 72) {
+		M_DrawTextBox(52, 158, 30, 1);
+		M_Print(64, 166, "Vanilla max is    expect bugs");
+		M_PrintWhite(64, 166, "               72");
+	}
+	if (newwinmode == 1) {
+		M_Print(xoffset, 88, "            Resolution");
+		M_Print(xoffset + 204, 88, "1234x4567@60");
+	} else {
+		M_Print(xoffset, 92, "          Custom Width");
+		M_DrawTextBox(xoffset + 196, 84, 8, 1);
+		M_Print(xoffset + 204, 92, customwidthstr);
+		if (display_cursor == 11) {
+			M_DrawCursorLine(xoffset+204 + 8 * strlen(customwidthstr), 124);
+			sprintf(temp, "%d", MAXWIDTH);
+			M_DrawTextBox(xoffset + 68, 158, 16 + strlen(temp), 1);
+			M_Print(xoffset + 80, 166, "320 <= Width <=");
+			M_Print(xoffset + 208, 166, temp);
+		}
+		M_Print(xoffset, 108, "         Custom Height");
+		M_DrawTextBox(xoffset + 196, 100, 8, 1);
+		M_Print(xoffset + 204, 108, customheightstr);
+		if (display_cursor == 12) {
+			M_DrawCursorLine(xoffset+204+8 * strlen(customheightstr), 140);
+			sprintf(temp, "%d", MAXHEIGHT);
+			M_DrawTextBox(xoffset + 68, 158, 17 + strlen(temp), 1);
+			M_Print(xoffset + 80, 166, "200 <= Height <=");
+			M_Print(xoffset + 216, 166, temp);
+		}
+	}
+	M_Print(xoffset + 204, newwinmode==1?96:120, "Set Mode");
+	xoffset -= 4;
+	if (newwinmode != 1) {
+		if (display_cursor < 7)
+			M_DrawCursor(xoffset + 196, 32 + display_cursor*8);
+		else if (display_cursor == 7)
+			M_DrawCursor(xoffset + 196, 92);
+		else if (display_cursor == 8)
+			M_DrawCursor(xoffset + 196, 108);
+		else if (display_cursor == 9)
+			M_DrawCursor(xoffset + 196, 120);
+	}
+	else M_DrawCursor(xoffset + 196, 32 + display_cursor*8);
 }
 
 void M_Menu_New_f()
