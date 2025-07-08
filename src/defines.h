@@ -634,8 +634,13 @@
 #define MAXVERTS 16 // max points in a surface polygon             // r_shared.h
 #define MAXWORKINGVERTS (MAXVERTS+4) // max points in an intermediate
 	// polygon (while processing)
+#ifdef __EMSCRIPTEN__
+#define MAXHEIGHT 600 // erysdren
+#define MAXWIDTH 800
+#else
 #define MAXHEIGHT 8640 // CyanBun96: 16k resolution. futureproofing.
 #define MAXWIDTH 15360
+#endif
 #define MAXDIMENSION ((MAXHEIGHT > MAXWIDTH) ? MAXHEIGHT : MAXWIDTH)
 #define SIN_BUFFER_SIZE (MAXDIMENSION+CYCLE)
 #define INFINITE_DISTANCE 0x10000 // distance that's always guaranteed to

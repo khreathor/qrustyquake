@@ -41,3 +41,6 @@
 #include <io.h>
 #endif
 #include <SDL3/SDL.h>
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
