@@ -1391,7 +1391,26 @@ void M_Display_Key(s32 k)
 		break;
 	case K_LEFTARROW:
 		S_LocalSound("misc/menu3.wav");
-		if (display_cursor == 6) {
+		if (display_cursor == 0 && scr_uiscale.value > 1)
+			Cvar_SetValue("scr_uiscale", scr_uiscale.value - 1);
+		else if (display_cursor == 1 && scr_lockuiscale.value != 0)
+			Cvar_SetValue("scr_lockuiscale", 0);
+		else if (display_cursor == 2)
+			Cvar_SetValue("aspectr", aspectr.value - 0.01);
+		else if (display_cursor == 3) {
+			s32 i = 0;
+			for (; i < (s32)sizeof(fpslimits) / 4 - 1; ++i)
+				if (fpslimits[i] >= (s32)host_maxfps.value)
+					break;
+			--i;
+			if (i < 0 || i > (s32)sizeof(fpslimits) / 4 - 1)
+				i = sizeof(fpslimits) / 4 - 1;
+			Cvar_SetValue("host_maxfps", fpslimits[i]);
+		} else if (display_cursor == 4)
+			Cvar_SetValue("fov", scr_fov.value - 1);
+		else if (display_cursor == 5)
+			Cvar_SetValue("yaspectscale", yaspectscale.value-0.01);
+		else if (display_cursor == 6) {
 			if (newwinmode == 0) newwinmode = 2;
 			else newwinmode--;
 		}
@@ -1399,7 +1418,26 @@ void M_Display_Key(s32 k)
 	case K_RIGHTARROW:
 	case K_ENTER:
 		S_LocalSound("misc/menu3.wav");
-		if (display_cursor == 6) {
+		if (display_cursor == 0 && scr_uiscale.value < (vid.width / 320))
+			Cvar_SetValue("scr_uiscale", scr_uiscale.value + 1);
+		else if (display_cursor == 1 && scr_lockuiscale.value != 1)
+			Cvar_SetValue("scr_lockuiscale", 1);
+		else if (display_cursor == 2)
+			Cvar_SetValue("aspectr", aspectr.value + 0.01);
+		else if (display_cursor == 3) {
+			s32 i = 0;
+			for (; i < (s32)sizeof(fpslimits) / 4 - 1; ++i)
+				if (fpslimits[i] >= (s32)host_maxfps.value)
+					break;
+			++i;
+			if (i < 0 || i > (s32)sizeof(fpslimits) / 4 - 1)
+				i = 0;
+			Cvar_SetValue("host_maxfps", fpslimits[i]);
+		} else if (display_cursor == 4)
+			Cvar_SetValue("fov", scr_fov.value + 1);
+		else if (display_cursor == 5)
+			Cvar_SetValue("yaspectscale", yaspectscale.value+0.01);
+		else if (display_cursor == 6) {
 			if (newwinmode == 2) newwinmode = 0;
 			else newwinmode++;
 		}
