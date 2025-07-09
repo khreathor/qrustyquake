@@ -255,7 +255,7 @@ void VID_Shutdown()
 
 void VID_CalcScreenDimensions(SDL_UNUSED cvar_t *cvar)
 {
-	uiscale = (vid.width / 320);
+	if(scr_lockuiscale.value == 0) uiscale = vid.width / 320;
 	if(uiscale * 200 > vid.height)
 		uiscale = 1; // For weird resolutions like 800x200
 	Cvar_SetValue("scr_uiscale", uiscale);

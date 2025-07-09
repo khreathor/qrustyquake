@@ -32,4 +32,4 @@ crosshair, cl_crossx, cl_crossy, cl_crosschar, gl_cshiftpercent, v_centermove,
 v_centerspeed, v_gamma, net_messagetimeout, scr_uixscale, scr_uiyscale,
 yaspectscale, jlooksens, jmovesens, jdeadzone, jtriggerthresh, jmoveaxisx,
 jmoveaxisy, jlookaxisx, jlookaxisy, jtrigaxis1, jtrigaxis2, jenterbutton,
-jescapebutton, joysticknum;
+jescapebutton, joysticknum, scr_lockuiscale;

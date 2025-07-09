@@ -84,6 +84,7 @@ void R_Init()
 	Cvar_RegisterVariable(&scr_uixscale);
 	Cvar_RegisterVariable(&scr_uiyscale);
 	Cvar_RegisterVariable(&yaspectscale);
+	Cvar_RegisterVariable(&scr_lockuiscale);
 	Cvar_SetCallback(&r_labmixpal, build_color_mix_lut);
 	Cvar_SetCallback(&r_fogbrightness, Fog_SetPalIndex);
 	Cvar_SetCallback(&r_wateralpha, R_SetWateralpha_f);
@@ -94,9 +95,9 @@ void R_Init()
 	view_clipplanes[0].leftedge = 1;
 	view_clipplanes[1].rightedge = 1;
 	view_clipplanes[1].leftedge = view_clipplanes[2].leftedge =
-	    view_clipplanes[3].leftedge = 0;
+		view_clipplanes[3].leftedge = 0;
 	view_clipplanes[0].rightedge = view_clipplanes[2].rightedge =
-	    view_clipplanes[3].rightedge = 0;
+		view_clipplanes[3].rightedge = 0;
 	r_refdef.xOrigin = XCENTERING;
 	r_refdef.yOrigin = YCENTERING;
 	R_InitParticles();

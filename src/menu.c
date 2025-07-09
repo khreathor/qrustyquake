@@ -1445,7 +1445,7 @@ void M_Display_Draw()
 	else                      M_Print(xoffset + 204, 80, "Borderless");
 	sprintf(temp, "x%d\n", (s32)scr_uiscale.value);
 	M_Print(xoffset + 204, 32, temp);
-	M_Print(xoffset + 204, 40, (s32)/*scr_lockuiscale.value*/0?"yes\n":"no\n");
+	M_Print(xoffset + 204, 40, (s32)scr_lockuiscale.value==0 ? "no":"yes");
 	sprintf(temp, "%0.2f\n", aspectr.value);
 	M_Print(xoffset + 204, 48, temp);
 	sprintf(temp, "%d\n", (s32)host_maxfps.value);

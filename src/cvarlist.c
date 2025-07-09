@@ -2,6 +2,7 @@
 #define ZR 0,0,0,0      // "name", default value, flags (1 - save to config.cfg)
 cvar_t _vid_default_mode_win=              {"_vid_default_mode_win", "3", 1,ZR};
 cvar_t scr_uiscale=                                  {"scr_uiscale", "1", 1,ZR};
+cvar_t scr_lockuiscale=                          {"scr_lockuiscale", "0", 1,ZR};
 cvar_t sensitivityyscale=                      {"sensitivityyscale", "1", 1,ZR};
 cvar_t _windowed_mouse=                          {"_windowed_mouse", "0", 1,ZR};
 cvar_t newoptions=                                    {"newoptions", "1", 1,ZR};
