@@ -761,5 +761,12 @@ EX u32 sb_updates; // if >= vid.numpages, no update needed             // sbar.c
 u8 *Image_LoadImage(const s8 *name, s32 *width, s32 *height);         // image.c
 bool nameInList(const s8 *list, const s8 *name);                      // model.c
 void PF_changeyaw();                                                // pr_cmds.c
+void CDAudio_Play(u8 track, bool looping);                          // cdaudio.c
+void CDAudio_Stop();
+void CDAudio_Pause();
+void CDAudio_Resume();
+void CDAudio_Update();
+bool CDAudio_Init();
+void CDAudio_Shutdown();
 #undef EX
 #endif

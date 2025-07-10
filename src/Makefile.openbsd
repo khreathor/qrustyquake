@@ -2,7 +2,7 @@ CC = cc
 CFLAGS = -c -Wall -Wextra -I/usr/local/include -I/usr/local/include/SDL2 -I/usr/X11R6/include -D_REENTRANT -I/usr/X11R6/include
 LDFLAGS = -lm -lSDL2 -L/usr/local/lib -lSDL2 -L/usr/X11R6/lib
 TARGET = qrustyquake
-SRCS = chase.c cl_demo.c cl_input.c cl_main.c cl_parse.c \
+SRCS = cdaudio.c chase.c cl_demo.c cl_input.c cl_main.c cl_parse.c \
 	cl_tent.c cmd.c common.c console.c crc.c \
 	cvar.c d_edge.c \
 	d_part.c d_polyse.c d_scan.c d_sky.c d_sprite.c \

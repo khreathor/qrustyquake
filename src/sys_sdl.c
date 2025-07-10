@@ -13,6 +13,7 @@ void Sys_Printf(const s8 *fmt, ...)
 
 void Sys_Quit()
 {
+	CDAudio_Stop();
         Uint16 *screen; // erysdren (it/its)
         if(registered.value) screen = (Uint16 *)COM_LoadHunkFile("end2.bin", 0);
         else screen = (Uint16 *)COM_LoadHunkFile("end1.bin", 0);
@@ -30,6 +31,7 @@ void Sys_Error(const s8 *error, ...)
 {
 	va_list argptr;
 	s8 str[1024];
+	CDAudio_Stop();
 	va_start(argptr, error);
 	vsprintf(str, error, argptr);
 	va_end(argptr);
