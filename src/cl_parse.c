@@ -628,8 +628,10 @@ void CL_ParseServerMessage()
 		break;
 	case svc_setpause:
 		cl.paused = MSG_ReadByte();
-		//TODOif(cl.paused)BGM_Pause();
-		//else BGM_Resume();
+		if(cl.paused)
+			CDAudio_Pause();
+		else
+			CDAudio_Resume();
 		break;
 	case svc_signonnum:
 		i = MSG_ReadByte();
@@ -662,11 +664,10 @@ void CL_ParseServerMessage()
 	case svc_cdtrack:
 		cl.cdtrack = MSG_ReadByte();
 		cl.looptrack = MSG_ReadByte();
-		//TODOif((cls.demoplayback || cls.demorecording) &&
-		//(cls.forcetrack != -1) )
-		//TODO BGM_PlayCDtrack((u8)cls.forcetrack, 1);
-		//TODOelse
-		//TODO BGM_PlayCDtrack((u8)cl.cdtrack, 1);
+		if((cls.demoplayback || cls.demorecording) && (cls.forcetrack != -1))
+			CDAudio_Play((u8)cls.forcetrack, true);
+		else
+			CDAudio_Play((u8)cl.cdtrack, true);
 		break;
 	case svc_intermission:
 		cl.intermission = 1;

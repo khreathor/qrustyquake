@@ -1,0 +1,147 @@
+// Copyright (C) 1996-2001 Id Software, Inc.
+// Copyright (C) 2002-2009 John Fitzgibbons and others
+// Copyright (C) 2010-2014 QuakeSpasm developers
+// GPLv3 See LICENSE for details.
+#include "quakedef.h"
+
+// FIXME: add to globals.h
+u8 *COM_LoadTempFile(const s8 *path, u32 *path_id);
+
+#ifndef ASIZE
+#define ASIZE(a) (sizeof(a)/sizeof(a[0]))
+#endif
+
+// erysdren: note that i've placed these in a particular order, so that when
+// they're iterated in CDAudio_Play() the most common formats for Quake mod
+// music will come up first
+static struct music_format {
+	u32 flag;
+	const char *name;
+	size_t num_extensions;
+	const char **extensions;
+	bool required;
+} music_formats[] = {
+	{MIX_INIT_OGG, "OGG", 1, (const char *[]){".ogg"}, true},
+	{MIX_INIT_OPUS, "OPUS", 2, (const char *[]){".ogg", ".opus"}, true},
+	{MIX_INIT_MP3, "MP3", 1, (const char *[]){".mp3"}, true},
+	{MIX_INIT_FLAC, "FLAC", 1, (const char *[]){".flac"}, false},
+	{MIX_INIT_MID, "MID", 2, (const char *[]){".mid", ".midi"}, false},
+	{MIX_INIT_MOD, "MOD", 1, (const char *[]){".mod"}, false},
+	{MIX_INIT_WAVPACK, "WAVPACK", 2, (const char *[]){".wav", ".wv"}, false}
+};
+
+static Mix_Music *current_music = NULL;
+
+void CDAudio_Play(u8 track, bool looping)
+{
+	char filename[MAX_QPATH];
+	u8 *file = NULL;
+	SDL_IOStream *io = NULL;
+	Mix_Music *music = NULL;
+	size_t i, j;
+
+	for (i = 0; i < ASIZE(music_formats); i++)
+	{
+		for (j = 0; j < music_formats[i].num_extensions; j++)
+		{
+			q_snprintf(filename, sizeof(filename), "music/track%02d%s", (int)track, music_formats[i].extensions[j]);
+			file = COM_LoadTempFile(filename, NULL);
+			if (file)
+				goto found;
+		}
+	}
+
+	if (!file)
+	{
+		Con_Printf("file for track %02d not found\n", (int)track);
+		return;
+	}
+
+found:
+
+	io = SDL_IOFromConstMem(file, com_filesize);
+	if (!io)
+	{
+		Con_Printf("failed to create IOStream for track %02d: %s\n", (int)track, SDL_GetError());
+		return;
+	}
+
+	music = Mix_LoadMUS_IO(io, true);
+	if (!music)
+	{
+		Con_Printf("failed to load track %02d: %s\n", (int)track, SDL_GetError());
+		return;
+	}
+
+	CDAudio_Stop();
+
+	current_music = music;
+
+	if (!Mix_PlayMusic(current_music, looping ? -1 : 0))
+	{
+		Con_Printf("failed to play track %02d: %s\n", (int)track, SDL_GetError());
+		return;
+	}
+}
+
+void CDAudio_Stop()
+{
+	if (current_music)
+		Mix_FreeMusic(current_music);
+	current_music = NULL;
+}
+
+void CDAudio_Pause()
+{
+	Mix_PauseMusic();
+}
+
+void CDAudio_Resume()
+{
+	Mix_ResumeMusic();
+}
+
+void CDAudio_Update()
+{
+	static float last_volume = 0;
+
+	if (bgmvolume.value < 0)
+		Cvar_SetQuick(&bgmvolume, "0");
+	if (bgmvolume.value > 1)
+		Cvar_SetQuick(&bgmvolume, "1");
+
+	if (last_volume != bgmvolume.value)
+		Mix_VolumeMusic(bgmvolume.value * MIX_MAX_VOLUME);
+}
+
+bool CDAudio_Init()
+{
+	size_t i;
+	for (i = 0; i < ASIZE(music_formats); i++)
+	{
+		MIX_InitFlags flags = Mix_Init(music_formats[i].flag);
+		if (!(flags & music_formats[i].flag))
+		{
+			Con_Printf("Failed to initialize SDL Mixer format \"%s\": %s\n", music_formats[i].name, SDL_GetError());
+			if (music_formats[i].required)
+				return false;
+		}
+		Con_Printf("Initialized SDL Mixer format \"%s\"\n", music_formats[i].name);
+	}
+
+	if (!Mix_OpenAudio(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, NULL))
+	{
+		Con_Printf("Failed to SDL Mixer audio output device: %s\n", SDL_GetError());
+		return false;
+	}
+
+	Con_Printf("SDL Mixer initialized\n");
+
+	return true;
+}
+
+void CDAudio_Shutdown()
+{
+	CDAudio_Stop();
+	Mix_Quit();
+}

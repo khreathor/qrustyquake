@@ -375,6 +375,7 @@ void _Host_Frame(f32 time)
 		CL_DecayLights();
 	} else
 		S_Update(vec3_origin, vec3_origin, vec3_origin, vec3_origin);
+	CDAudio_Update();
 	if(host_speeds.value){
 		static f64 pass[3] = {0.0, 0.0, 0.0};
 		static f64 elapsed = 0.0;
@@ -470,6 +471,7 @@ void Host_Init()
 		SCR_Init();
 		R_Init();
 		S_Init();
+		CDAudio_Init();
 		Sbar_Init();
 		CL_Init();
 	}
@@ -495,6 +497,7 @@ void Host_Shutdown()
 	// keep Con_Printf from trying to update the screen
 	scr_disabled_for_loading= 1;
 	Host_WriteConfiguration();
+	CDAudio_Shutdown();
 	NET_Shutdown();
 	S_Shutdown();
 	if(cls.state != ca_dedicated){
