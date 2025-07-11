@@ -768,5 +768,6 @@ void CDAudio_Resume();
 void CDAudio_Update();
 bool CDAudio_Init();
 void CDAudio_Shutdown();
+u8 *COM_LoadTempFile(const s8 *path, u32 *path_id);
 #undef EX
 #endif

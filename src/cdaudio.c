@@ -4,9 +4,6 @@
 // GPLv3 See LICENSE for details.
 #include "quakedef.h"
 
-// FIXME: add to globals.h
-u8 *COM_LoadTempFile(const s8 *path, u32 *path_id);
-
 #ifndef ASIZE
 #define ASIZE(a) (sizeof(a)/sizeof(a[0]))
 #endif
@@ -31,6 +28,78 @@ static struct music_format {
 };
 
 static Mix_Music *current_music = NULL;
+static s8 current_name[MAX_OSPATH];
+
+void BGM_Play(s8 *musicname, bool looping)
+{
+	s8 filename[MAX_OSPATH];
+	u8 *file = NULL;
+	SDL_IOStream *io = NULL;
+	Mix_Music *music = NULL;
+	size_t i, j;
+
+	if (!musicname || !*musicname)
+	{
+		Con_DPrintf("null music file name\n");
+		return;
+	}
+
+	for (i = 0; i < ASIZE(music_formats); i++)
+	{
+		for (j = 0; j < music_formats[i].num_extensions; j++)
+		{
+			q_snprintf(filename, sizeof(filename), "music/%s%s", musicname, music_formats[i].extensions[j]);
+			file = COM_LoadTempFile(filename, NULL);
+			if (file)
+				goto found;
+		}
+	}
+
+	if (!file)
+	{
+		Con_Printf("file for %s not found\n", filename);
+		return;
+	}
+
+found:
+
+	io = SDL_IOFromConstMem(file, com_filesize);
+	if (!io)
+	{
+		Con_Printf("failed to create IOStream for %s: %s\n", filename, SDL_GetError());
+		return;
+	}
+
+	music = Mix_LoadMUS_IO(io, true);
+	if (!music)
+	{
+		Con_Printf("failed to load %s: %s\n", filename, SDL_GetError());
+		return;
+	}
+
+	CDAudio_Stop();
+
+	current_music = music;
+
+	if (!Mix_PlayMusic(current_music, looping ? -1 : 0))
+	{
+		Con_Printf("failed to play %s: %s\n", filename, SDL_GetError());
+		return;
+	}
+
+	strlcpy(current_name, musicname, MAX_OSPATH);
+}
+
+static void BGM_Play_f()
+{
+	if (Cmd_Argc() == 2)
+		BGM_Play (Cmd_Argv(1), 1);
+	else {
+		if (current_music) {
+			Con_Printf ("Playing %s, use 'music <musicfile>' to change\n", current_name);
+		} else Con_Printf ("music <musicfile>\n");
+	}
+}
 
 void CDAudio_Play(u8 track, bool looping)
 {
@@ -82,6 +151,8 @@ found:
 		Con_Printf("failed to play track %02d: %s\n", (int)track, SDL_GetError());
 		return;
 	}
+
+	q_snprintf(current_name, sizeof(current_name), "track%02d", (int)track);
 }
 
 void CDAudio_Stop()
@@ -136,6 +207,8 @@ bool CDAudio_Init()
 	}
 
 	Con_Printf("SDL Mixer initialized\n");
+
+	Cmd_AddCommand("music", BGM_Play_f);
 
 	return true;
 }
