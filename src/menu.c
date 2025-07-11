@@ -1440,7 +1440,15 @@ void M_Display_Key(s32 k)
 		else if (display_cursor == 6) {
 			if (newwinmode == 2) newwinmode = 0;
 			else newwinmode++;
-		}
+		} else if (display_cursor == 9
+			   && Q_atoi(customwidthstr) >= 320
+			   && Q_atoi(customheightstr) >= 200
+			   && Q_atoi(customwidthstr) <= MAXWIDTH
+			   && Q_atoi(customheightstr) <= MAXHEIGHT)
+			VID_SetMode(0, Q_atoi(customwidthstr),
+				    Q_atoi(customheightstr), newwinmode,
+				    vid_curpal);
+		break;
 		break;
 	case K_UPARROW:
 		S_LocalSound("misc/menu1.wav");
@@ -1454,6 +1462,27 @@ void M_Display_Key(s32 k)
 		else if(display_cursor==9 && newwinmode!=1) display_cursor = 0;
 		else display_cursor++;
 		break;
+	case K_BACKSPACE:
+		if (display_cursor == 7 && strlen(customwidthstr))
+			customwidthstr[strlen(customwidthstr) - 1] = 0;
+		else if (display_cursor == 8 && strlen(customheightstr))
+			customheightstr[strlen(customheightstr) - 1] = 0;
+		break;
+	default:
+		if (k < '0' || k > '9') break;
+		if (display_cursor == 7) {
+			s32 l = strlen(customwidthstr);
+			if (l < 7) {
+				customwidthstr[l + 1] = 0;
+				customwidthstr[l] = k;
+			}
+		} else if (display_cursor == 8) {
+			s32 l = strlen(customheightstr);
+			if (l < 7) {
+				customheightstr[l + 1] = 0;
+				customheightstr[l] = k;
+			}
+		}
 	}
 }
 
