@@ -160,6 +160,7 @@ void CDAudio_Stop()
 	if (current_music)
 		Mix_FreeMusic(current_music);
 	current_music = NULL;
+	current_name[0] = 0;
 }
 
 void CDAudio_Pause()
@@ -209,6 +210,9 @@ bool CDAudio_Init()
 	Con_Printf("SDL Mixer initialized\n");
 
 	Cmd_AddCommand("music", BGM_Play_f);
+	Cmd_AddCommand("music_stop", CDAudio_Stop);
+	Cmd_AddCommand("music_pause", CDAudio_Pause);
+	Cmd_AddCommand("music_resume", CDAudio_Resume);
 
 	return true;
 }
