@@ -48,6 +48,10 @@ static s32 gameoptions_cursor;
 static u8 identityTable[256];
 static u8 translationTable[256];
 static s32 fpslimits[] = { 30,60,72,100,120,144,165,180,200,240,300,360,500,999999 };
+static s32 moden = -1;
+static s32 display_sel_moden = 0;
+static SDL_DisplayMode **modes = 0;
+static SDL_DisplayMode *mode = 0;
 
 level_t levels[] = {
 	{ "start", "Entrance" }, // 0
@@ -1414,6 +1418,10 @@ void M_Display_Key(s32 k)
 			if (newwinmode == 0) newwinmode = 2;
 			else newwinmode--;
 		}
+		else if (display_cursor == 7 && newwinmode == 1) {
+			if (display_sel_moden == moden-1) display_sel_moden = 0;
+			else display_sel_moden++;
+		}
 		break;
 	case K_RIGHTARROW:
 	case K_ENTER:
@@ -1440,6 +1448,11 @@ void M_Display_Key(s32 k)
 		else if (display_cursor == 6) {
 			if (newwinmode == 2) newwinmode = 0;
 			else newwinmode++;
+		} else if (display_cursor == 7 && newwinmode == 1) {
+			if (display_sel_moden == 0) display_sel_moden = moden-1;
+			else display_sel_moden--;
+		} else if (display_cursor == 8 && newwinmode == 1) {
+			VID_SetMode(0,mode->w, mode->h, newwinmode, vid_curpal);
 		} else if (display_cursor == 9
 			   && Q_atoi(customwidthstr) >= 320
 			   && Q_atoi(customheightstr) >= 200
@@ -1497,6 +1510,17 @@ void M_Display_Draw()
 {
 	s8 temp[32];
 	s32 xoffset = 0;
+	if (newwinmode != 1) {
+		if (display_cursor < 7)
+			M_DrawCursor(192, 32 + display_cursor*8);
+		else if (display_cursor == 7)
+			M_DrawCursor(192, 92);
+		else if (display_cursor == 8)
+			M_DrawCursor(192, 108);
+		else if (display_cursor == 9)
+			M_DrawCursor(192, 120);
+	}
+	else M_DrawCursor(192, 32 + display_cursor*8);
 	M_DrawTransPic(16, 4, Draw_CachePic("gfx/qplaque.lmp"));
 	qpic_t *p = Draw_CachePic("gfx/p_option.lmp");
 	M_DrawTransPic((320 - p->width) / 2, 4, p);
@@ -1527,8 +1551,16 @@ void M_Display_Draw()
 		M_PrintWhite(64, 166, "               72");
 	}
 	if (newwinmode == 1) {
-		M_Print(xoffset, 88, "            Resolution");
-		M_Print(xoffset + 204, 88, "1234x4567@60");
+		if (!modes) { 
+			modes = SDL_GetFullscreenDisplayModes(1, &moden);
+			mode = modes[0];
+		}
+		if (moden <= 0) return;
+		mode = modes[display_sel_moden];
+		M_Print(xoffset, 88, "                  Mode");
+		q_snprintf(temp, 16, "%dx%d@%d", mode->w, mode->h,
+				(s32)mode->refresh_rate);
+		M_Print(xoffset + 204, 88, temp);
 	} else {
 		M_Print(xoffset, 92, "          Custom Width");
 		M_DrawTextBox(xoffset + 196, 84, 8, 1);
@@ -1552,18 +1584,6 @@ void M_Display_Draw()
 		}
 	}
 	M_Print(xoffset + 204, newwinmode==1?96:120, "Set Mode");
-	xoffset -= 4;
-	if (newwinmode != 1) {
-		if (display_cursor < 7)
-			M_DrawCursor(xoffset + 196, 32 + display_cursor*8);
-		else if (display_cursor == 7)
-			M_DrawCursor(xoffset + 196, 92);
-		else if (display_cursor == 8)
-			M_DrawCursor(xoffset + 196, 108);
-		else if (display_cursor == 9)
-			M_DrawCursor(xoffset + 196, 120);
-	}
-	else M_DrawCursor(xoffset + 196, 32 + display_cursor*8);
 }
 
 void M_Menu_New_f()
