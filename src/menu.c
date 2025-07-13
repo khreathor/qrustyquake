@@ -1545,10 +1545,21 @@ void M_Display_Draw()
 	M_Print(xoffset + 204, 64, temp);
 	sprintf(temp, "%0.2f\n", yaspectscale.value);
 	M_Print(xoffset + 204, 72, temp);
-	if (display_cursor == 3 && (s32)host_maxfps.value > 72) {
-		M_DrawTextBox(52, 158, 30, 1);
-		M_Print(64, 166, "Vanilla max is    expect bugs");
-		M_PrintWhite(64, 166, "               72");
+	if (display_cursor == 2) {
+		M_DrawTextBox(52, 142, 30, 1);
+		M_Print(64, 150, "          in console for auto");
+		M_PrintWhite(64, 150, "aspectr 0");
+	} else if (display_cursor == 3 && (s32)host_maxfps.value > 72) {
+		M_DrawTextBox(52, 142, 30, 1);
+		M_Print(64, 150, "Vanilla max is    expect bugs");
+		M_PrintWhite(64, 150, "               72");
+	} else if (display_cursor == 4 || display_cursor == 5) {
+		M_DrawTextBox(100, 142, 16, 1);
+		M_Print(112, 150, "Modern FOV:");
+		s32 modernfov = atan(vid.height*yaspectscale.value / (vid.width
+			/ tan(scr_fov.value / 360 * M_PI))) * 360 / M_PI;
+		q_snprintf(temp, 32, "            %d", modernfov);
+		M_PrintWhite(112, 150, temp);
 	}
 	if (newwinmode == 1) {
 		if (!modes) { 
