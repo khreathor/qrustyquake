@@ -1646,6 +1646,7 @@ void M_Graphics_Draw()
 	M_Print(xoffset, 64, "  Lighting...");
 	M_Print(xoffset, 72, "  Translusency...");
 	xoffset = 160;
+	s32 x2 = 104;
 	if (graphics_cursor == 0) {
 		M_Print(xoffset, 32, "Enables fog,");
 		M_Print(xoffset, 40, "custom skyboxes,");
@@ -1657,13 +1658,48 @@ void M_Graphics_Draw()
 		M_Print(xoffset, 48, "colored lighting,");
 		M_Print(xoffset, 56, "translusency");
 	} else if (graphics_cursor == 2) {
-		M_Print(xoffset, 32, "//fog settings//");
+		M_Print(xoffset, 32, "Enabled:");
+		M_Print(xoffset + x2, 32, r_nofog.value == 0 ? "On" : "Off");
+		M_Print(xoffset, 40, "Noise:");
+		snprintf(temp, sizeof(temp), "%0.1f", r_fognoise.value);
+		M_Print(xoffset + x2, 40, temp);
+		M_Print(xoffset, 48, "Thickness:");
+		snprintf(temp, sizeof(temp), "%0.1f", r_fogfactor.value);
+		M_Print(xoffset + x2, 48, temp);
+		M_Print(xoffset, 56, "Distance:");
+		snprintf(temp, sizeof(temp), "%0.1f", r_fogscale.value);
+		M_Print(xoffset + x2, 56, temp);
+		M_Print(xoffset, 64, "Brightness:");
+		snprintf(temp, sizeof(temp), "%0.1f", r_fogbrightness.value);
+		M_Print(xoffset + x2, 64, temp);
+		M_Print(xoffset, 72, "Style:");
+		switch ((s32)r_fogstyle.value) {
+		case 0: M_Print(xoffset + x2, 72, "Noisy"); break;
+		case 1: M_Print(xoffset + x2, 72, "Dither"); break;
+		case 2: M_Print(xoffset + x2, 72, "Mixed"); break;
+		default:M_Print(xoffset + x2, 72, "Blend"); break;
+		}
 	} else if (graphics_cursor == 3) {
-		M_Print(xoffset, 32, "//sky settings//");
+		M_Print(xoffset, 32, "Enabled:");
+		M_Print(xoffset + x2, 32, r_nofog.value == 0 ? "On" : "Off");
+		M_Print(xoffset, 40, "Sky Fog:");
+		snprintf(temp, sizeof(temp), "%0.1f\n", r_skyfog.value);
+		M_Print(xoffset + x2, 40, temp);
 	} else if (graphics_cursor == 4) {
-		M_Print(xoffset, 32, "//light settings//");
+		M_Print(xoffset, 32, "Color:");
+		M_Print(xoffset+x2, 32, r_rgblighting.value==1 ? "On" : "Off");
+		M_Print(xoffset, 40, "Lit Water:");
+		M_Print(xoffset + x2, 40, r_twopass.value == 1 ? "On" : "Off");
+		M_Print(xoffset, 48, "Color Space:");
+		M_Print(xoffset+x2, 48, r_labmixpal.value==1 ? "LAB" : "RGB");
 	} else if (graphics_cursor == 5) {
-		M_Print(xoffset, 32, "//trans settings//");
+		M_Print(xoffset, 32, "Enabled:");
+		M_Print(xoffset + x2, 32, r_twopass.value == 1 ? "On" : "Off");
+		M_Print(xoffset, 40, "Style:");
+		M_Print(xoffset+x2, 40, r_alphastyle.value==1?"Dither":"Blend");
+		M_Print(xoffset, 48, "Water Alpha:");
+		snprintf(temp, sizeof(temp), "%0.1f\n", r_wateralpha.value);
+		M_Print(xoffset + x2, 48, temp);
 	}
 }
 
