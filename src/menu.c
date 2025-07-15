@@ -27,6 +27,7 @@ static s32 bind_grab;
 static s32 new_cursor;
 static s32 gamepad_cursor;
 static s32 display_cursor;
+static s32 graphics_cursor;
 static s8 customwidthstr[16];
 static s8 customheightstr[16];
 static s32 newwinmode;
@@ -205,8 +206,8 @@ s8 *quitMessage[] = {
 };
 
 enum { m_none, m_main, m_singleplayer, m_load, m_save, m_multiplayer, m_setup,
-    m_net, m_options, m_video, m_keys, m_new, m_gamepad, m_display,  m_help,
-    m_quit, m_lanconfig, m_gameoptions, m_search, m_slist } m_state;
+    m_net, m_options, m_video, m_keys, m_new, m_gamepad, m_display, m_graphics, 
+    m_help, m_quit, m_lanconfig, m_gameoptions, m_search, m_slist } m_state;
 
 void M_Menu_Main_f();
 void M_Menu_SinglePlayer_f();
@@ -1597,6 +1598,75 @@ void M_Display_Draw()
 	M_Print(xoffset + 204, newwinmode==1?96:120, "Set Mode");
 }
 
+void M_Graphics_Key(s32 k)
+{
+	switch (k) {
+	case K_ESCAPE:
+		M_Menu_New_f();
+		break;
+	case K_LEFTARROW:
+		S_LocalSound("misc/menu3.wav");
+		break;
+	case K_RIGHTARROW:
+	case K_ENTER:
+		S_LocalSound("misc/menu3.wav");
+		break;
+	case K_UPARROW:
+		S_LocalSound("misc/menu1.wav");
+		if (graphics_cursor == 0) graphics_cursor = 5;
+		else graphics_cursor--;
+		break;
+	case K_DOWNARROW:
+		S_LocalSound("misc/menu1.wav");
+		if (graphics_cursor == 5) graphics_cursor = 0;
+		else graphics_cursor++;
+		break;
+	default: break;
+	}
+}
+
+void M_Menu_Graphics_f()
+{
+	key_dest = key_menu;
+	m_state = m_graphics;
+	m_entersound = 1;
+}
+
+void M_Graphics_Draw()
+{
+	s8 temp[32];
+	s32 xoffset = 0;
+	M_DrawCursor(6, 32 + graphics_cursor*8);
+	qpic_t *p = Draw_CachePic("gfx/p_option.lmp");
+	M_DrawTransPic((320 - p->width) / 2, 4, p);
+	M_Print(xoffset, 32, "  Preset: Modern");
+	M_Print(xoffset, 40, "  Preset: Classic");
+	M_Print(xoffset, 48, "  Fog...");
+	M_Print(xoffset, 56, "  Sky...");
+	M_Print(xoffset, 64, "  Lighting...");
+	M_Print(xoffset, 72, "  Translusency...");
+	xoffset = 160;
+	if (graphics_cursor == 0) {
+		M_Print(xoffset, 32, "Enables fog,");
+		M_Print(xoffset, 40, "custom skyboxes,");
+		M_Print(xoffset, 48, "colored lighting,");
+		M_Print(xoffset, 56, "translusency");
+	} else if (graphics_cursor == 1) {
+		M_Print(xoffset, 32, "Disables fog,");
+		M_Print(xoffset, 40, "custom skyboxes,");
+		M_Print(xoffset, 48, "colored lighting,");
+		M_Print(xoffset, 56, "translusency");
+	} else if (graphics_cursor == 2) {
+		M_Print(xoffset, 32, "//fog settings//");
+	} else if (graphics_cursor == 3) {
+		M_Print(xoffset, 32, "//sky settings//");
+	} else if (graphics_cursor == 4) {
+		M_Print(xoffset, 32, "//light settings//");
+	} else if (graphics_cursor == 5) {
+		M_Print(xoffset, 32, "//trans settings//");
+	}
+}
+
 void M_Menu_New_f()
 {
 	key_dest = key_menu;
@@ -2724,6 +2794,7 @@ void M_Init()
 	Cmd_AddCommand("menu_new", M_Menu_New_f);
 	Cmd_AddCommand("menu_gamepad", M_Menu_Gamepad_f);
 	Cmd_AddCommand("menu_display", M_Menu_Display_f);
+	Cmd_AddCommand("menu_graphics", M_Menu_Graphics_f);
 	Cmd_AddCommand("help", M_Menu_Help_f);
 	Cmd_AddCommand("menu_quit", M_Menu_Quit_f);
 }
@@ -2755,6 +2826,7 @@ void M_Draw()
 		case m_new: M_New_Draw(); break;
 		case m_gamepad: M_Gamepad_Draw(); break;
 		case m_display: M_Display_Draw(); break;
+		case m_graphics: M_Graphics_Draw(); break;
 		case m_video: M_Video_Draw(); break;
 		case m_help: M_Help_Draw(); break;
 		case m_quit: M_Quit_Draw(); break;
@@ -2786,6 +2858,7 @@ void M_Keydown(s32 key)
 		case m_new: M_New_Key(key); return;
 		case m_gamepad: M_Gamepad_Key(key); return;
 		case m_display: M_Display_Key(key); return;
+		case m_graphics: M_Graphics_Key(key); return;
 		case m_help: M_Help_Key(key); return;
 		case m_quit: M_Quit_Key(key); return;
 		case m_lanconfig: M_LanConfig_Key(key); return;
