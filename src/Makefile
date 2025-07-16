@@ -1,7 +1,9 @@
 PKGCONFIG ?= pkg-config
 CC = gcc
-CFLAGS = -c -Wall -Wextra -D_DEFAULT_SOURCE $(shell $(PKGCONFIG) --cflags sdl3 sdl3-mixer)
-LDFLAGS = -lm $(shell $(PKGCONFIG) --libs sdl3 sdl3-mixer)
+CFLAGS = -c -Wall -Wextra -D_DEFAULT_SOURCE $(shell $(PKGCONFIG) --cflags sdl3)
+LDFLAGS = -lm $(shell $(PKGCONFIG) --libs sdl3)
+SDL3_MIXER_CFLAGS := $(shell $(PKGCONFIG) --cflags sdl3-mixer 2>/dev/null)
+SDL3_MIXER_LIBS := $(shell $(PKGCONFIG) --libs sdl3-mixer 2>/dev/null)
 TARGET = qrustyquake
 SRCS = cdaudio.c chase.c cl_demo.c cl_input.c cl_main.c cl_parse.c \
 	cl_tent.c cmd.c common.c console.c crc.c \
@@ -22,6 +24,13 @@ SRCS = cdaudio.c chase.c cl_demo.c cl_input.c cl_main.c cl_parse.c \
 OBJS = $(SRCS:.c=.o)
 
 BUILD_TYPE ?= release
+
+ifeq ($(strip $(SDL3_MIXER_LIBS)),)
+$(warning SDL3_Mixer not found, disabling music support)
+else
+CFLAGS += $(SDL3_MIXER_CFLAGS) -DAVAIL_SDL3MIXER
+LDFLAGS += $(SDL3_MIXER_LIBS)
+endif
 
 # technically for Haiku we should strip -lm since it is not needed there, but
 # they have a dummy library in its place so... shrug?
