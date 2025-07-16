@@ -41,7 +41,9 @@
 #include <io.h>
 #endif
 #include <SDL3/SDL.h>
+#ifdef AVAIL_SDL3MIXER
 #include <SDL3_mixer/SDL_mixer.h>
+#endif
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
