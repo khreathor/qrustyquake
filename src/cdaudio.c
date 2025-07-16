@@ -4,6 +4,42 @@
 // GPLv3 See LICENSE for details.
 #include "quakedef.h"
 
+#ifndef AVAIL_SDL3MIXER
+void CDAudio_Play(SDL_UNUSED u8 track, SDL_UNUSED bool looping)
+{
+
+}
+
+void CDAudio_Stop()
+{
+
+}
+
+void CDAudio_Pause()
+{
+
+}
+
+void CDAudio_Resume()
+{
+
+}
+
+void CDAudio_Update()
+{
+
+}
+
+bool CDAudio_Init()
+{
+	return false;
+}
+
+void CDAudio_Shutdown()
+{
+
+}
+#else
 #ifndef ASIZE
 #define ASIZE(a) (sizeof(a)/sizeof(a[0]))
 #endif
@@ -222,3 +258,4 @@ void CDAudio_Shutdown()
 	CDAudio_Stop();
 	Mix_Quit();
 }
+#endif // AVAIL_SDL3MIXER
