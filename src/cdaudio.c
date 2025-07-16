@@ -65,6 +65,7 @@ static struct music_format {
 
 static Mix_Music *current_music = NULL;
 static s8 current_name[MAX_OSPATH];
+static u8 *loaded_file = NULL;
 
 void BGM_Play(s8 *musicname, bool looping)
 {
@@ -80,12 +81,13 @@ void BGM_Play(s8 *musicname, bool looping)
 		return;
 	}
 
+	if (loaded_file) free(loaded_file);
 	for (i = 0; i < ASIZE(music_formats); i++)
 	{
 		for (j = 0; j < music_formats[i].num_extensions; j++)
 		{
 			q_snprintf(filename, sizeof(filename), "music/%s%s", musicname, music_formats[i].extensions[j]);
-			file = COM_LoadTempFile(filename, NULL);
+			file = COM_LoadMallocFile(filename, NULL);
 			if (file)
 				goto found;
 		}
@@ -99,6 +101,7 @@ void BGM_Play(s8 *musicname, bool looping)
 
 found:
 
+	loaded_file = file;
 	io = SDL_IOFromConstMem(file, com_filesize);
 	if (!io)
 	{
@@ -145,12 +148,13 @@ void CDAudio_Play(u8 track, bool looping)
 	Mix_Music *music = NULL;
 	size_t i, j;
 
+	if (loaded_file) free(loaded_file);
 	for (i = 0; i < ASIZE(music_formats); i++)
 	{
 		for (j = 0; j < music_formats[i].num_extensions; j++)
 		{
 			q_snprintf(filename, sizeof(filename), "music/track%02d%s", (int)track, music_formats[i].extensions[j]);
-			file = COM_LoadTempFile(filename, NULL);
+			file = COM_LoadMallocFile(filename, NULL);
 			if (file)
 				goto found;
 		}
@@ -164,6 +168,7 @@ void CDAudio_Play(u8 track, bool looping)
 
 found:
 
+	loaded_file = file;
 	io = SDL_IOFromConstMem(file, com_filesize);
 	if (!io)
 	{
