@@ -3,10 +3,10 @@ project(qrustyquake LANGUAGES C HOMEPAGE_URL "https://github.com/cyanbun96/qrust
 
 if(EMSCRIPTEN)
 	find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-static)
-	find_package(SDL3_mixer REQUIRED CONFIG REQUIRED COMPONENTS SDL3_mixer-static)
+	find_package(SDL3_mixer CONFIG COMPONENTS SDL3_mixer-static)
 else()
 	find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
-	find_package(SDL3_mixer REQUIRED CONFIG REQUIRED COMPONENTS SDL3_mixer-shared)
+	find_package(SDL3_mixer CONFIG COMPONENTS SDL3_mixer-shared)
 endif()
 
 file(GLOB QRUSTYQUAKE_HEADERS "${PROJECT_SOURCE_DIR}/src/*.h")
@@ -38,7 +38,11 @@ endif()
 target_sources(qrustyquake PRIVATE ${QRUSTYQUAKE_SOURCES})
 
 target_include_directories(qrustyquake PRIVATE "${PROJECT_SOURCE_DIR}/src/")
-target_link_libraries(qrustyquake PRIVATE SDL3::SDL3 SDL3_mixer::SDL3_mixer)
+target_link_libraries(qrustyquake PRIVATE SDL3::SDL3)
+if(SDL3_mixer_FOUND)
+	target_compile_definitions(qrustyquake PRIVATE AVAIL_SDL3MIXER)
+	target_link_libraries(qrustyquake PRIVATE SDL3_mixer::SDL3_mixer)
+endif()
 
 find_library(libmath m)
 if(libmath)
