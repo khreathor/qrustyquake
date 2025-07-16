@@ -1,4 +1,6 @@
+#ifndef _WIN32
 #include <stdatomic.h>
+#endif
 #include <errno.h>
 #include <stddef.h>
 #include <limits.h>
