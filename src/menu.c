@@ -1602,6 +1602,7 @@ void M_Graphics_Key(s32 k)
 {
 	switch (k) {
 	case K_ESCAPE:
+		if (graphics_cursor >= 100) { graphics_cursor /= 100; break; }
 		M_Menu_New_f();
 		break;
 	case K_LEFTARROW:
@@ -1609,17 +1610,38 @@ void M_Graphics_Key(s32 k)
 		break;
 	case K_RIGHTARROW:
 	case K_ENTER:
+		if (graphics_cursor == 0) { puts("PRESET MODERN");
+		} else if (graphics_cursor == 1) { puts("PRESET CLASSIC");
+		} else if (graphics_cursor < 100) { graphics_cursor *= 100; }
 		S_LocalSound("misc/menu3.wav");
 		break;
 	case K_UPARROW:
 		S_LocalSound("misc/menu1.wav");
 		if (graphics_cursor == 0) graphics_cursor = 5;
+		else if (graphics_cursor == 200) graphics_cursor = 205;
+		else if (graphics_cursor == 300) graphics_cursor = 301;
+		else if (graphics_cursor == 400) graphics_cursor = 402;
+		else if (graphics_cursor == 500) graphics_cursor = 502;
 		else graphics_cursor--;
 		break;
 	case K_DOWNARROW:
 		S_LocalSound("misc/menu1.wav");
-		if (graphics_cursor == 5) graphics_cursor = 0;
-		else graphics_cursor++;
+		if (graphics_cursor < 100) {
+			if (graphics_cursor == 5) graphics_cursor = 0;
+			else graphics_cursor++;
+		} else if (graphics_cursor < 300) {
+			if (graphics_cursor == 205) graphics_cursor = 200;
+			else graphics_cursor++;
+		} else if (graphics_cursor < 400) {
+			if (graphics_cursor == 301) graphics_cursor = 300;
+			else graphics_cursor++;
+		} else if (graphics_cursor < 500) {
+			if (graphics_cursor == 402) graphics_cursor = 400;
+			else graphics_cursor++;
+		} else if (graphics_cursor < 600) {
+			if (graphics_cursor == 502) graphics_cursor = 500;
+			else graphics_cursor++;
+		}
 		break;
 	default: break;
 	}
@@ -1636,7 +1658,10 @@ void M_Graphics_Draw()
 {
 	s8 temp[32];
 	s32 xoffset = 0;
-	M_DrawCursor(6, 32 + graphics_cursor*8);
+	switch(graphics_cursor/100){
+		case 0: M_DrawCursor(6, 32 + graphics_cursor*8); break;
+		default: M_DrawCursor(6+144, 32 + (graphics_cursor%100)*8); break;
+	}
 	qpic_t *p = Draw_CachePic("gfx/p_option.lmp");
 	M_DrawTransPic((320 - p->width) / 2, 4, p);
 	M_Print(xoffset, 32, "  Preset: Modern");
@@ -1657,7 +1682,7 @@ void M_Graphics_Draw()
 		M_Print(xoffset, 40, "custom skyboxes,");
 		M_Print(xoffset, 48, "colored lighting,");
 		M_Print(xoffset, 56, "translusency");
-	} else if (graphics_cursor == 2) {
+	} else if (graphics_cursor == 2 || graphics_cursor/100 == 2) {
 		M_Print(xoffset, 32, "Enabled:");
 		M_Print(xoffset + x2, 32, r_nofog.value == 0 ? "On" : "Off");
 		M_Print(xoffset, 40, "Noise:");
@@ -1679,20 +1704,20 @@ void M_Graphics_Draw()
 		case 2: M_Print(xoffset + x2, 72, "Mixed"); break;
 		default:M_Print(xoffset + x2, 72, "Blend"); break;
 		}
-	} else if (graphics_cursor == 3) {
+	} else if (graphics_cursor == 3 || graphics_cursor/100 == 3) {
 		M_Print(xoffset, 32, "Enabled:");
 		M_Print(xoffset + x2, 32, r_nofog.value == 0 ? "On" : "Off");
 		M_Print(xoffset, 40, "Sky Fog:");
 		snprintf(temp, sizeof(temp), "%0.1f\n", r_skyfog.value);
 		M_Print(xoffset + x2, 40, temp);
-	} else if (graphics_cursor == 4) {
+	} else if (graphics_cursor == 4 || graphics_cursor/100 == 4) {
 		M_Print(xoffset, 32, "Color:");
 		M_Print(xoffset+x2, 32, r_rgblighting.value==1 ? "On" : "Off");
 		M_Print(xoffset, 40, "Lit Water:");
 		M_Print(xoffset + x2, 40, r_twopass.value == 1 ? "On" : "Off");
 		M_Print(xoffset, 48, "Color Space:");
 		M_Print(xoffset+x2, 48, r_labmixpal.value==1 ? "LAB" : "RGB");
-	} else if (graphics_cursor == 5) {
+	} else if (graphics_cursor == 5 || graphics_cursor/100 == 5) {
 		M_Print(xoffset, 32, "Enabled:");
 		M_Print(xoffset + x2, 32, r_twopass.value == 1 ? "On" : "Off");
 		M_Print(xoffset, 40, "Style:");
