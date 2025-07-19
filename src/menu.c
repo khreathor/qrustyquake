@@ -1607,12 +1607,56 @@ void M_Graphics_Key(s32 k)
 		break;
 	case K_LEFTARROW:
 		S_LocalSound("misc/menu3.wav");
+		if (graphics_cursor == 200) { r_nofog.value =! r_nofog.value;
+		} else if (graphics_cursor == 201) { r_fognoise.value -= 0.1;
+		} else if (graphics_cursor == 202) { r_fogfactor.value -= 0.1;
+		} else if (graphics_cursor == 203) { r_fogscale.value -= 0.1;
+		} else if (graphics_cursor == 204) { r_fogbrightness.value-=0.1;
+		} else if (graphics_cursor == 205) { r_fogstyle.value -= 1;
+			r_fogstyle.value = CLAMP(0, r_fogstyle.value, 3);
+		} else if (graphics_cursor == 300) {
+			r_enableskybox.value =! r_enableskybox.value;
+		} else if (graphics_cursor == 301) { r_skyfog.value -= 0.1;
+		} else if (graphics_cursor == 400) {
+			r_rgblighting.value =! r_rgblighting.value;
+		} else if (graphics_cursor == 401) {
+			r_litwater.value =! r_litwater.value;
+		} else if (graphics_cursor == 402) {
+			r_labmixpal.value =! r_labmixpal.value;
+		} else if (graphics_cursor == 500) {
+			r_twopass.value =! r_twopass.value;
+		} else if (graphics_cursor == 501) {
+			r_alphastyle.value =! r_alphastyle.value;
+		} else if (graphics_cursor == 502) { r_wateralpha.value-=0.1;
+			r_wateralpha.value = CLAMP(0, r_wateralpha.value, 1); }
 		break;
 	case K_RIGHTARROW:
 	case K_ENTER:
 		if (graphics_cursor == 0) { puts("PRESET MODERN");
 		} else if (graphics_cursor == 1) { puts("PRESET CLASSIC");
-		} else if (graphics_cursor < 100) { graphics_cursor *= 100; }
+		} else if (graphics_cursor < 100) { graphics_cursor *= 100;
+		} else if (graphics_cursor == 200){r_nofog.value=!r_nofog.value;
+		} else if (graphics_cursor == 201) { r_fognoise.value += 0.1;
+		} else if (graphics_cursor == 202) { r_fogfactor.value += 0.1;
+		} else if (graphics_cursor == 203) { r_fogscale.value += 0.1;
+		} else if (graphics_cursor == 204) { r_fogbrightness.value+=0.1;
+		} else if (graphics_cursor == 205) { r_fogstyle.value += 1;
+			r_fogstyle.value = CLAMP(0, r_fogstyle.value, 3);
+		} else if (graphics_cursor == 300) {
+			r_enableskybox.value =! r_enableskybox.value;
+		} else if (graphics_cursor == 301) { r_skyfog.value += 0.1;
+		} else if (graphics_cursor == 400) {
+			r_rgblighting.value =! r_rgblighting.value;
+		} else if (graphics_cursor == 401) {
+			r_litwater.value =! r_litwater.value;
+		} else if (graphics_cursor == 402) {
+			r_labmixpal.value =! r_labmixpal.value;
+		} else if (graphics_cursor == 500) {
+			r_twopass.value =! r_twopass.value;
+		} else if (graphics_cursor == 501) {
+			r_alphastyle.value =! r_alphastyle.value;
+		} else if (graphics_cursor == 502) { r_wateralpha.value+=0.1;
+			r_wateralpha.value = CLAMP(0, r_wateralpha.value, 1); }
 		S_LocalSound("misc/menu3.wav");
 		break;
 	case K_UPARROW:
@@ -1706,7 +1750,7 @@ void M_Graphics_Draw()
 		}
 	} else if (graphics_cursor == 3 || graphics_cursor/100 == 3) {
 		M_Print(xoffset, 32, "Enabled:");
-		M_Print(xoffset + x2, 32, r_nofog.value == 0 ? "On" : "Off");
+		M_Print(xoffset + x2, 32, r_enableskybox.value==0 ? "On":"Off");
 		M_Print(xoffset, 40, "Sky Fog:");
 		snprintf(temp, sizeof(temp), "%0.1f\n", r_skyfog.value);
 		M_Print(xoffset + x2, 40, temp);
@@ -1714,7 +1758,7 @@ void M_Graphics_Draw()
 		M_Print(xoffset, 32, "Color:");
 		M_Print(xoffset+x2, 32, r_rgblighting.value==1 ? "On" : "Off");
 		M_Print(xoffset, 40, "Lit Water:");
-		M_Print(xoffset + x2, 40, r_twopass.value == 1 ? "On" : "Off");
+		M_Print(xoffset + x2, 40, r_litwater.value == 1 ? "On" : "Off");
 		M_Print(xoffset, 48, "Color Space:");
 		M_Print(xoffset+x2, 48, r_labmixpal.value==1 ? "LAB" : "RGB");
 	} else if (graphics_cursor == 5 || graphics_cursor/100 == 5) {

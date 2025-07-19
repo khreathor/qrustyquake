@@ -51,6 +51,7 @@ s32 R_LoadSkybox (const s8 *name);
 
 void Sky_LoadSkyBox (const s8 *name)
 {
+	if (r_enableskybox.value == 0) return;
 	if (strcmp (skybox_name, name) == 0)
 		return; //no change
 	if (name[0] == 0) { // turn off skybox if sky is set to ""
@@ -335,6 +336,7 @@ void Sky_SkyCommand_f()
 void Sky_Init()
 {
 	Cmd_AddCommand ("sky", Sky_SkyCommand_f);
+	Cvar_RegisterVariable (&r_enableskybox);
 	Cvar_RegisterVariable (&r_skyfog);
         skybox_name[0] = 0;
 }
