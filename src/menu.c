@@ -1655,7 +1655,13 @@ void M_Graphics_Key(s32 k)
 		} else if (graphics_cursor == 501) {
 			r_alphastyle.value =! r_alphastyle.value;
 		} else if (graphics_cursor == 502) { r_wateralpha.value-=0.1;
-			r_wateralpha.value = CLAMP(0, r_wateralpha.value, 1); }
+			r_wateralpha.value = CLAMP(0, r_wateralpha.value, 1);
+		} else if (graphics_cursor == 503) { r_slimealpha.value-=0.1;
+			r_slimealpha.value = CLAMP(0, r_slimealpha.value, 1);
+		} else if (graphics_cursor == 504) { r_lavaalpha.value-=0.1;
+			r_lavaalpha.value = CLAMP(0, r_lavaalpha.value, 1);
+		} else if (graphics_cursor == 505) { r_telealpha.value-=0.1;
+			r_telealpha.value = CLAMP(0, r_telealpha.value, 1); }
 		break;
 	case K_RIGHTARROW:
 	case K_ENTER:
@@ -1683,7 +1689,13 @@ void M_Graphics_Key(s32 k)
 		} else if (graphics_cursor == 501) {
 			r_alphastyle.value =! r_alphastyle.value;
 		} else if (graphics_cursor == 502) { r_wateralpha.value+=0.1;
-			r_wateralpha.value = CLAMP(0, r_wateralpha.value, 1); }
+			r_wateralpha.value = CLAMP(0, r_wateralpha.value, 1);
+		} else if (graphics_cursor == 503) { r_slimealpha.value+=0.1;
+			r_slimealpha.value = CLAMP(0, r_slimealpha.value, 1);
+		} else if (graphics_cursor == 504) { r_lavaalpha.value+=0.1;
+			r_lavaalpha.value = CLAMP(0, r_lavaalpha.value, 1);
+		} else if (graphics_cursor == 505) { r_telealpha.value+=0.1;
+			r_telealpha.value = CLAMP(0, r_telealpha.value, 1); }
 		S_LocalSound("misc/menu3.wav");
 		break;
 	case K_UPARROW:
@@ -1692,7 +1704,7 @@ void M_Graphics_Key(s32 k)
 		else if (graphics_cursor == 200) graphics_cursor = 205;
 		else if (graphics_cursor == 300) graphics_cursor = 301;
 		else if (graphics_cursor == 400) graphics_cursor = 402;
-		else if (graphics_cursor == 500) graphics_cursor = 502;
+		else if (graphics_cursor == 500) graphics_cursor = 505;
 		else graphics_cursor--;
 		break;
 	case K_DOWNARROW:
@@ -1710,7 +1722,7 @@ void M_Graphics_Key(s32 k)
 			if (graphics_cursor == 402) graphics_cursor = 400;
 			else graphics_cursor++;
 		} else if (graphics_cursor < 600) {
-			if (graphics_cursor == 502) graphics_cursor = 500;
+			if (graphics_cursor == 505) graphics_cursor = 500;
 			else graphics_cursor++;
 		}
 		break;
@@ -1796,6 +1808,15 @@ void M_Graphics_Draw()
 		M_Print(xoffset, 48, "Water Alpha:");
 		snprintf(temp, sizeof(temp), "%0.1f\n", r_wateralpha.value);
 		M_Print(xoffset + x2, 48, temp);
+		M_Print(xoffset, 56, "Slime Alpha:");
+		snprintf(temp, sizeof(temp), "%0.1f\n", r_slimealpha.value);
+		M_Print(xoffset + x2, 56, temp);
+		M_Print(xoffset, 64, "Lava Alpha:");
+		snprintf(temp, sizeof(temp), "%0.1f\n", r_lavaalpha.value);
+		M_Print(xoffset + x2, 64, temp);
+		M_Print(xoffset, 72, "Tele Alpha:");
+		snprintf(temp, sizeof(temp), "%0.1f\n", r_telealpha.value);
+		M_Print(xoffset + x2, 72, temp);
 	}
 }
 
@@ -1815,108 +1836,21 @@ void M_New_Draw()
 	M_DrawTransPic(16, 4, Draw_CachePic("gfx/qplaque.lmp"));
 	qpic_t *p = Draw_CachePic("gfx/p_option.lmp");
 	M_DrawTransPic((320 - p->width) / 2, 4, p);
-	M_Print(xoffset, 32, "              UI Scale");
-	sprintf(temp, "x%d\n", (s32)scr_uiscale.value);
-	M_Print(xoffset + 204, 32, temp);
-	M_Print(xoffset, 40, "          Aspect Ratio");
-	sprintf(temp, "%0.2f\n", aspectr.value);
-	M_Print(xoffset + 204, 40, temp);
-	if (new_cursor == 1) {
-		M_DrawTextBox(52, 158, 30, 1);
-		M_Print(64, 166, "          in console for auto");
-		M_PrintWhite(64, 166, "aspectr 0");
-	}
-	M_Print(xoffset, 48, "             This Menu");
-	M_DrawCheckbox(xoffset + 204, 48, newoptions.value);
-	M_Print(xoffset, 56, "           FPS Counter");
-	M_DrawCheckbox(xoffset + 204, 56, scr_showfps.value);
-	if (new_cursor == 2) {
+	M_Print(xoffset, 32, "             This Menu");
+	M_DrawCheckbox(xoffset + 204, 32, newoptions.value);
+	if (new_cursor == 0) {
 		M_DrawTextBox(52, 158, 30, 2);
 		M_Print(64, 166, "  This menu can be restored");
 		M_Print(64, 174, "with the              command");
 		M_PrintWhite(64, 174, "         newoptions 1");
 	}
-	M_Print(xoffset, 64, "         Y Mouse Speed");
-	sprintf(temp, "%0.1f\n", sensitivityyscale.value);
-	M_Print(xoffset + 204, 64, temp);
-	M_Print(xoffset, 72, "             HUD Style");
-	if (scr_hudstyle.value == 0)
-		M_Print(xoffset + 204, 72, "Classic");
-	else if (scr_hudstyle.value == 1)
-		M_Print(xoffset + 204, 72, "Modern 1");
-	else if (scr_hudstyle.value == 2)
-		M_Print(xoffset + 204, 72, "Modern 2");
-	else if (scr_hudstyle.value == 3)
-		M_Print(xoffset + 204, 72, "QW");
-	else if (scr_hudstyle.value == 4)
-		M_Print(xoffset + 204, 72, "Arcade");
-	else if (scr_hudstyle.value == 5)
-		M_Print(xoffset + 204, 72, "Minimalist 1");
-	else if (scr_hudstyle.value == 6)
-		M_Print(xoffset + 204, 72, "Minimalist 2");
-	else
-		M_Print(xoffset + 204, 72, "Classic no BG");
-	M_Print(xoffset, 80, "          Translucency");
-	if (r_twopass.value == 0)
-		M_Print(xoffset + 204, 80, "Off (smart)");
-	else if (r_twopass.value == 1)
-		M_Print(xoffset + 204, 80, "On (smart)");
-	else if (r_twopass.value == 2)
-		M_Print(xoffset + 204, 80, "Force Off");
-	else
-		M_Print(xoffset + 204, 80, "Force On");
-	M_Print(xoffset, 88, "          Trans. Style");
-	if (r_alphastyle.value == 0)
-		M_Print(xoffset + 204, 88, "Mix");
-	else if (r_alphastyle.value == 1)
-		M_Print(xoffset + 204, 88, "Dither");
-	M_Print(xoffset, 96, "          Liquid Alpha");
-	sprintf(temp, "%0.1f\n", r_wateralpha.value);
-	M_Print(xoffset + 204, 96, temp);
-	M_Print(xoffset, 104, "             FPS Limit");
-	sprintf(temp, "%d\n", (s32)host_maxfps.value);
-	M_Print(xoffset + 204, 104, temp);
-	if (new_cursor == 9 && (s32)host_maxfps.value > 72) {
-		M_DrawTextBox(52, 158, 30, 1);
-		M_Print(64, 166, "Vanilla max is    expect bugs");
-		M_PrintWhite(64, 166, "               72");
-	}
-	M_Print(xoffset, 112, "           Window Mode");
-	if (newwinmode == 0)
-		M_Print(xoffset + 204, 112, "Windowed");
-	else if (newwinmode == 1)
-		M_Print(xoffset + 204, 112, "Fullscreen");
-	else
-		M_Print(xoffset + 204, 112, "Borderless");
-	M_Print(xoffset, 124, "          Custom Width");
-	M_DrawTextBox(xoffset + 196, 116, 8, 1);
-	M_Print(xoffset + 204, 124, customwidthstr);
-	if (new_cursor == 11) {
-		M_DrawCursorLine(xoffset+204 + 8 * strlen(customwidthstr), 124);
-		sprintf(temp, "%d", MAXWIDTH);
-		M_DrawTextBox(xoffset + 68, 158, 16 + strlen(temp), 1);
-		M_Print(xoffset + 80, 166, "320 <= Width <=");
-		M_Print(xoffset + 208, 166, temp);
-	}
-	M_Print(xoffset, 140, "         Custom Height");
-	M_DrawTextBox(xoffset + 196, 132, 8, 1);
-	M_Print(xoffset + 204, 140, customheightstr);
-	if (new_cursor == 12) {
-		M_DrawCursorLine(xoffset+204+8 * strlen(customheightstr), 140);
-		sprintf(temp, "%d", MAXHEIGHT);
-		M_DrawTextBox(xoffset + 68, 158, 17 + strlen(temp), 1);
-		M_Print(xoffset + 80, 166, "200 <= Height <=");
-		M_Print(xoffset + 216, 166, temp);
-	}
-	M_Print(xoffset + 204, 152, "Set Mode");
-	if (new_cursor == 11)
-		M_DrawCursor(xoffset + 192, 124);
-	else if (new_cursor == 12)
-		M_DrawCursor(xoffset + 192, 140);
-	else if (new_cursor == 13)
-		M_DrawCursor(xoffset + 192, 152);
-	else
-		M_DrawCursor(xoffset + 192, 32 + new_cursor * 8);
+	M_Print(xoffset, 40, "         Y Mouse Speed");
+	sprintf(temp, "x%0.1f\n", sensitivityyscale.value);
+	M_Print(xoffset + 204, 40, temp);
+	M_Print(xoffset + 204, 48, "Display...");
+	M_Print(xoffset + 204, 56, "Graphics...");
+	M_Print(xoffset + 204, 64, "Gamepad...");
+	M_DrawCursor(xoffset + 192, 32 + new_cursor * 8);
 }
 
 void M_Gamepad_Key(s32 k)
@@ -2007,146 +1941,39 @@ void M_New_Key(s32 k)
 {
 	switch (k) {
 	case K_ESCAPE:
+		if (!newoptions.value) options_cursor = 0;
 		M_Menu_Options_f();
-		if (!newoptions.value)
-			options_cursor = 0;
 		break;
 	case K_LEFTARROW:
 		S_LocalSound("misc/menu3.wav");
-		if (new_cursor == 0 && scr_uiscale.value > 1)
-			Cvar_SetValue("scr_uiscale", scr_uiscale.value - 1);
-		else if (new_cursor == 1)
-			Cvar_SetValue("aspectr", aspectr.value - 0.01);
-		else if (new_cursor == 2)
+		if (new_cursor == 0)
 			Cvar_SetValue("newoptions", !newoptions.value);
-		else if (new_cursor == 3)
-			Cvar_SetValue("scr_showfps", !scr_showfps.value);
-		else if (new_cursor == 4 && sensitivityyscale.value >= 0.1)
+		else if (new_cursor == 1 && sensitivityyscale.value >= 0.1)
 			Cvar_SetValue("sensitivityyscale",
 				      sensitivityyscale.value - 0.1);
-		else if (new_cursor == 5) {
-			if (scr_hudstyle.value == 0)
-				Cvar_SetValue("hudstyle", 7);
-			else
-				Cvar_SetValue("hudstyle", scr_hudstyle.value-1);
-		} else if (new_cursor == 6) {
-			if (r_twopass.value == 0)
-				Cvar_SetValue("r_twopass", 3);
-			else
-				Cvar_SetValue("r_twopass", r_twopass.value - 1);
-			Cvar_SetValue("r_entalpha", (s32)r_twopass.value & 1);
-		} else if (new_cursor == 7)
-			Cvar_SetValue("r_alphastyle", !r_alphastyle.value);
-		else if (new_cursor == 8 && r_wateralpha.value >= 0.1) {
-			Cvar_SetValue("r_wateralpha", r_wateralpha.value - 0.1);
-			Cvar_SetValue("r_lavaalpha", r_wateralpha.value);
-			Cvar_SetValue("r_slimealpha", r_wateralpha.value);
-		} else if (new_cursor == 9) {
-			s32 i = 0;
-			for (; i < (s32)sizeof(fpslimits) / 4 - 1; ++i)
-				if (fpslimits[i] >= (s32)host_maxfps.value)
-					break;
-			--i;
-			if (i < 0 || i > (s32)sizeof(fpslimits) / 4 - 1)
-				i = sizeof(fpslimits) / 4 - 1;
-			Cvar_SetValue("host_maxfps", fpslimits[i]);
-		} else if (new_cursor == 10) {
-			if (newwinmode == 0)
-				newwinmode = 2;
-			else
-				newwinmode--;
-		}
 		break;
 	case K_UPARROW:
 		S_LocalSound("misc/menu1.wav");
-		if (new_cursor == 0)
-			new_cursor = 13;
-		else
-			new_cursor--;
+		if (new_cursor == 0) new_cursor = 4;
+		else new_cursor--;
 		break;
 	case K_DOWNARROW:
 		S_LocalSound("misc/menu1.wav");
-		if (new_cursor == 13)
-			new_cursor = 0;
-		else
-			new_cursor++;
+		if (new_cursor == 4) new_cursor = 0;
+		else new_cursor++;
 		break;
 	case K_RIGHTARROW:
 	case K_ENTER:
 		S_LocalSound("misc/menu3.wav");
-		if (new_cursor == 0 && scr_uiscale.value < (vid.width / 320))
-			Cvar_SetValue("scr_uiscale", scr_uiscale.value + 1);
-		else if (new_cursor == 1)
-			Cvar_SetValue("aspectr", aspectr.value + 0.01);
-		else if (new_cursor == 2)
+		if (new_cursor == 0)
 			Cvar_SetValue("newoptions", !newoptions.value);
-		else if (new_cursor == 3)
-			Cvar_SetValue("scr_showfps", !scr_showfps.value);
-		else if (new_cursor == 4 && sensitivityyscale.value < 10)
+		else if (new_cursor == 1 && sensitivityyscale.value >= 0.1)
 			Cvar_SetValue("sensitivityyscale",
 				      sensitivityyscale.value + 0.1);
-		else if (new_cursor == 5) {
-			if (scr_hudstyle.value == 7)
-				Cvar_SetValue("hudstyle", 0);
-			else
-				Cvar_SetValue("hudstyle", scr_hudstyle.value+1);
-		} else if (new_cursor == 6) {
-			if (r_twopass.value == 3)
-				Cvar_SetValue("r_twopass", 0);
-			else
-				Cvar_SetValue("r_twopass", r_twopass.value + 1);
-			Cvar_SetValue("r_entalpha", (s32)r_twopass.value & 1);
-		} else if (new_cursor == 7)
-			Cvar_SetValue("r_alphastyle", !r_alphastyle.value);
-		else if (new_cursor == 8 && r_wateralpha.value < 1.0) {
-			Cvar_SetValue("r_wateralpha", r_wateralpha.value + 0.1);
-			Cvar_SetValue("r_lavaalpha", r_wateralpha.value);
-			Cvar_SetValue("r_slimealpha", r_wateralpha.value);
-		} else if (new_cursor == 9) {
-			s32 i = 0;
-			for (; i < (s32)sizeof(fpslimits) / 4 - 1; ++i)
-				if (fpslimits[i] >= (s32)host_maxfps.value)
-					break;
-			++i;
-			if (i < 0 || i > (s32)sizeof(fpslimits) / 4 - 1)
-				i = 0;
-			Cvar_SetValue("host_maxfps", fpslimits[i]);
-		} else if (new_cursor == 10) {
-			if (newwinmode == 2)
-				newwinmode = 0;
-			else
-				newwinmode++;
-		} else if (new_cursor == 13
-			   && Q_atoi(customwidthstr) >= 320
-			   && Q_atoi(customheightstr) >= 200
-			   && Q_atoi(customwidthstr) <= MAXWIDTH
-			   && Q_atoi(customheightstr) <= MAXHEIGHT)
-			VID_SetMode(0, Q_atoi(customwidthstr),
-				    Q_atoi(customheightstr), newwinmode,
-				    vid_curpal);
+		else if (new_cursor == 2) M_Menu_Display_f();
+		else if (new_cursor == 3) M_Menu_Graphics_f();
+		else if (new_cursor == 4) M_Menu_Gamepad_f();
 		break;
-	case K_BACKSPACE:
-		if (new_cursor == 11 && strlen(customwidthstr))
-			customwidthstr[strlen(customwidthstr) - 1] = 0;
-		else if (new_cursor == 12 && strlen(customheightstr))
-			customheightstr[strlen(customheightstr) - 1] = 0;
-		break;
-	default:
-		if (k < '0' || k > '9')
-			break;
-		if (new_cursor == 11) {
-			s32 l = strlen(customwidthstr);
-			if (l < 7) {
-				customwidthstr[l + 1] = 0;
-				customwidthstr[l] = k;
-			}
-		} else if (new_cursor == 12) {
-			s32 l = strlen(customheightstr);
-			if (l < 7) {
-				customheightstr[l + 1] = 0;
-				customheightstr[l] = k;
-			}
-		}
 	}
 }
 
