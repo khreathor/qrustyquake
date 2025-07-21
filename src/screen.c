@@ -63,8 +63,7 @@ void SCR_DrawCenterString()
 		s32 x = (vid.width - l * 8 * uiscale) / 2;
 		for (s32 j = 0; j < l; j++, x += 8 * uiscale) {
 			Draw_CharacterScaled(x, y, start[j], uiscale);
-			if (!remaining--)
-				return;
+			if (!remaining--) { drawlayer = 0; return; }
 		}
 		y += 8 * uiscale;
 		while (*start && *start != '\n')
