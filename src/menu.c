@@ -1661,7 +1661,9 @@ void M_Graphics_Key(s32 k)
 		} else if (graphics_cursor == 504) { r_lavaalpha.value-=0.1;
 			r_lavaalpha.value = CLAMP(0, r_lavaalpha.value, 1);
 		} else if (graphics_cursor == 505) { r_telealpha.value-=0.1;
-			r_telealpha.value = CLAMP(0, r_telealpha.value, 1); }
+			r_telealpha.value = CLAMP(0, r_telealpha.value, 1);
+		} else if (graphics_cursor == 600) { r_particlescale.value -= 1;
+			r_particlescale.value=CLAMP(0,r_particlescale.value,9);}
 		break;
 	case K_RIGHTARROW:
 	case K_ENTER:
@@ -1695,12 +1697,14 @@ void M_Graphics_Key(s32 k)
 		} else if (graphics_cursor == 504) { r_lavaalpha.value+=0.1;
 			r_lavaalpha.value = CLAMP(0, r_lavaalpha.value, 1);
 		} else if (graphics_cursor == 505) { r_telealpha.value+=0.1;
-			r_telealpha.value = CLAMP(0, r_telealpha.value, 1); }
+			r_telealpha.value = CLAMP(0, r_telealpha.value, 1);
+		} else if (graphics_cursor == 600) { r_particlescale.value += 1;
+			r_particlescale.value=CLAMP(0,r_particlescale.value,9);}
 		S_LocalSound("misc/menu3.wav");
 		break;
 	case K_UPARROW:
 		S_LocalSound("misc/menu1.wav");
-		if (graphics_cursor == 0) graphics_cursor = 5;
+		if (graphics_cursor == 0) graphics_cursor = 6;
 		else if (graphics_cursor == 200) graphics_cursor = 205;
 		else if (graphics_cursor == 300) graphics_cursor = 301;
 		else if (graphics_cursor == 400) graphics_cursor = 402;
@@ -1710,7 +1714,7 @@ void M_Graphics_Key(s32 k)
 	case K_DOWNARROW:
 		S_LocalSound("misc/menu1.wav");
 		if (graphics_cursor < 100) {
-			if (graphics_cursor == 5) graphics_cursor = 0;
+			if (graphics_cursor == 6) graphics_cursor = 0;
 			else graphics_cursor++;
 		} else if (graphics_cursor < 300) {
 			if (graphics_cursor == 205) graphics_cursor = 200;
@@ -1753,6 +1757,7 @@ void M_Graphics_Draw()
 	M_Print(xoffset, 56, "  Sky...");
 	M_Print(xoffset, 64, "  Lighting...");
 	M_Print(xoffset, 72, "  Translusency...");
+	M_Print(xoffset, 80, "  Misc...");
 	xoffset = 160;
 	s32 x2 = 104;
 	if (graphics_cursor == 0) {
@@ -1817,6 +1822,11 @@ void M_Graphics_Draw()
 		M_Print(xoffset, 72, "Tele Alpha:");
 		snprintf(temp, sizeof(temp), "%0.1f\n", r_telealpha.value);
 		M_Print(xoffset + x2, 72, temp);
+	} else if (graphics_cursor == 6 || graphics_cursor/100 == 6) {
+		x2 += 24;
+		M_Print(xoffset, 32, "Particle scale:");
+		snprintf(temp, sizeof(temp), "x%d", (s32)r_particlescale.value);
+		M_Print(xoffset + x2, 32, r_particlescale.value ? temp:"Auto");
 	}
 }
 
