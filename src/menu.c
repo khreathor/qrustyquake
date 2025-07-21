@@ -1581,7 +1581,7 @@ void M_Display_Draw()
 		M_DrawTextBox(52, 158, 30, 1);
 		M_Print(64, 166, "Vanilla max is    expect bugs");
 		M_PrintWhite(64, 166, "               72");
-	} else if (display_cursor == 6 || display_cursor == 7) {
+	} else if (display_cursor == 7 || display_cursor == 8) {
 		M_DrawTextBox(100, 158, 16, 1);
 		M_Print(112, 166, "Modern FOV:");
 		s32 modernfov = atan(vid.height*yaspectscale.value / (vid.width
