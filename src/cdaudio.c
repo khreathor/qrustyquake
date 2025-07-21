@@ -66,6 +66,7 @@ static struct music_format {
 static Mix_Music *current_music = NULL;
 static s8 current_name[MAX_OSPATH];
 static u8 *loaded_file = NULL;
+static float last_volume = -1;
 
 void BGM_Play(s8 *musicname, bool looping)
 {
@@ -216,15 +217,14 @@ void CDAudio_Resume()
 
 void CDAudio_Update()
 {
-	static float last_volume = 0;
-
 	if (bgmvolume.value < 0)
 		Cvar_SetQuick(&bgmvolume, "0");
 	if (bgmvolume.value > 1)
 		Cvar_SetQuick(&bgmvolume, "1");
-
-	if (last_volume != bgmvolume.value)
+	if (last_volume != bgmvolume.value) {
+		last_volume = bgmvolume.value;
 		Mix_VolumeMusic(bgmvolume.value * MIX_MAX_VOLUME);
+	}
 }
 
 bool CDAudio_Init()
