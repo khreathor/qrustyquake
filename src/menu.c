@@ -1652,6 +1652,7 @@ void M_Graphics_Key(s32 k)
 			r_labmixpal.value =! r_labmixpal.value;
 		} else if (graphics_cursor == 500) {
 			r_twopass.value =! r_twopass.value;
+			r_entalpha.value = r_twopass.value;
 		} else if (graphics_cursor == 501) {
 			r_alphastyle.value =! r_alphastyle.value;
 		} else if (graphics_cursor == 502) { r_wateralpha.value-=0.1;
@@ -1688,6 +1689,7 @@ void M_Graphics_Key(s32 k)
 			r_labmixpal.value =! r_labmixpal.value;
 		} else if (graphics_cursor == 500) {
 			r_twopass.value =! r_twopass.value;
+			r_entalpha.value = r_twopass.value;
 		} else if (graphics_cursor == 501) {
 			r_alphastyle.value =! r_alphastyle.value;
 		} else if (graphics_cursor == 502) { r_wateralpha.value+=0.1;
