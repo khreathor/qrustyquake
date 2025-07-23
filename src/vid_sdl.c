@@ -73,6 +73,7 @@ void VID_SetPalette(u8 *palette, SDL_Surface *dest)
 		colors[i].r = *palette++;
 		colors[i].g = *palette++;
 		colors[i].b = *palette++;
+		colors[i].a = 255;
 	}
 	SDL_Palette *pal = sdlworldpal;
 	if(dest == screentop) pal = sdltoppal;
