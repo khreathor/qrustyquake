@@ -90,6 +90,8 @@ static u8 *Mod_DecompressVis(u8 *in, model_t *model)
 		}
 		s32 c = in[1];
 		in += 2;
+		if (c > row - (out - mod_decompressed))
+			c = row - (out - mod_decompressed);	//now that we're dynamically allocating pvs buffers, we have to be more careful to avoid heap overflows with buggy maps.
 		while(c){
 			if(out == outend){
 				if(!model->viswarn){
