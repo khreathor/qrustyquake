@@ -186,6 +186,7 @@ cvar_t v_gamma=                                            {"gamma", "1", 1,ZR};
 cvar_t net_messagetimeout=                  {"net_messagetimeout", "300", 0,ZR};
 cvar_t r_novis=                                           {"r_novis","0", 1,ZR};
 cvar_t r_particlescale=                           {"r_particlescale","0", 1,ZR};
+cvar_t r_mipscale=                                    {"r_mipscale", "1", 1,ZR};
 cvar_t scr_uixscale=                                 {"scr_uixscale","1", 1,ZR};
 cvar_t scr_uiyscale=                                 {"scr_uiyscale","1", 1,ZR};
 cvar_t yaspectscale=                                 {"yaspectscale","1", 1,ZR};

@@ -8,6 +8,7 @@ static vec3_t world_transformed_modelorg;
 s32 D_MipLevelForScale(f32 scale)
 {
 	s32 lmiplevel;
+	scale *= r_mipscale.value;
 	if (scale >= d_scalemip[0]) lmiplevel = 0;
 	else if (scale >= d_scalemip[1]) lmiplevel = 1;
 	else if (scale >= d_scalemip[2]) lmiplevel = 2;
