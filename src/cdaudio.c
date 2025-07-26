@@ -92,7 +92,7 @@ void BGM_Play(s8 *musicname, bool looping)
 		return;
 	}
 
-	if (loaded_file) free(loaded_file);
+	CDAudio_Stop();
 	for (i = 0; i < ASIZE(music_formats); i++)
 	{
 		for (j = 0; j < music_formats[i].num_extensions; j++)
@@ -159,7 +159,7 @@ void CDAudio_Play(u8 track, bool looping)
 	Mix_Music *music = NULL;
 	size_t i, j;
 
-	if (loaded_file) free(loaded_file);
+	CDAudio_Stop();
 	for (i = 0; i < ASIZE(music_formats); i++)
 	{
 		for (j = 0; j < music_formats[i].num_extensions; j++)
@@ -194,8 +194,6 @@ found:
 		return;
 	}
 
-	CDAudio_Stop();
-
 	current_music = music;
 
 	if (!Mix_PlayMusic(current_music, looping ? -1 : 0))
@@ -209,10 +207,11 @@ found:
 
 void CDAudio_Stop()
 {
-	if (current_music)
-		Mix_FreeMusic(current_music);
+	Mix_HaltMusic();
+	if (loaded_file) free(loaded_file);
+	loaded_file = NULL;
+	memset(current_name, 0, sizeof(current_name));
 	current_music = NULL;
-	current_name[0] = 0;
 }
 
 void CDAudio_Pause()
@@ -270,7 +269,6 @@ bool CDAudio_Init()
 
 void CDAudio_Shutdown()
 {
-	CDAudio_Stop();
 	Mix_Quit();
 }
 #endif // AVAIL_SDL3MIXER
