@@ -1704,8 +1704,20 @@ void M_Graphics_Key(s32 k)
 		break;
 	case K_RIGHTARROW:
 	case K_ENTER:
-		if (graphics_cursor == 0) { puts("PRESET MODERN");
-		} else if (graphics_cursor == 1) { puts("PRESET CLASSIC");
+		if (graphics_cursor == 0) {
+			Cvar_SetValue("r_twopass", 3);
+			Cvar_SetValue("r_nofog", 0);
+			Cvar_SetValue("r_entalpha", 1);
+			Cvar_SetValue("r_litwater", 1);
+			Cvar_SetValue("r_rgblighting", 1);
+			Cvar_SetValue("r_enableskybox", 1);
+		} else if (graphics_cursor == 1) {
+			Cvar_SetValue("r_twopass", 2);
+			Cvar_SetValue("r_nofog", 1);
+			Cvar_SetValue("r_entalpha", 0);
+			Cvar_SetValue("r_litwater", 0);
+			Cvar_SetValue("r_rgblighting", 0);
+			Cvar_SetValue("r_enableskybox", 0);
 		} else if (graphics_cursor < 100) { graphics_cursor *= 100;
 		} else if (graphics_cursor == 200){r_nofog.value=!r_nofog.value;
 		} else if (graphics_cursor == 201) { r_fognoise.value += 0.1;
