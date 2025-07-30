@@ -1697,7 +1697,9 @@ void M_Graphics_Key(s32 k)
 		} else if (graphics_cursor == 505) { r_telealpha.value-=0.1;
 			r_telealpha.value = CLAMP(0, r_telealpha.value, 1);
 		} else if (graphics_cursor == 600) { r_particlescale.value -= 1;
-			r_particlescale.value=CLAMP(0,r_particlescale.value,9);}
+			r_particlescale.value=CLAMP(0,r_particlescale.value,9);
+		} else if (graphics_cursor == 601) { r_mipscale.value -= 0.1;
+			r_mipscale.value=CLAMP(0,r_mipscale.value,99);}
 		break;
 	case K_RIGHTARROW:
 	case K_ENTER:
@@ -1734,7 +1736,9 @@ void M_Graphics_Key(s32 k)
 		} else if (graphics_cursor == 505) { r_telealpha.value+=0.1;
 			r_telealpha.value = CLAMP(0, r_telealpha.value, 1);
 		} else if (graphics_cursor == 600) { r_particlescale.value += 1;
-			r_particlescale.value=CLAMP(0,r_particlescale.value,9);}
+			r_particlescale.value=CLAMP(0,r_particlescale.value,9);
+		} else if (graphics_cursor == 601) { r_mipscale.value += 0.1;
+			r_mipscale.value=CLAMP(0,r_mipscale.value,99);}
 		S_LocalSound("misc/menu3.wav");
 		break;
 	case K_UPARROW:
@@ -1744,6 +1748,7 @@ void M_Graphics_Key(s32 k)
 		else if (graphics_cursor == 300) graphics_cursor = 301;
 		else if (graphics_cursor == 400) graphics_cursor = 402;
 		else if (graphics_cursor == 500) graphics_cursor = 505;
+		else if (graphics_cursor == 600) graphics_cursor = 601;
 		else graphics_cursor--;
 		break;
 	case K_DOWNARROW:
@@ -1762,6 +1767,9 @@ void M_Graphics_Key(s32 k)
 			else graphics_cursor++;
 		} else if (graphics_cursor < 600) {
 			if (graphics_cursor == 505) graphics_cursor = 500;
+			else graphics_cursor++;
+		} else if (graphics_cursor < 700) {
+			if (graphics_cursor == 601) graphics_cursor = 600;
 			else graphics_cursor++;
 		}
 		break;
@@ -1862,6 +1870,9 @@ void M_Graphics_Draw()
 		M_Print(xoffset, 32, "Particle scale:");
 		snprintf(temp, sizeof(temp), "x%d", (s32)r_particlescale.value);
 		M_Print(xoffset + x2, 32, r_particlescale.value ? temp:"Auto");
+		M_Print(xoffset, 40, "Mipmap distance:");
+		snprintf(temp, sizeof(temp), " %0.1f", r_mipscale.value);
+		M_Print(xoffset + x2, 40, temp);
 	}
 }
 
