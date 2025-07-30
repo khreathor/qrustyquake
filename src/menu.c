@@ -1684,8 +1684,9 @@ void M_Graphics_Key(s32 k)
 		} else if (graphics_cursor == 402) {
 			r_labmixpal.value =! r_labmixpal.value;
 		} else if (graphics_cursor == 500) {
-			r_twopass.value =! r_twopass.value;
-			r_entalpha.value = r_twopass.value;
+			if (r_twopass.value <= 0) r_twopass.value = 3;
+			else r_twopass.value -= 1;
+			Cvar_SetValue("r_entalpha", ((s32)r_twopass.value)&1);
 		} else if (graphics_cursor == 501) {
 			r_alphastyle.value =! r_alphastyle.value;
 		} else if (graphics_cursor == 502) { r_wateralpha.value-=0.1;
@@ -1723,8 +1724,9 @@ void M_Graphics_Key(s32 k)
 		} else if (graphics_cursor == 402) {
 			r_labmixpal.value =! r_labmixpal.value;
 		} else if (graphics_cursor == 500) {
-			r_twopass.value =! r_twopass.value;
-			r_entalpha.value = r_twopass.value;
+			if (r_twopass.value >= 3) r_twopass.value = 0;
+			else r_twopass.value += 1;
+			Cvar_SetValue("r_entalpha", ((s32)r_twopass.value)&1);
 		} else if (graphics_cursor == 501) {
 			r_alphastyle.value =! r_alphastyle.value;
 		} else if (graphics_cursor == 502) { r_wateralpha.value+=0.1;
@@ -1850,7 +1852,10 @@ void M_Graphics_Draw()
 		M_Print(xoffset+x2, 48, r_labmixpal.value==1 ? "LAB" : "RGB");
 	} else if (graphics_cursor == 5 || graphics_cursor/100 == 5) {
 		M_Print(xoffset, 32, "Enabled:");
-		M_Print(xoffset + x2, 32, r_twopass.value == 1 ? "On" : "Off");
+		if (r_twopass.value == 0)M_Print(xoffset+x2, 32, "Off (Auto)");
+		else if(r_twopass.value==1)M_Print(xoffset+x2, 32, "On (Auto)");
+		else if(r_twopass.value==2)M_Print(xoffset+x2, 32, "Off");
+		else M_Print(xoffset + x2, 32, "On");
 		M_Print(xoffset, 40, "Style:");
 		M_Print(xoffset+x2, 40, r_alphastyle.value==1?"Dither":"Blend");
 		M_Print(xoffset, 48, "Water Alpha:");
