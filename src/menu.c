@@ -1422,7 +1422,8 @@ void M_Display_Key(s32 k)
 		} else if (display_cursor == 4)
 			Cvar_SetValue("aspectr", aspectr.value - 0.01);
 		else if (display_cursor == 5)
-			Cvar_SetValue("scr_uixscale", scr_uixscale.value-0.01);
+			Cvar_SetValue("scr_uixscale", 
+					CLAMP(0, scr_uixscale.value-0.01, 1));
 		else if (display_cursor == 6) {
 			s32 i = 0;
 			for (; i < (s32)sizeof(fpslimits) / 4 - 1; ++i)
@@ -1475,7 +1476,8 @@ void M_Display_Key(s32 k)
 		} else if (display_cursor == 4)
 			Cvar_SetValue("aspectr", aspectr.value + 0.01);
 		else if (display_cursor == 5)
-			Cvar_SetValue("scr_uixscale", scr_uixscale.value+0.01);
+			Cvar_SetValue("scr_uixscale", 
+					CLAMP(0, scr_uixscale.value+0.01, 1));
 		else if (display_cursor == 6) {
 			s32 i = 0;
 			for (; i < (s32)sizeof(fpslimits) / 4 - 1; ++i)
