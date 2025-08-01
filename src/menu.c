@@ -1606,15 +1606,15 @@ void M_Display_Draw()
 	if (newwinmode == 0)      M_Print(xoffset + 204, 112, "Windowed");
 	else if (newwinmode == 1) M_Print(xoffset + 204, 112, "Fullscreen");
 	else                      M_Print(xoffset + 204, 112, "Borderless");
-	if (display_cursor == 3) {
+	if (display_cursor == 4) {
 		M_DrawTextBox(52, 166, 30, 1);
 		M_Print(64, 174, "          in console for auto");
 		M_PrintWhite(64, 174, "aspectr 0");
-	} else if (display_cursor == 5 && (s32)host_maxfps.value > 72) {
+	} else if (display_cursor == 6 && (s32)host_maxfps.value > 72) {
 		M_DrawTextBox(52, 166, 30, 1);
 		M_Print(64, 174, "Vanilla max is    expect bugs");
 		M_PrintWhite(64, 174, "               72");
-	} else if (display_cursor == 7 || display_cursor == 8) {
+	} else if (display_cursor == 8 || display_cursor == 9) {
 		M_DrawTextBox(100, 166, 16, 1);
 		M_Print(112, 174, "Modern FOV:");
 		s32 modernfov = atan(vid.height*yaspectscale.value / (vid.width
