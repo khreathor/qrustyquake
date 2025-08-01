@@ -140,15 +140,9 @@ A modernized, SDL3-based WinQuake port aimed at faithfulness to the original and
 
    - More modern console
 
-   - Different FOV modes
-
-   - Independent world and UI scaling
-
-   - External music support
-
-   - More HUD styles
-
    - More palette options
+
+   - Better mipmaps
 
 - Probably not
 
@@ -156,11 +150,7 @@ A modernized, SDL3-based WinQuake port aimed at faithfulness to the original and
 
    - Advanced mapping/speedrunning/development features that are not directly related to gameplay (I'm not a mapper, speedrunner or developer)
 
-- (definitely not) CD Audio
-
-   - Might have been pulled from Quakespasm along with the rest of the sound system, though I have no way or desire to test it.
-
-Contributions of any kind are very welcome. If someone implements CD audio or something I'll definitely try to merge it. Issue reports are also greatly appreciated.
+Contributions of any kind are very welcome. If someone implements their favorite speedrunning cvar or something I'll definitely try to merge it. Issue reports are also greatly appreciated.
 
 # Building
 
