@@ -13,7 +13,7 @@ static f32 old_r_fogscale = -1234;
 static f32 old_fog_density = -1234;
 static f32 old_noisebias = -1234;
 
-void Fog_SetPalIndex(cvar_t */*cvar*/)
+void Fog_SetPalIndex(SDL_UNUSED cvar_t *cvar)
 {
 	fog_pal_index = rgbtoi_lab(fog_red * 255.0f*r_fogbrightness.value,
 				   fog_green*255.0f*r_fogbrightness.value,

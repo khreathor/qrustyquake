@@ -77,7 +77,7 @@ u8 rgbtoi(u8 r, u8 g, u8 b)
 	return besti;
 }
 
-void build_color_mix_lut(cvar_t */*cvar*/)
+void build_color_mix_lut(SDL_UNUSED cvar_t *cvar)
 {
 	u8 (*convfunc)(u8,u8,u8) = r_labmixpal.value == 1 ? rgbtoi_lab : rgbtoi;
 	for(s32 c1 = 0; c1 < 256; c1++){

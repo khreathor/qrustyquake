@@ -2,7 +2,7 @@
 
 Quake like you remember it.
 
-A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and easy portability.
+A modernized, SDL3-based WinQuake port aimed at faithfulness to the original and easy portability.
 
 # Features
 
@@ -13,6 +13,8 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 - Borderless window with -borderless parameter
 
 - Auto-resolution fullscreen with -fullscreen_desktop
+
+- Horizontal FOV scaling for modern widescreen resolutions (yaspectscale cvar)
 
 - Hardware-accelerated frame > screen rendering
 
@@ -34,6 +36,8 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
    - aspectr cvar can be used for more granular adjustment
 
+   - UI can be scaled independently with scr_uixscale and scr_uiyscale
+
 - General feature parity with the original WinQuake
 
    - "Use Mouse" option in windowed mode (also _windowed_mouse cvar)
@@ -46,11 +50,19 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
    - scr_uiscale 1 for no scaling, scr_uiscale 2 for 200% size etc.
 
-- Modern UI layouts (hudstyle 0/1/2/3)
+- 9 HUD styles (hudstyle 0-9)
+
+   - Classic, Modern, QW, Arcade, Minimalist and variations
 
    - Transparent UI elements for modern mods
 
 - VGA text blurbs after shutdown
+
+- BGM support
+
+   - All the formats you can think of (i.e. whatever sdl3_mixer supports)
+
+   - Optional, requires sdl3_mixer, currently missing from the windows releases
 
 - The default audio rate is 11025 for more muffled WinQuake sound
 
@@ -108,6 +120,14 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
       - r_fogbrightness (0.5 for half brightness, 2 for double), independent of the fog color dictated by the map
 
+- Miscellaneous graphics cvars
+
+   - r_particlescale for higher resolutions
+
+   - r_mipscale for LOD distance adjustment
+
+- Modern gamepad support
+
 # Planned
 
 - An actual design document. Lots of documentation, really.
@@ -120,15 +140,9 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
    - More modern console
 
-   - Different FOV modes
-
-   - Independent world and UI scaling
-
-   - External music support
-
-   - More HUD styles
-
    - More palette options
+
+   - Better mipmaps
 
 - Probably not
 
@@ -136,11 +150,7 @@ A modernized, SDL2-based WinQuake port aimed at faithfulness to the original and
 
    - Advanced mapping/speedrunning/development features that are not directly related to gameplay (I'm not a mapper, speedrunner or developer)
 
-- (definitely not) CD Audio
-
-   - Might have been pulled from Quakespasm along with the rest of the sound system, though I have no way or desire to test it.
-
-Contributions of any kind are very welcome. If someone implements CD audio or something I'll definitely try to merge it. Issue reports are also greatly appreciated.
+Contributions of any kind are very welcome. If someone implements their favorite speedrunning cvar or something I'll definitely try to merge it. Issue reports are also greatly appreciated.
 
 # Building
 
@@ -158,7 +168,7 @@ x86_64 unless specified otherwise.
 
 VM is VirtualBox unless specified otherwise.
 
-- Arch Linux [HW] v0.5.1
+- Arch Linux [HW] v0.6.0
 
    - The main platform that this port is developed on. The most likely one to work
 
@@ -192,7 +202,15 @@ VM is VirtualBox unless specified otherwise.
 
    - Ran through X11 with touch controls. *unpleasant*
 
-- Windows [VM, HW] v0.5.1
+- macOS [HW] v0.6.0
+
+   - Several successes were reported with the default Makefile and SDL3 from brew
+
+- Emscripten [Browsers with WebAssembly] v0.6.0
+
+   - Dark magic performed by Erysdren, please don't ask me about it
+
+- Windows [VM, HW] v0.6.0
 
    - Tested with w10 on hardware and w11 on a VM
 
@@ -210,9 +228,13 @@ This port started out as a fork of https://github.com/atsb/sdlwinquake
 
 Which was a fork of another fork. It's forks all the way down...
 
+It has since evolved into the wonderfully unhinged NakedWinQuake https://github.com/atsb/NakedWinQuake
+
+Atsb has also contributed some crucial fixes to long-standing issues and some general improvements.
+
 Some code, including VGA text blurbs, has been taken from https://github.com/erysdren/sdl3quake/
 
-Big thanks to Erysdren for contributing quite a lot to the backend and makefiles to make compilation on exotic systems possible.
+Big thanks to Erysdren for contributing quite a lot to the backend and makefiles to make compilation on exotic systems possible, implementinig BGM, BMP screenshots, and lots of other cool stuff.
 
 Izhido heroically made the native windows build possible, and in process brought the windows version to the same feature level as the others.
 

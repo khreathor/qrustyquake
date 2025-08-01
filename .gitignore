@@ -1,9 +1,12 @@
 src/.gdb_history
 src/qrustyquake
 src/qrustyquake.exe
-src/SDL2.dll
+src/SDL3.dll
 src/id1
 src/tags
+
+cmake-build*/
+build*/
 
 # Prerequisites
 *.d

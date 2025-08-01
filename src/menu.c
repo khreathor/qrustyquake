@@ -26,6 +26,8 @@ static s32 keys_cursor;
 static s32 bind_grab;
 static s32 new_cursor;
 static s32 gamepad_cursor;
+static s32 display_cursor;
+static s32 graphics_cursor;
 static s8 customwidthstr[16];
 static s8 customheightstr[16];
 static s32 newwinmode;
@@ -47,6 +49,10 @@ static s32 gameoptions_cursor;
 static u8 identityTable[256];
 static u8 translationTable[256];
 static s32 fpslimits[] = { 30,60,72,100,120,144,165,180,200,240,300,360,500,999999 };
+static s32 moden = -1;
+static s32 display_sel_moden = 0;
+static SDL_DisplayMode **modes = 0;
+static SDL_DisplayMode *mode = 0;
 
 level_t levels[] = {
 	{ "start", "Entrance" }, // 0
@@ -200,8 +206,8 @@ s8 *quitMessage[] = {
 };
 
 enum { m_none, m_main, m_singleplayer, m_load, m_save, m_multiplayer, m_setup,
-    m_net, m_options, m_video, m_keys, m_new, m_gamepad,  m_help, m_quit,
-    m_lanconfig, m_gameoptions, m_search, m_slist } m_state;
+    m_net, m_options, m_video, m_keys, m_new, m_gamepad, m_display, m_graphics, 
+    m_help, m_quit, m_lanconfig, m_gameoptions, m_search, m_slist } m_state;
 
 void M_Menu_Main_f();
 void M_Menu_SinglePlayer_f();
@@ -329,9 +335,11 @@ void M_BuildTranslationTable(s32 top, s32 bottom)
 
 void M_DrawTransPicTranslate(s32 x, s32 y, qpic_t *pic)
 {
+	drawlayer = 2;
 	Draw_TransPicTranslateScaled(x * uiscale +
 		((vid.width - 320 * uiscale) >> 1),
 		y * uiscale, pic, translationTable, uiscale);
+	drawlayer = 0;
 }
 
 void M_DrawTextBox(s32 x, s32 y, s32 width, s32 lines)
@@ -1299,17 +1307,592 @@ void M_Gamepad_Draw()
 	s32 xoffs = 16;
 	qpic_t *p = Draw_CachePic("gfx/ttl_cstm.lmp");
 	M_DrawTransPic((320 - p->width) / 2, 4, p);
-	M_Print(xoffs, 32, "Device: ");
+	M_Print(xoffs, 32, "Device");
 	s32 count = -1;
 	SDL_JoystickID *joys = SDL_GetJoysticks(&count);
-	if (count <= 0) M_Print(xoffs + 72, 32, "None");
+	if (count <= 0) { M_Print(xoffs + 72, 32, "None"); return; }
 	else {
 		if (joysticknum.value > count - 1 || joysticknum.value < 0)
 			joysticknum.value = 0;
 		q_strlcpy(temp, SDL_GetJoystickNameForID(joys[(s32)joysticknum.value]), 28);
 		M_Print(xoffs + 72, 32, temp);
 	}
-	M_DrawCursor(xoffs + 64, 32);
+	M_Print(xoffs, 48,  "         Deadzone");
+	M_Print(xoffs, 56,  "       Move speed");
+	M_Print(xoffs, 64,  "       Look speed");
+	M_Print(xoffs, 72,  "Trigger threshold");
+	M_Print(xoffs, 80,  "      Move X axis");
+	M_Print(xoffs, 88,  "      Move Y axis");
+	M_Print(xoffs, 96,  "      Look X axis");
+	M_Print(xoffs, 104, "      Look Y axis");
+	M_Print(xoffs, 112, "   Trigger 1 axis");
+	M_Print(xoffs, 120, "   Trigger 2 axis");
+	M_Print(xoffs, 128, "     Enter button");
+	M_Print(xoffs, 136, "    Escape button");
+	xoffs = 184; 
+	M_DrawSlider(xoffs, 48, (jdeadzone.value/(1<<14)));
+	M_DrawSlider(xoffs, 56, ((jmovesens.value-0.5)/4.5));
+	M_DrawSlider(xoffs, 64, ((jlooksens.value-0.5)/4.5));
+	M_DrawSlider(xoffs, 72, ((jtriggerthresh.value+(1<<15))/(1<<16)));
+	sprintf(temp, "%d\n", (s32)jmoveaxisx.value);
+	M_Print(xoffs, 80, temp);
+	sprintf(temp, "%d\n", (s32)jmoveaxisy.value);
+	M_Print(xoffs, 88, temp);
+	sprintf(temp, "%d\n", (s32)jlookaxisx.value);
+	M_Print(xoffs, 96, temp);
+	sprintf(temp, "%d\n", (s32)jlookaxisy.value);
+	M_Print(xoffs, 104, temp);
+	sprintf(temp, "%d\n", (s32)jtrigaxis1.value);
+	M_Print(xoffs, 112, temp);
+	sprintf(temp, "%d\n", (s32)jtrigaxis2.value);
+	M_Print(xoffs, 120, temp);
+	sprintf(temp, "%d\n", (s32)jenterbutton.value);
+	M_Print(xoffs, 128, temp);
+	sprintf(temp, "%d\n", (s32)jescapebutton.value);
+	M_Print(xoffs, 136, temp);
+	if (!gamepad_cursor) M_DrawCursor(80, 32);
+	else M_DrawCursor(168, 40 + gamepad_cursor*8);
+	M_Print(24, 152, "Move");
+	M_DrawTextBox(16, 156, 3, 4);
+	M_Print(72, 152, "Look");
+	M_DrawTextBox(64, 156, 3, 4);
+	f32 movex = jaxis_move_x, movey = jaxis_move_y;
+	f32 lookx = jaxis_look_x, looky = jaxis_look_y;
+	movex = (movex / (1<<16)) * 24;
+	movey = (movey / (1<<16)) * 24;
+	lookx = (lookx / (1<<16)) * 24;
+	looky = (looky / (1<<16)) * 24;
+	if ((!movex && !movey) || movex >= 11.9 || movex <= -11.9 || 
+				movey >= 11.9 || movey <= -11.9)
+		M_PrintWhite(36+movex, 176+movey, "+");
+	else M_Print(36+movex, 176+movey, "+");
+	if ((!lookx && !looky) || lookx >= 11.9 || lookx <= -11.9 || 
+				looky >= 11.9 || looky <= -11.9)
+		M_PrintWhite(84+lookx, 176+looky, "+");
+	else M_Print(84+lookx, 176+looky, "+");
+	if (jaxis_trig_1 > jtriggerthresh.value)M_PrintWhite(120, 152, "Trig1");
+	else M_Print(120, 152, "Trig1");
+	if (jaxis_trig_2 > jtriggerthresh.value)M_PrintWhite(120, 160, "Trig2");
+	else M_Print(120, 160, "Trig2");
+	M_DrawSlider(176, 152, ((f32)(jaxis_trig_1+(1<<15))/(1<<16)));
+	M_DrawSlider(176, 160, ((f32)(jaxis_trig_2+(1<<15))/(1<<16)));
+	s32 total = SDL_GetNumJoystickButtons(joystick);
+	q_strlcpy(temp, "Held buttons:", 14);
+	for (s32 i = 0; i < total; i++) {
+		if (SDL_GetJoystickButton(joystick, i)) {
+			s8 btn[4];
+			snprintf(btn, 4, " %d", i);
+			q_strlcat(temp, btn, 28);
+		}
+	}
+	M_Print(120, 168, temp);
+}
+
+void M_Display_Key(s32 k)
+{
+	switch (k) {
+	case K_ESCAPE:
+		M_Menu_New_f();
+		break;
+	case K_LEFTARROW:
+		S_LocalSound("misc/menu3.wav");
+		if (display_cursor == 0 && scr_uiscale.value > 1)
+			Cvar_SetValue("scr_uiscale", scr_uiscale.value - 1);
+		else if (display_cursor == 1) Cvar_SetValue("scr_lockuiscale",
+				scr_lockuiscale.value ? 0 : 1);
+		else if (display_cursor == 2) {
+			if (scr_hudstyle.value == 0)
+				Cvar_SetValue("hudstyle", 8);
+			else
+				Cvar_SetValue("hudstyle", scr_hudstyle.value-1);
+		} else if (display_cursor == 3) {
+			if (crosshair.value == 0) {
+				Cvar_SetValue("crosshair", 1);
+				Cvar_SetValue("cl_crosschar", 'o');
+			} else if (cl_crosschar.value == 'o')
+				Cvar_SetValue("cl_crosschar", 'x');
+			else if (cl_crosschar.value == 'x')
+				Cvar_SetValue("cl_crosschar", '*');
+			else if (cl_crosschar.value == '*')
+				Cvar_SetValue("cl_crosschar", 5);
+			else if (cl_crosschar.value == 5)
+				Cvar_SetValue("cl_crosschar", '+');
+			else if (cl_crosschar.value == '+')
+				Cvar_SetValue("crosshair", 0);
+		} else if (display_cursor == 4)
+			Cvar_SetValue("aspectr", aspectr.value - 0.01);
+		else if (display_cursor == 5)
+			Cvar_SetValue("scr_uixscale", 
+					CLAMP(0, scr_uixscale.value-0.01, 1));
+		else if (display_cursor == 6) {
+			s32 i = 0;
+			for (; i < (s32)sizeof(fpslimits) / 4 - 1; ++i)
+				if (fpslimits[i] >= (s32)host_maxfps.value)
+					break;
+			--i;
+			if (i < 0 || i > (s32)sizeof(fpslimits) / 4 - 1)
+				i = sizeof(fpslimits) / 4 - 1;
+			Cvar_SetValue("host_maxfps", fpslimits[i]);
+		} else if (display_cursor == 7) Cvar_SetValue("scr_showfps",
+				scr_showfps.value ? 0 : 1);
+		else if (display_cursor == 8)
+			Cvar_SetValue("fov", scr_fov.value - 1);
+		else if (display_cursor == 9)
+			Cvar_SetValue("yaspectscale", yaspectscale.value-0.01);
+		else if (display_cursor == 10) {
+			if (newwinmode == 0) newwinmode = 2;
+			else newwinmode--;
+		} else if (display_cursor == 11 && newwinmode == 1) {
+			if (display_sel_moden == moden-1) display_sel_moden = 0;
+			else display_sel_moden++;
+		}
+		break;
+	case K_RIGHTARROW:
+	case K_ENTER:
+		S_LocalSound("misc/menu3.wav");
+		if (display_cursor == 0 && scr_uiscale.value < (vid.width / 320))
+			Cvar_SetValue("scr_uiscale", scr_uiscale.value + 1);
+		else if (display_cursor == 1) Cvar_SetValue("scr_lockuiscale",
+				scr_lockuiscale.value ? 0 : 1);
+		else if (display_cursor == 2) {
+			if (scr_hudstyle.value == 8)
+				Cvar_SetValue("hudstyle", 0);
+			else
+				Cvar_SetValue("hudstyle", scr_hudstyle.value+1);
+		} else if (display_cursor == 3) {
+			if (crosshair.value == 0) {
+				Cvar_SetValue("crosshair", 1);
+				Cvar_SetValue("cl_crosschar", '+');
+			} else if (cl_crosschar.value == '+')
+				Cvar_SetValue("cl_crosschar", 5);
+			else if (cl_crosschar.value == 5)
+				Cvar_SetValue("cl_crosschar", '*');
+			else if (cl_crosschar.value == '*')
+				Cvar_SetValue("cl_crosschar", 'x');
+			else if (cl_crosschar.value == 'x')
+				Cvar_SetValue("cl_crosschar", 'o');
+			else if (cl_crosschar.value == 'o')
+				Cvar_SetValue("crosshair", 0);
+		} else if (display_cursor == 4)
+			Cvar_SetValue("aspectr", aspectr.value + 0.01);
+		else if (display_cursor == 5)
+			Cvar_SetValue("scr_uixscale", 
+					CLAMP(0, scr_uixscale.value+0.01, 1));
+		else if (display_cursor == 6) {
+			s32 i = 0;
+			for (; i < (s32)sizeof(fpslimits) / 4 - 1; ++i)
+				if (fpslimits[i] >= (s32)host_maxfps.value)
+					break;
+			++i;
+			if (i < 0 || i > (s32)sizeof(fpslimits) / 4 - 1)
+				i = 0;
+			Cvar_SetValue("host_maxfps", fpslimits[i]);
+		} else if (display_cursor == 7) Cvar_SetValue("scr_showfps",
+				scr_showfps.value ? 0 : 1);
+		else if (display_cursor == 8)
+			Cvar_SetValue("fov", scr_fov.value + 1);
+		else if (display_cursor == 9)
+			Cvar_SetValue("yaspectscale", yaspectscale.value+0.01);
+		else if (display_cursor == 10) {
+			if (newwinmode == 2) newwinmode = 0;
+			else newwinmode++;
+		} else if (display_cursor == 11 && newwinmode == 1) {
+			if (display_sel_moden == 0) display_sel_moden = moden-1;
+			else display_sel_moden--;
+		} else if (display_cursor == 12 && newwinmode == 1) {
+			VID_SetMode(0,mode->w, mode->h, newwinmode, vid_curpal);
+		} else if (display_cursor == 13
+			   && Q_atoi(customwidthstr) >= 320
+			   && Q_atoi(customheightstr) >= 200
+			   && Q_atoi(customwidthstr) <= MAXWIDTH
+			   && Q_atoi(customheightstr) <= MAXHEIGHT)
+			VID_SetMode(0, Q_atoi(customwidthstr),
+				    Q_atoi(customheightstr), newwinmode,
+				    vid_curpal);
+		break;
+	case K_UPARROW:
+		S_LocalSound("misc/menu1.wav");
+		if (display_cursor == 0 && newwinmode == 1) display_cursor = 12;
+		else if(display_cursor==0 && newwinmode!=1) display_cursor = 13;
+		else display_cursor--;
+		break;
+	case K_DOWNARROW:
+		S_LocalSound("misc/menu1.wav");
+		if (display_cursor == 12 && newwinmode == 1) display_cursor = 0;
+		else if(display_cursor==13 && newwinmode!=1) display_cursor = 0;
+		else display_cursor++;
+		break;
+	case K_BACKSPACE:
+		if (display_cursor == 11 && strlen(customwidthstr))
+			customwidthstr[strlen(customwidthstr) - 1] = 0;
+		else if (display_cursor == 12 && strlen(customheightstr))
+			customheightstr[strlen(customheightstr) - 1] = 0;
+		break;
+	default:
+		if (k < '0' || k > '9') break;
+		if (display_cursor == 11) {
+			s32 l = strlen(customwidthstr);
+			if (l < 7) {
+				customwidthstr[l + 1] = 0;
+				customwidthstr[l] = k;
+			}
+		} else if (display_cursor == 12) {
+			s32 l = strlen(customheightstr);
+			if (l < 7) {
+				customheightstr[l + 1] = 0;
+				customheightstr[l] = k;
+			}
+		}
+	}
+}
+
+void M_Menu_Display_f()
+{
+	key_dest = key_menu;
+	m_state = m_display;
+	m_entersound = 1;
+}
+
+void M_Display_Draw()
+{
+	s8 temp[32];
+	s32 xoffset = 0;
+	if (newwinmode != 1) {
+		if (display_cursor < 11) M_DrawCursor(192, 32+display_cursor*8);
+		else if (display_cursor == 11) M_DrawCursor(192, 124);
+		else if (display_cursor == 12) M_DrawCursor(192, 140);
+		else if (display_cursor == 13) M_DrawCursor(192, 152);
+	}
+	else M_DrawCursor(192, 32 + display_cursor*8);
+	M_DrawTransPic(16, 4, Draw_CachePic("gfx/qplaque.lmp"));
+	qpic_t *p = Draw_CachePic("gfx/p_option.lmp");
+	M_DrawTransPic((320 - p->width) / 2, 4, p);
+	M_Print(xoffset, 32, "              UI Scale");
+	M_Print(xoffset, 40, "         Lock UI Scale");
+	M_Print(xoffset, 48, "             HUD Style");
+	M_Print(xoffset, 56, "             Crosshair");
+	M_Print(xoffset, 64, "          Aspect Ratio");
+	M_Print(xoffset, 72, "        UI Width Ratio");
+	M_Print(xoffset, 80, "             FPS Limit");
+	M_Print(xoffset, 88, "           FPS Counter");
+	M_Print(xoffset, 96, "         Field Of View");
+	M_Print(xoffset, 104, "          Vertical FOV");
+	M_Print(xoffset, 112, "           Window Mode");
+	sprintf(temp, "x%d\n", (s32)scr_uiscale.value);
+	M_Print(xoffset + 204, 32, temp);
+	M_Print(xoffset + 204, 40, (s32)scr_lockuiscale.value==0 ? "no":"yes");
+	if     (scr_hudstyle.value==0)M_Print(xoffset+204,48,"Classic");
+	else if(scr_hudstyle.value==1)M_Print(xoffset+204,48,"Modern1");
+	else if(scr_hudstyle.value==2)M_Print(xoffset+204,48,"Modern2");
+	else if(scr_hudstyle.value==3)M_Print(xoffset+204,48,"QW");
+	else if(scr_hudstyle.value==4)M_Print(xoffset+204,48,"Arcade");
+	else if(scr_hudstyle.value==5)M_Print(xoffset+204,48,"Minimalist1");
+	else if(scr_hudstyle.value==6)M_Print(xoffset+204,40,"Minimalist2");
+	else if(scr_hudstyle.value==7)M_Print(xoffset+204,48,"Minimalist3");
+	else                          M_Print(xoffset+204,48,"Classic no BG");
+	if (crosshair.value) { temp[0] = cl_crosschar.value+128; temp[1] = 0; }
+	else sprintf(temp, "Off");
+	M_Print(xoffset + 204, 56, temp);
+	sprintf(temp, "%0.2f\n", aspectr.value);
+	M_Print(xoffset + 204, 64, temp);
+	sprintf(temp, "%0.2f\n", scr_uixscale.value);
+	M_Print(xoffset + 204, 72, temp);
+	sprintf(temp, "%d\n", (s32)host_maxfps.value);
+	M_Print(xoffset + 204, 80, temp);
+	M_Print(xoffset + 204, 88, (s32)scr_showfps.value==0 ? "off":"on");
+	sprintf(temp, "%0.2f\n", aspectr.value);
+	sprintf(temp, "%d\n", (s32)scr_fov.value);
+	M_Print(xoffset + 204, 96, temp);
+	sprintf(temp, "%0.2f\n", yaspectscale.value);
+	M_Print(xoffset + 204, 104, temp);
+	if (newwinmode == 0)      M_Print(xoffset + 204, 112, "Windowed");
+	else if (newwinmode == 1) M_Print(xoffset + 204, 112, "Fullscreen");
+	else                      M_Print(xoffset + 204, 112, "Borderless");
+	if (display_cursor == 4) {
+		M_DrawTextBox(52, 166, 30, 1);
+		M_Print(64, 174, "          in console for auto");
+		M_PrintWhite(64, 174, "aspectr 0");
+	} else if (display_cursor == 6 && (s32)host_maxfps.value > 72) {
+		M_DrawTextBox(52, 166, 30, 1);
+		M_Print(64, 174, "Vanilla max is    expect bugs");
+		M_PrintWhite(64, 174, "               72");
+	} else if (display_cursor == 8 || display_cursor == 9) {
+		M_DrawTextBox(100, 166, 16, 1);
+		M_Print(112, 174, "Modern FOV:");
+		s32 modernfov = atan(vid.height*yaspectscale.value / (vid.width
+			/ tan(scr_fov.value / 360 * M_PI))) * 360 / M_PI;
+		q_snprintf(temp, 32, "            %d", modernfov);
+		M_PrintWhite(112, 174, temp);
+	}
+	if (newwinmode == 1) {
+		if (!modes) { 
+			modes = SDL_GetFullscreenDisplayModes(1, &moden);
+			mode = modes[0];
+		}
+		if (moden <= 0) return;
+		mode = modes[display_sel_moden];
+		M_Print(xoffset, 120, "                  Mode");
+		q_snprintf(temp, 16, "%dx%d@%d", mode->w, mode->h,
+				(s32)(mode->refresh_rate+0.5));
+		M_Print(xoffset + 204, 120, temp);
+	} else {
+		M_Print(xoffset, 124, "          Custom Width");
+		M_DrawTextBox(xoffset + 196, 116, 8, 1);
+		M_Print(xoffset + 204, 124, customwidthstr);
+		if (display_cursor == 11) {
+			M_DrawCursorLine(xoffset+204 + 8 * strlen(customwidthstr), 124);
+			sprintf(temp, "%d", MAXWIDTH);
+			M_DrawTextBox(xoffset + 68, 166, 16 + strlen(temp), 1);
+			M_Print(xoffset + 80, 174, "320 <= Width <=");
+			M_Print(xoffset + 208, 174, temp);
+		}
+		M_Print(xoffset, 140, "         Custom Height");
+		M_DrawTextBox(xoffset + 196, 132, 8, 1);
+		M_Print(xoffset + 204, 140, customheightstr);
+		if (display_cursor == 12) {
+			M_DrawCursorLine(xoffset+204+8 * strlen(customheightstr), 140);
+			sprintf(temp, "%d", MAXHEIGHT);
+			M_DrawTextBox(xoffset + 68, 166, 17 + strlen(temp), 1);
+			M_Print(xoffset + 80, 174, "200 <= Height <=");
+			M_Print(xoffset + 216, 174, temp);
+		}
+	}
+	M_Print(xoffset + 204, newwinmode==1?128:152, "Set Mode");
+}
+
+void M_Graphics_Key(s32 k)
+{
+	switch (k) {
+	case K_ESCAPE:
+		if (graphics_cursor >= 100) { graphics_cursor /= 100; break; }
+		M_Menu_New_f();
+		break;
+	case K_LEFTARROW:
+		S_LocalSound("misc/menu3.wav");
+		if (graphics_cursor == 200) { r_nofog.value =! r_nofog.value;
+		} else if (graphics_cursor == 201) { r_fognoise.value -= 0.1;
+		} else if (graphics_cursor == 202) { r_fogfactor.value -= 0.1;
+		} else if (graphics_cursor == 203) { r_fogscale.value -= 0.1;
+		} else if (graphics_cursor == 204) { r_fogbrightness.value-=0.1;
+		} else if (graphics_cursor == 205) { r_fogstyle.value -= 1;
+			r_fogstyle.value = CLAMP(0, r_fogstyle.value, 3);
+		} else if (graphics_cursor == 300) {
+			r_enableskybox.value =! r_enableskybox.value;
+		} else if (graphics_cursor == 301) { r_skyfog.value -= 0.1;
+		} else if (graphics_cursor == 400) {
+			r_rgblighting.value =! r_rgblighting.value;
+		} else if (graphics_cursor == 401) {
+			r_litwater.value =! r_litwater.value;
+		} else if (graphics_cursor == 402) {
+			r_labmixpal.value =! r_labmixpal.value;
+		} else if (graphics_cursor == 500) {
+			if (r_twopass.value <= 0) r_twopass.value = 3;
+			else r_twopass.value -= 1;
+			Cvar_SetValue("r_entalpha", ((s32)r_twopass.value)&1);
+		} else if (graphics_cursor == 501) {
+			r_alphastyle.value =! r_alphastyle.value;
+		} else if (graphics_cursor == 502) { r_wateralpha.value-=0.1;
+			r_wateralpha.value = CLAMP(0, r_wateralpha.value, 1);
+		} else if (graphics_cursor == 503) { r_slimealpha.value-=0.1;
+			r_slimealpha.value = CLAMP(0, r_slimealpha.value, 1);
+		} else if (graphics_cursor == 504) { r_lavaalpha.value-=0.1;
+			r_lavaalpha.value = CLAMP(0, r_lavaalpha.value, 1);
+		} else if (graphics_cursor == 505) { r_telealpha.value-=0.1;
+			r_telealpha.value = CLAMP(0, r_telealpha.value, 1);
+		} else if (graphics_cursor == 600) { r_particlescale.value -= 1;
+			r_particlescale.value=CLAMP(0,r_particlescale.value,9);
+		} else if (graphics_cursor == 601) { r_mipscale.value -= 0.1;
+			r_mipscale.value=CLAMP(0,r_mipscale.value,99);}
+		break;
+	case K_RIGHTARROW:
+	case K_ENTER:
+		if (graphics_cursor == 0) {
+			Cvar_SetValue("r_twopass", 3);
+			Cvar_SetValue("r_nofog", 0);
+			Cvar_SetValue("r_entalpha", 1);
+			Cvar_SetValue("r_litwater", 1);
+			Cvar_SetValue("r_rgblighting", 1);
+			Cvar_SetValue("r_enableskybox", 1);
+		} else if (graphics_cursor == 1) {
+			Cvar_SetValue("r_twopass", 2);
+			Cvar_SetValue("r_nofog", 1);
+			Cvar_SetValue("r_entalpha", 0);
+			Cvar_SetValue("r_litwater", 0);
+			Cvar_SetValue("r_rgblighting", 0);
+			Cvar_SetValue("r_enableskybox", 0);
+		} else if (graphics_cursor < 100) { graphics_cursor *= 100;
+		} else if (graphics_cursor == 200){r_nofog.value=!r_nofog.value;
+		} else if (graphics_cursor == 201) { r_fognoise.value += 0.1;
+		} else if (graphics_cursor == 202) { r_fogfactor.value += 0.1;
+		} else if (graphics_cursor == 203) { r_fogscale.value += 0.1;
+		} else if (graphics_cursor == 204) { r_fogbrightness.value+=0.1;
+		} else if (graphics_cursor == 205) { r_fogstyle.value += 1;
+			r_fogstyle.value = CLAMP(0, r_fogstyle.value, 3);
+		} else if (graphics_cursor == 300) {
+			r_enableskybox.value =! r_enableskybox.value;
+		} else if (graphics_cursor == 301) { r_skyfog.value += 0.1;
+		} else if (graphics_cursor == 400) {
+			r_rgblighting.value =! r_rgblighting.value;
+		} else if (graphics_cursor == 401) {
+			r_litwater.value =! r_litwater.value;
+		} else if (graphics_cursor == 402) {
+			r_labmixpal.value =! r_labmixpal.value;
+		} else if (graphics_cursor == 500) {
+			if (r_twopass.value >= 3) r_twopass.value = 0;
+			else r_twopass.value += 1;
+			Cvar_SetValue("r_entalpha", ((s32)r_twopass.value)&1);
+		} else if (graphics_cursor == 501) {
+			r_alphastyle.value =! r_alphastyle.value;
+		} else if (graphics_cursor == 502) { r_wateralpha.value+=0.1;
+			r_wateralpha.value = CLAMP(0, r_wateralpha.value, 1);
+		} else if (graphics_cursor == 503) { r_slimealpha.value+=0.1;
+			r_slimealpha.value = CLAMP(0, r_slimealpha.value, 1);
+		} else if (graphics_cursor == 504) { r_lavaalpha.value+=0.1;
+			r_lavaalpha.value = CLAMP(0, r_lavaalpha.value, 1);
+		} else if (graphics_cursor == 505) { r_telealpha.value+=0.1;
+			r_telealpha.value = CLAMP(0, r_telealpha.value, 1);
+		} else if (graphics_cursor == 600) { r_particlescale.value += 1;
+			r_particlescale.value=CLAMP(0,r_particlescale.value,9);
+		} else if (graphics_cursor == 601) { r_mipscale.value += 0.1;
+			r_mipscale.value=CLAMP(0,r_mipscale.value,99);}
+		S_LocalSound("misc/menu3.wav");
+		break;
+	case K_UPARROW:
+		S_LocalSound("misc/menu1.wav");
+		if (graphics_cursor == 0) graphics_cursor = 6;
+		else if (graphics_cursor == 200) graphics_cursor = 205;
+		else if (graphics_cursor == 300) graphics_cursor = 301;
+		else if (graphics_cursor == 400) graphics_cursor = 402;
+		else if (graphics_cursor == 500) graphics_cursor = 505;
+		else if (graphics_cursor == 600) graphics_cursor = 601;
+		else graphics_cursor--;
+		break;
+	case K_DOWNARROW:
+		S_LocalSound("misc/menu1.wav");
+		if (graphics_cursor < 100) {
+			if (graphics_cursor == 6) graphics_cursor = 0;
+			else graphics_cursor++;
+		} else if (graphics_cursor < 300) {
+			if (graphics_cursor == 205) graphics_cursor = 200;
+			else graphics_cursor++;
+		} else if (graphics_cursor < 400) {
+			if (graphics_cursor == 301) graphics_cursor = 300;
+			else graphics_cursor++;
+		} else if (graphics_cursor < 500) {
+			if (graphics_cursor == 402) graphics_cursor = 400;
+			else graphics_cursor++;
+		} else if (graphics_cursor < 600) {
+			if (graphics_cursor == 505) graphics_cursor = 500;
+			else graphics_cursor++;
+		} else if (graphics_cursor < 700) {
+			if (graphics_cursor == 601) graphics_cursor = 600;
+			else graphics_cursor++;
+		}
+		break;
+	default: break;
+	}
+}
+
+void M_Menu_Graphics_f()
+{
+	key_dest = key_menu;
+	m_state = m_graphics;
+	m_entersound = 1;
+}
+
+void M_Graphics_Draw()
+{
+	s8 temp[32];
+	s32 xoffset = 0;
+	switch(graphics_cursor/100){
+		case 0: M_DrawCursor(6, 32 + graphics_cursor*8); break;
+		default: M_DrawCursor(6+144, 32 + (graphics_cursor%100)*8); break;
+	}
+	qpic_t *p = Draw_CachePic("gfx/p_option.lmp");
+	M_DrawTransPic((320 - p->width) / 2, 4, p);
+	M_Print(xoffset, 32, "  Preset: Modern");
+	M_Print(xoffset, 40, "  Preset: Classic");
+	M_Print(xoffset, 48, "  Fog...");
+	M_Print(xoffset, 56, "  Sky...");
+	M_Print(xoffset, 64, "  Lighting...");
+	M_Print(xoffset, 72, "  Translusency...");
+	M_Print(xoffset, 80, "  Misc...");
+	xoffset = 160;
+	s32 x2 = 104;
+	if (graphics_cursor == 0) {
+		M_Print(xoffset, 32, "Enables fog,");
+		M_Print(xoffset, 40, "custom skyboxes,");
+		M_Print(xoffset, 48, "colored lighting,");
+		M_Print(xoffset, 56, "translusency");
+	} else if (graphics_cursor == 1) {
+		M_Print(xoffset, 32, "Disables fog,");
+		M_Print(xoffset, 40, "custom skyboxes,");
+		M_Print(xoffset, 48, "colored lighting,");
+		M_Print(xoffset, 56, "translusency");
+	} else if (graphics_cursor == 2 || graphics_cursor/100 == 2) {
+		M_Print(xoffset, 32, "Enabled:");
+		M_Print(xoffset + x2, 32, r_nofog.value == 0 ? "On" : "Off");
+		M_Print(xoffset, 40, "Noise:");
+		snprintf(temp, sizeof(temp), "%0.1f", r_fognoise.value);
+		M_Print(xoffset + x2, 40, temp);
+		M_Print(xoffset, 48, "Thickness:");
+		snprintf(temp, sizeof(temp), "%0.1f", r_fogfactor.value);
+		M_Print(xoffset + x2, 48, temp);
+		M_Print(xoffset, 56, "Distance:");
+		snprintf(temp, sizeof(temp), "%0.1f", r_fogscale.value);
+		M_Print(xoffset + x2, 56, temp);
+		M_Print(xoffset, 64, "Brightness:");
+		snprintf(temp, sizeof(temp), "%0.1f", r_fogbrightness.value);
+		M_Print(xoffset + x2, 64, temp);
+		M_Print(xoffset, 72, "Style:");
+		switch ((s32)r_fogstyle.value) {
+		case 0: M_Print(xoffset + x2, 72, "Noisy"); break;
+		case 1: M_Print(xoffset + x2, 72, "Dither"); break;
+		case 2: M_Print(xoffset + x2, 72, "Mixed"); break;
+		default:M_Print(xoffset + x2, 72, "Blend"); break;
+		}
+	} else if (graphics_cursor == 3 || graphics_cursor/100 == 3) {
+		M_Print(xoffset, 32, "Enabled:");
+		M_Print(xoffset + x2, 32, r_enableskybox.value==0 ? "On":"Off");
+		M_Print(xoffset, 40, "Sky Fog:");
+		snprintf(temp, sizeof(temp), "%0.1f\n", r_skyfog.value);
+		M_Print(xoffset + x2, 40, temp);
+	} else if (graphics_cursor == 4 || graphics_cursor/100 == 4) {
+		M_Print(xoffset, 32, "Color:");
+		M_Print(xoffset+x2, 32, r_rgblighting.value==1 ? "On" : "Off");
+		M_Print(xoffset, 40, "Lit Water:");
+		M_Print(xoffset + x2, 40, r_litwater.value == 1 ? "On" : "Off");
+		M_Print(xoffset, 48, "Color Space:");
+		M_Print(xoffset+x2, 48, r_labmixpal.value==1 ? "LAB" : "RGB");
+	} else if (graphics_cursor == 5 || graphics_cursor/100 == 5) {
+		M_Print(xoffset, 32, "Enabled:");
+		if (r_twopass.value == 0)M_Print(xoffset+x2, 32, "Off (Auto)");
+		else if(r_twopass.value==1)M_Print(xoffset+x2, 32, "On (Auto)");
+		else if(r_twopass.value==2)M_Print(xoffset+x2, 32, "Off");
+		else M_Print(xoffset + x2, 32, "On");
+		M_Print(xoffset, 40, "Style:");
+		M_Print(xoffset+x2, 40, r_alphastyle.value==1?"Dither":"Blend");
+		M_Print(xoffset, 48, "Water Alpha:");
+		snprintf(temp, sizeof(temp), "%0.1f\n", r_wateralpha.value);
+		M_Print(xoffset + x2, 48, temp);
+		M_Print(xoffset, 56, "Slime Alpha:");
+		snprintf(temp, sizeof(temp), "%0.1f\n", r_slimealpha.value);
+		M_Print(xoffset + x2, 56, temp);
+		M_Print(xoffset, 64, "Lava Alpha:");
+		snprintf(temp, sizeof(temp), "%0.1f\n", r_lavaalpha.value);
+		M_Print(xoffset + x2, 64, temp);
+		M_Print(xoffset, 72, "Tele Alpha:");
+		snprintf(temp, sizeof(temp), "%0.1f\n", r_telealpha.value);
+		M_Print(xoffset + x2, 72, temp);
+	} else if (graphics_cursor == 6 || graphics_cursor/100 == 6) {
+		x2 += 24;
+		M_Print(xoffset, 32, "Particle scale:");
+		snprintf(temp, sizeof(temp), "x%d", (s32)r_particlescale.value);
+		M_Print(xoffset + x2, 32, r_particlescale.value ? temp:"Auto");
+		M_Print(xoffset, 40, "Mipmap distance:");
+		snprintf(temp, sizeof(temp), " %0.1f", r_mipscale.value);
+		M_Print(xoffset + x2, 40, temp);
+	}
 }
 
 void M_Menu_New_f()
@@ -1328,115 +1911,103 @@ void M_New_Draw()
 	M_DrawTransPic(16, 4, Draw_CachePic("gfx/qplaque.lmp"));
 	qpic_t *p = Draw_CachePic("gfx/p_option.lmp");
 	M_DrawTransPic((320 - p->width) / 2, 4, p);
-	M_Print(xoffset, 32, "              UI Scale");
-	sprintf(temp, "x%d\n", (s32)scr_uiscale.value);
-	M_Print(xoffset + 204, 32, temp);
-	M_Print(xoffset, 40, "          Aspect Ratio");
-	sprintf(temp, "%0.2f\n", aspectr.value);
-	M_Print(xoffset + 204, 40, temp);
-	if (new_cursor == 1) {
-		M_DrawTextBox(52, 158, 30, 1);
-		M_Print(64, 166, "          in console for auto");
-		M_PrintWhite(64, 166, "aspectr 0");
-	}
-	M_Print(xoffset, 48, "             This Menu");
-	M_DrawCheckbox(xoffset + 204, 48, newoptions.value);
-	M_Print(xoffset, 56, "           FPS Counter");
-	M_DrawCheckbox(xoffset + 204, 56, scr_showfps.value);
-	if (new_cursor == 2) {
+	M_Print(xoffset, 32, "             This Menu");
+	M_DrawCheckbox(xoffset + 204, 32, newoptions.value);
+	if (new_cursor == 0) {
 		M_DrawTextBox(52, 158, 30, 2);
 		M_Print(64, 166, "  This menu can be restored");
 		M_Print(64, 174, "with the              command");
 		M_PrintWhite(64, 174, "         newoptions 1");
 	}
-	M_Print(xoffset, 64, "         Y Mouse Speed");
-	sprintf(temp, "%0.1f\n", sensitivityyscale.value);
-	M_Print(xoffset + 204, 64, temp);
-	M_Print(xoffset, 72, "             HUD Style");
-	if (scr_hudstyle.value == 0)
-		M_Print(xoffset + 204, 72, "Classic");
-	else if (scr_hudstyle.value == 1)
-		M_Print(xoffset + 204, 72, "Modern 1");
-	else if (scr_hudstyle.value == 2)
-		M_Print(xoffset + 204, 72, "Modern 2");
-	else if (scr_hudstyle.value == 3)
-		M_Print(xoffset + 204, 72, "QW");
-	else if (scr_hudstyle.value == 4)
-		M_Print(xoffset + 204, 72, "Arcade");
-	else if (scr_hudstyle.value == 5)
-		M_Print(xoffset + 204, 72, "Minimalist 1");
-	else if (scr_hudstyle.value == 6)
-		M_Print(xoffset + 204, 72, "Minimalist 2");
-	else
-		M_Print(xoffset + 204, 72, "Classic no BG");
-	M_Print(xoffset, 80, "          Translucency");
-	if (r_twopass.value == 0)
-		M_Print(xoffset + 204, 80, "Off (smart)");
-	else if (r_twopass.value == 1)
-		M_Print(xoffset + 204, 80, "On (smart)");
-	else if (r_twopass.value == 2)
-		M_Print(xoffset + 204, 80, "Force Off");
-	else
-		M_Print(xoffset + 204, 80, "Force On");
-	M_Print(xoffset, 88, "          Trans. Style");
-	if (r_alphastyle.value == 0)
-		M_Print(xoffset + 204, 88, "Mix");
-	else if (r_alphastyle.value == 1)
-		M_Print(xoffset + 204, 88, "Dither");
-	M_Print(xoffset, 96, "          Liquid Alpha");
-	sprintf(temp, "%0.1f\n", r_wateralpha.value);
-	M_Print(xoffset + 204, 96, temp);
-	M_Print(xoffset, 104, "             FPS Limit");
-	sprintf(temp, "%d\n", (s32)host_maxfps.value);
-	M_Print(xoffset + 204, 104, temp);
-	if (new_cursor == 9 && (s32)host_maxfps.value > 72) {
-		M_DrawTextBox(52, 158, 30, 1);
-		M_Print(64, 166, "Vanilla max is    expect bugs");
-		M_PrintWhite(64, 166, "               72");
-	}
-	M_Print(xoffset, 112, "           Window Mode");
-	if (newwinmode == 0)
-		M_Print(xoffset + 204, 112, "Windowed");
-	else if (newwinmode == 1)
-		M_Print(xoffset + 204, 112, "Fullscreen");
-	else
-		M_Print(xoffset + 204, 112, "Borderless");
-	M_Print(xoffset, 124, "          Custom Width");
-	M_DrawTextBox(xoffset + 196, 116, 8, 1);
-	M_Print(xoffset + 204, 124, customwidthstr);
-	if (new_cursor == 11) {
-		M_DrawCursorLine(xoffset+204 + 8 * strlen(customwidthstr), 124);
-		sprintf(temp, "%d", MAXWIDTH);
-		M_DrawTextBox(xoffset + 68, 158, 16 + strlen(temp), 1);
-		M_Print(xoffset + 80, 166, "320 <= Width <=");
-		M_Print(xoffset + 208, 166, temp);
-	}
-	M_Print(xoffset, 140, "         Custom Height");
-	M_DrawTextBox(xoffset + 196, 132, 8, 1);
-	M_Print(xoffset + 204, 140, customheightstr);
-	if (new_cursor == 12) {
-		M_DrawCursorLine(xoffset+204+8 * strlen(customheightstr), 140);
-		sprintf(temp, "%d", MAXHEIGHT);
-		M_DrawTextBox(xoffset + 68, 158, 17 + strlen(temp), 1);
-		M_Print(xoffset + 80, 166, "200 <= Height <=");
-		M_Print(xoffset + 216, 166, temp);
-	}
-	M_Print(xoffset + 204, 152, "Set Mode");
-	if (new_cursor == 11)
-		M_DrawCursor(xoffset + 192, 124);
-	else if (new_cursor == 12)
-		M_DrawCursor(xoffset + 192, 140);
-	else if (new_cursor == 13)
-		M_DrawCursor(xoffset + 192, 152);
-	else
-		M_DrawCursor(xoffset + 192, 32 + new_cursor * 8);
+	M_Print(xoffset, 40, "         Y Mouse Speed");
+	sprintf(temp, "x%0.1f\n", sensitivityyscale.value);
+	M_Print(xoffset + 204, 40, temp);
+	M_Print(xoffset + 204, 48, "Display...");
+	M_Print(xoffset + 204, 56, "Graphics...");
+	M_Print(xoffset + 204, 64, "Gamepad...");
+	M_DrawCursor(xoffset + 192, 32 + new_cursor * 8);
 }
 
 void M_Gamepad_Key(s32 k)
 {
+	s32 axis = SDL_GetNumJoystickAxes(joystick) - 1;
+	s32 buts = SDL_GetNumJoystickButtons(joystick) - 1;
 	switch (k) {
 	case K_ESCAPE:
 		M_Menu_New_f();
+		break;
+	case K_LEFTARROW:
+		S_LocalSound("misc/menu3.wav");
+		if (gamepad_cursor == 0)
+			Cvar_SetValue("joysticknum", joysticknum.value - 1);
+		else if (gamepad_cursor == 1) Cvar_SetValue("jdeadzone",
+			CLAMP(8, jdeadzone.value-(1<<14)/10, (1<<14)));
+		else if (gamepad_cursor == 2) Cvar_SetValue("jmovesens",
+			CLAMP(0.5, jmovesens.value-0.5, 5));
+		else if (gamepad_cursor == 3) Cvar_SetValue("jlooksens",
+			CLAMP(0.5, jlooksens.value-0.5, 5));
+		else if (gamepad_cursor == 4) Cvar_SetValue("jtriggerthresh",
+		    CLAMP(8-(1<<15),jtriggerthresh.value-(1<<16)/10,(1<<15)-8));
+		else if (gamepad_cursor == 5 && jmoveaxisx.value >= 0)
+			Cvar_SetValue("jmoveaxisx", jmoveaxisx.value - 1);
+		else if (gamepad_cursor == 6 && jmoveaxisx.value >= 0)
+			Cvar_SetValue("jmoveaxisy", jmoveaxisy.value - 1);
+		else if (gamepad_cursor == 7 && jlookaxisx.value >= 0)
+			Cvar_SetValue("jlookaxisx", jlookaxisx.value - 1);
+		else if (gamepad_cursor == 8 && jlookaxisy.value >= 0)
+			Cvar_SetValue("jlookaxisy", jlookaxisy.value - 1);
+		else if (gamepad_cursor == 9 && jtrigaxis1.value >= 0)
+			Cvar_SetValue("trigaxis1", jtrigaxis1.value - 1);
+		else if (gamepad_cursor == 10 && jtrigaxis2.value >= 0)
+			Cvar_SetValue("trigaxis2", jtrigaxis2.value - 1);
+		else if (gamepad_cursor == 11 && jenterbutton.value >= 0)
+			Cvar_SetValue("jenterbutton", jenterbutton.value - 1);
+		else if (gamepad_cursor == 12 && jescapebutton.value >= 0)
+			Cvar_SetValue("jescapebutton", jescapebutton.value - 1);
+		break;
+	case K_RIGHTARROW:
+	case K_ENTER:
+		S_LocalSound("misc/menu3.wav");
+		if (gamepad_cursor == 0)
+			Cvar_SetValue("joysticknum", joysticknum.value + 1);
+		else if (gamepad_cursor == 1) Cvar_SetValue("jdeadzone",
+			CLAMP(8, jdeadzone.value+(1<<14)/10, (1<<14)));
+		else if (gamepad_cursor == 2) Cvar_SetValue("jmovesens",
+			CLAMP(0.5, jmovesens.value+0.5, 5));
+		else if (gamepad_cursor == 3) Cvar_SetValue("jlooksens",
+			CLAMP(0.5, jlooksens.value+0.5, 5));
+		else if (gamepad_cursor == 4) Cvar_SetValue("jtriggerthresh",
+		    CLAMP(8-(1<<15),jtriggerthresh.value+(1<<16)/10,(1<<15)-8));
+		else if (gamepad_cursor == 5 && jmoveaxisx.value < axis)
+			Cvar_SetValue("jmoveaxisx", jmoveaxisx.value + 1);
+		else if (gamepad_cursor == 6 && jmoveaxisx.value < axis)
+			Cvar_SetValue("jmoveaxisy", jmoveaxisy.value + 1);
+		else if (gamepad_cursor == 7 && jlookaxisx.value < axis)
+			Cvar_SetValue("jlookaxisx", jlookaxisx.value + 1);
+		else if (gamepad_cursor == 8 && jlookaxisy.value < axis)
+			Cvar_SetValue("jlookaxisy", jlookaxisy.value + 1);
+		else if (gamepad_cursor == 9 && jtrigaxis1.value < axis)
+			Cvar_SetValue("trigaxis1", jtrigaxis1.value + 1);
+		else if (gamepad_cursor == 10 && jtrigaxis2.value < axis)
+			Cvar_SetValue("trigaxis2", jtrigaxis2.value + 1);
+		else if (gamepad_cursor == 11 && jenterbutton.value < buts)
+			Cvar_SetValue("jenterbutton", jenterbutton.value + 1);
+		else if (gamepad_cursor == 12 && jescapebutton.value < buts)
+			Cvar_SetValue("jescapebutton", jescapebutton.value + 1);
+		break;
+	case K_UPARROW:
+		S_LocalSound("misc/menu1.wav");
+		if (gamepad_cursor == 0)
+			gamepad_cursor = 12;
+		else
+			gamepad_cursor--;
+		break;
+	case K_DOWNARROW:
+		S_LocalSound("misc/menu1.wav");
+		if (gamepad_cursor == 12)
+			gamepad_cursor = 0;
+		else
+			gamepad_cursor++;
 		break;
 	}
 }
@@ -1445,146 +2016,39 @@ void M_New_Key(s32 k)
 {
 	switch (k) {
 	case K_ESCAPE:
+		if (!newoptions.value) options_cursor = 0;
 		M_Menu_Options_f();
-		if (!newoptions.value)
-			options_cursor = 0;
 		break;
 	case K_LEFTARROW:
 		S_LocalSound("misc/menu3.wav");
-		if (new_cursor == 0 && scr_uiscale.value > 1)
-			Cvar_SetValue("scr_uiscale", scr_uiscale.value - 1);
-		else if (new_cursor == 1)
-			Cvar_SetValue("aspectr", aspectr.value - 0.01);
-		else if (new_cursor == 2)
+		if (new_cursor == 0)
 			Cvar_SetValue("newoptions", !newoptions.value);
-		else if (new_cursor == 3)
-			Cvar_SetValue("scr_showfps", !scr_showfps.value);
-		else if (new_cursor == 4 && sensitivityyscale.value >= 0.1)
+		else if (new_cursor == 1 && sensitivityyscale.value >= 0.1)
 			Cvar_SetValue("sensitivityyscale",
 				      sensitivityyscale.value - 0.1);
-		else if (new_cursor == 5) {
-			if (scr_hudstyle.value == 0)
-				Cvar_SetValue("hudstyle", 7);
-			else
-				Cvar_SetValue("hudstyle", scr_hudstyle.value-1);
-		} else if (new_cursor == 6) {
-			if (r_twopass.value == 0)
-				Cvar_SetValue("r_twopass", 3);
-			else
-				Cvar_SetValue("r_twopass", r_twopass.value - 1);
-			Cvar_SetValue("r_entalpha", (s32)r_twopass.value & 1);
-		} else if (new_cursor == 7)
-			Cvar_SetValue("r_alphastyle", !r_alphastyle.value);
-		else if (new_cursor == 8 && r_wateralpha.value >= 0.1) {
-			Cvar_SetValue("r_wateralpha", r_wateralpha.value - 0.1);
-			Cvar_SetValue("r_lavaalpha", r_wateralpha.value);
-			Cvar_SetValue("r_slimealpha", r_wateralpha.value);
-		} else if (new_cursor == 9) {
-			s32 i = 0;
-			for (; i < (s32)sizeof(fpslimits) / 4 - 1; ++i)
-				if (fpslimits[i] >= (s32)host_maxfps.value)
-					break;
-			--i;
-			if (i < 0 || i > (s32)sizeof(fpslimits) / 4 - 1)
-				i = sizeof(fpslimits) / 4 - 1;
-			Cvar_SetValue("host_maxfps", fpslimits[i]);
-		} else if (new_cursor == 10) {
-			if (newwinmode == 0)
-				newwinmode = 2;
-			else
-				newwinmode--;
-		}
 		break;
 	case K_UPARROW:
 		S_LocalSound("misc/menu1.wav");
-		if (new_cursor == 0)
-			new_cursor = 13;
-		else
-			new_cursor--;
+		if (new_cursor == 0) new_cursor = 4;
+		else new_cursor--;
 		break;
 	case K_DOWNARROW:
 		S_LocalSound("misc/menu1.wav");
-		if (new_cursor == 13)
-			new_cursor = 0;
-		else
-			new_cursor++;
+		if (new_cursor == 4) new_cursor = 0;
+		else new_cursor++;
 		break;
 	case K_RIGHTARROW:
 	case K_ENTER:
 		S_LocalSound("misc/menu3.wav");
-		if (new_cursor == 0 && scr_uiscale.value < (vid.width / 320))
-			Cvar_SetValue("scr_uiscale", scr_uiscale.value + 1);
-		else if (new_cursor == 1)
-			Cvar_SetValue("aspectr", aspectr.value + 0.01);
-		else if (new_cursor == 2)
+		if (new_cursor == 0)
 			Cvar_SetValue("newoptions", !newoptions.value);
-		else if (new_cursor == 3)
-			Cvar_SetValue("scr_showfps", !scr_showfps.value);
-		else if (new_cursor == 4 && sensitivityyscale.value < 10)
+		else if (new_cursor == 1 && sensitivityyscale.value >= 0.1)
 			Cvar_SetValue("sensitivityyscale",
 				      sensitivityyscale.value + 0.1);
-		else if (new_cursor == 5) {
-			if (scr_hudstyle.value == 7)
-				Cvar_SetValue("hudstyle", 0);
-			else
-				Cvar_SetValue("hudstyle", scr_hudstyle.value+1);
-		} else if (new_cursor == 6) {
-			if (r_twopass.value == 3)
-				Cvar_SetValue("r_twopass", 0);
-			else
-				Cvar_SetValue("r_twopass", r_twopass.value + 1);
-			Cvar_SetValue("r_entalpha", (s32)r_twopass.value & 1);
-		} else if (new_cursor == 7)
-			Cvar_SetValue("r_alphastyle", !r_alphastyle.value);
-		else if (new_cursor == 8 && r_wateralpha.value < 1.0) {
-			Cvar_SetValue("r_wateralpha", r_wateralpha.value + 0.1);
-			Cvar_SetValue("r_lavaalpha", r_wateralpha.value);
-			Cvar_SetValue("r_slimealpha", r_wateralpha.value);
-		} else if (new_cursor == 9) {
-			s32 i = 0;
-			for (; i < (s32)sizeof(fpslimits) / 4 - 1; ++i)
-				if (fpslimits[i] >= (s32)host_maxfps.value)
-					break;
-			++i;
-			if (i < 0 || i > (s32)sizeof(fpslimits) / 4 - 1)
-				i = 0;
-			Cvar_SetValue("host_maxfps", fpslimits[i]);
-		} else if (new_cursor == 10) {
-			if (newwinmode == 2)
-				newwinmode = 0;
-			else
-				newwinmode++;
-		} else if (new_cursor == 13
-			   && Q_atoi(customwidthstr) >= 320
-			   && Q_atoi(customheightstr) >= 200
-			   && Q_atoi(customwidthstr) <= MAXWIDTH
-			   && Q_atoi(customheightstr) <= MAXHEIGHT)
-			VID_SetMode(0, Q_atoi(customwidthstr),
-				    Q_atoi(customheightstr), newwinmode,
-				    vid_curpal);
+		else if (new_cursor == 2) M_Menu_Display_f();
+		else if (new_cursor == 3) M_Menu_Graphics_f();
+		else if (new_cursor == 4) M_Menu_Gamepad_f();
 		break;
-	case K_BACKSPACE:
-		if (new_cursor == 11 && strlen(customwidthstr))
-			customwidthstr[strlen(customwidthstr) - 1] = 0;
-		else if (new_cursor == 12 && strlen(customheightstr))
-			customheightstr[strlen(customheightstr) - 1] = 0;
-		break;
-	default:
-		if (k < '0' || k > '9')
-			break;
-		if (new_cursor == 11) {
-			s32 l = strlen(customwidthstr);
-			if (l < 7) {
-				customwidthstr[l + 1] = 0;
-				customwidthstr[l] = k;
-			}
-		} else if (new_cursor == 12) {
-			s32 l = strlen(customheightstr);
-			if (l < 7) {
-				customheightstr[l + 1] = 0;
-				customheightstr[l] = k;
-			}
-		}
 	}
 }
 
@@ -1707,6 +2171,10 @@ void M_Video_Key(s32 key)
 	case K_ENTER:
 		S_LocalSound("misc/menu1.wav");
 		VID_SetMode(vid_line, 0, 0, 0, vid_curpal);
+		Cvar_SetValue("_vid_default_mode_win", vid_modenum);
+		Cvar_SetValue("vid_cheight", -1);
+		Cvar_SetValue("vid_cwidth", -1);
+		Cvar_SetValue("vid_cwmode", -1);
 		break;
 	case 'T':
 	case 't':
@@ -1716,16 +2184,6 @@ void M_Video_Key(s32 key)
 		vid_testendtime = realtime + 5.0;
 		VID_SetMode(vid_line, 0, 0, 0, vid_curpal);
 		printf("VID_LINE: %d\n", vid_line);
-		break;
-	case 'D':
-	case 'd':
-		S_LocalSound("misc/menu1.wav");
-		if (vid_modenum >= 0 && vid_modenum < NUM_OLDMODES) {
-			Cvar_SetValue("_vid_default_mode_win", vid_modenum);
-			Cvar_SetValue("vid_cheight", -1);
-			Cvar_SetValue("vid_cwidth", -1);
-			Cvar_SetValue("vid_cwmode", -1);
-		}
 		break;
 	default:
 		break;
@@ -2363,6 +2821,8 @@ void M_Init()
 	Cmd_AddCommand("menu_video", M_Menu_Video_f);
 	Cmd_AddCommand("menu_new", M_Menu_New_f);
 	Cmd_AddCommand("menu_gamepad", M_Menu_Gamepad_f);
+	Cmd_AddCommand("menu_display", M_Menu_Display_f);
+	Cmd_AddCommand("menu_graphics", M_Menu_Graphics_f);
 	Cmd_AddCommand("help", M_Menu_Help_f);
 	Cmd_AddCommand("menu_quit", M_Menu_Quit_f);
 }
@@ -2393,6 +2853,8 @@ void M_Draw()
 		case m_keys: M_Keys_Draw(); break;
 		case m_new: M_New_Draw(); break;
 		case m_gamepad: M_Gamepad_Draw(); break;
+		case m_display: M_Display_Draw(); break;
+		case m_graphics: M_Graphics_Draw(); break;
 		case m_video: M_Video_Draw(); break;
 		case m_help: M_Help_Draw(); break;
 		case m_quit: M_Quit_Draw(); break;
@@ -2423,6 +2885,8 @@ void M_Keydown(s32 key)
 		case m_video: M_Video_Key(key); return;
 		case m_new: M_New_Key(key); return;
 		case m_gamepad: M_Gamepad_Key(key); return;
+		case m_display: M_Display_Key(key); return;
+		case m_graphics: M_Graphics_Key(key); return;
 		case m_help: M_Help_Key(key); return;
 		case m_quit: M_Quit_Key(key); return;
 		case m_lanconfig: M_LanConfig_Key(key); return;

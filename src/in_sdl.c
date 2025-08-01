@@ -4,13 +4,8 @@ static bool mouse_avail;
 static f32 mouse_x;
 static f32 mouse_y;
 static s32 buttonremap[] = { K_MOUSE1, K_MOUSE3, K_MOUSE2, K_MOUSE4, K_MOUSE5 };
-static SDL_Joystick *joystick = 0;
-static s32 jaxis_move_x = 0;
-static s32 jaxis_move_y = 0;
-static s32 jaxis_look_x = 0;
-static s32 jaxis_look_y = 0;
 
-void IN_InitJoystick(cvar_t */*cvar*/)
+void IN_InitJoystick(SDL_UNUSED cvar_t *cvar)
 {
 	s32 count = -1;
 	SDL_JoystickID *joys = SDL_GetJoysticks(&count);
@@ -178,12 +173,14 @@ void Sys_SendKeyEvents()
 				jaxis_look_x = event.jaxis.value;
 			else if (event.jaxis.axis == jlookaxisy.value)
 				jaxis_look_y = event.jaxis.value;
-			else if (event.jaxis.axis == jtrigaxis1.value)
+			else if (event.jaxis.axis == jtrigaxis1.value) {
 				Key_Event(K_AUX31, event.jaxis.value >
 						jtriggerthresh.value);
-			else if (event.jaxis.axis == jtrigaxis2.value)
+				jaxis_trig_1 = event.jaxis.value; }
+			else if (event.jaxis.axis == jtrigaxis2.value) {
 				Key_Event(K_AUX32, event.jaxis.value >
 						jtriggerthresh.value);
+				jaxis_trig_2 = event.jaxis.value; }
 			break;
 		case SDL_EVENT_JOYSTICK_ADDED: IN_InitJoystick(0); break;
 		case SDL_EVENT_JOYSTICK_REMOVED: IN_RemoveJoystick(); break;

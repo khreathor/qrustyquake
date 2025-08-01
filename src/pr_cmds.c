@@ -79,7 +79,7 @@ static void PF_setorigin()
 	SV_LinkEdict(e, 0);
 }
 
-static void SetMinMaxSize(edict_t *e, f32 *minvec, f32 *maxvec, bool /*rotate*/)
+static void SetMinMaxSize(edict_t *e, f32 *minvec, f32 *maxvec, SDL_UNUSED bool rotate)
 {
 	vec3_t rmin, rmax;
 	for(s32 i = 0; i < 3; i++)

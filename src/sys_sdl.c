@@ -13,19 +13,25 @@ void Sys_Printf(const s8 *fmt, ...)
 
 void Sys_Quit()
 {
+	CDAudio_Stop();
         Uint16 *screen; // erysdren (it/its)
         if(registered.value) screen = (Uint16 *)COM_LoadHunkFile("end2.bin", 0);
         else screen = (Uint16 *)COM_LoadHunkFile("end1.bin", 0);
 	SDL_SetWindowSize(window, 640, 400);
         if(screen) vgatext_main(window, screen);
 	Host_Shutdown();
+#ifdef __EMSCRIPTEN__
+	emscripten_cancel_main_loop();
+#else
 	exit(0);
+#endif
 }
 
 void Sys_Error(const s8 *error, ...)
 {
 	va_list argptr;
 	s8 str[1024];
+	CDAudio_Stop();
 	va_start(argptr, error);
 	vsprintf(str, error, argptr);
 	va_end(argptr);
@@ -35,7 +41,11 @@ void Sys_Error(const s8 *error, ...)
 #endif
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "QrustyQuake", str, 0);
 	Host_Shutdown();
+#ifdef __EMSCRIPTEN__
+	emscripten_cancel_main_loop();
+#else
 	exit(1);
+#endif
 }
 
 s32 findhandle()
@@ -171,6 +181,20 @@ f64 Sys_DoubleTime()
 void Sys_mkdir(const s8 *path) { _mkdir(path); }
 #endif
 
+#ifdef __EMSCRIPTEN__
+static void main_loop(void)
+{
+	static f64 oldtime = 0;
+	if (oldtime == 0) oldtime = Sys_DoubleTime() - 0.1;
+	f64 newtime = Sys_Throttle(oldtime);
+	f64 deltatime = newtime - oldtime;
+	if(cls.state == ca_dedicated) deltatime = sys_ticrate.value;
+	if(deltatime > sys_ticrate.value * 2) oldtime = newtime;
+	else oldtime += deltatime;
+	Host_Frame(deltatime);
+}
+#endif
+
 int main(int c, char **v)
 {
 	if(!SDL_Init(SDL_INIT_VIDEO))
@@ -186,6 +210,9 @@ int main(int c, char **v)
 	host_parms.membase = malloc(host_parms.memsize);
 	host_parms.basedir = ".";
 	Host_Init();
+#ifdef __EMSCRIPTEN__
+	emscripten_set_main_loop(main_loop, 0, 1);
+#else
 	f64 oldtime = Sys_DoubleTime() - 0.1;
 	while(1){
 		f64 newtime = Sys_Throttle(oldtime);
@@ -195,4 +222,5 @@ int main(int c, char **v)
 		else oldtime += deltatime;
 		Host_Frame(deltatime);
 	}
+#endif
 }

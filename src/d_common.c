@@ -139,7 +139,7 @@ void Draw_CharacterScaled(s32 x, s32 y, s32 num, s32 scale)
 		y = 0;
 	} else
 		drawline = 8;
-	u8 *dest = scrbuffs[drawlayer]->pixels + y * vid.width + x;
+	u8 *dest = (u8*)scrbuffs[drawlayer]->pixels + y * vid.width + x;
 	while (drawline--) {
 		for (s32 k = 0; k < scale; ++k) {
 			for (s32 j = 0; j < scale; ++j) {
@@ -164,7 +164,7 @@ void Draw_StringScaled(s32 x, s32 y, s8 *str, s32 scale)
 
 void Draw_PicScaled(s32 x, s32 y, qpic_t *pic, s32 scale)
 {
-	u8 *dest = scrbuffs[drawlayer]->pixels + y * vid.width + x;
+	u8 *dest = (u8*)scrbuffs[drawlayer]->pixels + y * vid.width + x;
 	s32 maxwidth = pic->width;
 	if (x + pic->width * scale > (s32)vid.width)
 		maxwidth -= (x + pic->width * scale - vid.width) / scale;
@@ -190,7 +190,7 @@ void Draw_PicScaled(s32 x, s32 y, qpic_t *pic, s32 scale)
 void Draw_PicScaledPartial(s32 x,s32 y,s32 l,s32 t,s32 w,s32 h,qpic_t *p,s32 s)
 {
         u8 *source = p->data;
-	u8 *dest = scrbuffs[drawlayer]->pixels + y * vid.width + x;
+		u8 *dest = (u8*)scrbuffs[drawlayer]->pixels + y * vid.width + x;
         for (u32 v = 0; v < (u32)p->height; v++) {
                 if (v * s + y >= vid.height || v > (u32)h)
                         return;
@@ -213,7 +213,7 @@ void Draw_PicScaledPartial(s32 x,s32 y,s32 l,s32 t,s32 w,s32 h,qpic_t *p,s32 s)
 void Draw_TransPicScaled(s32 x, s32 y, qpic_t *pic, s32 scale)
 {
 	u8 *source = pic->data;
-	u8 *dest = scrbuffs[drawlayer]->pixels + y * vid.width + x;
+	u8 *dest = (u8*)scrbuffs[drawlayer]->pixels + y * vid.width + x;
 	for (u32 v = 0; v < (u32)pic->height; v++) {
 		if (v * scale + y >= vid.height)
 			return;
@@ -235,7 +235,7 @@ void Draw_TransPicScaled(s32 x, s32 y, qpic_t *pic, s32 scale)
 void Draw_TransPicTranslateScaled(s32 x, s32 y, qpic_t *p, u8 *tl, s32 scale)
 {
 	u8 *source = p->data;
-	u8 *dest = scrbuffs[drawlayer]->pixels + y * vid.width + x;
+	u8 *dest = (u8*)scrbuffs[drawlayer]->pixels + y * vid.width + x;
 	for (s32 v = 0; v < p->height; v++) {
 		if (v * scale + y >= (s32)vid.height)
 			return;
@@ -321,7 +321,7 @@ void Draw_ConsoleBackground(s32 lines)
 
 void R_DrawRect(vrect_t *prect, s32 rowbytes, u8 *psrc, s32 transparent)
 {
-	u8 *pdest = scrbuffs[drawlayer]->pixels + (prect->y * vid.width) + prect->x;
+	u8 *pdest = (u8*)scrbuffs[drawlayer]->pixels + (prect->y * vid.width) + prect->x;
 	u64 maxdest = (u64)(unsigned long long)scrbuffs[drawlayer]->pixels+vid.width*vid.height;
 	if (transparent) {
 		s32 srcdelta = rowbytes - prect->width;
@@ -383,7 +383,7 @@ void Draw_TileClear(s32 x, s32 y, s32 w, s32 h) // This repeats a 64*64
 
 void Draw_Fill(s32 x, s32 y, s32 w, s32 h, s32 c)
 { // Fills a box of pixels with a single color
-	u8 *dest = scrbuffs[drawlayer]->pixels + y * vid.width + x;
+	u8 *dest = (u8*)scrbuffs[drawlayer]->pixels + y * vid.width + x;
 	for (s32 v = 0; v < h; v++, dest += vid.width)
 		memset(dest, c, w); // Fast horizontal fill
 }
@@ -393,8 +393,8 @@ void Draw_FadeScreen()
 	fadescreen = 0;
 	for (u32 y = 0; y < vid.height / uiscale; y++)
 		for (u32 i = 0; i < uiscale; i++) {
-			u8 *pbuf = (u8*)(scrbuffs[0]->pixels+vid.width*y
-				* uiscale + vid.width * i);
+			u8 *pbuf = (u8*)scrbuffs[0]->pixels + vid.width * y
+				* uiscale + vid.width * i;
 			u32 t = (y & 1) << 1;
 			for (u32 x = 0; x < vid.width / uiscale; x++)
 				if ((x & 3) != t)

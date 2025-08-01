@@ -1,9 +1,11 @@
-OS := $(shell uname)
+PKGCONFIG ?= pkg-config
 CC = gcc
-CFLAGS = -c -Wall -Wextra -D_DEFAULT_SOURCE
-LDFLAGS = -lm -lSDL3
+CFLAGS = -c -Wall -Wextra -D_DEFAULT_SOURCE $(shell $(PKGCONFIG) --cflags sdl3)
+LDFLAGS = -lm $(shell $(PKGCONFIG) --libs sdl3)
+SDL3_MIXER_CFLAGS := $(shell $(PKGCONFIG) --cflags sdl3-mixer 2>/dev/null)
+SDL3_MIXER_LIBS := $(shell $(PKGCONFIG) --libs sdl3-mixer 2>/dev/null)
 TARGET = qrustyquake
-SRCS = chase.c cl_demo.c cl_input.c cl_main.c cl_parse.c \
+SRCS = cdaudio.c chase.c cl_demo.c cl_input.c cl_main.c cl_parse.c \
 	cl_tent.c cmd.c common.c console.c crc.c \
 	cvar.c d_edge.c \
 	d_part.c d_polyse.c d_scan.c d_sky.c d_sprite.c \
@@ -18,33 +20,30 @@ SRCS = chase.c cl_demo.c cl_input.c cl_main.c cl_parse.c \
 	snd_sdl.c sv_main.c sv_move.c sv_phys.c sv_user.c \
 	sys_sdl.c vid_sdl.c view.c wad.c world.c \
 	zone.c rgbtoi.c miniz.c vgatext.c image.c
-BREW := $(shell command -v brew)
 
 OBJS = $(SRCS:.c=.o)
 
 BUILD_TYPE ?= release
 
-# technically for Haiku we should strip -lm since it is not needed there, but
-# they have a dummy library in its place so... shrug?
-ifeq ($(OS), Haiku)
-    LDFLAGS+=-lnetwork
+ifeq ($(strip $(SDL3_MIXER_LIBS)),)
+$(warning SDL3_Mixer not found, disabling music support)
+else
+CFLAGS += $(SDL3_MIXER_CFLAGS) -DAVAIL_SDL3MIXER
+LDFLAGS += $(SDL3_MIXER_LIBS)
 endif
 
-# macOS setup
-ifeq ($(OS), Darwin)
-    ifdef BREW
-        CFLAGS += -I$(shell brew --prefix)/include
-        LDFLAGS += -L$(shell brew --prefix)/lib
-        SDL2_FOUND := $(shell brew list sdl2 2>/dev/null)
-    endif
+# technically for Haiku we should strip -lm since it is not needed there, but
+# they have a dummy library in its place so... shrug?
+ifeq ($(shell uname), Haiku)
+LDFLAGS+=-lnetwork
 endif
 
 ifeq ($(CC),tcc)
 CFLAGS += -DSDL_DISABLE_IMMINTRIN_H
 endif
 
-DEBUG_FLAGS = -g -O0 -DDEBUG -std=c23
-RELEASE_FLAGS = -O3 -flto -g -std=c23
+DEBUG_FLAGS = -g -O0 -DDEBUG
+RELEASE_FLAGS = -O3 -flto -g
 
 ifeq ($(BUILD_TYPE), debug)
 	CFLAGS += $(DEBUG_FLAGS)
@@ -55,38 +54,15 @@ endif
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	@echo "Something..."
 	$(CC) $(OBJS) $(LDFLAGS) -o $(TARGET)
 
 %.o: %.c
-	@echo "O and C..."
 	$(CC) $(CFLAGS) $< -o $@
 
-sysconfig:
-	@echo "Checking for system specific configuration..."
-    ifeq ($(OS), Darwin)
-		@echo "MacOS detected..."
-		@printf "Checking for Homebrew: "
-        ifndef BREW
-			@echo "\033[31mNot found...\033[0m"
-        else
-			@echo "\033[32mFound!\033[0m"
-			@printf "Checking for SDL2: "
-            ifndef SDL2_FOUND
-				@echo "\033[33mInstalling...\033[0m"
-				@brew install sdl2;
-				@echo "Installed (I hope...)"
-            else
-				@echo "\033[32mFound\033[0m"
-            endif
-        endif
-    endif
-
-
-debug: sysconfig
+debug:
 	$(MAKE) BUILD_TYPE=debug
 
-release: sysconfig
+release:
 	$(MAKE) BUILD_TYPE=release
 
 clean:

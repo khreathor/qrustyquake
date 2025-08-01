@@ -1,5 +1,15 @@
 // CyanBun96: compile with -flto to force the compiler to optimize this
+// atsb: windows and linux compatible macro definitions
+#if defined(_WIN32)
+//#define SIL static __forceinline // doesn't work with Makefile.w64? TODO add more ifdefs
 #define SIL static inline __attribute__((always_inline))
+#define RESTRICT
+#define _USE_MATH_DEFINES
+#include <math.h>
+#else
+#define SIL static inline __attribute__((always_inline))
+#define RESTRICT __restrict
+#endif
 SIL f32 DotProduct(const f32 *restrict a, const f32 *restrict b)
 	{f32 sum=0.0f;for(s32 i=0;i<3;++i)sum+=a[i]*b[i];return sum;}
 SIL f64 DotProductF64(const f32 *a, const f32 *b)

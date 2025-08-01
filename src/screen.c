@@ -63,8 +63,7 @@ void SCR_DrawCenterString()
 		s32 x = (vid.width - l * 8 * uiscale) / 2;
 		for (s32 j = 0; j < l; j++, x += 8 * uiscale) {
 			Draw_CharacterScaled(x, y, start[j], uiscale);
-			if (!remaining--)
-				return;
+			if (!remaining--) { drawlayer = 0; return; }
 		}
 		y += 8 * uiscale;
 		while (*start && *start != '\n')
@@ -336,26 +335,64 @@ void WritePCXfile(s8 *filename, u8 *data, s32 width, s32 height,
 	COM_WriteFile(filename, pcx, length);
 }
 
+
+void WriteBMPfile(s8 *filename, u8 *data, s32 width, s32 height,
+				  s32 rowbytes, u8 *palette)
+{
+	SDL_Surface *surface = SDL_CreateSurfaceFrom(
+		width,
+		height,
+		SDL_PIXELFORMAT_INDEX8,
+		data,
+		rowbytes
+	);
+
+	SDL_Palette *surfacepalette = SDL_CreateSurfacePalette(surface);
+
+	for (s32 i = 0; i < surfacepalette->ncolors; i++)
+	{
+		surfacepalette->colors[i].r = palette[i * 3 + 0];
+		surfacepalette->colors[i].g = palette[i * 3 + 1];
+		surfacepalette->colors[i].b = palette[i * 3 + 2];
+		surfacepalette->colors[i].a = 255;
+	}
+
+	size_t len_temp = width * height * 2 + 1000;
+	void *temp = Hunk_TempAlloc(len_temp);
+
+	SDL_IOStream *io = SDL_IOFromMem(temp, len_temp);
+
+	SDL_SaveBMP_IO(surface, io, false);
+
+	Sint64 length = SDL_TellIO(io);
+
+	SDL_CloseIO(io);
+
+	COM_WriteFile(filename, temp, length);
+
+	SDL_DestroySurface(surface);
+}
+
 void SCR_ScreenShot_f()
 {
-	s8 pcxname[80];
+	s8 bmpname[80];
 	s8 checkname[MAX_OSPATH*2];
-	strcpy(pcxname, "quake00.pcx"); // find a file name to save it to 
+	strcpy(bmpname, "quake00.bmp"); // find a file name to save it to
 	s32 i = 0;
 	for (; i <= 99; i++) {
-		pcxname[5] = i / 10 + '0';
-		pcxname[6] = i % 10 + '0';
-		sprintf(checkname, "%s/%s", com_gamedir, pcxname);
+		bmpname[5] = i / 10 + '0';
+		bmpname[6] = i % 10 + '0';
+		sprintf(checkname, "%s/%s", com_gamedir, bmpname);
 		if (Sys_FileTime(checkname) == -1)
 			break; // file doesn't exist
 	}
 	if (i == 100) {
-		Con_Printf("SCR_ScreenShot_f: Couldn't create a PCX file\n");
+		Con_Printf("SCR_ScreenShot_f: Couldn't create a BMP file\n");
 		return;
 	}
-	WritePCXfile(pcxname, vid.buffer, vid.width, vid.height, vid.width,
-		     vid_curpal); // save the pcx file 
-	snprintf(checkname, 95, "echo Wrote %s", pcxname);
+	WriteBMPfile(bmpname, vid.buffer, vid.width, vid.height, vid.width,
+		     vid_curpal); // save the bmp file
+	snprintf(checkname, 95, "echo Wrote %s", bmpname);
 	Cbuf_AddText(checkname);
 }
 

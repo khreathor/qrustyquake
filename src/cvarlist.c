@@ -2,6 +2,7 @@
 #define ZR 0,0,0,0      // "name", default value, flags (1 - save to config.cfg)
 cvar_t _vid_default_mode_win=              {"_vid_default_mode_win", "3", 1,ZR};
 cvar_t scr_uiscale=                                  {"scr_uiscale", "1", 1,ZR};
+cvar_t scr_lockuiscale=                          {"scr_lockuiscale", "0", 1,ZR};
 cvar_t sensitivityyscale=                      {"sensitivityyscale", "1", 1,ZR};
 cvar_t _windowed_mouse=                          {"_windowed_mouse", "0", 1,ZR};
 cvar_t newoptions=                                    {"newoptions", "1", 1,ZR};
@@ -122,6 +123,7 @@ cvar_t d_mipcap=                                        {"d_mipcap", "0", 0,ZR};
 cvar_t d_mipscale=                                    {"d_mipscale", "1", 0,ZR};
 cvar_t sv_aim=                                            {"sv_aim", "1", 0,ZR};
 cvar_t con_notifytime=                            {"con_notifytime", "3", 0,ZR};
+cvar_t r_enableskybox=                            {"r_enableskybox", "1", 1,ZR};
 cvar_t r_skyfog=                                      {"r_skyfog", "0.5", 0,ZR};
 cvar_t chase_back=                                  {"chase_back", "100", 0,ZR};
 cvar_t chase_up=                                       {"chase_up", "16", 0,ZR};
@@ -184,6 +186,7 @@ cvar_t v_gamma=                                            {"gamma", "1", 1,ZR};
 cvar_t net_messagetimeout=                  {"net_messagetimeout", "300", 0,ZR};
 cvar_t r_novis=                                           {"r_novis","0", 1,ZR};
 cvar_t r_particlescale=                           {"r_particlescale","0", 1,ZR};
+cvar_t r_mipscale=                                    {"r_mipscale", "1", 1,ZR};
 cvar_t scr_uixscale=                                 {"scr_uixscale","1", 1,ZR};
 cvar_t scr_uiyscale=                                 {"scr_uiyscale","1", 1,ZR};
 cvar_t yaspectscale=                                 {"yaspectscale","1", 1,ZR};

@@ -1,4 +1,6 @@
+#ifndef _WIN32
 #include <stdatomic.h>
+#endif
 #include <errno.h>
 #include <stddef.h>
 #include <limits.h>
@@ -32,15 +34,20 @@
 #include <sys/wait.h>
 #include <sys/time.h>
 #include <sys/mman.h>
-#include <SDL3/SDL.h>
 #else
+#define WIN32_LEAN_AND_MEAN
+#ifndef _USE_WINSOCK2
+#define _USE_WINSOCK2
+#endif
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#ifndef _WINCROSS
-#include <SDL.h>
-#else
-#include <SDL3/SDL.h>
-#endif
 #include <direct.h>
 #include <io.h>
+#endif
+#include <SDL3/SDL.h>
+#ifdef AVAIL_SDL3MIXER
+#include <SDL3_mixer/SDL_mixer.h>
+#endif
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
 #endif

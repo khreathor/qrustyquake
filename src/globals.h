@@ -16,6 +16,13 @@ void Fog_SetPalIndex(cvar_t *cvar);
 void Fog_Update(f32 d, f32 r, f32 g, f32 b);
 void R_DrawFog();
 void IN_InitJoystick(cvar_t *cvar);                                  // in_sdl.c
+EX s32 jaxis_move_x;
+EX s32 jaxis_move_y;
+EX s32 jaxis_look_x;
+EX s32 jaxis_look_y;
+EX s32 jaxis_trig_1;
+EX s32 jaxis_trig_2;
+EX SDL_Joystick *joystick;
 EX u32 oldmodes[NUM_OLDMODES*2];                                    // vid_sdl.c
 EX s8 modelist[NUM_OLDMODES][8];
 EX SDL_Window *window;
@@ -754,5 +761,13 @@ EX u32 sb_updates; // if >= vid.numpages, no update needed             // sbar.c
 u8 *Image_LoadImage(const s8 *name, s32 *width, s32 *height);         // image.c
 bool nameInList(const s8 *list, const s8 *name);                      // model.c
 void PF_changeyaw();                                                // pr_cmds.c
+void CDAudio_Play(u8 track, bool looping);                          // cdaudio.c
+void CDAudio_Stop();
+void CDAudio_Pause();
+void CDAudio_Resume();
+void CDAudio_Update();
+bool CDAudio_Init();
+void CDAudio_Shutdown();
+u8 *COM_LoadTempFile(const s8 *path, u32 *path_id);
 #undef EX
 #endif

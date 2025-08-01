@@ -73,6 +73,7 @@ void VID_SetPalette(u8 *palette, SDL_Surface *dest)
 		colors[i].r = *palette++;
 		colors[i].g = *palette++;
 		colors[i].b = *palette++;
+		colors[i].a = 255;
 	}
 	SDL_Palette *pal = sdlworldpal;
 	if(dest == screentop) pal = sdltoppal;
@@ -112,7 +113,7 @@ void VID_SetBorderless()
 	SDL_SetWindowFullscreen(window, 1);
 }
 
-void VID_Init(u8 */*palette*/)
+void VID_Init(SDL_UNUSED u8 *palette)
 {
 	s32 pnum;
 	s32 winmode;
@@ -135,7 +136,12 @@ void VID_Init(u8 */*palette*/)
 	// Set up display mode (width and height)
 	vid.width = 320;
 	vid.height = 240;
+#ifdef __EMSCRIPTEN__
+	// erysdren: emscripten requires windowed mode
+	winmode = 1;
+#else
 	winmode = 0;
+#endif
 	if(!(COM_CheckParm("-width") || COM_CheckParm("-height")
 	   || COM_CheckParm("-window") || COM_CheckParm("-fullscreen")
 	   || COM_CheckParm("-winsize"))){
@@ -242,15 +248,15 @@ void VID_Init(u8 */*palette*/)
 
 void VID_Shutdown()
 {
+	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 	if(screen != NULL)
 		SDL_UnlockSurface(screen);
 	SDL_UnlockTexture(texture);
-	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
-void VID_CalcScreenDimensions(cvar_t */*cvar*/)
+void VID_CalcScreenDimensions(SDL_UNUSED cvar_t *cvar)
 {
-	uiscale = (vid.width / 320);
+	if(scr_lockuiscale.value == 0) uiscale = vid.width / 320;
 	if(uiscale * 200 > vid.height)
 		uiscale = 1; // For weird resolutions like 800x200
 	Cvar_SetValue("scr_uiscale", uiscale);
@@ -365,7 +371,7 @@ void VID_AllocBuffers()
 	D_InitCaches(cache, cachesize);
 }
 
-void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, u8 */*palette*/)
+void VID_SetMode(s32 modenum, s32 custw, s32 custh, s32 custwinm, SDL_UNUSED u8 *palette)
 {
 	Con_DPrintf("SetMode: %d %dx%d %d\n", modenum, custw, custh, custwinm);
 	if(modenum == vid_modenum && (!custw || !custh))

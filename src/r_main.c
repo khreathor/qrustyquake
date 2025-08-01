@@ -30,7 +30,7 @@ void R_InitTextures()
 	}
 }
 
-void R_ViewChangedCallback(cvar_t*/*null*/)
+void R_ViewChangedCallback(SDL_UNUSED cvar_t*cvar)
 { R_ViewChanged(&r_refdef.vrect, sb_lines, pixelAspect); }
 
 void R_Init()
@@ -84,6 +84,8 @@ void R_Init()
 	Cvar_RegisterVariable(&scr_uixscale);
 	Cvar_RegisterVariable(&scr_uiyscale);
 	Cvar_RegisterVariable(&yaspectscale);
+	Cvar_RegisterVariable(&scr_lockuiscale);
+	Cvar_RegisterVariable(&r_mipscale);
 	Cvar_SetCallback(&r_labmixpal, build_color_mix_lut);
 	Cvar_SetCallback(&r_fogbrightness, Fog_SetPalIndex);
 	Cvar_SetCallback(&r_wateralpha, R_SetWateralpha_f);
@@ -94,9 +96,9 @@ void R_Init()
 	view_clipplanes[0].leftedge = 1;
 	view_clipplanes[1].rightedge = 1;
 	view_clipplanes[1].leftedge = view_clipplanes[2].leftedge =
-	    view_clipplanes[3].leftedge = 0;
+		view_clipplanes[3].leftedge = 0;
 	view_clipplanes[0].rightedge = view_clipplanes[2].rightedge =
-	    view_clipplanes[3].rightedge = 0;
+		view_clipplanes[3].rightedge = 0;
 	r_refdef.xOrigin = XCENTERING;
 	r_refdef.yOrigin = YCENTERING;
 	R_InitParticles();
@@ -189,7 +191,7 @@ void R_ViewChanged(vrect_t *pvrect, s32 lineadj, f32 aspect)
 	r_refdef.fvrecty_adj = (f32)r_refdef.vrect.y - 0.5;
 	r_refdef.vrectright = r_refdef.vrect.x + r_refdef.vrect.width;
 	r_refdef.vrectright_adj_shift20 =
-	    (r_refdef.vrectright << 20) + (1 << 19) - 1;
+		(r_refdef.vrectright << 20) + (1 << 19) - 1;
 	r_refdef.fvrectright = (f32)r_refdef.vrectright;
 	r_refdef.fvrectright_adj = (f32)r_refdef.vrectright - 0.5;
 	r_refdef.vrectrightedge = (f32)r_refdef.vrectright - 0.99;
@@ -198,19 +200,17 @@ void R_ViewChanged(vrect_t *pvrect, s32 lineadj, f32 aspect)
 	r_refdef.fvrectbottom_adj = (f32)r_refdef.vrectbottom - 0.5;
 	r_refdef.aliasvrect.x = (s32)(r_refdef.vrect.x);
 	r_refdef.aliasvrect.y = (s32)(r_refdef.vrect.y);
-	r_refdef.aliasvrect.width =
-	    (s32)(r_refdef.vrect.width);
-	r_refdef.aliasvrect.height =
-	    (s32)(r_refdef.vrect.height);
+	r_refdef.aliasvrect.width = (s32)(r_refdef.vrect.width);
+	r_refdef.aliasvrect.height = (s32)(r_refdef.vrect.height);
 	r_refdef.aliasvrectright =
-	    r_refdef.aliasvrect.x + r_refdef.aliasvrect.width;
+		r_refdef.aliasvrect.x + r_refdef.aliasvrect.width;
 	r_refdef.aliasvrectbottom =
-	    r_refdef.aliasvrect.y + r_refdef.aliasvrect.height;
+		r_refdef.aliasvrect.y + r_refdef.aliasvrect.height;
 	pixelAspect = aspect;
 	xOrigin = r_refdef.xOrigin;
 	yOrigin = r_refdef.yOrigin;
 	f32 screenAspect = r_refdef.vrect.width * pixelAspect /
-	    r_refdef.vrect.height;
+		r_refdef.vrect.height;
 	// 320*200 1.0 pixelAspect = 1.6 screenAspect
 	// 320*240 1.0 pixelAspect = 1.3333 screenAspect
 	// proper 320*200 pixelAspect = 0.8333333
@@ -221,11 +221,9 @@ void R_ViewChanged(vrect_t *pvrect, s32 lineadj, f32 aspect)
 	// the polygon rasterization will never render in the first row or 
 	// column but will definately render in the [range] row and column, so
 	// adjust the buffer origin to get an exact edge to edge fill
-	xcenter = ((f32)r_refdef.vrect.width * XCENTERING) +
-	    r_refdef.vrect.x - 0.5;
+	xcenter = ((f32)r_refdef.vrect.width*XCENTERING)+r_refdef.vrect.x-0.5;
 	aliasxcenter = xcenter;
-	ycenter = ((f32)r_refdef.vrect.height * YCENTERING) +
-	    r_refdef.vrect.y - 0.5;
+	ycenter = ((f32)r_refdef.vrect.height*YCENTERING)+r_refdef.vrect.y-0.5;
 	aliasycenter = ycenter;
 	xscale = r_refdef.vrect.width / r_refdef.horizontalFieldOfView;
 	aliasxscale = xscale;
@@ -233,8 +231,7 @@ void R_ViewChanged(vrect_t *pvrect, s32 lineadj, f32 aspect)
 	yscale = xscale * pixelAspect;
 	aliasyscale = yscale;
 	yscaleinv = 1.0 / yscale;
-	xscaleshrink =
-	    (r_refdef.vrect.width - 6) / r_refdef.horizontalFieldOfView;
+	xscaleshrink = (r_refdef.vrect.width-6)/r_refdef.horizontalFieldOfView;
 	yscaleshrink = xscaleshrink * pixelAspect;
 	screenedge[0].normal[0] = // left side clip
 	    -1.0 / (xOrigin * r_refdef.horizontalFieldOfView);
@@ -256,9 +253,8 @@ void R_ViewChanged(vrect_t *pvrect, s32 lineadj, f32 aspect)
 	screenedge[3].type = PLANE_ANYZ;
 	for(s32 i = 0; i < 4; i++)
 		VectorNormalize(screenedge[i].normal);
-	f32 res_scale =
-	    sqrt((f64)(r_refdef.vrect.width * r_refdef.vrect.height) /
-		 (320.0 * 152.0)) * (2.0 / r_refdef.horizontalFieldOfView);
+	f32 res_scale = sqrt((f64)(r_refdef.vrect.width * r_refdef.vrect.height)
+		/ (320.0 * 152.0)) * (2.0 / r_refdef.horizontalFieldOfView);
 	r_aliastransition = r_aliastransbase.value * res_scale;
 	r_resfudge = r_aliastransadj.value * res_scale;
 	D_ViewChanged();
@@ -266,8 +262,7 @@ void R_ViewChanged(vrect_t *pvrect, s32 lineadj, f32 aspect)
 
 void R_MarkLeaves()
 {
-	if(r_oldviewleaf == r_viewleaf)
-		return;
+	if(r_oldviewleaf == r_viewleaf) return;
 	r_visframecount++;
 	r_oldviewleaf = r_viewleaf;
 	u8 *vis = Mod_LeafPVS(r_viewleaf, cl.worldmodel);

@@ -334,12 +334,15 @@ void Sbar_DrawNumSmall(s32 x, s32 y, s32 num, s32 color)
 {
 	s8 buf[6];
 	sprintf(buf, "%3i", num);
+	if      (color == 0) color = 48;
+	else if (color == 1) color = 18;
+	else                 color = 176;
 	if (buf[0] != ' ')
-		Draw_CharacterScaled(x       , y, (color?18:48)+buf[0]-'0',SCL);
+		Draw_CharacterScaled(x       , y, color+buf[0]-'0', SCL);
 	if (buf[1] != ' ')
-		Draw_CharacterScaled(x+8*SCL , y, (color?18:48)+buf[1]-'0',SCL);
+		Draw_CharacterScaled(x+8*SCL , y, color+buf[1]-'0', SCL);
 	if (buf[2] != ' ')
-		Draw_CharacterScaled(x+16*SCL, y, (color?18:48)+buf[2]-'0',SCL);
+		Draw_CharacterScaled(x+16*SCL, y, color+buf[2]-'0', SCL);
 }
 
 void Sbar_SortFrags()
@@ -390,7 +393,7 @@ void Sbar_CalcPos()
 	iposy = HH - 40*SCL + arcade_offs_y;
 	switch ((s32)(hipnotic&&scr_hudstyle.value==3?2:scr_hudstyle.value)) {
 	default: // ammo counters
-	case 7: // classic (no bg)
+	case 8: // classic (no bg)
 	case 0: // classic
 		for (s32 i = 0; i < 4; i++) {
 			npos[i][0] = WW / 2 - 150*SCL + i*48*SCL;
@@ -424,7 +427,7 @@ void Sbar_CalcPos()
 		break;
 	}
 	switch ((s32)scr_hudstyle.value) { // weapons
-	case 7: // classic (no bg)
+	case 8: // classic (no bg)
 	case 0: // classic
 	case 4: // arcade
 		for (s32 i = 0; i < 9; i++) {
@@ -445,7 +448,7 @@ void Sbar_CalcPos()
 	}
 	switch ((s32)scr_hudstyle.value + 0x10*hipnotic) { // keys
 	default:
-	case 7: // classic (no bg)
+	case 8: // classic (no bg)
 	case 0:
 	case 3:
 		for (s32 i = 0; i < 2; i++) { // classic, qw
@@ -965,13 +968,13 @@ void Sbar_Draw()
 		|| cl.intermission)
 		return;
 	drawlayer = 3;
-	if (scr_hudstyle.value == 5 || scr_hudstyle.value == 6) {
-		Sbar_Min(scr_hudstyle.value == 5);
+	if (scr_hudstyle.value >= 5 && scr_hudstyle.value <= 7) {
+		Sbar_Min(scr_hudstyle.value - 5);
 		drawlayer = 0;
 		return;
 	}
 	s32 force_vanilla = (scr_hudstyle.value == 4 && WW/SCL < 640)
-		|| scr_hudstyle.value == 7;
+		|| scr_hudstyle.value == 8;
 	s32 oldhudstyle = scr_hudstyle.value;
 	if (force_vanilla) scr_hudstyle.value = 0;
 	if (sb_lines && WW/SCL > 320)

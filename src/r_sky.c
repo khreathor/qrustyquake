@@ -51,6 +51,7 @@ s32 R_LoadSkybox (const s8 *name);
 
 void Sky_LoadSkyBox (const s8 *name)
 {
+	if (r_enableskybox.value == 0) return;
 	if (strcmp (skybox_name, name) == 0)
 		return; //no change
 	if (name[0] == 0) { // turn off skybox if sky is set to ""
@@ -172,10 +173,6 @@ s32 R_LoadSkybox (const s8 *name)
 		r_skytexinfo[i].texture->width = width;
 		r_skytexinfo[i].texture->height = height;
 		r_skytexinfo[i].texture->offsets[0] = i;
-		extern vec3_t box_vecs[6][2];
-		extern vec3_t box_bigvecs[6][2];
-		extern vec3_t box_bigbigvecs[6][2];
-		extern msurface_t *r_skyfaces;
 		switch (width) {
 			case 1024:      VectorCopy (box_bigbigvecs[i][0], r_skytexinfo[i].vecs[0]); break;
 			case 512:       VectorCopy (box_bigvecs[i][0], r_skytexinfo[i].vecs[0]); break;
@@ -339,6 +336,7 @@ void Sky_SkyCommand_f()
 void Sky_Init()
 {
 	Cmd_AddCommand ("sky", Sky_SkyCommand_f);
+	Cvar_RegisterVariable (&r_enableskybox);
 	Cvar_RegisterVariable (&r_skyfog);
         skybox_name[0] = 0;
 }
